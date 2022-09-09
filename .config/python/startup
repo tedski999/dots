@@ -1,0 +1,18 @@
+#!/bin/python
+
+import os, sys, readline, atexit
+
+if hasattr(sys, '__interactivehook__'):
+    del sys.__interactivehook__
+
+history_dir = os.path.join(os.path.expanduser('~'), '.cache/python/history')
+if not os.path.exists(history_dir):
+    os.makedirs(history_dir)
+
+executable_inode = str(os.stat(sys.executable).st_ino)
+history_file = os.path.join(history_dir, executable_inode)
+
+if os.path.exists(history_file):
+    readline.read_history_file(history_file)
+atexit.register(readline.write_history_file, history_file)
+

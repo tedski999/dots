@@ -1,0 +1,27 @@
+#!/usr/bin/fish
+
+set mpvsoc /tmp/mpvsoc
+
+function mpvipc
+	begin
+		printf '{"command":['
+		printf '"%s",' $argv
+		printf ']}\n'
+	end | socat - $mpvsoc
+end
+
+if test "$(mpvipc get_property pause | jq '.data')" != "false"
+	echo ""
+else if test (mpvipc get_property idle-active | jq '.data') = "true"
+	echo " [End of Queue] "
+else
+	set metadata (mpvipc get_property metadata | jq -r '.data | "\(.title) - \(.album) - \(.artist)"')
+	set timepos (mpvipc get_property time-pos | jq .data)
+	set tsec (string pad --char 0 --width 2 (math --scale 0 "$timepos % 60"))
+	set tmin (math --scale 0 "$timepos / 60")
+	set duration (mpvipc get_property duration | jq .data)
+	set dsec (string pad --char 0 --width 2 (math --scale 0 "$duration % 60"))
+	set dmin (math --scale 0 "$duration / 60")
+	set time "$tmin:$tsec/$dmin:$dsec"
+	echo "  $metadata [$time] "
+end

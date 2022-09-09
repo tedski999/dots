@@ -1,0 +1,40 @@
+#!/usr/bin/env fish
+
+# Backup directory regularly to repository excluding exclude
+# Dependencies: borg
+
+not set --query argv[1]; and echo "Missing argument: repository"; and return 1
+not set --query argv[2]; and echo "Missing argument: root directory"; and return 1
+not set --query argv[3]; and echo "Missing argument: exclude"; and return 1
+set --export BORG_REPO $argv[1]
+set root $argv[2]
+set exclude $argv[3]
+
+set id (random)
+
+function create_backup
+	borg create ::"{hostname}-{user}-{now}" $root --exclude-caches --exclude $exclude
+	if test $status -eq 2
+		notify-send -i "backup" -u "critical" -r $id -t 0 "Failed to create backup!" "Please check backupd"
+		return 1
+	end
+	borg prune --keep-within 1d --keep-daily 7 --keep-weekly 4 --keep-monthly 1 --keep-yearly 1
+	borg compact
+end
+
+if not test -e $BORG_REPO
+	mkdir -p $BORG_REPO
+	if not borg init --encryption none
+		notify-send -i "backup" -u "critical" -r $id -t 0 "Backup repository missing!" "Failed to create $BORG_REPO"
+		return 1
+	end
+	notify-send -i "backup" -r $id "Backup repository missing!" "Created $BORG_REPO"
+end
+
+while true
+	for x in (seq 6)
+		create_backup
+		sleep 600
+	end
+	# TODO: attempt remote backup every hour
+end

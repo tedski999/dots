@@ -1,0 +1,15 @@
+#!/usr/bin/env fish
+
+# Output a progress bar computed from the 3 input arguments: $1=value, $2=max, $3=length
+
+argparse --name (status basename) "h/head=" "t/tail=" -- $argv; or return 1
+not set --query _flag_h; and set _flag_h "▉"
+not set --query _flag_t; and set _flag_t "░"
+
+set head (math "round(max(0, min($argv[3], $argv[1] * $argv[3] / $argv[2])))")
+set tail (math "$argv[3] - $head")
+
+set head (string repeat --count $head --no-newline $_flag_h)
+set tail (string repeat --count $tail --no-newline $_flag_t)
+
+echo "$head$tail"

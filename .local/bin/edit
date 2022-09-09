@@ -1,0 +1,23 @@
+#!/usr/bin/env fish
+
+# Prompt user to select and open a file in their text editor
+
+not set --query argv[1]; and set argv[1] $HOME
+not set --query argv[2]; and set argv[2] "Edit File"
+set directory $argv[1]
+set prompt $argv[2]
+
+pushd $directory
+
+set choice (choose -p $prompt *)
+
+if test $choice
+	if test -d $choice
+		cd $choice
+		$TERMINAL -e $EDITOR . &
+	else if test -f $choice
+		$TERMINAL -e $EDITOR $choice &
+	end
+end
+
+popd

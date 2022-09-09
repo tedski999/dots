@@ -1,0 +1,26 @@
+#!/usr/bin/env fish
+
+# Sticky floating terminals
+# Dependencies: xdotool bspc kitty
+
+not set --query argv[1]; and set argv[1] "toggle"
+not set --query argv[2]; and set argv[2] "fish"
+set action $argv[1]
+set command $argv[2]
+
+set class "scratchpad $command"
+set id (xdotool search --class $class)
+
+if test $id
+	test $action = "toggle"
+	and bspc node $id --flag hidden --focus
+	test $action = "snap"
+	and bspc node $id --flag hidden=off --flag sticky=off --state tiled --focus
+	and xdotool set_window --class "kitty" $id
+else
+	test $action = "snap"
+	or bspc rule --add "*" --one-shot sticky=on state=floating monitor=primary
+	kitty --class $class --execute $command &
+end
+
+return 0

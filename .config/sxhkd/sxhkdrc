@@ -1,0 +1,219 @@
+
+#####################
+# Window Management #
+#####################
+
+# Focus/move
+super + {h,j,k,l}
+	{d=west, d=south, d=north, d=east}; \
+	bspc node --focus $d || bspc monitor --focus $d
+super + shift + {h,j,k,l}
+	{d=west x=-20 y=0, d=south x=0 y=20, d=north x=0 y=-20, d=east x=20 y=0}; \
+	bspc node --move $x $y || bspc node --swap $d || bspc node --to-monitor $d --follow
+
+# Expand/retract
+super + ctrl + {h,j,k,l}
+	bspc node --resize {left -20 0, bottom 0 20, top 0 -20, right 20 0}
+super + ctrl + shift + {h,j,k,l}
+	bspc node --resize {right -20 0, top 0 20, bottom 0 -20, left 20 0}
+
+# Rotate
+super + {_,shift+} r
+	bspc node {first_ancestor,any} --rotate 90
+
+# Toggle state
+super + {t,f,g}
+	bspc node --state \~{tiled,floating,fullscreen}
+
+# Toggle sticky
+super + c
+	bspc node --flag sticky
+
+# Close / kill
+super + {_,shift+ctrl+} q
+	bspc node --{close,kill}
+
+
+######################
+# Desktop Management #
+######################
+
+# Focus/move/throw
+super + {0-9}
+	bspc desktop --focus {0-9}
+super + ctrl + {0-9}
+	bspc node --to-desktop {0-9}
+super + shift + {0-9}
+	 bspc node --to-desktop {0-9} --follow
+
+# Focus/move/throw to prev/next
+super + {comma,period}
+	bspc desktop --focus {prev,next}
+super + shift + {comma,period}
+	bspc node --to-desktop {prev,next} --follow
+super + ctrl + {comma,period}
+	bspc node --to-desktop {prev,next}
+
+# Focus/move/throw to empty
+super + z
+	bspc desktop --focus next.!occupied
+super + shift + z
+	bspc node --to-desktop next.!occupied --follow
+super + ctrl + z
+	bspc node --to-desktop next.!occupied
+
+
+################
+# Preselection #
+################
+
+# Direction
+super + alt + {h,j,k,l}
+	bspc node --presel-dir {west,south,north,east}
+
+# Size
+super + alt + {1-9}
+	bspc node --presel-ratio 0.{1-9}
+
+# Cancel
+super + alt + {space,Escape}
+	bspc node --presel-dir cancel
+
+
+############
+# Controls #
+############
+
+# Power
+super + {_,shift+,ctrl+,ctrl+shift+} Escape
+	powerctrl {_,lock,suspend,hibernate}
+
+# Windows
+super + Tab
+	rofi -show window -show-icons
+
+# Displays
+super + shift + Tab
+	displayctrl
+
+# Screenshots
+super + {_,shift+,ctrl+,shift+ctrl+} s
+	screenshot {_,selection,window,monitor}
+
+# Clipboard
+super + v
+	clipmenu -p "Copy"
+
+# Notifications
+super + {_,shift+,ctrl+} grave
+	dunstctl {close,history-pop,close-all}
+
+# Spelling
+super + {slash,shift+slash}
+	spell {_,$(xclip -out -selection c)} | xclip -in -selection c
+
+# Network
+super + {_,shift+} n
+	{wifi,$TERMINAL -e nmtui}
+
+# Battery
+super + b
+	IFS="," read s c t <<< $(acpi -b); \
+	notify-send -i battery-100 "$s -$c" "$t"
+
+# Music
+super + {_,shift+} m
+	music {_,queue}
+
+
+####################
+# Program Launcher #
+####################
+
+# Program launcher
+super + space ; space
+	rofi -show run
+
+# Terminal
+super + Return
+	$TERMINAL
+super + {shift+,ctrl+} Return
+	scratchpad {toggle,snap} fish
+
+# Text editor
+super + space ; e
+	$TERMINAL -e $EDITOR
+super + space ; comma
+	edit $HOME/.local/bin " Open Script"
+super + space ; period
+	edit $HOME/.config " Open Config"
+super + space ; slash
+	edit $HOME/Work " Open Project"
+
+# File manager
+super + space ; f
+	$TERMINAL -e lf
+
+# Package manager
+super + space ; u
+	$TERMINAL -e yay
+
+# Web browser
+super + space ; w
+	$BROWSER
+
+# Discord
+super + space ; d
+	discord
+
+# Steam
+super + space ; s
+	steam
+
+# News
+super + space ; r
+	$TERMINAL -e newsboat
+
+# Top
+super + space ; t
+	$TERMINAL -e btop
+
+# Calculator
+super + space ; c
+	$TERMINAL -e calc
+
+
+###################
+# Functional Keys #
+###################
+
+# Volume
+{_,shift+} XF86AudioMute
+	pactl set-sink-mute @DEFAULT_SINK@ {"toggle","on"}; \
+	icon="$([[ "$(pactl get-sink-mute @DEFAULT_SINK@)" == *"no"* ]] && echo "audio-on" || echo "audio-off")"; \
+	volume="$(pactl get-sink-volume @DEFAULT_SINK@ | head -1 | cut -d "/" -f 2 | tr -dc "0-9")"; \
+	notify-send --expire-time 500 --replace-id 8731 --icon "$icon" "Volume - $volume%" "$(progress "$volume" 100 40)"
+{_,shift+} XF86AudioLowerVolume
+	pactl set-sink-volume @DEFAULT_SINK@ {"-2%","-25%"}; \
+	icon="$([[ "$(pactl get-sink-mute @DEFAULT_SINK@)" == *"no"* ]] && echo "audio-on" || echo "audio-off")"; \
+	volume="$(pactl get-sink-volume @DEFAULT_SINK@ | head -1 | cut -d "/" -f 2 | tr -dc "0-9")"; \
+	notify-send --expire-time 500 --replace-id 8731 --icon "$icon" "Volume - $volume%" "$(progress "$volume" 100 40)"
+{_,shift+} XF86AudioRaiseVolume
+	pactl set-sink-volume @DEFAULT_SINK@ {"+2%","+25%"}; \
+	icon="$([[ "$(pactl get-sink-mute @DEFAULT_SINK@)" == *"no"* ]] && echo "audio-on" || echo "audio-off")"; \
+	volume="$(pactl get-sink-volume @DEFAULT_SINK@ | head -1 | cut -d "/" -f 2 | tr -dc "0-9")"; \
+	notify-send --expire-time 500 --replace-id 8731 --icon "$icon" "Volume - $volume%" "$(progress "$volume" 100 40)"
+
+# Brightness
+{_,shift+} {XF86MonBrightnessDown,XF86MonBrightnessUp}
+	light {5,25} {-U,-A}; \
+	brightness="$(light | cut -f 1 -d ".")"; \
+	notify-send --expire-time 500 --replace-id 8731 --icon "high-brightness" "Brightness - $brightness%" "$(progress $brightness 100 40)"
+
+# Media
+{_,shift+} XF86AudioPlay
+	music {playpause,stop}
+{_,shift+} XF86AudioPrev
+	music {previous,backwards
+{_,shift+} XF86AudioNext
+	music {next,forwards}

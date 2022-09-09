@@ -1,0 +1,14 @@
+#!/usr/bin/env fish
+
+# Prompt user to select and open a file in their text editor
+# Dependencies: didyoumean
+
+set --query argv[1]
+and set input $argv[1]
+or set input (input -p Spell)
+
+test $input
+or return 1
+
+set choices (dym --clean-output --number 25 $input)
+choose -p Spell $choices

@@ -1,0 +1,30 @@
+#!/usr/bin/env fish
+
+# Capture PNG screenshots to system clipboard
+# Dependencies: imagemagick xclip jq
+
+set choices selection window monitor everything
+
+test $argv[1]
+and sleep 0.25
+and set choice $argv[1]
+or set choice (choose -p " Take Screenshot" $choices)
+
+set img (mktemp --tmpdir ss.XXXXXXXX.png)
+
+switch $choice
+	case "selection"
+		import png:- | tee $img | xclip -i -selection c -t image/png
+	case "window"
+		set window (bspc query --nodes --node focused)
+		import -window $window png:- | tee $img | xclip -i -selection c -t image/png
+	case "monitor"
+		set geometry (bspc query --tree --monitor | jq -r '.rectangle | "\(.width)x\(.height)+\(.x)+\(.y)"')
+		import -window root -crop $geometry png:- | tee $img | xclip -i -selection c -t image/png
+	case "everything"
+		import -window root png:- | tee $img | xclip -i -selection c -t image/png
+	case "*"
+		return 1
+end
+
+notify-send --icon $img "Screenshot captured to clipboard!" "Saved to $img"
