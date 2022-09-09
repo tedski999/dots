@@ -12,7 +12,6 @@ echo "
 !/.config/fish
 !/.config/git
 !/.config/nvim
-!/.config/wget
 " >> $HOME/.local/dots/info/exclude
 
 sudo apt-get install --needed fish exa neovim borg rsync
