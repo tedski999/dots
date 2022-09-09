@@ -15,6 +15,6 @@ echo "
 !/.gnupg/sshcontrol
 " > $HOME/.local/dots/info/exclude
 
-apt update
-apt install fish exa gnupg neovim borgbackup rsync
+apt-get update
+apt-get install fish exa gnupg neovim borgbackup rsync
 chsh -s fish
