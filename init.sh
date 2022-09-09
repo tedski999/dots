@@ -7,35 +7,38 @@ hash sudo yay || {
 
 echo "
 /*
+!/.config
+!/.gnupg
+!/.local
 !/.xinitrc
 
-!/.config/
-!/.config/bspwm/
-!/.config/dunst/
-!/.config/fish/
-!/.config/git/
-!/.config/kitty/
-!/.config/neofetch/
-!/.config/npm/
-!/.config/nvim/
-!/.config/picom/
-!/.config/polybar/
-!/.config/python/
-!/.config/rofi/
-!/.config/sxhkd/
-!/.config/wget/
-!/.config/wget/
-!/.config/zathura/
+/.config/*
+!/.config/bspwm
+!/.config/dunst
+!/.config/fish
+!/.config/git
+!/.config/kitty
+!/.config/neofetch
+!/.config/npm
+!/.config/nvim
+!/.config/picom
+!/.config/polybar
+!/.config/python
+!/.config/rofi
+!/.config/sxhkd
+!/.config/wget
+!/.config/wget
+!/.config/zathura
 !/.config/user-dirs.dirs
 !/.config/user-dirs.locale
 
-!/.local/
-!/.local/bin/
-!/.local/root/
-
-!/.gnupg/
+/.gnupg/*
 !/.gnupg/gpg-agent.conf
 !/.gnupg/sshcontrol
+
+/.local/*
+!/.local/bin
+!/.local/root
 " >> $HOME/.local/dots/info/exclude
 
 yay -Syu fish exa
