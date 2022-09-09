@@ -27,7 +27,6 @@ echo "
 !/.config/rofi
 !/.config/sxhkd
 !/.config/wget
-!/.config/wget
 !/.config/zathura
 !/.config/user-dirs.dirs
 !/.config/user-dirs.locale
@@ -39,9 +38,9 @@ echo "
 /.local/*
 !/.local/bin
 !/.local/root
-" >> $HOME/.local/dots/info/exclude
+" > $HOME/.local/dots/info/exclude
 
-yay -Syu fish exa
+yay --sync --refresh --sysupgrade --needed fish exa
 # TODO:
 # acpi bat betterdiscord-installer borg brave-bin bspwm
 # btop calc clipmenu didyoumean-bin discord dunst efibootmgr exa
