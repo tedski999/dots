@@ -1,7 +1,7 @@
 [user]
 	email = ski@h8c.de
 	name = tedski999
-	signingkey = ski@h8c.de
+	signingkey = 2DF2177B
 [commit]
 	gpgsign = true
 [tag]
