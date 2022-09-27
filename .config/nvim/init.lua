@@ -114,7 +114,8 @@ require("packer").startup({
 				viewport_buffer = 100,
 				use_treesitter = true,
 				show_trailing_blankline_indent = false,
-				indent_blankline_use_treesitter_scope = true,
+				use_treesitter_scope = true,
+				filetype_exclude = { "haskell" }
 			})
 		end})
 
@@ -470,6 +471,7 @@ vim.o.shiftwidth = 0
 vim.o.virtualedit = "onemore"
 vim.o.termguicolors = true
 vim.o.number = true
+vim.o.relativenumber = true
 vim.o.cursorline = true
 vim.o.cursorcolumn = true
 vim.o.showmode = false
@@ -483,6 +485,8 @@ vim.o.wrap = false
 
 vim.g.mapleader = " "
 vim.keymap.set("", "Q", "", {nowait = true})
+vim.keymap.set({"n","v"}, "j", "gj")
+vim.keymap.set({"n","v"}, "k", "gk")
 vim.keymap.set({"n","v"}, "<leader>w", "<cmd>w<cr>")
 vim.keymap.set({"n","v"}, "<leader>W", "<cmd>wq<cr>")
 vim.keymap.set({"n","v"}, "<leader>q", "<cmd>q<cr>")
