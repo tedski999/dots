@@ -8,7 +8,7 @@
 # TODO: add select to queue
 
 set mpvsoc /tmp/mpvsoc
-set root "$HOME/Music"
+set root "$HOME/Extern/Music"
 set rootlen (math "$(string length $root) + 2")
 set view 1
 set views "Artists" "Albums" "Tracks" "Playlists"

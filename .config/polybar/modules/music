@@ -13,7 +13,7 @@ end
 if test "$(mpvipc get_property pause | jq '.data')" != "false"
 	echo ""
 else if test (mpvipc get_property idle-active | jq '.data') = "true"
-	echo " [End of Queue] "
+	echo ""
 else
 	set metadata (mpvipc get_property metadata | jq -r '.data | "\(.title) - \(.album) - \(.artist)"')
 	set timepos (mpvipc get_property time-pos | jq .data)
