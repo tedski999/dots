@@ -41,25 +41,39 @@ hash sudo rpm dnf gpg git
 !/.local/root"
 
 # TODO: clean boot + bootloader stuff
-# TODO: xclip needed?
 sudo sh << EOF
 set -e
 
 >/etc/dnf/dnf.conf echo "\
-max_parallel_downloads=8
-fastestmirror=True"
+[main]
+gpgcheck=True
+installonly_limit=3
+clean_requirements_on_remove=True
+best=False
+skip_if_unavailable=True
+defaultyes=True
+max_parallel_downloads=20
+minrate=512K
+metadata_expire=604800"
 
-dnf install https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm
-dnf install https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm
-dnf install \
+dnf install --assumeyes https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm
+dnf install --assumeyes https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm
+rpm --import https://brave-browser-rpm-release.s3.brave.com/brave-core.asc
+dnf config-manager --add-repo https://brave-browser-rpm-release.s3.brave.com/x86_64/
+dnf install --assumeyes \
 	@standard @hardware-support @multimedia @printing @fonts \
 	@"C Development Tools And Libraries" @"Development Tools" \
-	@base-x xset xsetroot hsetroot xkbset xinput xdotool xrandr xautolock \
+	@base-x xset xsetroot hsetroot xkbset xinput xsel xdotool xrandr xautolock \
 	bspwm sxhkd picom polybar dmenu dunst terminus-fonts \
 	kitty fish kitty-fish-integration \
 	neovim exa bat btop calc ranger \
-	acpi borg clipmenu light socat jq \
+	acpi borgbackup light socat jq \
 	@LibreOffice brave-browser discord mpv
+
+git clone https://github.com/cdown/clipnotify /tmp/clipnotify
+make --directory /tmp/clipnotify install
+git clone https://github.com/cdown/clipmenu /tmp/clipmenu
+make --directory /tmp/clipmenu install
 
 >/etc/systemd/system/getty@tty1.service.d/autologin.conf echo "\
 [Service]
@@ -80,5 +94,6 @@ while [ -n "$keyfile" -a ! -r "$keyfile" ]; do
 done
 
 if [ -r "$keyfile" ] && gpg --import "$keyfile"; then
-	dots remote set-url origin git@h8c.de:dots.git
+	git --git-dir ./local/dots --work-tree . remote set-url origin git@h8c.de:dots.git
+	git --git-dir ./local/dots --work-tree . remote update
 fi
