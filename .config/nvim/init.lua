@@ -1,11 +1,7 @@
 pcall(require, "impatient")
 
 -- TODO:
--- create a new file relative to current
 -- better ways to jump between previous files (merge buffer and oldfiles, maybe send oldfiles to buffers and then :b on keybind?)
--- folkes repos are currently unmaintaned. in my case:
---  trouble.nvim is broken (lsp_definitions manually patched with #162)
---  todo-comments.nvim is completely borked
 
 local packer_bootstrap = false
 local packer_installdir = vim.fn.resolve(vim.fn.stdpath("data") .. "/site/pack/packer/start/packer.nvim")
@@ -120,8 +116,8 @@ require("packer").startup({
 		end})
 
 		use({"folke/trouble.nvim", requires = "folke/todo-comments.nvim", config = function()
-			vim.keymap.set({"n","v"}, "<leader>jd", vim.lsp.buf.definition)
-			-- vim.keymap.set({"n","v"}, "<leader>jd", "<cmd>Trouble lsp_definitions<cr>")
+			-- vim.keymap.set({"n","v"}, "<leader>jd", vim.lsp.buf.definition)
+			vim.keymap.set({"n","v"}, "<leader>jd", "<cmd>Trouble lsp_definitions<cr>")
 			vim.keymap.set({"n","v"}, "<leader>jt", "<cmd>Trouble lsp_type_definitions<cr>")
 			vim.keymap.set({"n","v"}, "<leader>jr", "<cmd>Trouble lsp_references<cr>")
 			vim.keymap.set({"n","v"}, "<leader>ji", "<cmd>Trouble lsp_implementations<cr>")
@@ -146,21 +142,21 @@ require("packer").startup({
 				}
 			})
 
-			-- vim.keymap.set({"n","v"}, "<leader>t", "<cmd>TodoTrouble<cr>")
-			-- require("todo-comments").setup({
-			-- 	signs = false,
-			-- 	highlight = {
-			-- 		pattern = [[.*<(KEYWORDS)\s*(\(.*\))?\s*:]],
-			-- 		before = "",
-			-- 		keyword = "",
-			-- 		after = ""
-			-- 	},
-			-- 	search = {
-			-- 		command = "rg",
-			-- 		args = {"--color=never", "--no-heading", "--with-filename", "--line-number", "--column"},
-			-- 		pattern = [[\b(KEYWORDS)\s*(\(.*\))?\s*:]]
-			-- 	}
-			-- })
+			vim.keymap.set({"n","v"}, "<leader>t", "<cmd>TodoTrouble<cr>")
+			require("todo-comments").setup({
+				signs = false,
+				highlight = {
+					pattern = [[.*<(KEYWORDS)\s*(\(.*\))?\s*:]],
+					before = "",
+					keyword = "",
+					after = ""
+				},
+				search = {
+					command = "rg",
+					args = {"--color=never", "--no-heading", "--with-filename", "--line-number", "--column"},
+					pattern = [[\b(KEYWORDS)\s*(\(.*\))?\s*:]]
+				}
+			})
 		end})
 
 		use({"ncm2/float-preview.nvim", config = function()
@@ -192,7 +188,6 @@ require("packer").startup({
 
 		-- Languages and syntax --
 
-		-- TODO: TS is wacky
 		use({"nvim-treesitter/nvim-treesitter", requires = {"nvim-treesitter/nvim-treesitter-textobjects"}, run = ":TSUpdate", config = function()
 			require("nvim-treesitter.configs").setup({
 				ensure_installed = {
@@ -312,7 +307,7 @@ require("packer").startup({
 			})
 
 			local function on_attach(client, bufnr)
-				if client.resolved_capabilities.document_highlight then
+				if client.server_capabilities.document_highlight then
 					local previous_result = {}
 					local function update_document_highlighting(_, result)
 						if not vim.deep_equal(result, previous_result) then
