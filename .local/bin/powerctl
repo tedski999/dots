@@ -1,16 +1,16 @@
 #!/usr/bin/env fish
 
 # Prompt user with system power control settings
-# Dependencies: slock bspc
+# Dependencies: bspc
 
 test $argv[1]
 and set choice $argv[1]
 or set choice (choose "lock" "suspend" "hibernate" "logout" "reboot" "shutdown")
 
 switch $choice
-	case "lock"; slock
-	case "suspend"; slock &; sleep 0.25; systemctl suspend
-	case "hibernate"; slock &; sleep 0.25; systemctl hibernate
+	case "lock"; lock
+	case "suspend"; systemctl suspend; lock
+	case "hibernate"; systemctl hibernate; lock
 	case "logout"; bspc quit
 	case "reboot"; systemctl reboot
 	case "shutdown"; systemctl poweroff
