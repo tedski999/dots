@@ -15,15 +15,6 @@ xinput --set-prop "DELL086F:00 06CB:7E92 Touchpad" "libinput Natural Scrolling E
 xinput --set-prop "DELL086F:00 06CB:7E92 Touchpad" "libinput Tapping Enabled" 1
 hsetroot -solid "#000000"
 
-# Check for updates in background
-(
-	sleep 60
-	updates="$(checkupdates | wc -l)"
-	if [[ "$updates" -ne 0 ]]; then
-		notify-send -i state-download "$updates package updates are available" "Hit sup+spc;u to install now"
-	fi
-) &
-
 # Use NVIDA card as primary GPU
 xrandr --setprovideroutputsource modesetting NVIDIA-0
 xrandr --auto
@@ -31,9 +22,11 @@ xrandr --auto
 # Start some programs
 picom &
 sxhkd &
+polybar main &
+polybar media &
 clipmenud &
 superhudd &
-batteryd &
+powerd &
 backupd &
 xautolock \
 	-detectsleep -time 10 -locker "slock" -killtime 20 -killer "systemctl suspend" \

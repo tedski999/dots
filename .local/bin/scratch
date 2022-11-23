@@ -1,6 +1,6 @@
 #!/usr/bin/env fish
 
-# Sticky floating terminals
+# Persistant sticky floating programs
 # Dependencies: xdotool bspc kitty
 
 not set --query argv[1]; and set argv[1] "toggle"

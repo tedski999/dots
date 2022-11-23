@@ -1,17 +1,15 @@
 #!/usr/bin/env fish
 
 # Prompt user to choose from several provided options
-# Dependencies: rofi
+# Dependencies: dmenu
 
-argparse --name (status basename) "p=" "u=" "l=" "w=" "f=" -- $argv; or return 1
-not set --query _flag_p; and set _flag_p "Choose"
-not set --query _flag_u; and set _flag_u ""
-not set --query _flag_l; and set _flag_l "8"
-not set --query _flag_w; and set _flag_w "400"
-not set --query _flag_f; and set _flag_f ""
+argparse --name (status basename) "p=" "l=" "c" -- $argv; or return 1
+not set --query _flag_p; and set _flag_p ""
+not set --query _flag_l; and set _flag_l 16
 
-set len (math "min($_flag_l, $(count $argv))")
-
-printf "%s\n" $argv | rofi -filter $_flag_f -theme-str "window {width:$_flag_w;}" \
-	-monitor (bspc query --monitors --monitor focused --names) \
-	-dmenu -l $len -p $_flag_p -u $_flag_u -i -no-custom | tr -d \n
+while true
+	set r (printf "%s\n" $argv | dmenu -i -l $_flag_l -p $_flag_p)
+	test -z $r || test -n "$_flag_c" || contains $r $argv
+	and echo $r
+	and exit 0
+end

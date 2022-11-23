@@ -24,4 +24,4 @@ bspc subscribe node_add | while read line; do
 	xdo raise -N "Polybar"
 done &
 
-displayctrl mobile
+hdmictl disabled

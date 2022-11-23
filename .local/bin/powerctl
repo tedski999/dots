@@ -3,11 +3,9 @@
 # Prompt user with system power control settings
 # Dependencies: slock bspc
 
-set choices lock suspend hibernate logout reboot shutdown
-
 test $argv[1]
 and set choice $argv[1]
-or set choice (choose -p "⏼ Power Ctrl" -u "3,4,5" $choices)
+or set choice (choose "lock" "suspend" "hibernate" "logout" "reboot" "shutdown")
 
 switch $choice
 	case "lock"; slock

@@ -31,7 +31,6 @@ if status is-login
 	set -gx BROWSER "brave"
 	set -gx MANPAGER "sh -c 'col -bx | bat -l man -p'"
 	# Program settings
-	set -gx CM_LAUNCHER "rofi"
 	set -gx SXHKD_SHELL "/bin/bash"
 	set -gx _JAVA_AWT_WM_NONREPARENTING 1
 	set -gx LIBVIRT_DEFAULT_URI "qemu:///system"

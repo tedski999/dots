@@ -18,16 +18,14 @@ super + ctrl + shift + {h,j,k,l}
 	bspc node --resize {right -20 0, top 0 20, bottom 0 -20, left 20 0}
 
 # Rotate
-super + {_,shift+} r
-	bspc node {first_ancestor,any} --rotate 90
+super + {_,shift+} {bracketleft,bracketright}
+	bspc node {first_ancestor,any}.local --rotate {90,-90}
 
-# Toggle state
-super + {t,f,g}
-	bspc node --state \~{tiled,floating,fullscreen}
-
-# Toggle sticky
-super + c
-	bspc node --flag sticky
+# States/flags
+super + {_,shift+} F1
+	{_, bspc node focused.floating --state tiled || bspc node focused.tiled --state floating || } bspc node --state ~fullscreen
+super + {_,shift+} F2
+	bspc node --flag {sticky,private}
 
 # Close / kill
 super + {_,shift+ctrl+} q
@@ -55,29 +53,12 @@ super + ctrl + {comma,period}
 	bspc node --to-desktop {prev,next}
 
 # Focus/move/throw to empty
-super + z
+super + Tab
 	bspc desktop --focus next.!occupied
-super + shift + z
+super + shift + Tab
 	bspc node --to-desktop next.!occupied --follow
-super + ctrl + z
+super + ctrl + Tab
 	bspc node --to-desktop next.!occupied
-
-
-################
-# Preselection #
-################
-
-# Direction
-super + alt + {h,j,k,l}
-	bspc node --presel-dir {west,south,north,east}
-
-# Size
-super + alt + {1-9}
-	bspc node --presel-ratio 0.{1-9}
-
-# Cancel
-super + alt + {space,Escape}
-	bspc node --presel-dir cancel
 
 
 ############
@@ -86,44 +67,40 @@ super + alt + {space,Escape}
 
 # Power
 super + {_,shift+,ctrl+,ctrl+shift+} Escape
-	powerctrl {_,lock,suspend,hibernate}
+	powerctl {_,lock,suspend,hibernate}
 
-# Windows
-super + Tab
-	rofi -show window -show-icons
-
-# Displays
-super + shift + Tab
-	displayctrl
-
-# Screenshots
-super + {_,shift+,ctrl+,shift+ctrl+} s
-	screenshot {_,selection,window,monitor}
-
-# Clipboard
-super + v
-	clipmenu -p "Copy"
+# HDMI output
+super + backslash
+	hdmictl
 
 # Notifications
 super + {_,shift+,ctrl+} grave
 	dunstctl {close,history-pop,close-all}
 
-# Spelling
-super + {slash,shift+slash}
-	spell {_,$(xclip -out -selection c)} | xclip -in -selection c
 
-# Network
-super + {_,shift+} n
-	{wifi,$TERMINAL -e nmtui}
+###############
+# Scratchpads #
+###############
 
-# Battery
-super + b
-	IFS="," read s c t <<< $(acpi -b); \
-	notify-send -i battery-100 "$s -$c" "$t"
+# Terminal
+super + {_,shift+} Return
+	scratch {toggle,snap} fish
 
-# Music
-super + {_,shift+} m
-	music {_,queue}
+# Top
+super + {_,shift+} t
+	scratch {toggle,snap} btop
+
+# Calculator
+super + {_,shift+} c
+	scratch {toggle,snap} calc
+
+# Package manager
+super + {_,shift+} u
+	scratch {toggle,snap} yay
+
+# File manager
+super + {_,shift+} f
+	scratch {toggle,snap} lf
 
 
 ####################
@@ -131,56 +108,40 @@ super + {_,shift+} m
 ####################
 
 # Program launcher
-super + space ; space
-	rofi -show run
+super + space
+	 choose -p "" $(dmenu_path) | $SHELL
 
 # Terminal
-super + Return
+super + ctrl + Return
 	$TERMINAL
-super + {shift+,ctrl+} Return
-	scratchpad {toggle,snap} fish
 
 # Text editor
-super + space ; e
+super + e
 	$TERMINAL -e $EDITOR
-super + space ; comma
-	edit $HOME/.local/bin " Open Script"
-super + space ; period
-	edit $HOME/.config " Open Config"
-super + space ; slash
-	edit $HOME/Work " Open Project"
-
-# File manager
-super + space ; f
-	$TERMINAL -e lf
-
-# Package manager
-super + space ; u
-	$TERMINAL -e yay
 
 # Web browser
-super + space ; w
+super + w
 	$BROWSER
 
 # Discord
-super + space ; d
+super + d
 	discord
 
-# Steam
-super + space ; s
-	steam
+# Music
+super + {_,shift+} m
+	musicctl {_,queue}
 
-# News
-super + space ; r
-	$TERMINAL -e newsboat
+# Screenshots
+super + {_,shift+,ctrl+,shift+ctrl+} s
+	screenshot {_,selection,window,monitor}
 
-# Top
-super + space ; t
-	$TERMINAL -e btop
+# Clipboard
+super + v
+	clipmenu -fn "Terminus (TTF):size=13" -nb "#000" -sb "#181818" -m (bspc query --monitors --monitor focused --names) -i -l 16
 
-# Calculator
-super + space ; c
-	$TERMINAL -e calc
+# Network
+super + n
+	wifictl
 
 
 ###################
@@ -212,8 +173,8 @@ super + space ; c
 
 # Media
 {_,shift+} XF86AudioPlay
-	music {playpause,stop}
+	musicctl {playpause,stop}
 {_,shift+} XF86AudioPrev
-	music {previous,backwards
+	musicctl {previous,backwards
 {_,shift+} XF86AudioNext
-	music {next,forwards}
+	musicctl {next,forwards}
