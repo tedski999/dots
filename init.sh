@@ -1,11 +1,15 @@
 #!/usr/bin/env sh
 
-hash sudo yay || {
-	2>&1 echo "Error: Please install sudo and yay first."
-	exit 1
-}
+# sudo dnf install git
+# git clone --bare https://src.h8c.de/dots .local/dots
+# git --git-dir .local/dots --work-tree . checkout msung
+# sh init.sh
 
-echo "
+set -e
+
+hash sudo rpm dnf gpg git
+
+>$HOME/.local/dots/info/exclude echo "\
 /*
 !/.config
 !/.gnupg
@@ -18,16 +22,13 @@ echo "
 !/.config/fish
 !/.config/git
 !/.config/kitty
-!/.config/neofetch
 !/.config/npm
 !/.config/nvim
 !/.config/picom
 !/.config/polybar
 !/.config/python
-!/.config/rofi
 !/.config/sxhkd
 !/.config/wget
-!/.config/zathura
 !/.config/user-dirs.dirs
 !/.config/user-dirs.locale
 
@@ -37,20 +38,47 @@ echo "
 
 /.local/*
 !/.local/bin
-!/.local/root
-" > $HOME/.local/dots/info/exclude
+!/.local/root"
 
-yay --sync --refresh --sysupgrade --needed fish exa
-# TODO:
-# acpi bat betterdiscord-installer borg brave-bin bspwm
-# btop calc clipmenu didyoumean-bin discord dunst efibootmgr exa
-# fish hsetroot jq kitty lf light mpv neofetch neovim networkmanager
-# noto-fonts noto-fonts-cjk noto-fonts-emoji nvidia nvtop otf-latin-modern
-# pacman-contrib picom pipewire pipewire-alsa pipewire-jack pipewire-pulse
-# polybar pulsemixer rofi rsync socat steam sxhkd terminus-font-ttf
-# ttf-nerd-fonts-symbols-2048-em wireplumber xautolock xclip xorg-xinit
-# xorg-xinput xorg-xset xorg-xsetroot zathura zathura-pdf-mupdf zip
+# TODO: clean boot + bootloader stuff
+# TODO: xclip needed?
+sudo sh << EOF
+set -e
 
-# TODO: symlink root configs
+>/etc/dnf/dnf.conf echo "\
+max_parallel_downloads=8
+fastestmirror=True"
 
-chsh -s /usr/bin/fish
+dnf install https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm
+dnf install https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm
+dnf install \
+	@standard @hardware-support @multimedia @printing @fonts \
+	@"C Development Tools And Libraries" @"Development Tools" \
+	@base-x xset xsetroot hsetroot xkbset xinput xdotool xrandr xautolock \
+	bspwm sxhkd picom polybar dmenu dunst terminus-fonts \
+	kitty fish kitty-fish-integration \
+	neovim exa bat btop calc ranger \
+	acpi borg clipmenu light socat jq \
+	@LibreOffice brave-browser discord mpv
+
+>/etc/systemd/system/getty@tty1.service.d/autologin.conf echo "\
+[Service]
+Type=simple
+ExecStart=
+ExecStart=-/sbin/agetty --skip-login --nonewline --noissue --noclear --autologin $(whoami) %I \$TERM
+Environment=XDG_SESSION_TYPE=x11"
+
+hostnamectl hostname msung
+chsh ski -s /usr/bin/fish
+
+EOF
+
+keyfile="key.asc"
+while [ -n "$keyfile" -a ! -r "$keyfile" ]; do
+	printf "GPG keyfile: %s/" $(pwd)
+	read keyfile
+done
+
+if [ -r "$keyfile" ] && gpg --import "$keyfile"; then
+	dots remote set-url origin git@h8c.de:dots.git
+fi
