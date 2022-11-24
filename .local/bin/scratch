@@ -1,7 +1,7 @@
 #!/usr/bin/env fish
 
 # Persistant sticky floating programs
-# Dependencies: xdotool bspc kitty
+# Dependencies: xdotool bspc alacritty
 
 not set --query argv[1]; and set argv[1] "toggle"
 not set --query argv[2]; and set argv[2] "fish"
@@ -16,11 +16,11 @@ if test $id
 	and bspc node $id --flag hidden --focus
 	test $action = "snap"
 	and bspc node $id --flag hidden=off --flag sticky=off --state tiled --focus
-	and xdotool set_window --class "kitty" $id
+	and xdotool set_window --class "alacritty" $id
 else
 	test $action = "snap"
 	or bspc rule --add "*" --one-shot sticky=on state=floating monitor=primary
-	kitty --class $class --execute $command &
+	alacritty --class $class --command $command &
 end
 
 return 0

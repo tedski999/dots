@@ -1,5 +1,9 @@
 #!/usr/bin/env sh
 
+# TODO: configure alacritty
+# TODO: bootloader and luks graphics / text
+# TODO: silent boot (agetty text, gpg-agent text)
+
 # sudo dnf install git
 # git clone --bare https://src.h8c.de/dots .local/dots
 # git --git-dir .local/dots --work-tree . checkout msung
@@ -17,16 +21,17 @@ hash sudo rpm dnf gpg git
 !/.xinitrc
 
 /.config/*
+!/.config/alacritty
 !/.config/bspwm
 !/.config/dunst
 !/.config/fish
 !/.config/git
-!/.config/kitty
 !/.config/npm
 !/.config/nvim
 !/.config/picom
 !/.config/polybar
 !/.config/python
+!/.config/ranger
 !/.config/sxhkd
 !/.config/wget
 !/.config/user-dirs.dirs
@@ -38,9 +43,21 @@ hash sudo rpm dnf gpg git
 
 /.local/*
 !/.local/bin
-!/.local/root"
+/.local/bin/*
+!/.local/bin/backupd
+!/.local/bin/choose
+!/.local/bin/choose
+!/.local/bin/hdmictl
+!/.local/bin/lock
+!/.local/bin/musicctl
+!/.local/bin/powerctl
+!/.local/bin/powerd
+!/.local/bin/progress
+!/.local/bin/scratch
+!/.local/bin/screenshot
+!/.local/bin/superhudd
+!/.local/bin/wifictl"
 
-# TODO: clean boot + bootloader stuff
 sudo sh << EOF
 set -e
 
@@ -65,19 +82,18 @@ dnf install --assumeyes \
 	@"C Development Tools And Libraries" @"Development Tools" \
 	@base-x xset xsetroot hsetroot xkbset xinput xsel xdotool xrandr xautolock \
 	bspwm sxhkd picom polybar dmenu dunst terminus-fonts \
-	kitty fish kitty-fish-integration \
-	neovim exa bat btop calc ranger \
+	alacritty fish neovim exa bat btop calc ranger \
 	acpi borgbackup light socat jq \
 	@LibreOffice brave-browser discord mpv
 
 dnf install --assumeyes libX11-devel libXfixes-devel
 git clone https://github.com/cdown/clipnotify /tmp/clipnotify
-trap 'rm -rf /tmp/clipnotify' EXIT
-make --directory /tmp/clipnotify install
 git clone https://github.com/cdown/clipmenu /tmp/clipmenu
-trap 'rm -rf /tmp/clipmenu' EXIT
+trap 'rm -rf /tmp/clipnotify /tmp/clipmenu' EXIT
+make --directory /tmp/clipnotify install
 make --directory /tmp/clipmenu install
 
+mkdir -p /etc/systemd/system/getty@tty1.service.d
 >/etc/systemd/system/getty@tty1.service.d/autologin.conf echo "\
 [Service]
 Type=simple
