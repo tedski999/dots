@@ -10,7 +10,7 @@ set repo "$HOME/Extern/Backups"
 
 if not test -e $repo
 	mkdir -p $repo
-	if not borg init --encryption none
+	if not borg init $repo --encryption none
 		notify-send -i "backup" -u "critical" -t 0 "Backup repository missing!" "Failed to create $repo"
 		return 1
 	end

@@ -25,10 +25,10 @@ end
 if status is-login
 	set -gxa PATH "$HOME/.local/bin"
 	# Default programs
-	set -gx TERMINAL "kitty"
+	set -gx TERMINAL "alacritty"
 	set -gx EDITOR "nvim"
 	set -gx VISUAL "nvim"
-	set -gx BROWSER "brave"
+	set -gx BROWSER "brave-browser"
 	set -gx MANPAGER "sh -c 'col -bx | bat -l man -p'"
 	# Program settings
 	set -gx SXHKD_SHELL "/bin/bash"

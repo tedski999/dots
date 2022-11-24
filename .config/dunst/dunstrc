@@ -13,7 +13,7 @@
     separator_color = auto
     sort = no
     idle_threshold = 60
-    font = Terminus (TTF) 14
+    font = Terminus 14
     word_wrap = yes
     show_indicators = no
     icon_path = /usr/share/icons/breeze-dark/status/22/:/usr/share/icons/breeze-dark/devices/22/:/usr/share/icons/breeze-dark/actions/22/

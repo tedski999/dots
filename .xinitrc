@@ -22,8 +22,6 @@ xrandr --auto
 # Start some programs
 picom &
 sxhkd &
-polybar main &
-polybar media &
 clipmenud &
 superhudd &
 powerd &

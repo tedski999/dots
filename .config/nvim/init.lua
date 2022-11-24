@@ -302,7 +302,7 @@ require("packer").startup({
 				ensure_installed = {
 					"angularls", "asm_lsp", "bashls", "clangd", "cmake", "cssls", "dockerls",
 					"gopls", "hls", "html", "jdtls", "jsonls", "kotlin_language_server", "lemminx", "marksman",
-					"pylsp", "rust_analyser", "sumneko_lua", "texlab", "tsserver", "vimls", "vuels"
+					"pylsp", --[["rust_analyser",]] "sumneko_lua", "texlab", "tsserver", "vimls", "vuels"
 				}
 			})
 

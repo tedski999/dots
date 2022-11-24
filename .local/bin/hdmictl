@@ -19,20 +19,24 @@ while test "$choice" != "disabled" && not bspc query --monitors $MON1
 end
 
 hsetroot -solid "#000000"
+killall polybar
 
 switch $choice
 	case "docked"
 		xrandr --output $MON0 --auto --primary --output $MON1 --auto --rotate right --left-of $MON0
 		bspc monitor $MON0 --reset-desktops 1 2 3 4 5 6 7 8 9
 		bspc monitor $MON1 --reset-desktops 0
+		polybar main &
 	case "mirrored"
 		xrandr --output $MON0 --auto --primary --output $MON1 --auto --rotate normal --same-as $MON0
 		bspc monitor $MON0 --reset-desktops 1 2 3 4 5 6 7 8 9 0
 		bspc monitor $MON1 --remove
+		polybar main &
 	case "disabled"
 		xrandr --output $MON0 --auto --primary --output $MON1 --off
 		bspc monitor $MON0 --reset-desktops 1 2 3 4 5 6 7 8 9 0
 		bspc monitor $MON1 --remove
+		polybar main &
 end
 
 bspc wm --adopt-orphans

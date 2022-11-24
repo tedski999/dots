@@ -18,7 +18,7 @@ bspc config single_monocle true
 bspc config borderless_monocle true
 bspc config gapless_monocle false
 
-bspc rule --add "*:*:Picture-in-picture" state=floating
+# bspc rule --add "*:*:Picture-in-picture" state=floating
 
 bspc subscribe node_add | while read line; do
 	xdotool search --name "Polybar" windowraise

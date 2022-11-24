@@ -100,7 +100,7 @@ super + {_,shift+} u
 
 # File manager
 super + {_,shift+} f
-	scratch {toggle,snap} lf
+	scratch {toggle,snap} ranger
 
 
 ####################
@@ -137,7 +137,7 @@ super + {_,shift+,ctrl+,shift+ctrl+} s
 
 # Clipboard
 super + v
-	clipmenu -fn "Terminus (TTF):size=13" -nb "#000" -sb "#181818" -m (bspc query --monitors --monitor focused --names) -i -l 16
+	clipmenu -fn "Terminus:size=14" -nb "#000" -sb "#181818" -m "$(bspc query --monitors --monitor focused --names)" -i -l 16
 
 # Network
 super + n
