@@ -70,9 +70,12 @@ dnf install --assumeyes \
 	acpi borgbackup light socat jq \
 	@LibreOffice brave-browser discord mpv
 
+dnf install --assumeyes libX11-devel libXfixes-devel
 git clone https://github.com/cdown/clipnotify /tmp/clipnotify
+trap 'rm -rf /tmp/clipnotify' EXIT
 make --directory /tmp/clipnotify install
 git clone https://github.com/cdown/clipmenu /tmp/clipmenu
+trap 'rm -rf /tmp/clipmenu' EXIT
 make --directory /tmp/clipmenu install
 
 >/etc/systemd/system/getty@tty1.service.d/autologin.conf echo "\
