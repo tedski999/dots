@@ -16,12 +16,12 @@ while true
 		set charge (string trim -rc % $charge)
 		set time "About $time"
 
-		if test $old_charge -gt 2 -a $charge -le 2
+		if test $old_charge -gt 3 -a $charge -le 3
 			for i in (seq 5 -1 1)
-				notify-send -i "battery-020" -u "critical" -r $id -t 0 "Battery empty!" "Hibernating in $i..."
+				notify-send -i "battery-020" -u "critical" -r $id -t 0 "Battery empty!" "Suspending in $i..."
 				sleep 1
 			end
-			systemctl hibernate
+			powerctl suspend
 		else if test $old_charge -gt 10 -a $charge -le 10
 			notify-send -i "battery-020" -u "critical" -r $id -t 0 "Battery critical!" "$time"
 		else if test $old_charge -gt 20 -a $charge -le 20

@@ -10,7 +10,6 @@ or set choice (choose "lock" "suspend" "hibernate" "logout" "reboot" "shutdown")
 switch $choice
 	case "lock"; lock
 	case "suspend"; systemctl suspend; lock
-	case "hibernate"; systemctl hibernate; lock
 	case "logout"; bspc quit
 	case "reboot"; systemctl reboot
 	case "shutdown"; systemctl poweroff
