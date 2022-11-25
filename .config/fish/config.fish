@@ -19,7 +19,7 @@ if status is-interactive
 	set -g __fish_git_prompt_color_untrackedfiles brred
 	set -g __fish_git_prompt_color_cleanstate brgreen
 	# GPG agent
-	gpg-connect-agent updatestartuptty /bye >/dev/null
+	gpg-connect-agent updatestartuptty /bye &>/dev/null
 end
 
 if status is-login
@@ -65,6 +65,6 @@ if status is-login
 	alias wget "wget --hsts-file=$XDG_DATA_HOME/wget-hsts --output-file=/dev/null"
 	# Start X server when logging in on tty1
 	if test -z "$DISPLAY" -a "$XDG_VTNR" = 1
-		exec startx -- -keeptty >/dev/null 2>&1
+		exec startx -- vt1 &>/dev/null
 	end
 end
