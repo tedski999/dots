@@ -20,7 +20,7 @@ git --git-dir $HOME/.local/dots init &>/dev/null || {
 
 # DNF configuration
 sudo mkdir -p /etc/dnf
-sudo sh -c "echo \"\
+sudo sh -c ">/etc/dnf/dnf.conf echo \"\
 [main]
 gpgcheck=True
 installonly_limit=3
@@ -61,16 +61,17 @@ while [ -z "$luks" ]; do
 	read luks
 done
 sudo mkdir -p /etc/default
-sudo sh -c "/etc/default/grub.cfg echo \"\
+sudo sh -c ">/etc/default/grub echo \"\
 GRUB_DEFAULT=0
 GRUB_TIMEOUT=0
-GRUB_CMDLINE_LINUX=\"rd.luks.uuid=$luks rd.plymouth=0 plymouth.enable=0 loglevel=3\"
+GRUB_CMDLINE_LINUX='rd.luks.uuid=$luks rd.plymouth=0 plymouth.enable=0 loglevel=3'
 GRUB_ENABLE_BLSCFG=true\""
-grub2-mkconfig -o /boot/grub2/grub.cfg
+sudo mkdir -p /boot/grub2
+sudo grub2-mkconfig -o /boot/grub2/grub.cfg
 
 # Autologin
 sudo mkdir -p /etc/systemd/system/getty@tty1.service.d
-sudo sh -c "/etc/systemd/system/getty@tty1.service.d/autologin.conf echo \"\
+sudo sh -c ">/etc/systemd/system/getty@tty1.service.d/autologin.conf echo \"\
 [Service]
 Type=simple
 ExecStart=
