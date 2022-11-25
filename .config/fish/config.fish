@@ -39,9 +39,6 @@ if status is-login
 	set -gx GPG_TTY (tty)
 	set -gx SSH_AUTH_SOCK (gpgconf --list-dirs agent-ssh-socket)
 	gpgconf --launch gpg-agent
-	# GTK Theming
-	set -gx GTK_THEME "Materia:dark"
-	set -gx GTK2_RC_FILES "/usr/share/themes/Materia-dark/gtk-2.0/gtkrc"
 	# XDG Spec
 	set -gx XDG_DATA_HOME "$HOME/.local/share"
 	set -gx XDG_CONFIG_HOME "$HOME/.config"

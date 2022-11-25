@@ -2,7 +2,6 @@
 
 # TODO: logind.conf
 # TODO: xorg, nvidia and steam fun
-# TODO: gtk and qt themes
 
 set -e
 
@@ -41,7 +40,8 @@ sudo dnf install --assumeyes \
 	@standard @hardware-support @multimedia @printing @fonts \
 	@"C Development Tools And Libraries" @"Development Tools" \
 	@base-x xset xsetroot hsetroot xkbset xinput xsel xdotool xrandr xautolock \
-	bspwm sxhkd picom polybar dmenu dunst terminus-fonts \
+	terminus-fonts materia-gtk-theme breeze-icon-theme papirus-icon-theme \
+	bspwm sxhkd picom polybar dmenu dunst \
 	alacritty fish neovim exa bat btop calc ranger \
 	acpi borgbackup light socat jq \
 	@LibreOffice brave-browser discord mpv
@@ -99,6 +99,8 @@ mkdir -p $HOME/.local/dots/info
 !/.config/dunst
 !/.config/fish
 !/.config/git
+!/.config/gtk-3.0
+!/.config/gtk-4.0
 !/.config/npm
 !/.config/nvim
 !/.config/picom
