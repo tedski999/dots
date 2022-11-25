@@ -1,18 +1,91 @@
 #!/usr/bin/env sh
 
-# TODO: configure alacritty
-# TODO: bootloader and luks graphics / text
-# TODO: silent boot (agetty text, gpg-agent text)
-
-# sudo dnf install git
-# git clone --bare https://src.h8c.de/dots .local/dots
-# git --git-dir .local/dots --work-tree . checkout msung
-# sh init.sh
+# TODO: logind.conf
+# TODO: xorg, nvidia and steam fun
+# TODO: gtk and qt themes
 
 set -e
 
-hash sudo rpm dnf gpg git
+hash rpm dnf
 
+[ $EUID -ne 0 ] && { >&2 echo "Run with root privilages"; exit 1; }
+[ "$USER" == "root" ] && { >&2 echo "Run as non-root user"; exit 1; }
+
+# GPG key import dots cloning
+hash gpg git || dnf install --assumeyes gpg git
+[ -n "$1" ] && gpg --import "$1"
+git --git-dir $HOME/.local/dots status &>/dev/null || {
+	git clone --bare git@h8c.de:dots.git $HOME/.local/dots
+	git --git-dir $HOME/.local/dots --work-tree $HOME checkout --force msung
+}
+
+# DNF configuration
+mkdir -p /etc/dnf
+>/etc/dnf/dnf.conf echo "\
+[main]
+gpgcheck=True
+installonly_limit=3
+clean_requirements_on_remove=True
+best=False
+skip_if_unavailable=True
+defaultyes=True
+max_parallel_downloads=20
+minrate=512K
+metadata_expire=604800"
+
+# Packages installation
+rpm --import https://brave-browser-rpm-release.s3.brave.com/brave-core.asc
+dnf config-manager --add-repo https://brave-browser-rpm-release.s3.brave.com/x86_64/
+dnf install --assumeyes https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm
+dnf install --assumeyes https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm
+dnf install --assumeyes \
+	@standard @hardware-support @multimedia @printing @fonts \
+	@"C Development Tools And Libraries" @"Development Tools" \
+	@base-x xset xsetroot hsetroot xkbset xinput xsel xdotool xrandr xautolock \
+	bspwm sxhkd picom polybar dmenu dunst terminus-fonts \
+	alacritty fish neovim exa bat btop calc ranger \
+	acpi borgbackup light socat jq \
+	@LibreOffice brave-browser discord mpv
+
+# Clipmenu installation
+dnf install --assumeyes libX11-devel libXfixes-devel
+git clone https://github.com/cdown/clipnotify /tmp/clipnotify
+git clone https://github.com/cdown/clipmenu /tmp/clipmenu
+trap 'rm -rf /tmp/clipnotify /tmp/clipmenu' EXIT
+make --directory /tmp/clipnotify install
+make --directory /tmp/clipmenu install
+
+# Grub configuration
+luks=$(blkid --label "fedora_fedora" | sed 's/.*\///')
+while [ -z "$luks" ]; do
+	printf "luks partition uuid: "
+	read luks
+end
+mkdir -p /etc/default
+>/etc/default/grub.cfg echo "\
+GRUB_DEFAULT=0
+GRUB_TIMEOUT=0
+GRUB_CMDLINE_LINUX='rd.luks.uuid=$luks rd.plymouth=0 plymouth.enable=0 loglevel=3'
+GRUB_ENABLE_BLSCFG=true"
+grub2-mkconfig -o /boot/grub2/grub.cfg
+
+# Autologin
+mkdir -p /etc/systemd/system/getty@tty1.service.d
+>/etc/systemd/system/getty@tty1.service.d/autologin.conf echo "\
+[Service]
+Type=simple
+ExecStart=
+ExecStart=-/sbin/agetty --skip-login --nonewline --noissue --noclear --autologin $USER %I \$TERM
+Environment=XDG_SESSION_TYPE=x11"
+
+# Hostname
+hostnamectl hostname msung
+
+# Login shell
+chsh ski -s /usr/bin/fish
+
+# Dots gitignore
+mkdir -p $HOME/.local/dots/info
 >$HOME/.local/dots/info/exclude echo "\
 /*
 !/.config
@@ -58,61 +131,4 @@ hash sudo rpm dnf gpg git
 !/.local/bin/superhudd
 !/.local/bin/wifictl"
 
-sudo sh << EOF
-set -e
-
->/etc/dnf/dnf.conf echo "\
-[main]
-gpgcheck=True
-installonly_limit=3
-clean_requirements_on_remove=True
-best=False
-skip_if_unavailable=True
-defaultyes=True
-max_parallel_downloads=20
-minrate=512K
-metadata_expire=604800"
-
-dnf install --assumeyes https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm
-dnf install --assumeyes https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm
-rpm --import https://brave-browser-rpm-release.s3.brave.com/brave-core.asc
-dnf config-manager --add-repo https://brave-browser-rpm-release.s3.brave.com/x86_64/
-dnf install --assumeyes \
-	@standard @hardware-support @multimedia @printing @fonts \
-	@"C Development Tools And Libraries" @"Development Tools" \
-	@base-x xset xsetroot hsetroot xkbset xinput xsel xdotool xrandr xautolock \
-	bspwm sxhkd picom polybar dmenu dunst terminus-fonts \
-	alacritty fish neovim exa bat btop calc ranger \
-	acpi borgbackup light socat jq \
-	@LibreOffice brave-browser discord mpv
-
-dnf install --assumeyes libX11-devel libXfixes-devel
-git clone https://github.com/cdown/clipnotify /tmp/clipnotify
-git clone https://github.com/cdown/clipmenu /tmp/clipmenu
-trap 'rm -rf /tmp/clipnotify /tmp/clipmenu' EXIT
-make --directory /tmp/clipnotify install
-make --directory /tmp/clipmenu install
-
-mkdir -p /etc/systemd/system/getty@tty1.service.d
->/etc/systemd/system/getty@tty1.service.d/autologin.conf echo "\
-[Service]
-Type=simple
-ExecStart=
-ExecStart=-/sbin/agetty --skip-login --nonewline --noissue --noclear --autologin $(whoami) %I \$TERM
-Environment=XDG_SESSION_TYPE=x11"
-
-hostnamectl hostname msung
-chsh ski -s /usr/bin/fish
-
-EOF
-
-keyfile="key.asc"
-while [ -n "$keyfile" -a ! -r "$keyfile" ]; do
-	printf "GPG keyfile: %s/" $(pwd)
-	read keyfile
-done
-
-if [ -r "$keyfile" ] && gpg --import "$keyfile"; then
-	git --git-dir ./local/dots --work-tree . remote set-url origin git@h8c.de:dots.git
-	git --git-dir ./local/dots --work-tree . remote update
-fi
+echo "Dots successfully installed. Reboot now."
