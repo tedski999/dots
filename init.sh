@@ -1,7 +1,6 @@
 #!/usr/bin/env sh
 
 # TODO: logind.conf
-# TODO: xorg, nvidia and steam fun
 
 set -e
 
@@ -38,6 +37,7 @@ sudo dnf install --assumeyes https://download1.rpmfusion.org/free/fedora/rpmfusi
 sudo dnf install --assumeyes https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm
 sudo dnf install --assumeyes \
 	@standard @hardware-support @multimedia @printing @fonts \
+	akmod-nvidia xorg-x11-drv-nvidia xorg-x11-drv-nvidia-libs \
 	@"C Development Tools And Libraries" @"Development Tools" \
 	@base-x xset xsetroot hsetroot xkbset xinput xsel xdotool xrandr xautolock \
 	terminus-fonts materia-gtk-theme breeze-icon-theme papirus-icon-theme \
@@ -64,10 +64,17 @@ sudo mkdir -p /etc/default
 sudo sh -c ">/etc/default/grub echo \"\
 GRUB_DEFAULT=0
 GRUB_TIMEOUT=0
-GRUB_CMDLINE_LINUX='rd.luks.uuid=$luks rd.plymouth=0 plymouth.enable=0 loglevel=3'
+GRUB_CMDLINE_LINUX='rd.luks.uuid=$luks nvidia-drm.modeset=1 rd.plymouth=0 plymouth.enable=0 loglevel=3'
 GRUB_ENABLE_BLSCFG=true\""
 sudo mkdir -p /boot/grub2
 sudo grub2-mkconfig -o /boot/grub2/grub.cfg
+
+# Nvidia configuration
+sudo akmods --force
+sudo dracut --force
+sudo cp -p /usr/share/X11/xorg.conf.d/nvidia.conf /etc/X11/xorg.conf.d/nvidia.conf
+# TODO: Option "PrimaryGPU" "yes"
+# https://wiki.archlinux.org/title/NVIDIA_Optimus#Use_NVIDIA_graphics_only
 
 # Autologin
 sudo mkdir -p /etc/systemd/system/getty@tty1.service.d
