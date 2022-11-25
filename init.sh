@@ -11,16 +11,16 @@ hash rpm dnf sudo
 [ $UID -eq 0 ] && { >&2 echo "Run as non-root user"; exit 1; }
 
 # GPG key import dots cloning
-hash gpg git || sudo dnf install --assumeyes gpg git
+hash gpg git &>/dev/null || sudo dnf install --assumeyes gpg git
 [ -n "$1" ] && gpg --import "$1"
-git --git-dir $HOME/.local/dots status &>/dev/null || {
+git --git-dir $HOME/.local/dots init &>/dev/null || {
 	git clone --bare git@h8c.de:dots.git $HOME/.local/dots
 	git --git-dir $HOME/.local/dots --work-tree $HOME checkout --force msung
 }
 
 # DNF configuration
 sudo mkdir -p /etc/dnf
-sudo >/etc/dnf/dnf.conf echo "\
+sudo sh -c "echo \"\
 [main]
 gpgcheck=True
 installonly_limit=3
@@ -30,7 +30,7 @@ skip_if_unavailable=True
 defaultyes=True
 max_parallel_downloads=20
 minrate=512K
-metadata_expire=604800"
+metadata_expire=604800\""
 
 # Packages installation
 sudo rpm --import https://brave-browser-rpm-release.s3.brave.com/brave-core.asc
@@ -59,23 +59,23 @@ luks=$(sudo blkid --label "fedora_fedora" | sed 's/.*\///')
 while [ -z "$luks" ]; do
 	printf "luks partition uuid: "
 	read luks
-end
+done
 sudo mkdir -p /etc/default
-sudo >/etc/default/grub.cfg echo "\
+sudo sh -c "/etc/default/grub.cfg echo \"\
 GRUB_DEFAULT=0
 GRUB_TIMEOUT=0
-GRUB_CMDLINE_LINUX='rd.luks.uuid=$luks rd.plymouth=0 plymouth.enable=0 loglevel=3'
-GRUB_ENABLE_BLSCFG=true"
+GRUB_CMDLINE_LINUX=\"rd.luks.uuid=$luks rd.plymouth=0 plymouth.enable=0 loglevel=3\"
+GRUB_ENABLE_BLSCFG=true\""
 grub2-mkconfig -o /boot/grub2/grub.cfg
 
 # Autologin
 sudo mkdir -p /etc/systemd/system/getty@tty1.service.d
-sudo >/etc/systemd/system/getty@tty1.service.d/autologin.conf echo "\
+sudo sh -c "/etc/systemd/system/getty@tty1.service.d/autologin.conf echo \"\
 [Service]
 Type=simple
 ExecStart=
 ExecStart=-/sbin/agetty --skip-login --nonewline --noissue --noclear --autologin $USER %I \$TERM
-Environment=XDG_SESSION_TYPE=x11"
+Environment=XDG_SESSION_TYPE=x11\""
 
 # Hostname
 sudo hostnamectl hostname msung
