@@ -6,13 +6,12 @@
 
 set -e
 
-hash rpm dnf
+hash rpm dnf sudo
 
-[ $EUID -ne 0 ] && { >&2 echo "Run with root privilages"; exit 1; }
-[ "$USER" == "root" ] && { >&2 echo "Run as non-root user"; exit 1; }
+[ $UID -eq 0 ] && { >&2 echo "Run as non-root user"; exit 1; }
 
 # GPG key import dots cloning
-hash gpg git || dnf install --assumeyes gpg git
+hash gpg git || sudo dnf install --assumeyes gpg git
 [ -n "$1" ] && gpg --import "$1"
 git --git-dir $HOME/.local/dots status &>/dev/null || {
 	git clone --bare git@h8c.de:dots.git $HOME/.local/dots
@@ -20,8 +19,8 @@ git --git-dir $HOME/.local/dots status &>/dev/null || {
 }
 
 # DNF configuration
-mkdir -p /etc/dnf
->/etc/dnf/dnf.conf echo "\
+sudo mkdir -p /etc/dnf
+sudo >/etc/dnf/dnf.conf echo "\
 [main]
 gpgcheck=True
 installonly_limit=3
@@ -34,11 +33,11 @@ minrate=512K
 metadata_expire=604800"
 
 # Packages installation
-rpm --import https://brave-browser-rpm-release.s3.brave.com/brave-core.asc
-dnf config-manager --add-repo https://brave-browser-rpm-release.s3.brave.com/x86_64/
-dnf install --assumeyes https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm
-dnf install --assumeyes https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm
-dnf install --assumeyes \
+sudo rpm --import https://brave-browser-rpm-release.s3.brave.com/brave-core.asc
+sudo dnf config-manager --add-repo https://brave-browser-rpm-release.s3.brave.com/x86_64/
+sudo dnf install --assumeyes https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm
+sudo dnf install --assumeyes https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm
+sudo dnf install --assumeyes \
 	@standard @hardware-support @multimedia @printing @fonts \
 	@"C Development Tools And Libraries" @"Development Tools" \
 	@base-x xset xsetroot hsetroot xkbset xinput xsel xdotool xrandr xautolock \
@@ -48,21 +47,21 @@ dnf install --assumeyes \
 	@LibreOffice brave-browser discord mpv
 
 # Clipmenu installation
-dnf install --assumeyes libX11-devel libXfixes-devel
+sudo dnf install --assumeyes libX11-devel libXfixes-devel
 git clone https://github.com/cdown/clipnotify /tmp/clipnotify
 git clone https://github.com/cdown/clipmenu /tmp/clipmenu
 trap 'rm -rf /tmp/clipnotify /tmp/clipmenu' EXIT
-make --directory /tmp/clipnotify install
-make --directory /tmp/clipmenu install
+sudo make --directory /tmp/clipnotify install
+sudo make --directory /tmp/clipmenu install
 
 # Grub configuration
-luks=$(blkid --label "fedora_fedora" | sed 's/.*\///')
+luks=$(sudo blkid --label "fedora_fedora" | sed 's/.*\///')
 while [ -z "$luks" ]; do
 	printf "luks partition uuid: "
 	read luks
 end
-mkdir -p /etc/default
->/etc/default/grub.cfg echo "\
+sudo mkdir -p /etc/default
+sudo >/etc/default/grub.cfg echo "\
 GRUB_DEFAULT=0
 GRUB_TIMEOUT=0
 GRUB_CMDLINE_LINUX='rd.luks.uuid=$luks rd.plymouth=0 plymouth.enable=0 loglevel=3'
@@ -70,8 +69,8 @@ GRUB_ENABLE_BLSCFG=true"
 grub2-mkconfig -o /boot/grub2/grub.cfg
 
 # Autologin
-mkdir -p /etc/systemd/system/getty@tty1.service.d
->/etc/systemd/system/getty@tty1.service.d/autologin.conf echo "\
+sudo mkdir -p /etc/systemd/system/getty@tty1.service.d
+sudo >/etc/systemd/system/getty@tty1.service.d/autologin.conf echo "\
 [Service]
 Type=simple
 ExecStart=
@@ -79,10 +78,10 @@ ExecStart=-/sbin/agetty --skip-login --nonewline --noissue --noclear --autologin
 Environment=XDG_SESSION_TYPE=x11"
 
 # Hostname
-hostnamectl hostname msung
+sudo hostnamectl hostname msung
 
 # Login shell
-chsh ski -s /usr/bin/fish
+sudo chsh ski -s /usr/bin/fish
 
 # Dots gitignore
 mkdir -p $HOME/.local/dots/info
