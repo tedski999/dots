@@ -4,8 +4,8 @@
 # Dependencies: xrandr bspc hsetroot
 
 # TODO: dynamic based on connected displays?
-set MON0 "eDP-1-1"
-set MON1 "HDMI-0"
+set MON0 "eDP1"
+set MON1 "HDMI-1-0"
 
 test $argv[1]
 and set choice $argv[1]
@@ -13,31 +13,30 @@ or set choice (choose "docked" "mirrored" "disabled")
 test $choice
 or return 1
 
-while test "$choice" != "disabled" && not bspc query --monitors $MON1
-	test "$(choose "retry" "cancel")" != "retry"
-	and return
-end
+# TODO: somehow check if the second monitor is connected
+# while test "$choice" != "disabled" && not bspc query --monitors $MON1
+	# test "$(choose "retry" "cancel")" != "retry"
+	# and return
+# end
 
 hsetroot -solid "#000000"
 killall polybar
 
 switch $choice
 	case "docked"
-		xrandr --output $MON0 --auto --primary --output $MON1 --auto --rotate right --left-of $MON0
-		bspc monitor $MON0 --reset-desktops 1 2 3 4 5 6 7 8 9
-		bspc monitor $MON1 --reset-desktops 0
-		polybar main &
+		xrandr --output $MON1 --auto --primary --output $MON0 --auto --above $MON1
+		bspc monitor $MON1 --reset-desktops 1 2 3 4 5 6 7 8 9
+		bspc monitor $MON0 --reset-desktops 0
 	case "mirrored"
-		xrandr --output $MON0 --auto --primary --output $MON1 --auto --rotate normal --same-as $MON0
+		xrandr --output $MON0 --auto --primary --output $MON1 --auto --same-as $MON0
 		bspc monitor $MON0 --reset-desktops 1 2 3 4 5 6 7 8 9 0
 		bspc monitor $MON1 --remove
-		polybar main &
 	case "disabled"
 		xrandr --output $MON0 --auto --primary --output $MON1 --off
 		bspc monitor $MON0 --reset-desktops 1 2 3 4 5 6 7 8 9 0
 		bspc monitor $MON1 --remove
-		polybar main &
 end
 
+polybar main &
 bspc wm --adopt-orphans
 hsetroot -solid "#0e0e0e"
