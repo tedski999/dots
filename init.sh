@@ -1,5 +1,9 @@
 #!/usr/bin/env sh
 
+# TODO: automatically use dgpu for some activities (steam, brave?)
+# TODO: multimonitor
+# TODO: musicctl
+# TODO: better screen locker, fix auto-suspend lock
 # TODO: logind.conf
 
 set -e
@@ -27,7 +31,6 @@ best=False
 skip_if_unavailable=True
 defaultyes=True
 max_parallel_downloads=20
-minrate=512K
 metadata_expire=604800\""
 
 # Packages installation
@@ -42,39 +45,34 @@ sudo dnf install --assumeyes \
 	@base-x xset xsetroot hsetroot xkbset xinput xsel xdotool xrandr xautolock \
 	terminus-fonts materia-gtk-theme breeze-icon-theme papirus-icon-theme \
 	bspwm sxhkd picom polybar dmenu dunst \
-	alacritty fish neovim exa bat btop calc ranger \
-	acpi borgbackup light socat jq \
+	alacritty fish neovim exa btop calc ranger \
+	NetworkManager-wifi acpi borgbackup light socat jq \
 	@LibreOffice brave-browser discord mpv
 
 # Clipmenu installation
 sudo dnf install --assumeyes libX11-devel libXfixes-devel
 git clone https://github.com/cdown/clipnotify /tmp/clipnotify
 git clone https://github.com/cdown/clipmenu /tmp/clipmenu
-trap 'rm -rf /tmp/clipnotify /tmp/clipmenu' EXIT
+trap "rm -rf /tmp/clipnotify /tmp/clipmenu" EXIT
 sudo make --directory /tmp/clipnotify install
 sudo make --directory /tmp/clipmenu install
 
 # Grub configuration
-luks=$(sudo blkid --label "fedora_fedora" | sed 's/.*\///')
-while [ -z "$luks" ]; do
-	printf "luks partition uuid: "
-	read luks
-done
 sudo mkdir -p /etc/default
 sudo sh -c ">/etc/default/grub echo \"\
 GRUB_DEFAULT=0
 GRUB_TIMEOUT=0
-GRUB_CMDLINE_LINUX='rd.luks.uuid=$luks nvidia-drm.modeset=1 rd.plymouth=0 plymouth.enable=0 loglevel=3'
+GRUB_GFXMODE=1920x1080x32,auto
+GRUB_GFXPAYLOAD_LINUX=keep
+GRUB_CMDLINE_LINUX='rd.driver.blacklist=nouveau modprobe.blacklist=nouveau nvidia-drm.modeset=1 rd.plymouth=0 plymouth.enable=0 loglevel=3'
 GRUB_ENABLE_BLSCFG=true\""
 sudo mkdir -p /boot/grub2
 sudo grub2-mkconfig -o /boot/grub2/grub.cfg
 
-# Nvidia configuration
-sudo akmods --force
-sudo dracut --force
-sudo cp -p /usr/share/X11/xorg.conf.d/nvidia.conf /etc/X11/xorg.conf.d/nvidia.conf
-# TODO: Option "PrimaryGPU" "yes"
-# https://wiki.archlinux.org/title/NVIDIA_Optimus#Use_NVIDIA_graphics_only
+# Dracut configuration - Fixes i915 resolution changes at boot affecting LUKS password prompt
+sudo mkdir -p /etc/dracut.conf.d
+sudo sh -c ">/etc/dracut.conf.d/early_kms.conf echo \"force_drivers+=' i915 '\""
+sudo dracut --force --regenerate-all
 
 # Autologin
 sudo mkdir -p /etc/systemd/system/getty@tty1.service.d
@@ -85,11 +83,26 @@ ExecStart=
 ExecStart=-/sbin/agetty --skip-login --nonewline --noissue --noclear --autologin $USER %I \$TERM
 Environment=XDG_SESSION_TYPE=x11\""
 
+# Xorg configuration
+sudo sh -c ">/etc/X11/xorg.conf echo \"\
+Section \\\"Device\\\"
+	Identifier \\\"intel\\\"
+	Driver \\\"intel\\\"
+	Option \\\"TearFree\\\" \\\"true\\\"
+EndSection
+Section \\\"Device\\\"
+	Identifier \\\"nvidia\\\"
+	Driver \\\"nvidia\\\"
+EndSection\""
+
 # Hostname
 sudo hostnamectl hostname msung
 
 # Login shell
 sudo chsh ski -s /usr/bin/fish
+
+# fstab
+sudo sh -c ">>/etc/fstab echo \"UUID=69da1754-4437-4d78-8007-c33692be8348 /home/ski/Extern ext4 rw,relatime 0 0\""
 
 # Dots gitignore
 mkdir -p $HOME/.local/dots/info
