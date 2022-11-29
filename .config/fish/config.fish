@@ -20,7 +20,7 @@ if status is-interactive
 	set -g __fish_git_prompt_color_cleanstate brgreen
 	# GPG agent
 	set -gx GPG_TTY (tty)
-	#gpg-connect-agent updatestartuptty /bye &>/dev/null
+	gpg-connect-agent updatestartuptty /bye &>/dev/null
 end
 
 if status is-login
