@@ -129,6 +129,7 @@ mkdir -p $HOME/.local/dots/info
 !/.config/ranger
 !/.config/sxhkd
 !/.config/wget
+!/.config/mimeapps.list
 !/.config/user-dirs.dirs
 !/.config/user-dirs.locale
 
