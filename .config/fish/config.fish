@@ -19,7 +19,8 @@ if status is-interactive
 	set -g __fish_git_prompt_color_untrackedfiles brred
 	set -g __fish_git_prompt_color_cleanstate brgreen
 	# GPG agent
-	gpg-connect-agent updatestartuptty /bye &>/dev/null
+	set -gx GPG_TTY (tty)
+	#gpg-connect-agent updatestartuptty /bye &>/dev/null
 end
 
 if status is-login
@@ -29,14 +30,13 @@ if status is-login
 	set -gx EDITOR "nvim"
 	set -gx VISUAL "nvim"
 	set -gx BROWSER "brave-browser"
-	set -gx MANPAGER "sh -c 'col -bx | bat -l man -p'"
+	set -gx MANPAGER "less --long-prompt --ignore-case"
 	# Program settings
 	set -gx SXHKD_SHELL "/bin/bash"
 	set -gx _JAVA_AWT_WM_NONREPARENTING 1
 	set -gx LIBVIRT_DEFAULT_URI "qemu:///system"
 	set -gx DEBUGINFOD_URLS "https://debuginfod.archlinux.org"
 	# GPG agent
-	set -gx GPG_TTY (tty)
 	set -gx SSH_AUTH_SOCK (gpgconf --list-dirs agent-ssh-socket)
 	gpgconf --launch gpg-agent
 	# XDG Spec

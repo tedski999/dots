@@ -297,14 +297,7 @@ require("packer").startup({
 					icons = {package_installed = "-", package_pending = "-", package_uninstalled = "-"}
 				}
 			})
-
-			require("mason-lspconfig").setup({
-				ensure_installed = {
-					"angularls", "asm_lsp", "bashls", "clangd", "cmake", "cssls", "dockerls",
-					"gopls", "hls", "html", "jdtls", "jsonls", "kotlin_language_server", "lemminx", "marksman",
-					"pylsp", --[["rust_analyser",]] "sumneko_lua", "texlab", "tsserver", "vimls", "vuels"
-				}
-			})
+			require("mason-lspconfig").setup()
 
 			local function on_attach(client, bufnr)
 				if client.server_capabilities.document_highlight then
