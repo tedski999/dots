@@ -3,6 +3,27 @@
 # Music controller
 # Dependencies: mpv socat jq
 
+echo
+return
+
+if test "$(mpvipc get_property pause | jq '.data')" != "false"
+	echo ""
+else if test (mpvipc get_property idle-active | jq '.data') = "true"
+	echo ""
+else
+	set metadata (mpvipc get_property metadata | jq -r '.data | "\(.title) - \(.album) - \(.artist)"')
+	set timepos (mpvipc get_property time-pos | jq .data)
+	set tsec (string pad --char 0 --width 2 (math --scale 0 "$timepos % 60"))
+	set tmin (math --scale 0 "$timepos / 60")
+	set duration (mpvipc get_property duration | jq .data)
+	set dsec (string pad --char 0 --width 2 (math --scale 0 "$duration % 60"))
+	set dmin (math --scale 0 "$duration / 60")
+	set time "$tmin:$tsec/$dmin:$dsec"
+	echo "  $metadata [$time] "
+end
+
+return
+
 # TODO: policy on when to trim is all over the place - only trim what youre going to show the user!
 # TODO: generalise select state so it simply accepts and returns a list
 # TODO: add select to queue

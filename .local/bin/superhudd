@@ -1,7 +1,7 @@
 #!/usr/bin/env fish
 
 # Only show Polybar instances while the Super key is held down
-# Dependencies: xinput
+# Dependencies: xinput polybar
 
 xinput test-xi2 --root 3 | while read --line event _ detail _ _
 	if string match -q "*133" $detail

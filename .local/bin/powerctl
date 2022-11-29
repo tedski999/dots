@@ -5,7 +5,7 @@
 
 test $argv[1]
 and set choice $argv[1]
-or set choice (choose "lock" "suspend" "hibernate" "logout" "reboot" "shutdown")
+or set choice (choose "lock" "suspend" "logout" "reboot" "shutdown")
 
 switch $choice
 	case "lock"; lock
