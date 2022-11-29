@@ -9,14 +9,15 @@ set action $argv[1]
 set command $argv[2]
 
 set name "scratchpad $command"
-set id (xdotool search --classname $name)
+set id (xdotool search --classname "^$name\$")
 
 if test $id
 	test $action = "toggle"
 	and bspc node $id --flag hidden --focus
 	test $action = "snap"
-	and bspc node $id --flag hidden=off --flag sticky=off --state tiled --focus
+	and bspc node $id --flag hidden=off --flag sticky=off --focus
 	and xdotool set_window --classname "Alacritty" $id
+	and bspc node $id --state tiled
 else
 	test $action = "snap"
 	or bspc rule --add "*" --one-shot sticky=on state=floating monitor=primary
