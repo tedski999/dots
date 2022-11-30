@@ -8,8 +8,8 @@ and set choice $argv[1]
 or set choice (choose "lock" "suspend" "logout" "reboot" "shutdown")
 
 switch $choice
-	case "lock"; lock
-	case "suspend"; systemctl suspend; lock
+	case "lock"; slock
+	case "suspend"; slock &; systemctl suspend;
 	case "logout"; bspc quit
 	case "reboot"; systemctl reboot
 	case "shutdown"; systemctl poweroff

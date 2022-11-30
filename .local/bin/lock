@@ -1,6 +1,0 @@
-#!/usr/bin/env fish
-
-# "Lock" a screen by going to tty7
-# Dependencies: xdotool
-
-xdotool key ctrl+alt+F7

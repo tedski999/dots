@@ -1,11 +1,5 @@
 #!/usr/bin/env sh
 
-# TODO: automatically use dgpu for some activities (steam, brave?)
-# TODO: multimonitor
-# TODO: musicctl
-# TODO: better screen locker, fix auto-suspend lock
-# TODO: logind.conf
-
 set -e
 
 hash rpm dnf sudo
@@ -51,11 +45,18 @@ sudo dnf install --assumeyes \
 
 # Clipmenu installation
 sudo dnf install --assumeyes libX11-devel libXfixes-devel
-git clone https://github.com/cdown/clipnotify /tmp/clipnotify
-git clone https://github.com/cdown/clipmenu /tmp/clipmenu
-trap "rm -rf /tmp/clipnotify /tmp/clipmenu" EXIT
-sudo make --directory /tmp/clipnotify install
-sudo make --directory /tmp/clipmenu install
+clipnotify=$(mktemp -d)
+git clone https://github.com/cdown/clipnotify $clipnotify
+sudo make --directory $clipnotify install
+clipmenu=$(mktemp -d)
+git clone https://github.com/cdown/clipmenu $clipmenu
+sudo make --directory $clipmenu install
+
+# Slock installation
+sudo dnf install --assumeyes imlib2-devel
+slock=$(mktemp -d)
+git clone https://src.h8c.de/slock $slock
+sudo make --directory $slock install
 
 # Grub configuration
 sudo mkdir -p /etc/default
@@ -73,6 +74,18 @@ sudo grub2-mkconfig -o /boot/grub2/grub.cfg
 sudo mkdir -p /etc/dracut.conf.d
 sudo sh -c ">/etc/dracut.conf.d/early_kms.conf echo \"force_drivers+=' i915 '\""
 sudo dracut --force --regenerate-all
+
+# Power control
+sudo mkdir -p /etc/systemd
+sudo sh -c ">/etc/systemd/logind.conf echo \"\
+[Login]
+HandlePowerKey=suspend
+HandleRebootKey=suspend
+HandleSuspendKey=suspend
+HandleHibernateKey=suspend
+HandleLidSwitch=ignore
+HandleLidSwitchExternalPower=ignore
+HandleLidSwitchDocked=ignore\""
 
 # Autologin
 sudo mkdir -p /etc/systemd/system/getty@tty1.service.d
