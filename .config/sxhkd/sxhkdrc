@@ -125,7 +125,7 @@ super + w
 
 # Discord
 super + d
-	discord
+	Discord
 
 # Music
 super + {_,shift+} m
