@@ -23,7 +23,7 @@ superhudd &
 powerd &
 backupd &
 xautolock \
-	-detectsleep -time 10 -locker "lock" -killtime 20 -killer "systemctl suspend" \
+	-detectsleep -time 10 -locker "slock" -killtime 20 -killer "systemctl suspend" \
 	-notify 10 -notifier "notify-send -a xautolock -t 7000 -i lock 'Idle Warning' 'Locking screen in 10 seconds...'" \
 	-corners "----" -cornersize 5 &
 
