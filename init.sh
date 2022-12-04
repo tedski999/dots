@@ -38,9 +38,9 @@ sudo dnf install --assumeyes \
 	@"C Development Tools And Libraries" @"Development Tools" \
 	@base-x xset xsetroot hsetroot xkbset xinput xsel xdotool xrandr xautolock \
 	terminus-fonts materia-gtk-theme breeze-icon-theme papirus-icon-theme \
-	bspwm sxhkd picom polybar dmenu dunst \
+	bspwm sxhkd picom polybar dmenu dunst mpd mpc \
 	alacritty fish neovim exa btop calc ranger \
-	NetworkManager-wifi acpi borgbackup light socat jq \
+	NetworkManager-wifi acpi borgbackup light jq \
 	@LibreOffice brave-browser discord mpv
 
 # Clipmenu installation
@@ -134,6 +134,7 @@ mkdir -p $HOME/.local/dots/info
 !/.config/git
 !/.config/gtk-3.0
 !/.config/gtk-4.0
+!/.config/mpd
 !/.config/npm
 !/.config/nvim
 !/.config/picom

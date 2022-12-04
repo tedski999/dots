@@ -128,8 +128,8 @@ super + d
 	Discord
 
 # Music
-super + {_,shift+} m
-	musicctl {_,queue}
+super + m
+	musicctl
 
 # Screenshots
 super + {_,shift+,ctrl+,shift+ctrl+} s
@@ -173,8 +173,8 @@ super + n
 
 # Media
 {_,shift+} XF86AudioPlay
-	musicctl {playpause,stop}
+	mpc {toggle,stop}
 {_,shift+} XF86AudioPrev
-	musicctl {previous,backwards
+	mpc {prev,seek -5}; mpc toggle; mpc toggle
 {_,shift+} XF86AudioNext
-	musicctl {next,forwards}
+	mpc {next,seek +5}; mpc toggle; mpc toggle

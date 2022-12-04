@@ -1,286 +1,56 @@
 #!/usr/bin/env fish
 
 # Music controller
-# Dependencies: mpv socat jq
+# Dependencies: mpd mpc
 
-echo
-return
-
-if test "$(mpvipc get_property pause | jq '.data')" != "false"
-	echo ""
-else if test (mpvipc get_property idle-active | jq '.data') = "true"
-	echo ""
-else
-	set metadata (mpvipc get_property metadata | jq -r '.data | "\(.title) - \(.album) - \(.artist)"')
-	set timepos (mpvipc get_property time-pos | jq .data)
-	set tsec (string pad --char 0 --width 2 (math --scale 0 "$timepos % 60"))
-	set tmin (math --scale 0 "$timepos / 60")
-	set duration (mpvipc get_property duration | jq .data)
-	set dsec (string pad --char 0 --width 2 (math --scale 0 "$duration % 60"))
-	set dmin (math --scale 0 "$duration / 60")
-	set time "$tmin:$tsec/$dmin:$dsec"
-	echo "  $metadata [$time] "
-end
-
-return
-
-# TODO: policy on when to trim is all over the place - only trim what youre going to show the user!
-# TODO: generalise select state so it simply accepts and returns a list
-# TODO: add select to queue
-
-# TODO: in need of a cleanup (reduce expectations of app)
-
-set mpvsoc /tmp/mpvsoc
-set root "$HOME/Extern/Music"
-set rootlen (math "$(string length $root) + 2")
-set view 1
-set views "Artists" "Albums" "Tracks" "Playlists"
-set shuffle 1
-set shuffles "No" "Albums" "Full"
-
-#=============#
-# MPV Control #
-#=============#
-
-function mpvipc
-	begin
-		printf '{"command":['
-		printf '"%s",' $argv
-		printf ']}\n'
-	end | socat - $mpvsoc
-end
-
-function playpause
-	test (mpvipc get_property idle-active | jq -r '.data') = "true"
-	and mpvipc playlist-play-index 0
-	or mpvipc cycle pause
-end
-
-function nexttrack
-	test (mpvipc get_property idle-active | jq -r '.data') = "true"
-	and mpvipc playlist-play-index 0
-	or mpvipc playlist-next force
-end
-
-function previoustrack
-	test (mpvipc get_property idle-active | jq -r '.data') = "true"
-	and set pos (mpvipc get_property playlist-count | jq -r '.data')
-	and mpvipc playlist-play-index (math "$pos - 1")
-	or mpvipc playlist-prev force
-end
-
-function seek --argument-names amount
-	mpvipc seek $amount
-end
-
-function stop
-	mpvipc playlist-play-index 0
-	mpvipc cycle pause
-	mpvipc stop
-end
-
-function enqueue
-	set end (mpvipc get_property playlist-count | jq -r '.data')
-	loadfiles $argv
-	test (mpvipc get_property idle-active | jq -r '.data') = "true"
-	and mpvipc playlist-play-index $end
-end
-
-function playnext
-	set pos (mpvipc get_property playlist-pos | jq -r '.data')
-	set end (mpvipc get_property playlist-count | jq -r '.data')
-	loadfiles $argv
-	if test $pos -eq -1
-		mpvipc playlist-play-index $end
-	else
-		for file in $argv
-			set pos (math "$pos + 1")
-			mpvipc playlist-move $end $pos
-			set end (math "$end + 1")
-		end
-	end
-end
-
-function playnow
-	mpvipc stop
-	loadfiles $argv
-	mpvipc playlist-play-index 0
-end
-
-#==================#
-# Playback Control #
-#==================#
-
-function control
-	while true
-		switch (choose -p "Control" "Play/Pause" "Next Track" "Previous Track" "Stop Music")
-			case ""; break
-			case "Play/Pause"; playpause
-			case "Next Track"; nexttrack
-			case "Previous Track"; previoustrack
-			case "Stop Music"; stop
-		end
-	end
-end
-
-#===============#
-# Queue Control #
-#===============#
-
-# TODO
-function editqueue
-	set queue (mpvipc get_property playlist | jq -r '.data[] | "\(.current) \(.filename)"')
-	while true
-		set choice (choose -p "Queue" $queue)
-		switch $choice
-			case ""; break
-			case "*"
-				set prompt $choice
-				set choice (choose -p $prompt "Jump To" "Move To" "Remove")
-		end
-	end
-end
-
-#===========#
-# Utilities #
-#===========#
-
-function loadfiles
-	set list (mktemp --tmpdir mpv.XXXXXXXX.m3u)
-	printf "%s\n" $argv > $list
-	mpvipc loadlist $list append
-end
-
-function shuffle
-	switch $shuffles[$shuffle]
-		case "No"; printf "%s\n" $argv
-		case "Albums"; dirname $argv | uniq | shuf
-		case "Full"; shuf --echo $argv
-	end
-end
-
-function generateview --argument-names dir view
-	set dirlen (math "$(string length $dir) + 2")
-	switch $views[$view]
-		case "Artists"; find -O3 $dir -mindepth 1 -maxdepth 1 -type d
-		case "Albums"; find -O3 $dir -mindepth 2 -type d
-		case "Tracks"; find -O3 $dir -mindepth 1 -type f -iname "*.mp3"
-		case "Playlists"; find -O3 $dir -mindepth 1 -type f -iname "*.m3u"
-		case "*"; find -O3 $dir -mindepth 1 -maxdepth 1 \( -type d \) -o \( -type f \( -iname "*.mp3" -o -iname "*.m3u" \) \)
-	end | string sub --start $dirlen | sort
-end
-
-#============#
-# GUI States #
-#============#
-
-function handleselection
-	test (count $argv) -eq 0
-	and return 0
-	set files (find -O3 $argv -type f -iname "*.mp3" | sort --unique)
-	while true
-		set shuffled (shuffle $files)
-		set trimmed (string sub --start $rootlen $shuffled)
-		set prompt "$(count $files) tracks"
-		switch (choose -p $prompt "Queue All" "Play All Next" "Play All Now" "$shuffles[$shuffle] Shuffle" $trimmed)
-			case ""; break
-			case "Queue All"; enqueue $shuffled; break
-			case "Play All Next"; playnext $shuffled; break
-			case "Play All Now"; playnow $shuffled; break
-			case "* Shuffle"; set shuffle (math "$shuffle % $(count $shuffles) + 1")
-		end
-	end
-end
-
-function handlefile --argument-names file
-	test -d $file
-	and browse $file
-	and return 0
-	set trimmed (string sub --start $rootlen $file)
-	set prompt $trimmed
-	switch (choose -p $prompt "Queue" "Play Next" "Play Now")
-		case "Queue"; enqueue $file
-		case "Play Next"; playnext $file
-		case "Play Now"; playnow $file
-	end
-end
-
-function select --argument-names dir view
-	set count 0
-	set choices (generateview $dir $view)
-	while true
-		switch (choose -p "$count selected" "All" $choices)
-			case ""; break
-			case "All"; printf "$dir/%s\n" $choices; break
-			case "*"; echo $dir/$choice
-		end
-		set count (math "$count + 1")
-		for i in (seq (count $choices))
-			test $choices[$i] = $choice
-			and break
-		end
-		set --erase choices[$i]
-	end
-end
-
-function browse --argument-names dir
-	while true
-		set prompt (string sub --start $rootlen $dir)
-		set choice (choose -p $prompt "Select" (generateview $dir))
-		switch $choice
-			case ""; break
-			case "Select"; handleselection (select $dir)
-			case "*"; handlefile $dir/$choice
-		end
-	end
-end
+set root "$HOME/Extern/Music" # TODO: dynamically determine this from xdg or mpd/mpc
 
 function library
+	set tracks (mpc listall)
+	set albums (dirname $tracks | uniq)
+	set artists (dirname $albums | uniq)
+	set playlists (find -O3 $root -type f -iname "*.m3u" | string sub --start (math "$(string length $root) + 2"))
+	set shuffle 1; set shuffles "none" "tracks" "albums"
+	set action 1; set actions "add" "insert"
+
+	while not set --query selection
+		set choice (choose "<shuffle: $shuffles[$shuffle]>" "<action: $actions[$action]>" "<all tracks>" $playlists $artists $albums $tracks)
+		switch $choice
+			case ""; return
+			case "<shuffle*>"; set shuffle (math "$shuffle % $(count $shuffles) + 1")
+			case "<action*>"; set action (math "$action % $(count $actions) + 1")
+			case "<all tracks>"; set selection $tracks
+			case "*.mp3"; set selection $choice
+			case "*.m3u"; set selection (grep ".mp3\$" $root/$choice)
+			case "*"; set selection (mpc listall $choice)
+		end
+	end
+
+	switch $shuffles[$shuffle]
+		case "none"; set selection (printf "%s\n" $selection)
+		case "tracks"; set selection (printf "%s\n" $selection | shuf)
+		case "albums"; set selection (mpc listall (dirname $selection | uniq | shuf))
+	end
+
+	mpc $actions[$action] $selection
+end
+
+function queue
+	set action 1; set actions "play" "del"
+
 	while true
-		set choice (choose -p "Library" "$views[$view] View" "Select" (generateview $root $view))
+		set pos (mpc --format "%position%" current)
+		set queue (mpc --format "%position%. %artist% - %album% - %title% #[%time%#]" playlist | sed "s/^$pos\. .*/& <--/")
+		set choice (choose "<add tracks>" "<clear queue>" "<action: $actions[$action]>" $queue)
 		switch $choice
 			case ""; break
-			case "* View"; set view (math "$view % $(count $views) + 1")
-			case "Select"; handleselection (select $root $view)
-			case "*"; handlefile $root/$choice
+			case "<add tracks>"; library
+			case "<clear queue>"; mpc stop; mpc clear
+			case "<action*>"; set action (math "$action % $(count $actions) + 1")
+			case "*"; mpc $actions[$action] (echo $choice | cut -f 1 -d ".")
+				mpc toggle; mpc toggle # TODO: this is a workaround, maybe caused by config error?
 		end
 	end
 end
 
-#=============#
-# Entrypoints #
-#=============#
-
-function gui
-	while true
-		switch (choose -p "Music" "Library" "Control" "Queue")
-			case ""; break
-			case "Library"; library
-			case "Control"; control
-			case "Queue"; editqueue
-		end
-	end
-end
-
-function cli --argument-names arg
-	switch $arg
-		case "playpause"; playpause
-		case "next"; nexttrack
-		case "previous"; previoustrack
-		case "forwards"; seek 5
-		case "backwards"; seek -5
-		case "stop"; stop
-		case "queue"; editqueue
-		case "*"; return 1
-	end
-end
-
-test -S $mpvsoc
-and mpvipc get_property idle-active
-or mpv --idle --no-terminal --no-video --input-ipc-server=$mpvsoc &
-
-switch (count $argv)
-	case 0; gui
-	case 1; cli $argv[1]
-	case "*"; return 1
-end
+queue
