@@ -9,7 +9,7 @@ set action $argv[1]
 set command $argv[2]
 
 set name "scratchpad $command"
-set id (xdotool search --classname "^$name\$")
+set id (xdotool search --classname "^$name\$" | head -1)
 
 if test $id
 	test $action = "toggle"
@@ -20,6 +20,7 @@ if test $id
 	and bspc node $id --state tiled
 else
 	test $action = "snap"
+	and set name "Alacritty"
 	or bspc rule --add "*" --one-shot sticky=on state=floating monitor=primary
 	alacritty --class $name --command $command &
 end
