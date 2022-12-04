@@ -23,8 +23,8 @@ superhudd &
 powerd &
 backupd &
 xautolock \
-	-detectsleep -time 10 -locker "slock" -killtime 20 -killer "systemctl suspend" \
-	-notify 10 -notifier "notify-send -a xautolock -t 7000 -i lock 'Idle Warning' 'Locking screen in 10 seconds...'" \
+	-detectsleep -time 10 -locker "powerctl lock" -killtime 20 -killer "powerctl suspend" \
+	-notify 10 -notifier "notify-send -t 7000 -i lock 'Idle Warning' 'Locking screen in 10 seconds...'" \
 	-corners "----" -cornersize 5 &
 
 exec bspwm
