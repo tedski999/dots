@@ -5,12 +5,12 @@
 
 test $argv[1]
 and set choice $argv[1]
-or set choice (choose "rescan networks" (TERM="" nmcli --fields bars,ssid,bssid,security,in-use --mode tabular device wifi list --rescan no | sed -n 1!p))
+or set choice (choose "<rescan networks>" (TERM="" nmcli --fields bars,ssid,bssid,security,in-use --mode tabular device wifi list --rescan no | sed -n 1!p))
 
 switch $choice
 	case ""
 		return
-	case "rescan*"
+	case "<rescan networks>"
 		nmcli device wifi rescan
 		sleep 0.25
 		eval (status filename)
