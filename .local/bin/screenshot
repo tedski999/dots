@@ -8,21 +8,16 @@ and sleep 0.25
 and set choice $argv[1]
 or set choice (choose "selection" "window" "monitor" "everything")
 
-set img (mktemp --tmpdir ss.XXXXXXXX.png)
+set img (mktemp --tmpdir ssXXXXX.png)
+printf $img | xclip -i -selection c
 
 switch $choice
-	case "selection"
-		import png:- | tee $img | xclip -i -selection c -t image/png
-	case "window"
-		set window (bspc query --nodes --node focused)
-		import -window $window png:- | tee $img | xclip -i -selection c -t image/png
-	case "monitor"
-		set geometry (bspc query --tree --monitor | jq -r '.rectangle | "\(.width)x\(.height)+\(.x)+\(.y)"')
-		import -window root -crop $geometry png:- | tee $img | xclip -i -selection c -t image/png
-	case "everything"
-		import -window root png:- | tee $img | xclip -i -selection c -t image/png
-	case "*"
-		return 1
+	case "selection";  import -silent $img
+	case "window";     import -silent -window (bspc query --nodes --node focused) $img
+	case "monitor";    import -silent -window root -crop (bspc query --tree --monitor | jq -r '.rectangle | "\(.width)x\(.height)+\(.x)+\(.y)"') $img
+	case "everything"; import -silent -window root $img
+	case "*"; return 1
 end
 
+xclip -selection c -t image/png $img
 notify-send --icon $img "Screenshot captured to clipboard!" "Saved to $img"
