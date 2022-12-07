@@ -36,12 +36,12 @@ sudo dnf install --assumeyes \
 	@standard @hardware-support @multimedia @printing @fonts \
 	akmod-nvidia xorg-x11-drv-nvidia xorg-x11-drv-nvidia-libs \
 	@"C Development Tools And Libraries" @"Development Tools" \
-	@base-x xset xsetroot hsetroot xkbset xinput xsel xdotool xrandr xautolock \
+	@base-x xset xsetroot hsetroot xkbset xinput xsel xclip xdotool xrandr xautolock \
 	terminus-fonts materia-gtk-theme breeze-icon-theme papirus-icon-theme \
 	bspwm sxhkd picom polybar dmenu dunst mpd mpc \
 	alacritty fish neovim exa btop calc ranger \
 	NetworkManager-wifi acpi borgbackup light jq \
-	@LibreOffice brave-browser discord mpv
+	@LibreOffice brave-browser discord mpv sxiv
 
 # Clipmenu installation
 sudo dnf install --assumeyes libX11-devel libXfixes-devel
