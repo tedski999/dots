@@ -61,89 +61,6 @@ super + ctrl + Tab
 	bspc node --to-desktop next.!occupied
 
 
-############
-# Controls #
-############
-
-# Power
-super + {_,shift+,ctrl+,ctrl+shift+} Escape
-	powerctl {_,lock,suspend,hibernate}
-
-# HDMI output
-super + backslash
-	hdmictl
-
-# Notifications
-super + {_,shift+,ctrl+} grave
-	dunstctl {close,history-pop,close-all}
-
-
-###############
-# Scratchpads #
-###############
-
-# Terminal
-super + {_,shift+} Return
-	scratch {toggle,snap} fish
-
-# Top
-super + {_,shift+} t
-	scratch {toggle,snap} btop
-
-# Calculator
-super + {_,shift+} c
-	scratch {toggle,snap} calc
-
-# Package manager
-super + {_,shift+} u
-	scratch {toggle,snap} sudo dnf upgrade
-
-# File manager
-super + {_,shift+} f
-	scratch {toggle,snap} ranger
-
-
-####################
-# Program Launcher #
-####################
-
-# Program launcher
-super + space
-	 choose -p "" $(dmenu_path) | $SHELL
-
-# Terminal
-super + ctrl + Return
-	$TERMINAL
-
-# Text editor
-super + e
-	$TERMINAL -e $EDITOR
-
-# Web browser
-super + w
-	$BROWSER
-
-# Discord
-super + d
-	Discord
-
-# Music
-super + m
-	musicctl
-
-# Screenshots
-super + {_,shift+,ctrl+,shift+ctrl+} s
-	screenshot {_,selection,window,monitor}
-
-# Clipboard
-super + v
-	clipmenu -fn "Terminus:size=12" -nb "#000" -sb "#181818" -m "$(bspc query --monitors --monitor focused --names)" -i -l 16
-
-# Network
-super + n
-	wifictl
-
-
 ###################
 # Functional Keys #
 ###################
@@ -178,3 +95,71 @@ super + n
 	mpc {prev,seek -5}; mpc toggle; mpc toggle
 {_,shift+} XF86AudioNext
 	mpc {next,seek +5}; mpc toggle; mpc toggle
+
+###################
+# Everything Else #
+###################
+
+# Program launcher
+super + space
+	 choose $(dmenu_path) | $SHELL
+
+# Terminal
+super + Return
+	$TERMINAL
+
+# Power control
+super + {_,shift+,ctrl+,ctrl+shift+} Escape
+	powerctl {_,lock,suspend,hibernate}
+
+# HDMI output
+super + backslash
+	hdmictl
+
+# Notifications
+super + {_,shift+,ctrl+} grave
+	dunstctl {close,history-pop,close-all}
+
+# Screenshots
+super + {_,shift+,ctrl+,shift+ctrl+} s
+	screenshot {_,selection,window,monitor}
+
+# Clipboard manager
+super + v
+	clipmenu -fn "Terminus:size=12" -nb "#000" -sb "#181818" -m "$(bspc query --monitors --monitor focused --names)" -i -l 16
+
+# Music
+super + m
+	musicctl
+
+# Network
+super + n
+	wifictl
+
+# Text editor
+super + e
+	$TERMINAL -e $EDITOR
+
+# Process viewer
+super + t
+	$TERMINAL -e btop
+
+# Calculator
+super + c
+	$TERMINAL -e calc
+
+# Package manager
+super + u
+	$TERMINAL -e sudo dnf upgrade
+
+# File manager
+super + f
+	$TERMINAL -e ranger
+
+# Web browser
+super + w
+	$BROWSER
+
+# Discord
+super + d
+	Discord
