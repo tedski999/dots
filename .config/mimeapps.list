@@ -13,15 +13,15 @@ x-scheme-handler/mailto=brave-browser.desktop
 application/xhtml+xml=brave-browser.desktop
 application/pdf=brave-browser.desktop
 # Images
-image/bmp=brave-browser.desktop
-image/gif=brave-browser.desktop
-image/jpeg=brave-browser.desktop
-image/jpg=brave-browser.desktop
-image/pjpeg=brave-browser.desktop
-image/png=brave-browser.desktop
-image/tiff=brave-browser.desktop
-image/svg+xml=brave-browser.desktop
-image/svg+xml-compressed=brave-browser.desktop
+image/bmp=sxiv.desktop
+image/gif=sxiv.desktop
+image/jpeg=sxiv.desktop
+image/jpg=sxiv.desktop
+image/pjpeg=sxiv.desktop
+image/png=sxiv.desktop
+image/tiff=sxiv.desktop
+image/svg+xml=sxiv.desktop
+image/svg+xml-compressed=sxiv.desktop
 # Audio
 audio/3gpp=brave-browser.desktop
 audio/3gpp2=brave-browser.desktop
