@@ -16,6 +16,7 @@ xinput --set-prop "DELL086F:00 06CB:7E92 Touchpad" "libinput Tapping Enabled" 1
 hsetroot -solid "#000000"
 
 # Start some programs
+mpd &
 picom &
 sxhkd &
 clipmenud &

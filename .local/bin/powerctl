@@ -9,7 +9,7 @@ or set choice (choose "lock" "suspend" "logout" "reboot" "shutdown")
 
 switch $choice
 	case "lock"; slock
-	case "suspend"; slock &; systemctl suspend;
+	case "suspend"; slock systemctl suspend -i
 	case "logout"; bspc quit
 	case "reboot"; systemctl reboot
 	case "shutdown"; systemctl poweroff

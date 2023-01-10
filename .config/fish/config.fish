@@ -19,12 +19,13 @@ if status is-interactive
 	set -g __fish_git_prompt_color_untrackedfiles brred
 	set -g __fish_git_prompt_color_cleanstate brgreen
 	# GPG agent
+	# TODO: this is still wack when using mutliple terminal emulators
 	set -gx GPG_TTY (tty)
 	gpg-connect-agent updatestartuptty /bye &>/dev/null
 end
 
 if status is-login
-	set -gxa PATH "$HOME/.local/bin"
+	set -gxp PATH "$HOME/.local/bin"
 	# Default programs
 	set -gx TERMINAL "alacritty"
 	set -gx EDITOR "nvim"

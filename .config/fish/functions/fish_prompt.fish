@@ -7,7 +7,7 @@ function fish_prompt --description "Write out the left-hand prompt"
 	echo -n $USER@(prompt_hostname)" "
 
 	set_color blue
-	echo -n (prompt_pwd)" "
+	echo -n (prompt_pwd --dir-length 0)" "
 
 	if test $last_status != 0
 		set_color brred
