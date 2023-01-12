@@ -1,0 +1,3 @@
+#!/usr/bin/env fish
+
+choose (dmenu_path) | $SHELL

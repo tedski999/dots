@@ -1,3 +1,3 @@
 function la --wraps=exa --description "alias la exa"
-	exa -lahs=name --git --group-directories-first $argv
+	exa -lahs=name --group-directories-first $argv
 end

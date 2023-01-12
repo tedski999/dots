@@ -3,7 +3,7 @@
 # Prompt user to choose from several provided options
 # Dependencies: dmenu
 
-argparse --name (status basename) "p=" "l=" "c" -- $argv; or return 1
+argparse --name (status basename) "p=" "l=" "c" -- $argv; or exit 1
 not set --query _flag_p; and set _flag_p ""
 not set --query _flag_l; and set _flag_l 16
 

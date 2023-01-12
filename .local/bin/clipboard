@@ -1,0 +1,3 @@
+#!/usr/bin/env fish
+
+clipmenu -fn "terminus:size=12" -nb "#000" -sb "#181818" -m -i -l 16

@@ -1,15 +1,15 @@
 #!/usr/bin/env fish
 
 # Music controller
-# Dependencies: mpd mpc
+# Dependencies: mpd mpc xdg-user-dir
 
-set root "$HOME/Extern/Music" # TODO: dynamically determine this from xdg or mpd/mpc
+set root (xdg-user-dir MUSIC)
 
 function library
 	set tracks (mpc listall)
 	set albums (dirname $tracks | uniq)
 	set artists (dirname $albums | uniq)
-	set playlists (find -O3 $root -type f -iname "*.m3u" | string sub --start (math "$(string length $root) + 2"))
+	set playlists (find -O3 $root -type f -iname "*.m3u" | string sub --start (math (string length $root)" + 2"))
 	set shuffle 1; set shuffles "none" "tracks" "albums"
 	set action 1; set actions "add" "insert"
 
@@ -17,8 +17,8 @@ function library
 		set choice (choose "<shuffle: $shuffles[$shuffle]>" "<action: $actions[$action]>" "<all tracks>" $playlists $artists $albums $tracks)
 		switch $choice
 			case ""; return
-			case "<shuffle*>"; set shuffle (math "$shuffle % $(count $shuffles) + 1")
-			case "<action*>"; set action (math "$action % $(count $actions) + 1")
+			case "<shuffle*>"; set shuffle (math "$shuffle % "(count $shuffles)" + 1")
+			case "<action*>"; set action (math "$action % "(count $actions)" + 1")
 			case "<all tracks>"; set selection $tracks
 			case "*.mp3"; set selection $choice
 			case "*.m3u"; set selection (grep ".mp3\$" $root/$choice)
@@ -46,7 +46,7 @@ function queue
 			case ""; break
 			case "<add tracks>"; library
 			case "<clear queue>"; mpc stop; mpc clear
-			case "<action*>"; set action (math "$action % $(count $actions) + 1")
+			case "<action*>"; set action (math "$action % "(count $actions)" + 1")
 			case "*"; mpc $actions[$action] (echo $choice | cut -f 1 -d ".")
 				mpc toggle; mpc toggle # TODO: this is a workaround, maybe caused by config error?
 		end

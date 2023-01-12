@@ -1,17 +1,43 @@
 #!/usr/bin/env fish
 
 # Prompt user with system power control settings
-# Dependencies: bspc
+# Dependencies: slock gnome-session-quit
+
+set choices \
+	"lock" "suspend" "logout" "reboot" "shutdown" "" \
+	"switch to low-performance" "switch to balanced-performance" "switch to high-performance" "" \
+	"reboot to integrated gpu only" "reboot to hybrid graphics" "reboot to dedicated gpu only"
+
+switch (system76-power profile | cut -d : -f 2 | head -1)
+	case " Battery";     set choices[7] $choices[7]" *"
+	case " Balanced";    set choices[8] $choices[8]" *"
+	case " Performance"; set choices[9] $choices[9]" *"
+end
+
+switch (system76-power graphics)
+	case "integrated"; set choices[11] $choices[11]" *"
+	case "hybrid";     set choices[12] $choices[12]" *"
+	case "nvidia";     set choices[13] $choices[13]" *"
+end
 
 test $argv[1]
 and set choice $argv[1]
-or set choice (choose "lock" "suspend" "logout" "reboot" "shutdown")
+or set choice (choose $choices)
 
 switch $choice
 	case "lock"; slock
 	case "suspend"; slock systemctl suspend -i
-	case "logout"; bspc quit
-	case "reboot"; systemctl reboot
-	case "shutdown"; systemctl poweroff
-	case "*"; return 1
+	case "logout"; gnome-session-quit --logout --no-prompt
+	case "reboot"; gnome-session-quit --reboot --no-prompt
+	case "shutdown"; gnome-session-quit --power-off --no-prompt
+
+	case "*low-performance*"; system76-power profile battery
+	case "*balanced-performance*"; system76-power profile balanced
+	case "*high-performance*"; system76-power profile performance
+
+	case "*dedicated gpu*"; system76-power graphics nvidia && powerctl reboot
+	case "*hybrid graphics*"; system76-power graphics hybrid && powerctl reboot
+	case "*integrated gpu*"; system76-power graphics integrated && powerctl reboot
+
+	case "*"; exit 1
 end

@@ -1,4 +1,3 @@
-
 if status is-interactive
 	# Git prompt
 	set -g __fish_git_prompt_show_informative_status 1
@@ -18,51 +17,6 @@ if status is-interactive
 	set -g __fish_git_prompt_color_invalidstate brred
 	set -g __fish_git_prompt_color_untrackedfiles brred
 	set -g __fish_git_prompt_color_cleanstate brgreen
-	# GPG agent
-	# TODO: this is still wack when using mutliple terminal emulators
-	set -gx GPG_TTY (tty)
-	gpg-connect-agent updatestartuptty /bye &>/dev/null
-end
-
-if status is-login
-	set -gxp PATH "$HOME/.local/bin"
-	# Default programs
-	set -gx TERMINAL "alacritty"
-	set -gx EDITOR "nvim"
-	set -gx VISUAL "nvim"
-	set -gx BROWSER "brave-browser"
-	set -gx MANPAGER "less --long-prompt --ignore-case"
-	# Program settings
-	set -gx SXHKD_SHELL "/bin/bash"
-	set -gx _JAVA_AWT_WM_NONREPARENTING 1
-	set -gx LIBVIRT_DEFAULT_URI "qemu:///system"
-	set -gx DEBUGINFOD_URLS "https://debuginfod.archlinux.org"
-	# GPG agent
-	set -gx SSH_AUTH_SOCK (gpgconf --list-dirs agent-ssh-socket)
-	gpgconf --launch gpg-agent
-	# XDG Spec
-	set -gx XDG_DATA_HOME "$HOME/.local/share"
-	set -gx XDG_CONFIG_HOME "$HOME/.config"
-	set -gx XDG_STATE_HOME "$HOME/.local/state"
-	set -gx XDG_CACHE_HOME "$HOME/.cache"
-	set -gx ANDROID_HOME "$XDG_DATA_HOME/android"
-	set -gx HISTFILE "$XDG_STATE_HOME/bash/history"
-	set -gx CALCHISTFILE "$XDG_CACHE_HOME/calc_history"
-	set -gx CARGO_HOME "$XDG_DATA_HOME/cargo"
-	set -gx CGDB_DIR "$XDG_CONFIG_HOME/cgdb"
-	set -gx CUDA_CACHE_PATH "$XDG_CACHE_HOME/nv"
-	set -gx DOCKER_CONFIG "$XDG_CONFIG_HOME/docker"
-	set -gx GOPATH "$HOME/.local/share/go"
-	set -gx NODE_REPL_HISTORY "$XDG_DATA_HOME/node_repl_history"
-	set -gx npm_config_userconfig "$HOME/.config/npm/npmrc"
-	set -gx _JAVA_OPTIONS -Djava.util.prefs.userRoot="$XDG_CONFIG_HOME/java"
-	set -gx PYTHONSTARTUP "$XDG_CONFIG_HOME/python/pythonrc"
-	set -gx STACK_ROOT "$XDG_DATA_HOME/stack"
-	set -gx WGETRC "$XDG_CONFIG_HOME/wget/wgetrc"
-	set -gx XAUTHORITY "$XDG_RUNTIME_DIR/Xauthority"
-	alias wget "wget --hsts-file=$XDG_DATA_HOME/wget-hsts --output-file=/dev/null"
-	# Start X server when logging in on tty1
-	if test -z "$DISPLAY" -a "$XDG_VTNR" = 1
-		exec startx -- vt1 &>/dev/null
-	end
+	# GPG agent for SSH
+	export SSH_AUTH_SOCK=(gpgconf --list-dirs agent-ssh-socket)
 end
