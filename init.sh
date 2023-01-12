@@ -226,6 +226,9 @@ gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybindings.cu
 gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybindings.custom10 binding "<Super>v"
 gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybindings.custom10 command "clipboard"
 gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybindings.custom10 name "Clipboard"
+gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybindings.custom11 binding "<Super>n"
+gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybindings.custom11 command "wifictl"
+gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybindings.custom11 name "Wifi Menu"
 
 # Dots gitignore
 mkdir -p $HOME/.local/dots/info
@@ -265,6 +268,7 @@ mkdir -p $HOME/.local/dots/info
 !/.local/bin/musicctl
 !/.local/bin/powerctl
 !/.local/bin/startup
-!/.local/bin/superhudd"
+!/.local/bin/superhudd
+!/.local/bin/wifictl"
 
 echo "Dots successfully installed. Reboot now."
