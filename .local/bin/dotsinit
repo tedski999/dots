@@ -1,8 +1,5 @@
 #!/bin/sh
 
-# TODO: auto backups with borg and syncthing
-# TODO: timeshift?
-
 set -e
 
 hash apt-get sudo
@@ -14,15 +11,18 @@ echo "deb [signed-by=/usr/share/keyrings/brave-browser-archive-keyring.gpg arch=
 sudo apt-get update --yes
 sudo apt-get upgrade --yes
 sudo apt-get install --yes \
-	alacritty neovim exa btop calc ranger \
+	alacritty exa btop calc ranger \
 	npm fonts-terminus brave-browser discord \
-	zsh zsh-syntax-highlighting
+	zsh zsh-syntax-highlighting \
+	software-properties-common
+sudo add-apt-repository --yes ppa:neovim-ppa/stable
+sudo apt-get --yes install neovim python3-neovim
 
 # zsh extensions
 # TODO: completions
 
 # gnome extensions
-tmpdir=$(mktmp --directory)
+tmpdir=$(mktemp --directory)
 extdir=$XDG_DATA_HOME/gnome-shell/extensions
 mkdir -p $extdir
 rm -rf $extdir/*
@@ -35,14 +35,14 @@ git clone https://github.com/hardpixel/unite-shell $tmpdir/unite
 mv $tmpdir/unite/unite@hardpixel.eu $extdir
 # pano@elhan.io
 sudo apt-get install --yes unzip gir1.2-gda-5.0 gir1.2-gsound-1.0
-wget https://github.com/oae/gnome-shell-pano/releases/download/v10/pano@elhan.io.zip -O $tmpdir
-unzip $tmpdir/pano@elhan.io.zip -d $extdir/pano@elhan.io
+wget https://github.com/oae/gnome-shell-pano/releases/download/v10/pano@elhan.io.zip -O $tmpdir/pano.zip
+unzip $tmpdir/pano.zip -d $extdir/pano@elhan.io
 # expandable-notifications@kaan.g.inam.org
 git clone https://github.com/kaanginam/expandable-notifications $tmpdir/notifs
 mv $tmpdir/notifs/expandable-notifications@kaan.g.inam.org $extdir
 
 # shell
-chsh -s /usr/bin/zsh
+sudo chsh $USER -s /usr/bin/zsh
 
 # gitignore
 mkdir -p $HOME/.local/dots/info
@@ -60,6 +60,7 @@ mkdir -p $HOME/.local/dots/info
 !/.config/python
 !/.config/tmux
 !/.config/wget
+!/.config/mimeapps.list
 !/.config/user-dirs.dirs
 !/.config/user-dirs.locale
 
@@ -68,7 +69,7 @@ mkdir -p $HOME/.local/dots/info
 !/.gnupg/sshcontrol"
 
 # dconf
-dconf load / <<< "
+echo "
 [org/gnome/desktop/background]
 color-shading-type='solid'
 picture-uri='none'
@@ -222,7 +223,7 @@ sleep-inactive-battery-timeout=1800
 [org/gnome/shell]
 app-picker-view=uint32 1
 disable-user-extensions=false
-disabled-extensions=['ubuntu-dock@ubuntu.com', 'ubuntu-appindicators@ubuntu.com']
+disabled-extensions=['ubuntu-dock@ubuntu.com', 'ubuntu-appindicators@ubuntu.com', 'ding@rastersoft.com']
 enabled-extensions=['pop-shell@system76.com', 'unite@hardpixel.eu', 'pano@elhan.io', 'expandable-notifications@kaan.g.inam.org']
 favorite-apps=@as []
 had-bluetooth-devices-setup=true
@@ -316,6 +317,6 @@ switch-to-application-8=@as []
 switch-to-application-9=@as []
 toggle-application-view=@as []
 toggle-message-tray=['<Shift><Super>n']
-toggle-overview=['<Super>space']"
+toggle-overview=['<Super>space']" | dconf load /
 
-echo "Dots successfully installed. Reboot now."
+echo -e "\nDots successfully installed. Please relogin now."
