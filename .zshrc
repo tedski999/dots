@@ -17,6 +17,7 @@ export NODE_REPL_HISTORY="$XDG_DATA_HOME/node_repl_history"
 export npm_config_userconfig="$XDG_CONFIG_HOME/npm/npmrc"
 export PYTHONSTARTUP="$XDG_CONFIG_HOME/python/pythonrc"
 export WGETRC="$XDG_CONFIG_HOME/wget/wgetrc"
+export ZSH_DATA="$XDG_DATA_HOME/zsh"
 export LESS_TERMCAP_mb=$'\E[1;31m'
 export LESS_TERMCAP_md=$'\E[1;36m'
 export LESS_TERMCAP_me=$'\E[0m'
@@ -25,7 +26,9 @@ export LESS_TERMCAP_se=$'\E[0m'
 export LESS_TERMCAP_us=$'\E[1;32m'
 export LESS_TERMCAP_ue=$'\E[0m'
 
-ZSH_DATA="$XDG_DATA_HOME/zsh"
+# GPG+SSH
+export SSH_AUTH_SOCK="$(gpgconf --list-dirs agent-ssh-socket)"
+gpgconf --launch gpg-agent
 
 # Static prompt
 PS1=$'\n%F{red}%n@%m%f %F{blue}%~%f %F{red}%(?..%?)%f\n>%f '
