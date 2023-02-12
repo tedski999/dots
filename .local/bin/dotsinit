@@ -1,0 +1,321 @@
+#!/bin/sh
+
+# TODO: auto backups with borg and syncthing
+# TODO: timeshift?
+
+set -e
+
+hash apt-get sudo
+[ "$USER" = "root" ] && { >&2 echo "Run as non-root user"; exit 1; }
+
+# packages
+sudo curl -fsSLo /usr/share/keyrings/brave-browser-archive-keyring.gpg https://brave-browser-apt-release.s3.brave.com/brave-browser-archive-keyring.gpg
+echo "deb [signed-by=/usr/share/keyrings/brave-browser-archive-keyring.gpg arch=amd64] https://brave-browser-apt-release.s3.brave.com/ stable main" | sudo tee /etc/apt/sources.list.d/brave-browser-release.list
+sudo apt-get update --yes
+sudo apt-get upgrade --yes
+sudo apt-get install --yes \
+	alacritty neovim exa btop calc ranger \
+	npm fonts-terminus brave-browser discord \
+	zsh zsh-syntax-highlighting
+
+# zsh extensions
+# TODO: completions
+
+# gnome extensions
+tmpdir=$(mktmp --directory)
+extdir=$XDG_DATA_HOME/gnome-shell/extensions
+mkdir -p $extdir
+rm -rf $extdir/*
+# pop-shell@system76.com
+sudo apt-get install --yes git make node-typescript
+git clone https://github.com/pop-os/shell $tmpdir/pop
+make --directory $tmpdir/pop depcheck compile install
+# unite@hardpixel.eu
+git clone https://github.com/hardpixel/unite-shell $tmpdir/unite
+mv $tmpdir/unite/unite@hardpixel.eu $extdir
+# pano@elhan.io
+sudo apt-get install --yes unzip gir1.2-gda-5.0 gir1.2-gsound-1.0
+wget https://github.com/oae/gnome-shell-pano/releases/download/v10/pano@elhan.io.zip -O $tmpdir
+unzip $tmpdir/pano@elhan.io.zip -d $extdir/pano@elhan.io
+# expandable-notifications@kaan.g.inam.org
+git clone https://github.com/kaanginam/expandable-notifications $tmpdir/notifs
+mv $tmpdir/notifs/expandable-notifications@kaan.g.inam.org $extdir
+
+# shell
+chsh -s /usr/bin/zsh
+
+# gitignore
+mkdir -p $HOME/.local/dots/info
+>$HOME/.local/dots/info/exclude echo "\
+/*
+!/.config
+!/.gnupg
+!/.zshrc
+
+/.config/*
+!/.config/alacritty
+!/.config/git
+!/.config/npm
+!/.config/nvim
+!/.config/python
+!/.config/tmux
+!/.config/wget
+!/.config/user-dirs.dirs
+!/.config/user-dirs.locale
+
+/.gnupg/*
+!/.gnupg/gpg-agent.conf
+!/.gnupg/sshcontrol"
+
+# dconf
+dconf load / <<< "
+[org/gnome/desktop/background]
+color-shading-type='solid'
+picture-uri='none'
+picture-uri-dark='none'
+primary-color='#1c1c1c'
+secondary-color='#000000000000'
+
+[org/gnome/desktop/input-sources]
+per-window=false
+sources=[('xkb', 'gb')]
+xkb-options=['caps:escape']
+
+[org/gnome/desktop/interface]
+clock-show-date=false
+clock-show-weekday=true
+color-scheme='prefer-dark'
+font-hinting='slight'
+gtk-theme='Yaru-blue-dark'
+icon-theme='Yaru-blue'
+
+[org/gnome/desktop/lockdown]
+disable-log-out=false
+disable-user-switching=true
+
+[org/gnome/desktop/peripherals/keyboard]
+delay=uint32 250
+
+[org/gnome/desktop/peripherals/touchpad]
+two-finger-scrolling-enabled=true
+
+[org/gnome/desktop/screensaver]
+color-shading-type='solid'
+picture-uri='none'
+primary-color='#1c1c1c'
+secondary-color='#000000000000'
+
+[org/gnome/desktop/session]
+idle-delay=uint32 600
+
+[org/gnome/desktop/wm/keybindings]
+activate-window-menu=@as []
+begin-move=@as []
+begin-resize=@as []
+close=['<Super>q']
+cycle-group=@as []
+cycle-group-backward=@as []
+cycle-panels=@as []
+cycle-panels-backward=@as []
+cycle-windows=@as []
+cycle-windows-backward=@as []
+maximize=@as []
+minimize=@as []
+move-to-monitor-down=@as []
+move-to-monitor-left=@as []
+move-to-monitor-right=@as []
+move-to-monitor-up=@as []
+move-to-workspace-1=['<Shift><Super>1']
+move-to-workspace-10=['<Shift><Super>0']
+move-to-workspace-11=@as []
+move-to-workspace-12=@as []
+move-to-workspace-2=['<Shift><Super>2']
+move-to-workspace-3=['<Shift><Super>3']
+move-to-workspace-4=['<Shift><Super>4']
+move-to-workspace-5=['<Shift><Super>5']
+move-to-workspace-6=['<Shift><Super>6']
+move-to-workspace-7=['<Shift><Super>7']
+move-to-workspace-8=['<Shift><Super>8']
+move-to-workspace-9=['<Shift><Super>9']
+move-to-workspace-last=@as []
+move-to-workspace-left=['<Primary><Shift><Super>h']
+move-to-workspace-right=['<Primary><Shift><Super>l']
+panel-run-dialog=@as []
+show-desktop=@as []
+switch-applications=@as []
+switch-applications-backward=@as []
+switch-group=@as []
+switch-group-backward=@as []
+switch-input-source=@as []
+switch-input-source-backward=@as []
+switch-panels=@as []
+switch-panels-backward=@as []
+switch-to-workspace-1=['<Super>1']
+switch-to-workspace-10=['<Super>0']
+switch-to-workspace-11=@as []
+switch-to-workspace-12=@as []
+switch-to-workspace-2=['<Super>2']
+switch-to-workspace-3=['<Super>3']
+switch-to-workspace-4=['<Super>4']
+switch-to-workspace-5=['<Super>5']
+switch-to-workspace-6=['<Super>6']
+switch-to-workspace-7=['<Super>7']
+switch-to-workspace-8=['<Super>8']
+switch-to-workspace-9=['<Super>9']
+switch-to-workspace-last=@as []
+switch-to-workspace-left=['<Primary><Super>h']
+switch-to-workspace-right=['<Primary><Super>l']
+switch-windows=['<Super>Tab']
+switch-windows-backward=['<Shift><Super>Tab']
+toggle-fullscreen=@as []
+toggle-maximized=['<Super>m']
+unmaximize=@as []
+
+[org/gnome/desktop/wm/preferences]
+action-middle-click-titlebar='none'
+action-right-click-titlebar='none'
+button-layout=':maximize,close'
+resize-with-right-button=true
+
+[org/gnome/mutter]
+attach-modal-dialogs=false
+center-new-windows=false
+overlay-key='Super_R'
+workspaces-only-on-primary=false
+
+[org/gnome/mutter/keybindings]
+toggle-tiled-left=@as []
+toggle-tiled-right=@as []
+
+[org/gnome/settings-daemon/plugins/media-keys]
+area-screenshot=['Print']
+area-screenshot-clip=@as []
+custom-keybindings=['/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/']
+help=@as []
+home=@as []
+logout=@as []
+magnifier=@as []
+magnifier-zoom-in=@as []
+magnifier-zoom-out=@as []
+rotate-video-lock-static=@as []
+screencast=['<Shift>Print']
+screenreader=@as []
+screensaver=['<Shift><Super>Escape']
+screenshot=@as []
+screenshot-clip=@as []
+terminal=['<Super>Return']
+window-screenshot=@as []
+window-screenshot-clip=@as []
+www=['<Super>w']
+
+[org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0]
+binding='<Primary><Super>Escape'
+command='systemctl suspend'
+name='Suspend'
+
+[org/gnome/settings-daemon/plugins/power]
+power-button-action='suspend'
+sleep-inactive-ac-timeout=1800
+sleep-inactive-ac-type='suspend'
+sleep-inactive-battery-timeout=1800
+
+[org/gnome/shell]
+app-picker-view=uint32 1
+disable-user-extensions=false
+disabled-extensions=['ubuntu-dock@ubuntu.com', 'ubuntu-appindicators@ubuntu.com']
+enabled-extensions=['pop-shell@system76.com', 'unite@hardpixel.eu', 'pano@elhan.io', 'expandable-notifications@kaan.g.inam.org']
+favorite-apps=@as []
+had-bluetooth-devices-setup=true
+welcome-dialog-last-shown-version='42.5'
+
+[org/gnome/shell/app-switcher]
+current-workspace-only=false
+
+[org/gnome/shell/extensions/pano]
+global-shortcut=['<Super>v']
+history-length=500
+keep-search-entry=false
+play-audio-on-copy=false
+show-indicator=false
+sync-primary=true
+
+[org/gnome/shell/extensions/pop-shell]
+active-hint=true
+active-hint-border-radius=uint32 1
+gap-inner=uint32 1
+gap-outer=uint32 1
+hint-color-rgba='rgba(255,255,255,0.25)'
+show-title=false
+smart-gaps=false
+tile-by-default=true
+focus-left=['<Super>h']
+focus-down=['<Super>j']
+focus-up=['<Super>k']
+focus-right=['<Super>l']
+activate-launcher=@as []
+toggle-stacking-global=@as []
+management-orientation=@as []
+tile-enter=['<Super>r']
+tile-accept=['r', 'Return', 'Escape']
+tile-reject=@as []
+toggle-floating=['<Super>f']
+tile-move-left=@as []
+tile-move-down=@as []
+tile-move-up=@as []
+tile-move-right=@as []
+tile-move-left-global=['<Shift><Super>h']
+tile-move-down-global=['<Shift><Super>j']
+tile-move-up-global=['<Shift><Super>k']
+tile-move-right-global=['<Shift><Super>l']
+tile-resize-left=['h']
+tile-resize-down=['j']
+tile-resize-up=['k']
+tile-resize-right=['l']
+tile-swap-left=@as []
+tile-swap-down=@as []
+tile-swap-up=@as []
+tile-swap-right=@as []
+pop-workspace-down=@as []
+pop-workspace-up=@as []
+pop-monitor-down=@as []
+pop-monitor-up=@as []
+pop-monitor-left=@as []
+pop-monitor-right=@as []
+
+[org/gnome/shell/extensions/unite]
+app-menu-ellipsize-mode='end'
+app-menu-max-width=0
+desktop-name-text=''
+extend-left-box=true
+greyscale-tray-icons=false
+hide-activities-button='always'
+hide-app-menu-icon=false
+hide-dropdown-arrows=true
+hide-window-titlebars='always'
+reduce-panel-spacing=true
+show-desktop-name=true
+show-legacy-tray=true
+show-window-buttons='never'
+show-window-title='always'
+window-buttons-placement='auto'
+
+[org/gnome/shell/keybindings]
+focus-active-notification=['<Super>n']
+open-application-menu=@as []
+screenshot=@as []
+screenshot-window=@as []
+show-screen-recording-ui=@as []
+switch-to-application-1=@as []
+switch-to-application-2=@as []
+switch-to-application-3=@as []
+switch-to-application-4=@as []
+switch-to-application-5=@as []
+switch-to-application-6=@as []
+switch-to-application-7=@as []
+switch-to-application-8=@as []
+switch-to-application-9=@as []
+toggle-application-view=@as []
+toggle-message-tray=['<Shift><Super>n']
+toggle-overview=['<Super>space']"
+
+echo "Dots successfully installed. Reboot now."
