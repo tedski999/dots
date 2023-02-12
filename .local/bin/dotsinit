@@ -12,7 +12,7 @@ sudo apt-get update --yes
 sudo apt-get upgrade --yes
 sudo apt-get install --yes \
 	alacritty exa btop calc ranger \
-	npm fonts-terminus brave-browser discord \
+	npm fonts-terminus brave-browser \
 	zsh zsh-syntax-highlighting \
 	software-properties-common
 sudo add-apt-repository --yes ppa:neovim-ppa/stable
@@ -319,4 +319,5 @@ toggle-application-view=@as []
 toggle-message-tray=['<Shift><Super>n']
 toggle-overview=['<Super>space']" | dconf load /
 
-echo -e "\nDots successfully installed. Please relogin now."
+echo ""
+echo "Dots successfully installed. Please relogin now."

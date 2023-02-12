@@ -11,24 +11,25 @@ scrolling:
   multiplier: 5
 
 window:
+  decorations: None
+  dynamic_padding: true
+  opacity: 0.85
   dimensions:
     columns: 145
     lines: 42
-  dynamic_padding: true
-  opacity: 0.85
 
 font:
+  size: 13.5
   normal:
-    family: Terminus
-  size: 10
+    family: Terminus (TTF)
 
 cursor:
-  style:
-    shape: Beam
-    blinking: On
   vi_mode_style: Block
   blink_interval: 750
   blink_timeout: 0
+  style:
+    shape: Beam
+    blinking: On
 
 mouse:
   double_click: { threshold: 300 }
