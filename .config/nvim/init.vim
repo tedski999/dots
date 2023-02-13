@@ -1,3 +1,5 @@
+let is_arista = filereadable('/usr/share/vim/vimfiles/arista.vim')
+
 " Ensure plug.vim is installed
 let plug_vim = stdpath('data').'/site/autoload/plug.vim'
 if !filereadable(g:plug_vim)
@@ -22,8 +24,6 @@ Plug 'junegunn/fzf', { 'do': { -> fzf#install() } } " Install FZF
 Plug 'nvim-lualine/lualine.nvim'                    " Status bar
 Plug 'sheerun/vim-polyglot'                         " Language packs
 Plug 'neovim/nvim-lspconfig'                        " LSP client
-Plug 'williamboman/mason.nvim'                      " LSP server installer
-Plug 'williamboman/mason-lspconfig.nvim'            " LSP server setup
 Plug 'hrsh7th/vim-vsnip'                            " Snippets engine
 Plug 'hrsh7th/nvim-cmp'                             " Autocompletion
 Plug 'hrsh7th/cmp-nvim-lsp'                         " LSP completion source
@@ -156,30 +156,24 @@ cmp.setup.cmdline(':', {
 	formatting = { format = function(_, item) item.kind = ''; return item end }
 })
 
--- Generic language buffer attach callback
-vim.g.on_lsp_attach = function(client, bufnr)
-	if client.server_capabilities.documentHighlightProvider then
-		vim.api.nvim_create_autocmd('CursorMoved', {buffer=bufnr, callback=vim.lsp.buf.clear_references})
-		vim.api.nvim_create_autocmd('CursorMoved', {buffer=bufnr, callback=vim.lsp.buf.document_highlight})
-	end
-end
-
--- Language servers
+-- LSP server configs
 local lsp = require('lspconfig')
-local cap = require('cmp_nvim_lsp').default_capabilities()
-require('mason').setup()
-require('mason-lspconfig').setup()
-require('mason-lspconfig').setup_handlers({
-	function(server)
-		lsp[server].setup({capabilities=cap, on_attach=vim.g.on_lsp_attach})
-	end,
-	["clangd"] = function()
-		lsp.clangd.setup({capabilities=cap, on_attach=vim.g.on_lsp_attach,
-			-- TODO: format settings
-			settings = {}
-		})
+lsp.util.on_setup = lsp.util.add_hook_before(lsp.util.on_setup, function(cfg)
+	-- Generic settings
+	cfg.capabilities = require('cmp_nvim_lsp').default_capabilities()
+	cfg.on_attach = function(client, bufnr)
+		if client.server_capabilities.documentHighlightProvider then
+			vim.api.nvim_create_autocmd('CursorMoved', {buffer=bufnr, callback=vim.lsp.buf.clear_references})
+			vim.api.nvim_create_autocmd('CursorMoved', {buffer=bufnr, callback=vim.lsp.buf.document_highlight})
+		end
 	end
-})
+	-- Arista-specifics
+	if is_arista and cfg.name == 'clangd' then
+		-- TODO: clangd settings
+	end
+end)
+lsp.clangd.setup({})
+lsp.pylsp.setup({})
 
 EOF
 
@@ -285,7 +279,7 @@ imap <expr> <s-tab> vsnip#jumpable(-1) ? '<Plug>(vsnip-jump-prev)' : '<s-tab>'
 smap <expr> <s-tab> vsnip#jumpable(-1) ? '<Plug>(vsnip-jump-prev)' : '<s-tab>'
 
 " Arista-specifics
-if filereadable('/usr/share/vim/vimfiles/arista.vim')
+if is_arista
 	" Manual control
 	let a4_auto_edit = 0
 	command! A4edit call A4edit()
@@ -297,35 +291,17 @@ if filereadable('/usr/share/vim/vimfiles/arista.vim')
 	" In-house VCS based on Perforce
 	let g:signify_vcs_cmds = { 'perforce': 'env P4DIFF= P4COLORS= a p4 diff -du 0 %f' }
 	let g:signify_vcs_cmds_diffmode = { 'perforce': 'a p4 print %f' }
-	" Polyglot breaks tac and tin filetype detection so heres a fix
+	" Polyglot breaks tacc filetype detection so here's a fix
+	augroup filetypedetect
+	autocmd! BufNewFile,BufRead *.cgi,*.fcgi,*.gyp,*.gypi,*.lmi,*.ptl,*.py,*.py3,*.pyde,*.pyi,*.pyp,*.pyt,*.pyw,*.rpy,*.smk,*.spec,*.tac,*.wsgi,*.xpy,{.,}gclient,{.,}pythonrc,{.,}pythonstartup,DEPS,SConscript,SConstruct,Snakefile,wscript setf foo
+	autocmd! BufNewFile,BufRead *.cgi,*.fcgi,*.gyp,*.gypi,*.lmi,*.ptl,*.py,*.py3,*.pyde,*.pyi,*.pyp,*.pyt,*.pyw,*.rpy,*.smk,*.spec,*.wsgi,*.xpy,{.,}gclient,{.,}pythonrc,{.,}pythonstartup,DEPS,SConscript,SConstruct,Snakefile,wscript setf python
 	augroup vimrc
-	autocmd!
 	autocmd BufNewFile,BufRead *.tac :set filetype=tac
+	" TODO: cpp files with non-cpp file extensions break clangd for god-knows-what reason
 	autocmd BufNewFile,BufRead *.tin :set filetype=cpp
 	augroup END
-lua << EOF
-	-- Augment LSP server configs
-	local lsp = require('lspconfig')
-	local cap = require('cmp_nvim_lsp').default_capabilities()
-	require('lspconfig.configs').tacc = {default_config={cmd={'artaclsp'}, filetypes={'tac'}}}
-	require('mason-lspconfig').setup_handlers({
-		function(server)
-			lsp[server].setup({capabilities=cap, on_attach=vim.g.on_lsp_attach})
-		end,
-		-- TODO: arista settings
-		--["tacc"] = function()
-		--	lsp.clangd.setup({capabilities=cap, on_attach=vim.g.on_lsp_attach,
-		--		cmd = {'artaclsp', '-I', '/bld'},
-		--		root_dir = '/src',
-		--		settings = {}
-		--	})
-		--end,
-		["clangd"] = function()
-			-- TODO: arista settings
-			lsp.clangd.setup({capabilities=cap, on_attach=vim.g.on_lsp_attach,
-				settings = {}
-			})
-		end
-	})
-EOF
+	" Add TACC LSP server
+	" TODO: this doesnt seem to do anything
+	lua require('lspconfig.configs').tacc = {default_config={cmd={'artaclsp'}, filetypes={'tac'}}}
+	lua require('lspconfig').tacc.setup({})
 endif
