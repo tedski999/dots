@@ -32,10 +32,8 @@ make --directory $tmpdir/pop depcheck compile install
 # unite@hardpixel.eu
 git clone https://github.com/hardpixel/unite-shell $tmpdir/unite
 mv $tmpdir/unite/unite@hardpixel.eu $extdir
-# pano@elhan.io
-sudo apt-get install --yes unzip gir1.2-gda-5.0 gir1.2-gsound-1.0
-wget https://github.com/oae/gnome-shell-pano/releases/download/v10/pano@elhan.io.zip -O $tmpdir/pano.zip
-unzip $tmpdir/pano.zip -d $extdir/pano@elhan.io
+# clipboard-indicator@tudmotu.com
+git clone https://github.com/Tudmotu/gnome-shell-extension-clipboard-indicator $extdir/clipboard-indicator@tudmotu.com
 # expandable-notifications@kaan.g.inam.org
 git clone https://github.com/kaanginam/expandable-notifications $tmpdir/notifs
 mv $tmpdir/notifs/expandable-notifications@kaan.g.inam.org $extdir
@@ -239,7 +237,7 @@ sleep-inactive-battery-timeout=1800
 app-picker-view=uint32 1
 disable-user-extensions=false
 disabled-extensions=['ubuntu-dock@ubuntu.com', 'ubuntu-appindicators@ubuntu.com', 'ding@rastersoft.com']
-enabled-extensions=['pop-shell@system76.com', 'unite@hardpixel.eu', 'pano@elhan.io', 'expandable-notifications@kaan.g.inam.org']
+enabled-extensions=['pop-shell@system76.com', 'unite@hardpixel.eu', 'clipboard-indicator@tudmotu.com', 'expandable-notifications@kaan.g.inam.org']
 favorite-apps=@as []
 had-bluetooth-devices-setup=true
 welcome-dialog-last-shown-version='42.5'
@@ -247,13 +245,19 @@ welcome-dialog-last-shown-version='42.5'
 [org/gnome/shell/app-switcher]
 current-workspace-only=false
 
-[org/gnome/shell/extensions/pano]
-global-shortcut=['<Super>v']
-history-length=500
-keep-search-entry=false
-play-audio-on-copy=false
-show-indicator=false
-sync-primary=true
+[org/gnome/shell/extensions/clipboard-indicator]
+cache-size=2048
+clear-history=@as []
+disable-down-arrow=true
+display-mode=0
+history-size=200
+move-item-first=true
+next-entry=['<Shift><Super>v']
+notify-on-copy=false
+prev-entry=['<Primary><Super>v']
+preview-size=50
+strip-text=false
+toggle-menu=['<Super>v']
 
 [org/gnome/shell/extensions/pop-shell]
 active-hint=true
