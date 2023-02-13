@@ -1,39 +1,19 @@
 # TODO:
-# colors
 # keybindings / mouse control
 # hints
-# vi mode
 
 live_config_reload: false
-
 scrolling:
-  history: 5000
+  history: 10000
   multiplier: 5
-
 window:
   decorations: None
-  dynamic_padding: true
   opacity: 0.85
-  dimensions:
-    columns: 145
-    lines: 42
-
 font:
   size: 13.5
   normal:
     family: Terminus (TTF)
-
-cursor:
-  vi_mode_style: Block
-  blink_interval: 750
-  blink_timeout: 0
-  style:
-    shape: Beam
-    blinking: On
-
 mouse:
-  double_click: { threshold: 300 }
-  triple_click: { threshold: 300 }
   hide_when_typing: true
 
 mouse_bindings:
@@ -126,30 +106,9 @@ colors:
   primary:
     background: '#000000'
     foreground: '#dddddd'
-    # dim_foreground: '#aaaaaa'
-    # bright_foreground: '#ffffff'
   cursor:
     text: '#111111'
     cursor: '#cccccc'
-  # vi_mode_cursor:
-    # text: '#000000'
-    # cursor: '#ffffff'
-  # search:
-    # matches:
-      # foreground: '#000000'
-      # background: '#ffff00'
-    # focused_match:
-      # foreground: '#000000'
-      # background: '#ffffff'
-    # bar:
-      # foreground: '#ffffff'
-      # background: '#000000'
-  # line_indicator:
-    # foreground: '#ffffff'
-    # background: '#000000'
-  selection:
-    text: '#000000'
-    background: '#fffacd'
   normal:
     black:   '#000000'
     red:     '#cc0403'
@@ -168,5 +127,20 @@ colors:
     magenta: '#fd28ff'
     cyan:    '#14ffff'
     white:   '#ffffff'
-
+  search:
+    matches:
+      foreground: '#091f2e'
+      background: '#edb443'
+    focused_match:
+      foreground: '#000000'
+      background: '#ffffff'
+  footer_bar:
+    foreground: '#ffffff'
+    background: '#000000'
+  line_indicator:
+    foreground: '#ffffff'
+    background: '#000000'
+  selection:
+    text: '#000000'
+    background: '#fffacd'
 draw_bold_text_with_bright_colors: true
