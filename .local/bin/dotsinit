@@ -8,18 +8,17 @@ hash apt-get sudo
 # packages
 sudo curl -fsSLo /usr/share/keyrings/brave-browser-archive-keyring.gpg https://brave-browser-apt-release.s3.brave.com/brave-browser-archive-keyring.gpg
 echo "deb [signed-by=/usr/share/keyrings/brave-browser-archive-keyring.gpg arch=amd64] https://brave-browser-apt-release.s3.brave.com/ stable main" | sudo tee /etc/apt/sources.list.d/brave-browser-release.list
+echo "deb http://download.opensuse.org/repositories/shells:/zsh-users:/zsh-completions/xUbuntu_22.04/ /" | sudo tee /etc/apt/sources.list.d/shells:zsh-users:zsh-completions.list
+curl -fsSL https://download.opensuse.org/repositories/shells:zsh-users:zsh-completions/xUbuntu_22.04/Release.key | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/shells_zsh-users_zsh-completions.gpg > /dev/null
 sudo apt-get update --yes
 sudo apt-get upgrade --yes
 sudo apt-get install --yes \
 	alacritty exa btop calc ranger \
 	npm fonts-terminus brave-browser \
-	zsh zsh-syntax-highlighting \
+	zsh zsh-syntax-highlighting zsh-completions \
 	software-properties-common
 sudo add-apt-repository --yes ppa:neovim-ppa/stable
 sudo apt-get --yes install neovim python3-neovim
-
-# zsh extensions
-# TODO: completions
 
 # gnome extensions
 tmpdir=$(mktemp --directory)
@@ -40,6 +39,8 @@ unzip $tmpdir/pano.zip -d $extdir/pano@elhan.io
 # expandable-notifications@kaan.g.inam.org
 git clone https://github.com/kaanginam/expandable-notifications $tmpdir/notifs
 mv $tmpdir/notifs/expandable-notifications@kaan.g.inam.org $extdir
+
+# TODO: arzsh complete extension
 
 # shell
 sudo chsh $USER -s /usr/bin/zsh
@@ -168,7 +169,7 @@ switch-to-workspace-left=['<Primary><Super>h']
 switch-to-workspace-right=['<Primary><Super>l']
 switch-windows=['<Super>Tab']
 switch-windows-backward=['<Shift><Super>Tab']
-toggle-fullscreen=@as []
+toggle-fullscreen=['<Shift><Super>m']
 toggle-maximized=['<Super>m']
 unmaximize=@as []
 
@@ -191,10 +192,10 @@ toggle-tiled-right=@as []
 [org/gnome/settings-daemon/plugins/media-keys]
 area-screenshot=['Print']
 area-screenshot-clip=@as []
-custom-keybindings=['/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/']
+custom-keybindings=['/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/', '/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom1/', '/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom2/']
 help=@as []
 home=@as []
-logout=@as []
+logout=['<Primary><Shift><Super>Escape']
 magnifier=@as []
 magnifier-zoom-in=@as []
 magnifier-zoom-out=@as []
@@ -213,6 +214,16 @@ www=['<Super>w']
 binding='<Primary><Super>Escape'
 command='systemctl suspend'
 name='Suspend'
+
+[org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom1]
+binding='<Super>d'
+command='discord'
+name='Discord'
+
+[org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom2]
+binding='<Super>s'
+command='steam'
+name='Steam'
 
 [org/gnome/settings-daemon/plugins/power]
 power-button-action='suspend'
