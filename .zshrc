@@ -49,7 +49,7 @@ alias r="ranger"
 alias d="dirs -v"
 for i ({1..9}) alias "$i"="cd +$i"
 for i ({3..9}) alias "${(l:i::.:)}"="${(l:i-1::.:)};.."
-alias s="mosh --predict=always --predict-overwrite us260.sjc.aristanetworks.com -- tmux attach"
+alias s="echo -ne '\e[2 q' && mosh --predict=always --predict-overwrite us260.sjc.aristanetworks.com -- tmux attach"
 alias grep="grep --color=auto"
 alias fgrep="fgrep --color=auto"
 alias egrep="egrep --color=auto"
@@ -73,6 +73,11 @@ eval "$(dircolors -b)"
 # Vi keybindings
 bindkey -v
 export KEYTIMEOUT=1
+
+# External editor
+autoload edit-command-line
+zle -N edit-command-line
+bindkey -M vicmd "v" edit-command-line
 
 # Better keybindings
 bindkey "^W" backward-kill-word
