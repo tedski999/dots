@@ -40,8 +40,6 @@ unzip $tmpdir/pano.zip -d $extdir/pano@elhan.io
 git clone https://github.com/kaanginam/expandable-notifications $tmpdir/notifs
 mv $tmpdir/notifs/expandable-notifications@kaan.g.inam.org $extdir
 
-# TODO: arzsh complete extension
-
 # shell
 sudo chsh $USER -s /usr/bin/zsh
 
@@ -51,6 +49,7 @@ mkdir -p $HOME/.local/dots/info
 /*
 !/.config
 !/.gnupg
+!/.local
 !/.zshrc
 
 /.config/*
@@ -67,7 +66,12 @@ mkdir -p $HOME/.local/dots/info
 
 /.gnupg/*
 !/.gnupg/gpg-agent.conf
-!/.gnupg/sshcontrol"
+!/.gnupg/sshcontrol
+
+/.local/*
+!/.local/bin
+/.local/bin/*
+!/.local/bin/dotsinit"
 
 # dconf
 echo "

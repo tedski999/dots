@@ -110,8 +110,6 @@ zle -N edit-command-line
 autoload -Uz up-line-or-beginning-search down-line-or-beginning-search
 zle -N up-line-or-beginning-search
 zle -N down-line-or-beginning-search
-bindkey -M vicmd "k" up-line-or-beginning-search
-bindkey -M vicmd "j" down-line-or-beginning-search
 for km in vicmd viins; do
 	for c in "^p" "^[OA" "^[[A"; bindkey -M $km $c up-line-or-beginning-search
 	for c in "^n" "^[OB" "^[[B"; bindkey -M $km $c down-line-or-beginning-search
@@ -119,7 +117,6 @@ done
 
 # Completion
 zmodload zsh/complist
-fpath=($ZSH_DATA/plugins/arzsh-complete $fpath)
 autoload -Uz compinit
 compinit -d $XDG_CACHE_HOME/zcompdump
 _comp_options+=(globdots)
@@ -145,7 +142,9 @@ autoload -U select-word-style
 select-word-style bash
 
 # Syntax highlighting
-source /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+[[ -x /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ]] \
+	&& source /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh \
+	|| source $ZSH_DATA/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 ZSH_HIGHLIGHT_STYLES[default]="fg=cyan"
 ZSH_HIGHLIGHT_STYLES[unknown-token]="fg=red"
 ZSH_HIGHLIGHT_STYLES[reserved-word]="fg=blue"
