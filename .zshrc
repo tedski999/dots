@@ -16,7 +16,6 @@ export GOPATH="$XDG_DATA_HOME/go"
 export NODE_REPL_HISTORY="$XDG_DATA_HOME/node_repl_history"
 export npm_config_userconfig="$XDG_CONFIG_HOME/npm/npmrc"
 export PYTHONSTARTUP="$XDG_CONFIG_HOME/python/pythonrc"
-export WGETRC="$XDG_CONFIG_HOME/wget/wgetrc"
 export ZSH_DATA="$XDG_DATA_HOME/zsh"
 export LESS_TERMCAP_mb=$'\e[1;31m'
 export LESS_TERMCAP_md=$'\e[1;36m'
