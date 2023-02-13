@@ -190,6 +190,7 @@ set updatetime=100                                " Faster refreshing
 set timeoutlen=5000                               " 5 seconds to complete mapping
 set clipboard=unnamedplus                         " Use system clipboard
 set undofile                                      " Write undo history to disk
+set noswapfile                                    " No need for swap files
 set nomodeline                                    " Don't read mode line
 set virtualedit=onemore                           " Allow cursor to extend one character past the end of the line
 set grepprg=rg\ --vimgrep\ --smart-case\ --follow " Use ripgrep for grepping
@@ -296,7 +297,14 @@ if filereadable('/usr/share/vim/vimfiles/arista.vim')
 	" In-house VCS based on Perforce
 	let g:signify_vcs_cmds = { 'perforce': 'env P4DIFF= P4COLORS= a p4 diff -du 0 %f' }
 	let g:signify_vcs_cmds_diffmode = { 'perforce': 'a p4 print %f' }
+	" Polyglot breaks tac and tin filetype detection so heres a fix
+	augroup vimrc
+	autocmd!
+	autocmd BufNewFile,BufRead *.tac :set filetype=tac
+	autocmd BufNewFile,BufRead *.tin :set filetype=cpp
+	augroup END
 lua << EOF
+	-- Augment LSP server configs
 	local lsp = require('lspconfig')
 	local cap = require('cmp_nvim_lsp').default_capabilities()
 	require('lspconfig.configs').tacc = {default_config={cmd={'artaclsp'}, filetypes={'tac'}}}
@@ -304,14 +312,14 @@ lua << EOF
 		function(server)
 			lsp[server].setup({capabilities=cap, on_attach=vim.g.on_lsp_attach})
 		end,
-		["tacc"] = function()
-			-- TODO: arista settings
-			lsp.clangd.setup({capabilities=cap, on_attach=vim.g.on_lsp_attach,
-				cmd = {'artaclsp', '-I', '/bld'},
-				root_dir = '/src',
-				settings = {}
-			})
-		end,
+		-- TODO: arista settings
+		--["tacc"] = function()
+		--	lsp.clangd.setup({capabilities=cap, on_attach=vim.g.on_lsp_attach,
+		--		cmd = {'artaclsp', '-I', '/bld'},
+		--		root_dir = '/src',
+		--		settings = {}
+		--	})
+		--end,
 		["clangd"] = function()
 			-- TODO: arista settings
 			lsp.clangd.setup({capabilities=cap, on_attach=vim.g.on_lsp_attach,
