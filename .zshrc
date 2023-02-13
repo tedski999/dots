@@ -18,13 +18,13 @@ export npm_config_userconfig="$XDG_CONFIG_HOME/npm/npmrc"
 export PYTHONSTARTUP="$XDG_CONFIG_HOME/python/pythonrc"
 export WGETRC="$XDG_CONFIG_HOME/wget/wgetrc"
 export ZSH_DATA="$XDG_DATA_HOME/zsh"
-export LESS_TERMCAP_mb=$'\E[1;31m'
-export LESS_TERMCAP_md=$'\E[1;36m'
-export LESS_TERMCAP_me=$'\E[0m'
-export LESS_TERMCAP_so=$'\E[01;33m'
-export LESS_TERMCAP_se=$'\E[0m'
-export LESS_TERMCAP_us=$'\E[1;32m'
-export LESS_TERMCAP_ue=$'\E[0m'
+export LESS_TERMCAP_mb=$'\e[1;31m'
+export LESS_TERMCAP_md=$'\e[1;36m'
+export LESS_TERMCAP_me=$'\e[0m'
+export LESS_TERMCAP_so=$'\e[01;33m'
+export LESS_TERMCAP_se=$'\e[0m'
+export LESS_TERMCAP_us=$'\e[1;32m'
+export LESS_TERMCAP_ue=$'\e[0m'
 
 # GPG+SSH
 export SSH_AUTH_SOCK="$(gpgconf --list-dirs agent-ssh-socket)"
@@ -43,26 +43,23 @@ SAVEHIST="10000"
 TIMEFMT=$'\nreal\t%E\nuser\t%U\nsys\t%S\ncpu\t%P'
 
 # Aliases
-alias sudo='sudo --preserve-env '
-alias dots='git --git-dir=$HOME/.local/dots --work-tree=$HOME'
-alias v='nvim'
-alias r='ranger'
-alias d='dirs -v'
+alias sudo="sudo --preserve-env "
+alias dots="git --git-dir=$HOME/.local/dots --work-tree=$HOME"
+alias v="nvim"
+alias r="ranger"
+alias d="dirs -v"
 for i ({1..9}) alias "$i"="cd +$i"
 for i ({3..9}) alias "${(l:i::.:)}"="${(l:i-1::.:)};.."
 alias s="mosh --predict=always --predict-overwrite us260.sjc.aristanetworks.com -- tmux attach"
-alias grep='grep --color=auto'
-alias fgrep='fgrep --color=auto'
-alias egrep='egrep --color=auto'
-alias diff='diff --color=auto'
-alias ip='ip --color=auto'
-if type exa &>/dev/null; then
-	alias ls="exa -hs=name --group-directories-first"
-	alias la="exa -lahs=name --group-directories-first"
-else
-	alias ls="ls --group-directories-first --human-readable --color=auto"
-	alias la="ls --group-directories-first --human-readable --color=auto -la"
-fi
+alias grep="grep --color=auto"
+alias fgrep="fgrep --color=auto"
+alias egrep="egrep --color=auto"
+alias diff="diff --color=auto"
+alias ip="ip --color=auto"
+type exa &>/dev/null \
+	&& alias ls="exa -hs=name --group-directories-first" \
+	|| alias ls="ls --group-directories-first --human-readable --color=auto"
+alias la="ls -la"
 
 # Options
 setopt autocd interactive_comments notify
@@ -86,7 +83,7 @@ for km in vicmd viins; bindkey -M $km "^[[3~" delete-char
 
 # Block/beam cursor and dynamic prompt
 function zle-keymap-select zle-line-init {
-	echo -ne ${${KEYMAP/vicmd/'\e[2 q'}/(main|viins)/'\e[6 q'}
+	echo -ne ${${KEYMAP/vicmd/"\e[2 q"}/(main|viins)/"\e[6 q"}
 	PS1=$'\n%F{red}%n@%m%f %F{blue}%~%f %F{red}%(?..%?)%f\n${${KEYMAP/vicmd/"%F{magenta}"}/(main|viins)/}>%f '
 	PS2=$'${${KEYMAP/vicmd/"%F{magenta}"}/(main|viins)/}%_>%f '
 	zle reset-prompt
@@ -100,7 +97,7 @@ if bindkey -M viopp &>/dev/null && bindkey -M visual &>/dev/null; then
 	zle -N select-bracketed
 	zle -N select-quoted
 	for km in viopp visual; do
-		for c in {a,i}${(s..)^:-'()[]{}<>bB'}; bindkey -M $km $c select-bracketed
+		for c in {a,i}${(s..)^:-"()[]{}<>bB"}; bindkey -M $km $c select-bracketed
 		for c in {a,i}${(s..)^:-\'\"\`\|,./:;=+@}; bindkey -M $km $c select-quoted
 	done
 fi
@@ -122,25 +119,26 @@ done
 
 # Completion
 zmodload zsh/complist
-fpath=($ZSH_DATA/plugins/zsh-completions/src $ZSH_DATA/plugins/arzsh-complete $fpath)
+fpath=($ZSH_DATA/plugins/arzsh-complete $fpath)
 autoload -Uz compinit
 compinit -d $XDG_CACHE_HOME/zcompdump
 _comp_options+=(globdots)
-zstyle ':completion:*' menu select
-zstyle ':completion:*' completer _complete _match _approximate
-zstyle ':completion:*' matcher-list '' 'm:{[:lower:][:upper:]}={[:upper:][:lower:]}' '+l:|=* r:|=*'
-zstyle ':completion:*' use-cache on
-zstyle ':completion:*' cache-path "$XDG_CACHE_HOME/zcompcache"
-zstyle ':completion:*' group-name ''
-zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
-zstyle ':completion:*:*:*:*:descriptions' format '%F{green}-- %d --%f'
-zstyle ':completion:*:messages' format ' %F{purple} -- %d --%f'
-zstyle ':completion:*:warnings' format ' %F{red}-- no matches found --%f'
-bindkey '^[[Z' reverse-menu-complete
-bindkey -M menuselect 'h' vi-backward-char
-bindkey -M menuselect 'k' vi-up-line-or-history
-bindkey -M menuselect 'l' vi-forward-char
-bindkey -M menuselect 'j' vi-down-line-or-history
+zstyle ":completion:*" menu select
+zstyle ":completion:*" completer _complete _match _approximate
+zstyle ":completion:*" matcher-list "" "m:{[:lower:][:upper:]}={[:upper:][:lower:]}" "+l:|=* r:|=*"
+zstyle ":completion:*" use-cache on
+zstyle ":completion:*" cache-path "$XDG_CACHE_HOME/zcompcache"
+zstyle ":completion:*" group-name ""
+zstyle ":completion:*" list-colors "${(s.:.)LS_COLORS}"
+zstyle ":completion:*:*:*:*:descriptions" format "%F{green}-- %d --%f"
+zstyle ":completion:*:messages" format " %F{purple} -- %d --%f"
+zstyle ":completion:*:warnings" format " %F{red}-- no matches found --%f"
+bindkey "^[[Z" reverse-menu-complete
+bindkey -M menuselect "h" vi-backward-char
+bindkey -M menuselect "k" vi-up-line-or-history
+bindkey -M menuselect "l" vi-forward-char
+bindkey -M menuselect "j" vi-down-line-or-history
+bindkey -M menuselect "\e" send-break
 
 # Word delimiters
 autoload -U select-word-style
