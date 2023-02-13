@@ -18,6 +18,7 @@ Plug 'tpope/vim-commentary'                         " Comment keybinding
 Plug 'tpope/vim-fugitive'                           " Git integration
 Plug 'mhinz/vim-signify'                            " Git changes
 Plug 'tommcdo/vim-lion'                             " Text aligning
+Plug 'ojroques/vim-oscyank'                         " OSC52 yank
 Plug 'mbbill/undotree'                              " Visualised undo tree
 Plug 'junegunn/fzf.vim'                             " FZF shortcuts
 Plug 'junegunn/fzf', { 'do': { -> fzf#install() } } " Install FZF
@@ -291,14 +292,17 @@ if is_arista
 	" In-house VCS based on Perforce
 	let g:signify_vcs_cmds = { 'perforce': 'env P4DIFF= P4COLORS= a p4 diff -du 0 %f' }
 	let g:signify_vcs_cmds_diffmode = { 'perforce': 'a p4 print %f' }
+	" Throw yank through a remote tmux session to local terminal
+	let g:oscyank_term = 'default'
+	augroup vimrc
+	autocmd TextYankPost * if v:event.operator is 'y' && v:event.regname is '+' | execute 'OSCYankReg +' | endif
 	" Polyglot breaks tacc filetype detection so here's a fix
+	" TODO: cpp files with non-cpp file extensions break clangd for god-knows-what reason
+	autocmd BufNewFile,BufRead *.tin :set filetype=cpp
+	autocmd BufNewFile,BufRead *.tac :set filetype=tac
 	augroup filetypedetect
 	autocmd! BufNewFile,BufRead *.cgi,*.fcgi,*.gyp,*.gypi,*.lmi,*.ptl,*.py,*.py3,*.pyde,*.pyi,*.pyp,*.pyt,*.pyw,*.rpy,*.smk,*.spec,*.tac,*.wsgi,*.xpy,{.,}gclient,{.,}pythonrc,{.,}pythonstartup,DEPS,SConscript,SConstruct,Snakefile,wscript setf foo
 	autocmd! BufNewFile,BufRead *.cgi,*.fcgi,*.gyp,*.gypi,*.lmi,*.ptl,*.py,*.py3,*.pyde,*.pyi,*.pyp,*.pyt,*.pyw,*.rpy,*.smk,*.spec,*.wsgi,*.xpy,{.,}gclient,{.,}pythonrc,{.,}pythonstartup,DEPS,SConscript,SConstruct,Snakefile,wscript setf python
-	augroup vimrc
-	autocmd BufNewFile,BufRead *.tac :set filetype=tac
-	" TODO: cpp files with non-cpp file extensions break clangd for god-knows-what reason
-	autocmd BufNewFile,BufRead *.tin :set filetype=cpp
 	augroup END
 	" Add TACC LSP server
 	" TODO: this doesnt seem to do anything
