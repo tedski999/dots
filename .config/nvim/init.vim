@@ -295,7 +295,7 @@ if is_arista
 	" Throw yank through a remote tmux session to local terminal
 	let g:oscyank_term = 'default'
 	augroup vimrc
-	autocmd TextYankPost * if v:event.operator is 'y' && v:event.regname is '+' | execute 'OSCYankReg +' | endif
+	autocmd TextYankPost * if v:event.operator is 'y' && v:event.regname is '' | execute 'OSCYankReg "' | endif
 	" Polyglot breaks tacc filetype detection so here's a fix
 	" TODO: cpp files with non-cpp file extensions break clangd for god-knows-what reason
 	autocmd BufNewFile,BufRead *.tin :set filetype=cpp
