@@ -171,10 +171,11 @@ lsp.util.on_setup = lsp.util.add_hook_before(lsp.util.on_setup, function(cfg)
 	-- Arista-specifics
 	if is_arista and cfg.name == 'clangd' then
 		-- TODO: clangd settings
+		-- TODO: auto include self somehow
 	end
 end)
-lsp.clangd.setup({})
-lsp.pylsp.setup({})
+--lsp.clangd.setup({})
+--lsp.pylsp.setup({})
 
 EOF
 
@@ -222,6 +223,9 @@ set spellsuggest=best,20                          " Only show best spelling corr
 " Highlight trailing whitespace
 match Error /\s\+$/
 
+" Rg from current buffer
+command! -nargs=* BRg call fzf#vim#grep('rg --column --line-number --no-heading --color=always --smart-case -- '.shellescape(<q-args>), 1,  fzf#vim#with_preview({'dir': expand('%:p:h')}))
+
 augroup vimrc
 autocmd!
 " Highlight on yank
@@ -258,8 +262,8 @@ nnoremap <leader>u <cmd>UndotreeToggle<cr>
 nnoremap <leader>n <cmd>lcd ~/Documents/notes \| enew \| set filetype=markdown<cr>
 nnoremap <leader>N <cmd>lcd ~/Documents/notes \| execute 'edit'.strftime('./journal/%Y/%V.md') \| call mkdir(expand('%:h'), 'p')<cr>
 " FZF search
-nnoremap <leader>f <cmd>Files<cr>
-nnoremap <leader>s <cmd>Rg<cr>
+nnoremap <leader>f <cmd>Files %:p:h<cr>
+nnoremap <leader>s <cmd>BRg<cr>
 nnoremap <leader>h <cmd>Helptags<cr>
 nnoremap <leader>m <cmd>ManSearch<cr>
 " LSP
@@ -297,7 +301,6 @@ if is_arista
 	augroup vimrc
 	autocmd TextYankPost * if v:event.operator is 'y' && v:event.regname is '' | execute 'OSCYankReg "' | endif
 	" Polyglot breaks tacc filetype detection so here's a fix
-	" TODO: cpp files with non-cpp file extensions break clangd for god-knows-what reason
 	autocmd BufNewFile,BufRead *.tin :set filetype=cpp
 	autocmd BufNewFile,BufRead *.tac :set filetype=tac
 	augroup filetypedetect
@@ -308,4 +311,24 @@ if is_arista
 	" TODO: this doesnt seem to do anything
 	lua require('lspconfig.configs').tacc = {default_config={cmd={'artaclsp'}, filetypes={'tac'}}}
 	lua require('lspconfig').tacc.setup({})
+	" AGid search
+	command! -nargs=1 AGid call AGid(<f-args>)
+	function! AGid(args)
+		let output = system('a ws gid '.a:args)
+		if v:shell_error && output != '' | echomsg output | return | endif
+		" Remove blanks and ---- lines
+		let output = substitute(output, '\(^\|\n\)\zs\n', '', 'g')
+		let output = substitute(output, '\(^\|\n\)\zs----.\{-}\n', '', 'g')
+		" Send to location list
+		let old_efm = &efm
+		set efm=%f:%l:%m
+		lexpr output
+		let &efm = old_efm
+		" Open location list window if not one result
+		if count(output, '\n') != 1 | lopen | endif
+	endfunction
+	nnoremap <leader>g <cmd>execute 'AGid    -p '.split(expand('%:p:h'), '/')[1].' '.expand('<cword>')<cr>
+	nnoremap <leader>d <cmd>execute 'AGid -D -p '.split(expand('%:p:h'), '/')[1].' '.expand('<cword>')<cr>
+	nnoremap <leader>G <cmd>execute 'AGid    '.expand('<cword>')<cr>
+	nnoremap <leader>D <cmd>execute 'AGid -D '.expand('<cword>')<cr>
 endif
