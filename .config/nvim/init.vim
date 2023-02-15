@@ -263,7 +263,9 @@ nnoremap <leader>n <cmd>lcd ~/Documents/notes \| enew \| set filetype=markdown<c
 nnoremap <leader>N <cmd>lcd ~/Documents/notes \| execute 'edit'.strftime('./journal/%Y/%V.md') \| call mkdir(expand('%:h'), 'p')<cr>
 " FZF search
 nnoremap <leader>f <cmd>Files %:p:h<cr>
+nnoremap <leader>F <cmd>Files<cr>
 nnoremap <leader>s <cmd>BRg<cr>
+nnoremap <leader>S <cmd>Rg<cr>
 nnoremap <leader>h <cmd>Helptags<cr>
 nnoremap <leader>m <cmd>ManSearch<cr>
 " LSP
