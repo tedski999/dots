@@ -320,8 +320,8 @@ if is_arista
 	lua require('lspconfig.configs').tacc = {default_config={cmd={'artaclsp'}, filetypes={'tac'}}}
 	lua require('lspconfig').tacc.setup({})
 	" AGid search
-	command! -nargs=1 AGid call AGid(<f-args>)
-	function! AGid(args)
+	command! -nargs=1 AWsGid call AWsGid(<f-args>)
+	function! AWsGid(args)
 		let output = system('a ws gid '.a:args)
 		if v:shell_error && output != '' | echomsg output | return | endif
 		" Remove blanks and ---- lines
@@ -335,8 +335,8 @@ if is_arista
 		" Open location list window if not one result
 		if count(output, '\n') != 1 | lopen | endif
 	endfunction
-	nnoremap <leader>g <cmd>execute 'AGid    -p '.split(expand('%:p:h'), '/')[1].' '.expand('<cword>')<cr>
-	nnoremap <leader>d <cmd>execute 'AGid -D -p '.split(expand('%:p:h'), '/')[1].' '.expand('<cword>')<cr>
-	nnoremap <leader>G <cmd>execute 'AGid    '.expand('<cword>')<cr>
-	nnoremap <leader>D <cmd>execute 'AGid -D '.expand('<cword>')<cr>
+	nnoremap <leader>g <cmd>execute 'AWsGid    -p '.split(expand('%:p:h'), '/')[1].' '.expand('<cword>')<cr>
+	nnoremap <leader>d <cmd>execute 'AWsGid -D -p '.split(expand('%:p:h'), '/')[1].' '.expand('<cword>')<cr>
+	nnoremap <leader>G <cmd>execute 'AWsGid    '.expand('<cword>')<cr>
+	nnoremap <leader>D <cmd>execute 'AWsGid -D '.expand('<cword>')<cr>
 endif
