@@ -234,6 +234,11 @@ autocmd TextYankPost * lua vim.highlight.on_yank({higroup='Visual', timeout=150}
 autocmd BufEnter     * set formatoptions-=c formatoptions-=o
 " Restore cursor position when opening buffers
 autocmd BufReadPost  * if expand('%:p') !~# '\m/\.git/' && line("'\"") > 0 && line("'\"") <= line('$') | exe 'normal! g`"' | endif
+" Switch between alternative files
+autocmd BufEnter     *.c nnoremap <leader>a <cmd>edit %:p:r.h<cr>
+autocmd BufEnter     *.h nnoremap <leader>a <cmd>edit %:p:r.c<cr>
+autocmd BufEnter     *.cpp nnoremap <leader>a <cmd>edit %:p:r.hpp<cr>
+autocmd BufEnter     *.hpp nnoremap <leader>a <cmd>edit %:p:r.cpp<cr>
 augroup END
 
 let mapleader = ' '
@@ -246,8 +251,6 @@ nnoremap <nowait> <leader>w <cmd>w<cr>
 nnoremap <nowait> <leader>W <cmd>wq<cr>
 nnoremap <nowait> <leader>q <cmd>q<cr>
 nnoremap <nowait> <leader>Q <cmd>q!<cr>
-" Switch between header and source files
-nnoremap <leader>a <cmd>e %:p:s,.h$,.X123X,:s,.c$,.h,:s,.X123X$,.c,<cr>
 " Open config
 nnoremap <leader>c <cmd>edit $MYVIMRC<cr>
 " Search and replace
@@ -302,6 +305,9 @@ if is_arista
 	let g:oscyank_term = 'default'
 	augroup vimrc
 	autocmd TextYankPost * if v:event.operator is 'y' && v:event.regname is '' | execute 'OSCYankReg "' | endif
+	" Switch between tac and tin files
+	autocmd BufEnter     *.tin nnoremap <leader>a <cmd>edit %:p:r.tac<cr>
+	autocmd BufEnter     *.tac nnoremap <leader>a <cmd>edit %:p:r.tin<cr>
 	" Polyglot breaks tacc filetype detection so here's a fix
 	autocmd BufNewFile,BufRead *.tin :set filetype=cpp
 	autocmd BufNewFile,BufRead *.tac :set filetype=tac
