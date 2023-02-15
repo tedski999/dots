@@ -345,8 +345,8 @@ if is_arista
 		" Open location list window if not one result
 		if count(output, '\n') != 1 | lopen | endif
 	endfunction
-	nnoremap <leader>g <cmd>exe 'AWsGid    -p '.split(expand('%:p:h'), '/')[1].' '.expand('<cword>')<cr>
-	nnoremap <leader>d <cmd>exe 'AWsGid -D -p '.split(expand('%:p:h'), '/')[1].' '.expand('<cword>')<cr>
-	nnoremap <leader>G <cmd>exe 'AWsGid    '.expand('<cword>')<cr>
-	nnoremap <leader>D <cmd>exe 'AWsGid -D '.expand('<cword>')<cr>
+	nnoremap <leader>jgr <cmd>exe 'AWsGid    -p '.split(expand('%:p:h'), '/')[1].' '.expand('<cword>')<cr>
+	nnoremap <leader>jgd <cmd>exe 'AWsGid -D -p '.split(expand('%:p:h'), '/')[1].' '.expand('<cword>')<cr>
+	nnoremap <leader>jgR <cmd>exe 'AWsGid    '.expand('<cword>')<cr>
+	nnoremap <leader>jgD <cmd>exe 'AWsGid -D '.expand('<cword>')<cr>
 endif
