@@ -2,9 +2,9 @@ let is_arista = filereadable('/usr/share/vim/vimfiles/arista.vim')
 
 " Ensure plug.vim is installed
 let plug_vim = stdpath('data').'/site/autoload/plug.vim'
-if !filereadable(g:plug_vim)
-	silent execute '!curl -fLo '.g:plug_vim.' --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
-	silent execute 'source '.g:plug_vim
+if !filereadable(plug_vim)
+	silent exe '!curl -fLo '.plug_vim.' --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
+	silent exe 'source '.plug_vim
 endif
 
 call plug#begin()
@@ -38,7 +38,7 @@ call plug#end()
 if len(filter(values(g:plugs), '!isdirectory(v:val.dir)'))
 	PlugInstall --sync
 	runtime! plugin/rplugin.vim
-	silent! UpdateRemotePlugins
+	UpdateRemotePlugins
 	echo 'Plugins have been modified. Neovim must be restarted. Press any key to quit...'
 	call getchar()
 	qall!
@@ -226,6 +226,18 @@ match Error /\s\+$/
 " Rg from current buffer
 command! -nargs=* BRg call fzf#vim#grep('rg --column --line-number --no-heading --color=always --smart-case -- '.shellescape(<q-args>), 1,  fzf#vim#with_preview({'dir': expand('%:p:h')}))
 
+" Switch to alternative file based on provided extensions
+function! AltFile(exts)
+	let files = map(split(a:exts, ','), 'expand("%:p:r").".".v:val')
+	for file in files
+		if filereadable(file)
+			edit `=file`
+			return
+		endif
+	endfor
+	edit `=files[0]`
+endfunction
+
 augroup vimrc
 autocmd!
 " Highlight on yank
@@ -235,10 +247,8 @@ autocmd BufEnter     * set formatoptions-=c formatoptions-=o
 " Restore cursor position when opening buffers
 autocmd BufReadPost  * if expand('%:p') !~# '\m/\.git/' && line("'\"") > 0 && line("'\"") <= line('$') | exe 'normal! g`"' | endif
 " Switch between alternative files
-autocmd BufEnter     *.c nnoremap <leader>a <cmd>edit %:p:r.h<cr>
-autocmd BufEnter     *.h nnoremap <leader>a <cmd>edit %:p:r.c<cr>
-autocmd BufEnter     *.cpp nnoremap <leader>a <cmd>edit %:p:r.hpp<cr>
-autocmd BufEnter     *.hpp nnoremap <leader>a <cmd>edit %:p:r.cpp<cr>
+autocmd BufEnter     *.c,*.cpp nnoremap <leader>a <cmd>call AltFile('h,hpp')<cr>
+autocmd BufEnter     *.h,*.hpp nnoremap <leader>a <cmd>call AltFile('c,cpp')<cr>
 augroup END
 
 let mapleader = ' '
@@ -263,7 +273,7 @@ nnoremap <leader>gd <cmd>SignifyHunkDiff<cr>
 nnoremap <leader>u <cmd>UndotreeToggle<cr>
 " Open notes
 nnoremap <leader>n <cmd>lcd ~/Documents/notes \| enew \| set filetype=markdown<cr>
-nnoremap <leader>N <cmd>lcd ~/Documents/notes \| execute 'edit'.strftime('./journal/%Y/%V.md') \| call mkdir(expand('%:h'), 'p')<cr>
+nnoremap <leader>N <cmd>lcd ~/Documents/notes \| edit `=strftime('./journal/%Y/%V.md')` \| call mkdir(expand('%:h'), 'p')<cr>
 " FZF search
 nnoremap <leader>f <cmd>Files %:p:h<cr>
 nnoremap <leader>F <cmd>Files<cr>
@@ -304,10 +314,10 @@ if is_arista
 	" Throw yank through a remote tmux session to local terminal
 	let g:oscyank_term = 'default'
 	augroup vimrc
-	autocmd TextYankPost * if v:event.operator is 'y' && v:event.regname is '' | execute 'OSCYankReg "' | endif
+	autocmd TextYankPost * if v:event.operator is 'y' && v:event.regname is '' | exe 'OSCYankReg "' | endif
 	" Switch between tac and tin files
-	autocmd BufEnter     *.tin nnoremap <leader>a <cmd>edit %:p:r.tac<cr>
-	autocmd BufEnter     *.tac nnoremap <leader>a <cmd>edit %:p:r.tin<cr>
+	autocmd BufEnter *.tin nnoremap <leader>a <cmd>call AltFile('tac,h,hpp')<cr>
+	autocmd BufEnter *.tac nnoremap <leader>a <cmd>call AltFile('tin,c,cpp')<cr>
 	" Polyglot breaks tacc filetype detection so here's a fix
 	autocmd BufNewFile,BufRead *.tin :set filetype=cpp
 	autocmd BufNewFile,BufRead *.tac :set filetype=tac
@@ -335,8 +345,8 @@ if is_arista
 		" Open location list window if not one result
 		if count(output, '\n') != 1 | lopen | endif
 	endfunction
-	nnoremap <leader>g <cmd>execute 'AWsGid    -p '.split(expand('%:p:h'), '/')[1].' '.expand('<cword>')<cr>
-	nnoremap <leader>d <cmd>execute 'AWsGid -D -p '.split(expand('%:p:h'), '/')[1].' '.expand('<cword>')<cr>
-	nnoremap <leader>G <cmd>execute 'AWsGid    '.expand('<cword>')<cr>
-	nnoremap <leader>D <cmd>execute 'AWsGid -D '.expand('<cword>')<cr>
+	nnoremap <leader>g <cmd>exe 'AWsGid    -p '.split(expand('%:p:h'), '/')[1].' '.expand('<cword>')<cr>
+	nnoremap <leader>d <cmd>exe 'AWsGid -D -p '.split(expand('%:p:h'), '/')[1].' '.expand('<cword>')<cr>
+	nnoremap <leader>G <cmd>exe 'AWsGid    '.expand('<cword>')<cr>
+	nnoremap <leader>D <cmd>exe 'AWsGid -D '.expand('<cword>')<cr>
 endif
