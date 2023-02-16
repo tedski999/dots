@@ -139,7 +139,7 @@ cmp.setup({
 				Text = '""',     Method = '.f', Function = 'fn',  Constructor = '()', Field = '.x',
 				Variable = 'xy', Class = '{}',  Interface = '{}', Module = '[]',      Property = '.p',
 				Unit = '$$',     Value = '00',  Enum = '∀e',      Keyword = ';;',     Snippet = '~~',
-				Color = 'rgb',   File = '/.',   Reference = '&x', Folder = './',      EnumMember = '∃e',
+				Color = 'rgb',   File = '/.',   Reference = '&x', Folder = '//',      EnumMember = '∃e',
 				Constant = '#x', Struct = '{}', Event = 'ev',     Operator = '++',    TypeParameter = '<>'
 			})[item.kind]
 			return item
@@ -170,8 +170,7 @@ lsp.util.on_setup = lsp.util.add_hook_before(lsp.util.on_setup, function(cfg)
 	end
 	-- Arista-specifics
 	if is_arista and cfg.name == 'clangd' then
-		-- TODO: clangd settings
-		-- TODO: auto include self somehow
+		-- TODO(lsp+arista): auto include self somehow
 	end
 end)
 --lsp.clangd.setup({})
@@ -264,7 +263,7 @@ nnoremap <nowait> <leader>Q <cmd>q!<cr>
 " Open config
 nnoremap <leader>c <cmd>edit $MYVIMRC<cr>
 " Search and replace
-nnoremap <leader>r *:%s///gcI<left><left><left><left>
+nnoremap <leader>R *:%s///gcI<left><left><left><left>
 " Split lines at cursor, opposite of <s-j>
 nnoremap <s-k> m`i<cr><esc>``
 " Git
@@ -286,11 +285,8 @@ nnoremap <leader><leader> <cmd>lua vim.lsp.buf.hover()<cr>
 nnoremap <leader>k <cmd>lua vim.lsp.buf.code_action()<cr>
 nnoremap <leader>e <cmd>lua vim.diagnostic.open_float()<cr>
 nnoremap <leader>E <cmd>lua vim.diagnostic.setloclist()<cr>
-nnoremap <leader>R <cmd>lua vim.lsp.buf.rename()<cr>
-nnoremap <leader>jd <cmd>lua vim.lsp.buf.definition()<cr>
-nnoremap <leader>jt <cmd>lua vim.lsp.buf.type_definition()<cr>
-nnoremap <leader>jr <cmd>lua vim.lsp.buf.references()<cr>
-nnoremap <leader>ji <cmd>lua vim.lsp.buf.implementation()<cr>
+nnoremap <leader>d <cmd>lua vim.lsp.buf.definition()<cr>
+nnoremap <leader>r <cmd>lua vim.lsp.buf.references()<cr>
 vnoremap <leader>f <esc><cmd>lua vim.lsp.buf.range_formatting()<cr>
 " Snippets
 imap <expr> <tab>   vsnip#jumpable(+1) ? '<Plug>(vsnip-jump-next)' : '<tab>'
@@ -326,14 +322,16 @@ if is_arista
 	autocmd! BufNewFile,BufRead *.cgi,*.fcgi,*.gyp,*.gypi,*.lmi,*.ptl,*.py,*.py3,*.pyde,*.pyi,*.pyp,*.pyt,*.pyw,*.rpy,*.smk,*.spec,*.wsgi,*.xpy,{.,}gclient,{.,}pythonrc,{.,}pythonstartup,DEPS,SConscript,SConstruct,Snakefile,wscript setf python
 	augroup END
 	" Add TACC LSP server
-	" TODO: this doesnt seem to do anything
-	lua require('lspconfig.configs').tacc = {default_config={cmd={'artaclsp'}, filetypes={'tac'}}}
-	lua require('lspconfig').tacc.setup({})
+	" TODO(lsp+arista): this doesnt seem to do anything
+	" lua require('lspconfig.configs').tacc = {default_config={cmd={'artaclsp'}, filetypes={'tac'}}}
+	" lua require('lspconfig').tacc.setup({})
 	" AGid search
 	command! -nargs=1 AWsGid call AWsGid(<f-args>)
 	function! AWsGid(args)
+		echo "Searching..."
 		let output = system('a ws gid '.a:args)
-		if v:shell_error && output != '' | echomsg output | return | endif
+		if v:shell_error | echomsg output | return | endif
+		if output == '' | echo "No results" | return | endif
 		" Remove blanks and ---- lines
 		let output = substitute(output, '\(^\|\n\)\zs\n', '', 'g')
 		let output = substitute(output, '\(^\|\n\)\zs----.\{-}\n', '', 'g')
@@ -345,8 +343,8 @@ if is_arista
 		" Open location list window if not one result
 		if count(output, '\n') != 1 | lopen | endif
 	endfunction
-	nnoremap <leader>jgr <cmd>exe 'AWsGid    -p '.split(expand('%:p:h'), '/')[1].' '.expand('<cword>')<cr>
-	nnoremap <leader>jgd <cmd>exe 'AWsGid -D -p '.split(expand('%:p:h'), '/')[1].' '.expand('<cword>')<cr>
-	nnoremap <leader>jgR <cmd>exe 'AWsGid    '.expand('<cword>')<cr>
-	nnoremap <leader>jgD <cmd>exe 'AWsGid -D '.expand('<cword>')<cr>
+	nnoremap <leader>r <cmd>AWsGid    -p split(expand('%:p:h'), '/')[1] expand('<cword>')<cr>
+	nnoremap <leader>d <cmd>AWsGid -D -p split(expand('%:p:h'), '/')[1] expand('<cword>')<cr>
+	nnoremap <leader>R <cmd>AWsGid    expand('<cword>')<cr>
+	nnoremap <leader>D <cmd>AWsGid -D expand('<cword>')<cr>
 endif

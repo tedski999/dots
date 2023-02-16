@@ -77,7 +77,7 @@ export KEYTIMEOUT=1
 # External editor
 autoload edit-command-line
 zle -N edit-command-line
-bindkey -M vicmd "v" edit-command-line
+bindkey "^V" edit-command-line
 
 # Better keybindings
 bindkey "^W" backward-kill-word
@@ -120,6 +120,8 @@ for km in vicmd viins; do
 done
 
 # Completion
+[[ -d $ZSH_DATA/plugins/arzsh-complete ]] && fpath=($fpath $ZSH_DATA/plugins/arzsh-complete)
+[[ -d $ZSH_DATA/plugins/zsh-completions ]] && fpath=($fpath $ZSH_DATA/plugins/zsh-completions/src)
 zmodload zsh/complist
 autoload -Uz compinit
 compinit -d $XDG_CACHE_HOME/zcompdump
@@ -146,7 +148,7 @@ autoload -U select-word-style
 select-word-style bash
 
 # Syntax highlighting
-[[ -x /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ]] \
+[[ -f /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ]] \
 	&& source /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh \
 	|| source $ZSH_DATA/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 ZSH_HIGHLIGHT_STYLES[default]="fg=cyan"
