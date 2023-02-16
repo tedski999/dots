@@ -49,16 +49,18 @@ alias r="ranger"
 alias d="dirs -v"
 for i ({1..9}) alias "$i"="cd +$i"
 for i ({3..9}) alias "${(l:i::.:)}"="${(l:i-1::.:)};.."
-alias s="echo -ne '\e[2 q' && mosh --predict=always --predict-overwrite us260.sjc.aristanetworks.com -- tmux attach"
 alias grep="grep --color=auto"
 alias fgrep="fgrep --color=auto"
 alias egrep="egrep --color=auto"
 alias diff="diff --color=auto"
 alias ip="ip --color=auto"
+alias la="ls -la"
 type exa &>/dev/null \
 	&& alias ls="exa -hs=name --group-directories-first" \
 	|| alias ls="ls --group-directories-first --human-readable --color=auto"
-alias la="ls -la"
+test "$(hostname)" != "us260.sjc.aristanetworks.com" \
+	&& alias s="echo -ne '\e[2 q' && mosh --predict=always --predict-overwrite us260.sjc.aristanetworks.com -- tmux attach" \
+	|| alias s="a4c shell"
 
 # Options
 setopt autocd interactive_comments notify
