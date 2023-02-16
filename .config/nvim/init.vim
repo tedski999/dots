@@ -327,7 +327,7 @@ if is_arista
 	" lua require('lspconfig.configs').tacc = {default_config={cmd={'artaclsp'}, filetypes={'tac'}}}
 	" lua require('lspconfig').tacc.setup({})
 	" AGid search
-	command! -nargs=1 AWsGid call AWsGid(<f-args>)
+	command! -nargs=1 A call AWsGid(<f-args>)
 	function! AWsGid(args)
 		echo "Searching..."
 		let output = system('a ws gid '.a:args)
@@ -344,8 +344,8 @@ if is_arista
 		" Open location list window if not one result
 		if count(output, '\n') != 1 | lopen | endif
 	endfunction
-	nnoremap <leader>r <cmd>AWsGid    -p split(expand('%:p:h'), '/')[1] expand('<cword>')<cr>
-	nnoremap <leader>d <cmd>AWsGid -D -p split(expand('%:p:h'), '/')[1] expand('<cword>')<cr>
-	nnoremap <leader>R <cmd>AWsGid    expand('<cword>')<cr>
-	nnoremap <leader>D <cmd>AWsGid -D expand('<cword>')<cr>
+	nnoremap <leader>r <cmd>exe 'A    -p '.split(expand('%:p:h'), '/')[1].' '.expand('<cword>')<cr>
+	nnoremap <leader>d <cmd>exe 'A -D -p '.split(expand('%:p:h'), '/')[1].' '.expand('<cword>')<cr>
+	nnoremap <leader>R <cmd>exe 'A    '.expand('<cword>')<cr>
+	nnoremap <leader>D <cmd>exe 'A -D '.expand('<cword>')<cr>
 endif
