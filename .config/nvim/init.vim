@@ -200,6 +200,7 @@ set shortmess+=sIc                                " Be quieter
 set noexpandtab                                   " Tab key inserts tabs
 set tabstop=4                                     " 4-spaced tabs
 set shiftwidth=0                                  " Tab-spaced indentation
+set cinoptions=N-s                                " Don't indent C++ namespaces
 set list                                          " Enable whitespace characters below
 set listchars=space:·,tab:›\ ,trail:•,precedes:<,extends:>,nbsp:␣
 set suffixes-=.h                                  " Header files are important...
