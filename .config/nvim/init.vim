@@ -300,6 +300,12 @@ if is_arista
 	" In-house VCS based on Perforce
 	let g:signify_vcs_cmds = { 'perforce': 'env P4DIFF= P4COLORS= a p4 diff -du 0 %f' }
 	let g:signify_vcs_cmds_diffmode = { 'perforce': 'a p4 print %f' }
+	" Fix TACC indentation
+	function! TaccIndentOverrides()
+		let prevLine = getline(SkipTaccBlanksAndComments(v:lnum - 1))
+		if prevLine =~# 'Tac::Namespace\s*{\s*$' | return 0 | endif
+		return GetTaccIndent()
+	endfunction
 	" Throw yank through a remote tmux session to local terminal
 	let g:oscyank_term = 'default'
 	let g:oscyank_silent = v:true
@@ -309,8 +315,8 @@ if is_arista
 	autocmd BufEnter *.tin nnoremap <leader>a <cmd>call AltFile('tac,h,hpp')<cr>
 	autocmd BufEnter *.tac nnoremap <leader>a <cmd>call AltFile('tin,c,cpp')<cr>
 	" Polyglot breaks tacc filetype detection so here's a fix
-	autocmd BufNewFile,BufRead *.tin :set filetype=cpp
-	autocmd BufNewFile,BufRead *.tac :set filetype=tac
+	autocmd BufNewFile,BufRead *.tin set filetype=cpp
+	autocmd BufNewFile,BufRead *.tac set filetype=tac | setlocal indentexpr=TaccIndentOverrides()
 	augroup filetypedetect
 	autocmd! BufNewFile,BufRead *.cgi,*.fcgi,*.gyp,*.gypi,*.lmi,*.ptl,*.py,*.py3,*.pyde,*.pyi,*.pyp,*.pyt,*.pyw,*.rpy,*.smk,*.spec,*.tac,*.wsgi,*.xpy,{.,}gclient,{.,}pythonrc,{.,}pythonstartup,DEPS,SConscript,SConstruct,Snakefile,wscript setf foo
 	autocmd! BufNewFile,BufRead *.cgi,*.fcgi,*.gyp,*.gypi,*.lmi,*.ptl,*.py,*.py3,*.pyde,*.pyi,*.pyp,*.pyt,*.pyw,*.rpy,*.smk,*.spec,*.wsgi,*.xpy,{.,}gclient,{.,}pythonrc,{.,}pythonstartup,DEPS,SConscript,SConstruct,Snakefile,wscript setf python
