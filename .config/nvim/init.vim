@@ -37,11 +37,8 @@ call plug#end()
 " Ensure plugins are installed
 if len(filter(values(g:plugs), '!isdirectory(v:val.dir)'))
 	PlugInstall --sync
-	runtime! plugin/rplugin.vim
-	UpdateRemotePlugins
-	echo 'Plugins have been modified. Neovim must be restarted. Press any key to quit...'
-	call getchar()
-	qall!
+	echo 'Neovim must be restarted. Press any key to quit...'
+	call getchar() | qall!
 endif
 
 " Set the colorscheme and extra highlights
@@ -77,7 +74,8 @@ let undotree_DiffAutoOpen = 0
 let undotree_HelpLine = 0
 
 " FZF for fuzzy searching files, lines, help tags and man pages
-let g:fzf_layout = { 'window': { 'width': 1, 'height': 0.6, 'yoffset': 1.0 } }
+let g:fzf_layout = { 'window': { 'width': 1, 'height': 0.75, 'yoffset': 1.0 } }
+let g:fzf_action = { 'ctrl-j': '', 'ctrl-t': 'tab split', 'ctrl-s': 'split', 'ctrl-v': 'vsplit' }
 command! ManSearch call fzf#run(fzf#wrap({'source': 'man -k '.shellescape(<q-args>).' | cut -d " " -f 1', 'sink': 'tab Man', 'options': ['--preview', 'man {}']}))
 
 " Snippets location
@@ -228,12 +226,7 @@ command! -nargs=* BRg call fzf#vim#grep('rg --column --line-number --no-heading 
 " Switch to alternative file based on provided extensions
 function! AltFile(exts)
 	let files = map(split(a:exts, ','), 'expand("%:p:r").".".v:val')
-	for file in files
-		if filereadable(file)
-			edit `=file`
-			return
-		endif
-	endfor
+	for file in files | if filereadable(file) | edit `=file` | return | endif | endfor
 	edit `=files[0]`
 endfunction
 
@@ -329,20 +322,11 @@ if is_arista
 	" AGid search
 	command! -nargs=1 A call AWsGid(<f-args>)
 	function! AWsGid(args)
-		echo "Searching..."
-		let output = system('a ws gid '.a:args)
-		if v:shell_error | echomsg output | return | endif
-		if output == '' | echo "No results" | return | endif
-		" Remove blanks and ---- lines
-		let output = substitute(output, '\(^\|\n\)\zs\n', '', 'g')
-		let output = substitute(output, '\(^\|\n\)\zs----.\{-}\n', '', 'g')
-		" Send to location list
-		let old_efm = &efm
-		set efm=%f:%l:%m
-		lexpr output
-		let &efm = old_efm
-		" Open location list window if not one result
-		if count(output, '\n') != 1 | lopen | endif
+		echo "Searching..." | redraw
+		let output = system('a ws gid --compact '.a:args)
+		if v:shell_error | echoerr output | return | endif
+		if output == '' | echohl WarningMsg | echo "No results" | echohl None | return | endif
+		let old_efm = &efm | set efm=%f:%l:%m | lexpr output | let &efm = old_efm
 	endfunction
 	nnoremap <leader>r <cmd>exe 'A    -p '.split(expand('%:p:h'), '/')[1].' '.expand('<cword>')<cr>
 	nnoremap <leader>d <cmd>exe 'A -D -p '.split(expand('%:p:h'), '/')[1].' '.expand('<cword>')<cr>
