@@ -309,6 +309,7 @@ if is_arista
 	let g:signify_vcs_cmds_diffmode = { 'perforce': 'a p4 print %f' }
 	" Throw yank through a remote tmux session to local terminal
 	let g:oscyank_term = 'default'
+	let g:oscyank_silent = v:true
 	augroup vimrc
 	autocmd TextYankPost * if v:event.operator is 'y' && v:event.regname is '' | exe 'OSCYankReg "' | endif
 	" Switch between tac and tin files
