@@ -54,10 +54,8 @@ alias fgrep="fgrep --color=auto"
 alias egrep="egrep --color=auto"
 alias diff="diff --color=auto"
 alias ip="ip --color=auto"
+alias ls="exa -hs=name --group-directories-first"
 alias la="ls -la"
-type exa &>/dev/null \
-	&& alias ls="exa -hs=name --group-directories-first" \
-	|| alias ls="ls --group-directories-first --human-readable --color=auto"
 test "$(hostname)" != "us260.sjc.aristanetworks.com" \
 	&& alias s="echo -ne '\e[2 q' && mosh --predict=always --predict-overwrite us260.sjc.aristanetworks.com -- tmux attach" \
 	|| alias s="a4c shell"
