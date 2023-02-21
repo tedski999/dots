@@ -319,7 +319,6 @@ if filereadable('/usr/share/vim/vimfiles/arista.vim') && getcwd().'/' =~# '^/src
 	" Fuzzy-search files using caching
 	let afiles_cmd = 'find /src -type f'
 	function! Afiles(path)
-		" TODO: broke
 		if expand('%:p') =~# '^/src/'
 			let p = expand(a:path)
 			let f = stdpath('cache').'/afiles'
@@ -327,7 +326,7 @@ if filereadable('/usr/share/vim/vimfiles/arista.vim') && getcwd().'/' =~# '^/src
 				echo 'Generating Afiles cache...' | redraw
 				let res = systemlist(g:afiles_cmd)
 				if v:shell_error | echohl ErrorMsg | echomsg res | echohl None | return | endif
-				if res == [] |  'No files found for afiles' | return | endif
+				if res == [] | echohl ErrorMsg | echo 'No files found for afiles' | echohl None | return | endif
 				call writefile(res, f)
 			endif
 			call fzf#run(fzf#wrap({'source': 'grep -F "'.p.'" '.f, 'options': ['--preview', 'cat {}']}))
