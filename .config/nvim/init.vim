@@ -338,19 +338,15 @@ if filereadable('/usr/share/vim/vimfiles/arista.vim') && getcwd().'/' =~# '^/src
 	" OpenGrok search
 	function! OpenGrok(params)
 		let proj = 'eos-trunk'
-		" Get auth token
-		" TODO: this file expires daily - use `curl -L -b <file> -c <file>` where file contains
-		" netscape-formatted cookies for both opengrok and google auth tokens to automate this for months
-		let auth = system('cat '.stdpath('cache').'/opengrokauth')
-		if v:shell_error | echohl ErrorMsg | echomsg auth | echohl None | return | endif
 		" Format request command
+		let cookies = stdpath('cache').'/opengrokcookies'
 		let params = 'maxresults=128&projects='.proj.'&'.substitute(a:params, '\s\+', '\&', 'g')
-		let cmd = "curl -sb 'authservice_session=".auth."' 'https://opengrok.infra.corp.arista.io/source/api/v1/search?".params."' --http1.1"
+		let cmd = "curl 'https://opengrok.infra.corp.arista.io/source/api/v1/search?".params."' --http1.1 -Lsb ".cookies." -c ".cookies
 		" Send request and parse json response
 		echo 'Searching OpenGrok...' | redraw
 		let res = system(cmd)
 		if v:shell_error | echohl ErrorMsg | echomsg res | echohl None | return | endif
-		try | let data = json_decode(res) | catch | echohl ErrorMsg | echo 'Bad response, is opengrokauth up-to-date?' | echohl None | return | endtry
+		try | let data = json_decode(res) | catch | echohl ErrorMsg | echo 'Bad response, maybe auth token cookies have expired?' | echohl None | return | endtry
 		" Construct list of locations from json data
 		let locs = []
 		for [projfile,res] in items(data.results)
@@ -368,9 +364,9 @@ if filereadable('/usr/share/vim/vimfiles/arista.vim') && getcwd().'/' =~# '^/src
 	endfunction
 	command! -nargs=1 A call OpenGrok(<f-args>)
 	nnoremap <leader>r <cmd>exe 'A symbol='.expand('<cword>').' path='.split(expand('%:p:h'), '/')[1].'*'<cr>
-	nnoremap <leader>d <cmd>exe 'A def='.expand('<cword>').'    path='.split(expand('%:p:h'), '/')[1].'*'<cr>
+	nnoremap <leader>d <cmd>exe 'A    def='.expand('<cword>').' path='.split(expand('%:p:h'), '/')[1].'*'<cr>
 	nnoremap <leader>R <cmd>exe 'A symbol='.expand('<cword>')<cr>
-	nnoremap <leader>D <cmd>exe 'A def='.expand('<cword>')<cr>
+	nnoremap <leader>D <cmd>exe 'A    def='.expand('<cword>')<cr>
 	" If remote, use ssh for some commands
 	let amut = trim(system('findmnt -no SOURCE /src | cut -d: -f1'))
 	if amut != ''
