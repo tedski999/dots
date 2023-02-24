@@ -91,6 +91,7 @@ export KEYTIMEOUT=1
 autoload edit-command-line
 zle -N edit-command-line
 bindkey "^V" edit-command-line
+bindkey -M vicmd "^V" edit-command-line
 
 # Better keybindings
 bindkey "^W" backward-kill-word
