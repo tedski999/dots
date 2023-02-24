@@ -335,31 +335,40 @@ if filereadable('/usr/share/vim/vimfiles/arista.vim') && getcwd().'/' =~# '^/src
 	nnoremap <leader>F <cmd>Afiles `pwd`<cr>
 	" OpenGrok search
 	function! OpenGrok(params)
-		let proj = 'eos-trunk'
+		let s:proj = 'eos-trunk'
 		" Format request command
 		let cookies = stdpath('data').'/opengrok.cookie'
-		let params = 'maxresults=128&projects='.proj.'&'.substitute(a:params, '\s\+', '\&', 'g')
+		let params = 'maxresults=128&projects='.s:proj.'&'.substitute(a:params, '\s\+', '\&', 'g')
 		let cmd = "curl 'https://opengrok.infra.corp.arista.io/source/api/v1/search?".params."' --http1.1 -Lsb ".cookies." -c ".cookies
+		" Callbacks to retrieve all data from request command
+		let s:data = ['']
+		function! s:on_data(job_id, data, event)
+			let s:data[-1] .= a:data[0]
+			call extend(s:data, a:data[1:])
+		endfunction
+		function! s:on_exit(job_id, data, event)
+			" Parse data
+			let res = join(s:data, "\n")."\n"
+			if v:shell_error | echohl ErrorMsg | echomsg res | echohl None | return | endif
+			try | let data = json_decode(res) | catch | echohl ErrorMsg | echo 'Bad response, maybe auth token cookies have expired?' | echohl None | return | endtry
+			" Construct list of locations from json data
+			let locs = []
+			for [projfile,res] in items(data.results)
+				let file = projfile[len('/'.s:proj):-1]
+				for r in res
+					let locs += [file.'	'.r.lineNumber.'	'.substitute(r.line, '</\?b>', '', 'g')]
+				endfor
+			endfor
+			if locs == [] | echohl ErrorMsg | echo 'Nothing found' | echohl None | return | endif
+			" Place list into the window location list
+			let e = &efm
+			set efm=%f\	%l\	%m
+			lexpr locs
+			let &efm = e
+		endfunction
 		" Send request and parse json response
 		echo 'Searching OpenGrok...' | redraw
-		" TODO: job control this
-		let res = system(cmd)
-		if v:shell_error | echohl ErrorMsg | echomsg res | echohl None | return | endif
-		try | let data = json_decode(res) | catch | echohl ErrorMsg | echo 'Bad response, maybe auth token cookies have expired?' | echohl None | return | endtry
-		" Construct list of locations from json data
-		let locs = []
-		for [projfile,res] in items(data.results)
-			let file = projfile[len('/'.proj):-1]
-			for r in res
-				let locs += [file.'	'.r.lineNumber.'	'.substitute(r.line, '</\?b>', '', 'g')]
-			endfor
-		endfor
-		if locs == [] | echohl ErrorMsg | echo 'Nothing found' | echohl None | return | endif
-		" Place list into the window location list
-		let e = &efm
-		set efm=%f\	%l\	%m
-		lexpr locs
-		let &efm = e
+		call jobstart(cmd, { 'pty': '1', 'on_stdout': function('s:on_data'), 'on_exit': function('s:on_exit') })
 	endfunction
 	command! -nargs=1 A call OpenGrok(<f-args>)
 	nnoremap <leader>r <cmd>exe 'A symbol='.expand('<cword>').' path='.split(expand('%:p:h'), '/')[1].'*'<cr>
