@@ -194,17 +194,17 @@ toggle-tiled-right=@as []
 [org/gnome/settings-daemon/plugins/media-keys]
 area-screenshot=['Print']
 area-screenshot-clip=@as []
-custom-keybindings=['/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/', '/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom1/', '/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom2/']
+custom-keybindings=['/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/', '/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom1/', '/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom2/', '/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom3/']
 help=@as []
 home=@as []
-logout=['<Primary><Shift><Super>Escape']
+logout=['<Primary><Super>Escape']
 magnifier=@as []
 magnifier-zoom-in=@as []
 magnifier-zoom-out=@as []
 rotate-video-lock-static=@as []
 screencast=['<Shift>Print']
 screenreader=@as []
-screensaver=['<Shift><Super>Escape']
+screensaver=['<Super>Escape']
 screenshot=@as []
 screenshot-clip=@as []
 terminal=['<Super>Return']
@@ -213,7 +213,7 @@ window-screenshot-clip=@as []
 www=['<Super>w']
 
 [org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0]
-binding='<Primary><Super>Escape'
+binding='<Shift><Super>Escape'
 command='systemctl suspend'
 name='Suspend'
 
@@ -226,6 +226,11 @@ name='Discord'
 binding='<Super>s'
 command='steam'
 name='Steam'
+
+[org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom3]
+binding='<Primary><Shift><Super>Escape'
+command='gnome-session-quit --power-off'
+name='Power Off'
 
 [org/gnome/settings-daemon/plugins/power]
 power-button-action='suspend'
