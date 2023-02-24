@@ -1,5 +1,3 @@
-let is_arista = filereadable('/usr/share/vim/vimfiles/arista.vim')
-
 " Ensure plug.vim is installed
 let plug_vim = stdpath('data').'/site/autoload/plug.vim'
 if !filereadable(plug_vim)
@@ -63,6 +61,10 @@ let lion_map_left = '<leader>,'
 let lion_map_right = '<leader>.'
 let lion_squeeze_spaces = 1
 
+" Throw yank straight to local terminal using OSC52
+let g:oscyank_term = 'default'
+let g:oscyank_silent = v:true
+
 " Visualise the undo history tree
 let undotree_ShortIndicators = 1
 let undotree_SetFocusWhenToggle = 1
@@ -75,8 +77,7 @@ let undotree_HelpLine = 0
 
 " FZF for fuzzy searching files, lines, help tags and man pages
 let g:fzf_layout = { 'window': { 'width': 1, 'height': 0.75, 'yoffset': 1.0 } }
-let g:fzf_action = { 'ctrl-j': '', 'ctrl-t': 'tab split', 'ctrl-s': 'split', 'ctrl-v': 'vsplit' }
-command! ManSearch call fzf#run(fzf#wrap({'source': 'man -k '.shellescape(<q-args>).' | cut -d " " -f 1', 'sink': 'tab Man', 'options': ['--preview', 'man {}']}))
+let g:fzf_action = { 'ctrl-j': 'edit', 'ctrl-t': 'tab split', 'ctrl-s': 'split', 'ctrl-v': 'vsplit' }
 
 " Snippets location
 let g:vsnip_snippet_dir = stdpath('config').'/snippets'
@@ -158,17 +159,12 @@ cmp.setup.cmdline(':', {
 -- LSP server configs
 local lsp = require('lspconfig')
 lsp.util.on_setup = lsp.util.add_hook_before(lsp.util.on_setup, function(cfg)
-	-- Generic settings
 	cfg.capabilities = require('cmp_nvim_lsp').default_capabilities()
 	cfg.on_attach = function(client, bufnr)
 		if client.server_capabilities.documentHighlightProvider then
 			vim.api.nvim_create_autocmd('CursorMoved', {buffer=bufnr, callback=vim.lsp.buf.clear_references})
 			vim.api.nvim_create_autocmd('CursorMoved', {buffer=bufnr, callback=vim.lsp.buf.document_highlight})
 		end
-	end
-	-- Arista-specifics
-	if is_arista and cfg.name == 'clangd' then
-		-- TODO(lsp+arista): auto include self somehow
 	end
 end)
 --lsp.clangd.setup({})
@@ -221,9 +217,6 @@ set spellsuggest=best,20                          " Only show best spelling corr
 " Highlight trailing whitespace
 match Error /\s\+$/
 
-" Rg from current buffer
-command! -nargs=* BRg call fzf#vim#grep('rg --column --line-number --no-heading --color=always --smart-case -- '.shellescape(<q-args>), 1,  fzf#vim#with_preview({'dir': expand('%:p:h')}))
-
 " Switch to alternative file based on provided extensions
 function! AltFile(exts)
 	let files = map(split(a:exts, ','), 'expand("%:p:r").".".v:val')
@@ -235,6 +228,8 @@ augroup vimrc
 autocmd!
 " Highlight on yank
 autocmd TextYankPost * lua vim.highlight.on_yank({higroup='Visual', timeout=150})
+" Yank with OSC52
+autocmd TextYankPost * if v:event.operator is 'y' && v:event.regname is '' | exe 'OSCYankReg "' | endif
 " Don't format new-line comments
 autocmd BufEnter     * set formatoptions-=c formatoptions-=o
 " Restore cursor position when opening buffers
@@ -268,12 +263,13 @@ nnoremap <leader>u <cmd>UndotreeToggle<cr>
 nnoremap <leader>n <cmd>lcd ~/Documents/notes \| enew \| set filetype=markdown<cr>
 nnoremap <leader>N <cmd>lcd ~/Documents/notes \| edit `=strftime('./journal/%Y/%V.md')` \| call mkdir(expand('%:h'), 'p')<cr>
 " FZF search
+nnoremap <leader>b <cmd>Buffers<cr>
 nnoremap <leader>f <cmd>Files %:p:h<cr>
 nnoremap <leader>F <cmd>Files<cr>
-nnoremap <leader>s <cmd>BRg<cr>
+nnoremap <leader>s <cmd>call fzf#vim#grep('rg --column --line-number --no-heading --color=always --smart-case ""', 1, fzf#vim#with_preview({'dir': expand('%:p:h')}))<cr>
 nnoremap <leader>S <cmd>Rg<cr>
 nnoremap <leader>h <cmd>Helptags<cr>
-nnoremap <leader>m <cmd>ManSearch<cr>
+nnoremap <leader>m <cmd>call fzf#run(fzf#wrap({'source': 'man -k "" \| cut -d " " -f 1', 'sink': 'tab Man', 'options': ['--preview', 'man {}']}))<cr>
 " LSP
 nnoremap <leader><leader> <cmd>lua vim.lsp.buf.hover()<cr>
 nnoremap <leader>k <cmd>lua vim.lsp.buf.code_action()<cr>
@@ -288,8 +284,9 @@ smap <expr> <tab>   vsnip#jumpable(+1) ? '<Plug>(vsnip-jump-next)' : '<tab>'
 imap <expr> <s-tab> vsnip#jumpable(-1) ? '<Plug>(vsnip-jump-prev)' : '<s-tab>'
 smap <expr> <s-tab> vsnip#jumpable(-1) ? '<Plug>(vsnip-jump-prev)' : '<s-tab>'
 
-" Arista-specifics
-if is_arista
+" Arista-specifics if available and in /src directory
+if filereadable('/usr/share/vim/vimfiles/arista.vim') && getcwd().'/' =~# '^/src/'
+	echohl MoreMsg | echo 'Arista-specifics enabled!' | echohl None
 	" Manual control
 	let a4_auto_edit = 0
 	command! A4edit call A4edit()
@@ -307,36 +304,74 @@ if is_arista
 		if prevLine =~# 'Tac::Namespace\s*{\s*$' | return 0 | endif
 		return GetTaccIndent()
 	endfunction
-	" Throw yank through a remote tmux session to local terminal
-	let g:oscyank_term = 'default'
-	let g:oscyank_silent = v:true
 	augroup vimrc
-	autocmd TextYankPost * if v:event.operator is 'y' && v:event.regname is '' | exe 'OSCYankReg "' | endif
+	autocmd BufNewFile,BufRead *.tac setlocal indentexpr=TaccIndentOverrides()
 	" Switch between tac and tin files
 	autocmd BufEnter *.tin nnoremap <leader>a <cmd>call AltFile('tac,h,hpp')<cr>
 	autocmd BufEnter *.tac nnoremap <leader>a <cmd>call AltFile('tin,c,cpp')<cr>
 	" Polyglot breaks tacc filetype detection so here's a fix
 	autocmd BufNewFile,BufRead *.tin set filetype=cpp
-	autocmd BufNewFile,BufRead *.tac set filetype=tac | setlocal indentexpr=TaccIndentOverrides()
+	autocmd BufNewFile,BufRead *.tac set filetype=tac
 	augroup filetypedetect
 	autocmd! BufNewFile,BufRead *.cgi,*.fcgi,*.gyp,*.gypi,*.lmi,*.ptl,*.py,*.py3,*.pyde,*.pyi,*.pyp,*.pyt,*.pyw,*.rpy,*.smk,*.spec,*.tac,*.wsgi,*.xpy,{.,}gclient,{.,}pythonrc,{.,}pythonstartup,DEPS,SConscript,SConstruct,Snakefile,wscript setf foo
 	autocmd! BufNewFile,BufRead *.cgi,*.fcgi,*.gyp,*.gypi,*.lmi,*.ptl,*.py,*.py3,*.pyde,*.pyi,*.pyp,*.pyt,*.pyw,*.rpy,*.smk,*.spec,*.wsgi,*.xpy,{.,}gclient,{.,}pythonrc,{.,}pythonstartup,DEPS,SConscript,SConstruct,Snakefile,wscript setf python
 	augroup END
-	" Add TACC LSP server
-	" TODO(lsp+arista): this doesnt seem to do anything
-	" lua require('lspconfig.configs').tacc = {default_config={cmd={'artaclsp'}, filetypes={'tac'}}}
-	" lua require('lspconfig').tacc.setup({})
-	" AGid search
-	command! -nargs=1 A call AWsGid(<f-args>)
-	function! AWsGid(args)
-		echo "Searching..." | redraw
-		let output = system('a ws gid --compact '.a:args)
-		if v:shell_error | echoerr output | return | endif
-		if output == '' | echohl WarningMsg | echo "No results" | echohl None | return | endif
-		let old_efm = &efm | set efm=%f:%l:%m | lexpr output | let &efm = old_efm
+	" Fuzzy-search files using caching
+	let afiles_cmd = 'find /src -type f'
+	function! Afiles(path)
+		if expand('%:p') =~# '^/src/'
+			let p = expand(a:path)
+			let f = stdpath('cache').'/afiles'
+			if !filereadable(f)
+				echo 'Generating Afiles cache...' | redraw
+				let res = systemlist(g:afiles_cmd)
+				if v:shell_error | echohl ErrorMsg | echomsg res | echohl None | return | endif
+				if res == [] | echohl ErrorMsg | echo 'No files found for afiles' | echohl None | return | endif
+				call writefile(res, f)
+			endif
+			call fzf#run(fzf#wrap({'source': 'grep -F "'.p.'" '.f, 'options': ['--preview', 'cat {}']}))
+		endif
 	endfunction
-	nnoremap <leader>r <cmd>exe 'A    -p '.split(expand('%:p:h'), '/')[1].' '.expand('<cword>')<cr>
-	nnoremap <leader>d <cmd>exe 'A -D -p '.split(expand('%:p:h'), '/')[1].' '.expand('<cword>')<cr>
-	nnoremap <leader>R <cmd>exe 'A    '.expand('<cword>')<cr>
-	nnoremap <leader>D <cmd>exe 'A -D '.expand('<cword>')<cr>
+	command! -nargs=1 Afiles call Afiles(<q-args>)
+	nnoremap <leader>f <cmd>Afiles %:p:h<cr>
+	nnoremap <leader>F <cmd>Afiles `pwd`<cr>
+	" OpenGrok search
+	function! OpenGrok(params)
+		let proj = 'eos-trunk'
+		" Format request command
+		let cookies = stdpath('cache').'/opengrokcookies'
+		let params = 'maxresults=128&projects='.proj.'&'.substitute(a:params, '\s\+', '\&', 'g')
+		let cmd = "curl 'https://opengrok.infra.corp.arista.io/source/api/v1/search?".params."' --http1.1 -Lsb ".cookies." -c ".cookies
+		" Send request and parse json response
+		echo 'Searching OpenGrok...' | redraw
+		let res = system(cmd)
+		if v:shell_error | echohl ErrorMsg | echomsg res | echohl None | return | endif
+		try | let data = json_decode(res) | catch | echohl ErrorMsg | echo 'Bad response, maybe auth token cookies have expired?' | echohl None | return | endtry
+		" Construct list of locations from json data
+		let locs = []
+		for [projfile,res] in items(data.results)
+			let file = projfile[len('/'.proj):-1]
+			for r in res
+				let locs += [file.'	'.r.lineNumber.'	'.substitute(r.line, '</\?b>', '', 'g')]
+			endfor
+		endfor
+		if locs == [] | echohl ErrorMsg | echo 'Nothing found' | echohl None | return | endif
+		" Place list into the window location list
+		let e = &efm
+		set efm=%f\	%l\	%m
+		lexpr locs
+		let &efm = e
+	endfunction
+	command! -nargs=1 A call OpenGrok(<f-args>)
+	nnoremap <leader>r <cmd>exe 'A symbol='.expand('<cword>').' path='.split(expand('%:p:h'), '/')[1].'*'<cr>
+	nnoremap <leader>d <cmd>exe 'A    def='.expand('<cword>').' path='.split(expand('%:p:h'), '/')[1].'*'<cr>
+	nnoremap <leader>R <cmd>exe 'A symbol='.expand('<cword>')<cr>
+	nnoremap <leader>D <cmd>exe 'A    def='.expand('<cword>')<cr>
+	" If remote, use ssh for some commands
+	let amut = trim(system('findmnt -no SOURCE /src | cut -d: -f1'))
+	if amut != ''
+		let afiles_cmd = 'ssh '.amut.' -- '.afiles_cmd
+		let g:signify_vcs_cmds.perforce = 'ssh '.amut.' -- '.g:signify_vcs_cmds.perforce
+		let g:signify_vcs_cmds_diffmode.perforce = 'ssh '.amut.' -- '.g:signify_vcs_cmds_diffmode.perforce
+	endif
 endif
