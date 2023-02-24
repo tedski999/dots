@@ -319,18 +319,16 @@ if filereadable('/usr/share/vim/vimfiles/arista.vim') && getcwd().'/' =~# '^/src
 	" Fuzzy-search files using caching
 	let afiles_cmd = 'find /src -type f'
 	function! Afiles(path)
-		if expand('%:p') =~# '^/src/'
-			let p = expand(a:path)
-			let f = stdpath('cache').'/afiles'
-			if !filereadable(f)
-				echo 'Generating Afiles cache...' | redraw
-				let res = systemlist(g:afiles_cmd)
-				if v:shell_error | echohl ErrorMsg | echomsg res | echohl None | return | endif
-				if res == [] | echohl ErrorMsg | echo 'No files found for afiles' | echohl None | return | endif
-				call writefile(res, f)
-			endif
-			call fzf#run(fzf#wrap({'source': 'grep -F "'.p.'" '.f, 'options': ['--preview', 'cat {}']}))
+		let p = expand(a:path)
+		let f = stdpath('cache').'/afiles'
+		if !filereadable(f)
+			echo 'Generating Afiles cache...' | redraw
+			let res = systemlist(g:afiles_cmd)
+			if v:shell_error | echohl ErrorMsg | echomsg res | echohl None | return | endif
+			if res == [] | echohl ErrorMsg | echo 'No files found for afiles' | echohl None | return | endif
+			call writefile(res, f)
 		endif
+		call fzf#run(fzf#wrap({'source': 'grep -F "'.p.'" '.f, 'options': ['--preview', 'cat {}']}))
 	endfunction
 	command! -nargs=1 Afiles call Afiles(<q-args>)
 	nnoremap <leader>f <cmd>Afiles %:p:h<cr>
@@ -339,11 +337,12 @@ if filereadable('/usr/share/vim/vimfiles/arista.vim') && getcwd().'/' =~# '^/src
 	function! OpenGrok(params)
 		let proj = 'eos-trunk'
 		" Format request command
-		let cookies = stdpath('cache').'/opengrokcookies'
+		let cookies = stdpath('data').'/opengrok.cookie'
 		let params = 'maxresults=128&projects='.proj.'&'.substitute(a:params, '\s\+', '\&', 'g')
 		let cmd = "curl 'https://opengrok.infra.corp.arista.io/source/api/v1/search?".params."' --http1.1 -Lsb ".cookies." -c ".cookies
 		" Send request and parse json response
 		echo 'Searching OpenGrok...' | redraw
+		" TODO: job control this
 		let res = system(cmd)
 		if v:shell_error | echohl ErrorMsg | echomsg res | echohl None | return | endif
 		try | let data = json_decode(res) | catch | echohl ErrorMsg | echo 'Bad response, maybe auth token cookies have expired?' | echohl None | return | endtry
