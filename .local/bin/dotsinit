@@ -13,7 +13,7 @@ curl -fsSL https://download.opensuse.org/repositories/shells:zsh-users:zsh-compl
 sudo apt-get update --yes
 sudo apt-get upgrade --yes
 sudo apt-get install --yes \
-	alacritty exa btop calc ranger \
+	alacritty exa btop calc ranger fd-find \
 	npm fonts-terminus brave-browser \
 	zsh zsh-syntax-highlighting zsh-completions \
 	software-properties-common
