@@ -51,14 +51,15 @@ alias la="ls -la"
 alias d="dirs -v"
 for i ({1..9}) alias "$i"="cd +$i"
 for i ({3..9}) alias "${(l:i::.:)}"="${(l:i-1::.:)};.."
-[[ "${HOST%%.*}" == "us260" ]] && alias s="a4c shell" || alias s="ssh -t us260 -- tmux new"
-alias S='s a ssh $(M)'
+alias s="ssh -t us260 -- tmux new -A"
+alias S="h=\$(M) && ssh -t us260 -- tmux new -c a ssh \$h"
 
 # Shorthand for un/mounting MUTs using SSHFS
 function m {
 	fusermount -uq /src
-	[ "$1" ] && sshfs "$1:/src" "/src" \
-		-o reconnect -o kernel_cache -o idmap=user -o compression=yes -o ServerAliveInterval=15 \
+	[ -z "$1" ] && return 0
+	sshfs "$1:/src" "/src" \
+		-o reconnect -o kernel_cache -o idmap=user -o compression=yes -o ServerAliveInterval=15 -o max_conns=8 \
 		-o cache_timeout=600 -o cache_stat_timeout=600 -o cache_dir_timeout=600 -o cache_link_timeout=600 \
 		-o dcache_timeout=600 -o dcache_stat_timeout=600 -o dcache_dir_timeout=600 -o dcache_link_timeout=600 \
 		-o entry_timeout=600 -o negative_timeout=600 -o attr_timeout=600
@@ -66,7 +67,9 @@ function m {
 
 # Print current mounted MUT hostname
 function M {
-	findmnt -no SOURCE /src | cut -d: -f1
+	set -o pipefail
+	findmnt -no SOURCE /src | cut -d: -f1 \
+		|| { >&2 echo "No MUT mounted"; return 1 }
 }
 
 # Cheatsheets
