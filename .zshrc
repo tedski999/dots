@@ -104,14 +104,15 @@ bindkey "^?" backward-delete-char
 for km in vicmd viins; bindkey -M $km "^[[3~" delete-char
 
 # Block/beam cursor and dynamic prompt
-zle -N zle-line-init
-zle -N zle-keymap-select
+PS1=$'\n%F{red}%n@%m%f %F{blue}%~%f %F{red}%(?..%?)%f\n>%f '
 function zle-line-init zle-keymap-select {
 	echo -ne ${${KEYMAP/vicmd/"\e[2 q"}/(main|viins)/"\e[6 q"}
 	PS1=$'\n%F{red}%n@%m%f %F{blue}%~%f %F{red}%(?..%?)%f\n${${KEYMAP/vicmd/"%F{magenta}"}/(main|viins)/}>%f '
 	PS2=$'${${KEYMAP/vicmd/"%F{magenta}"}/(main|viins)/}>%f '
 	zle reset-prompt
 }
+zle -N zle-line-init
+zle -N zle-keymap-select
 
 # Text objects
 if bindkey -M viopp &>/dev/null && bindkey -M visual &>/dev/null; then
