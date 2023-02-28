@@ -29,10 +29,6 @@ export LESS_TERMCAP_ue=$'\e[0m'
 export SSH_AUTH_SOCK="$(gpgconf --list-dirs agent-ssh-socket)"
 gpgconf --launch gpg-agent
 
-# Static prompt
-PS1=$'\n%F{red}%n@%m%f %F{blue}%~%f %F{red}%(?..%?)%f\n>%f '
-PS2=$'%_> '
-
 # History
 HISTFILE="$ZSH_DATA/history"
 HISTSIZE="10000"
@@ -105,14 +101,14 @@ bindkey "^?" backward-delete-char
 for km in vicmd viins; bindkey -M $km "^[[3~" delete-char
 
 # Block/beam cursor and dynamic prompt
-function zle-keymap-select zle-line-init {
+zle -N zle-line-init
+zle -N zle-keymap-select
+function zle-line-init zle-keymap-select {
 	echo -ne ${${KEYMAP/vicmd/"\e[2 q"}/(main|viins)/"\e[6 q"}
 	PS1=$'\n%F{red}%n@%m%f %F{blue}%~%f %F{red}%(?..%?)%f\n${${KEYMAP/vicmd/"%F{magenta}"}/(main|viins)/}>%f '
-	PS2=$'${${KEYMAP/vicmd/"%F{magenta}"}/(main|viins)/}%_>%f '
+	PS2=$'${${KEYMAP/vicmd/"%F{magenta}"}/(main|viins)/}>%f '
 	zle reset-prompt
 }
-zle -N zle-keymap-select
-zle -N zle-line-init
 
 # Text objects
 if bindkey -M viopp &>/dev/null && bindkey -M visual &>/dev/null; then
