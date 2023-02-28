@@ -48,6 +48,7 @@ mkdir -p $HOME/.local/dots/info
 !/.config
 !/.gnupg
 !/.local
+!/.ssh
 !/.zshrc
 
 /.config/*
@@ -69,7 +70,10 @@ mkdir -p $HOME/.local/dots/info
 /.local/*
 !/.local/bin
 /.local/bin/*
-!/.local/bin/dotsinit"
+!/.local/bin/dotsinit
+
+/.ssh/*
+!/.ssh/config"
 
 # dconf
 echo "
