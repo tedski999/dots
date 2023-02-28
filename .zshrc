@@ -55,18 +55,22 @@ alias la="ls -la"
 alias d="dirs -v"
 for i ({1..9}) alias "$i"="cd +$i"
 for i ({3..9}) alias "${(l:i::.:)}"="${(l:i-1::.:)};.."
-test "$(hostname)" != "us260.sjc.aristanetworks.com" \
-	&& alias s="echo -ne '\e[2 q' && mosh --predict=always --predict-overwrite us260.sjc.aristanetworks.com -- tmux attach" \
-	|| alias s="a4c shell"
+[[ "${HOST%%.*}" == "us260" ]] && alias s="a4c shell" || alias s="ssh -t us260 -- tmux new"
+alias S='s a ssh $(M)'
 
-# Shorthand for mounting MUTs using SSHFS
+# Shorthand for un/mounting MUTs using SSHFS
 function m {
 	fusermount -uq /src
-	sshfs $1:/src /src \
+	[ "$1" ] && sshfs "$1:/src" "/src" \
 		-o reconnect -o kernel_cache -o idmap=user -o compression=yes -o ServerAliveInterval=15 \
 		-o cache_timeout=600 -o cache_stat_timeout=600 -o cache_dir_timeout=600 -o cache_link_timeout=600 \
 		-o dcache_timeout=600 -o dcache_stat_timeout=600 -o dcache_dir_timeout=600 -o dcache_link_timeout=600 \
 		-o entry_timeout=600 -o negative_timeout=600 -o attr_timeout=600
+}
+
+# Print current mounted MUT hostname
+function M {
+	findmnt -no SOURCE /src | cut -d: -f1
 }
 
 # Cheatsheets
