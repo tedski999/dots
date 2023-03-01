@@ -55,7 +55,7 @@ for i ({3..9}) alias "${(l:i::.:)}"="${(l:i-1::.:)};.."
 if [ "${HOST%%.*}" = "us260" ]; then
 	alias s="a4c shell"
 else
-	alias s="ssh -t us260 -- tmux new"
+	alias s="mosh --predict=always --predict-overwrite --experimental-remote-ip=local us260 -- tmux new"
 	alias S='mut=$(M) && s -c a ssh $mut'
 fi
 
