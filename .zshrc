@@ -62,6 +62,7 @@ fi
 # Shorthand for un/mounting MUTs using SSHFS
 function m {
 	fusermount -uq /src
+	M >/dev/null 2>&1 && { >&2 echo "Unable to unmount"; return 1 }
 	[ -z "$1" ] && return 0
 	sshfs "$1:/src" "/src" \
 		-o reconnect -o kernel_cache -o idmap=user -o compression=yes -o ServerAliveInterval=15 -o max_conns=8 \
