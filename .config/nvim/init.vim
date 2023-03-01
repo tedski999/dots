@@ -173,7 +173,6 @@ end)
 EOF
 
 " Settings
-set shell=zsh\ -i                                 " Use zsh as shell
 set title                                         " Update window title
 set mouse=a                                       " Enable mouse support
 set updatetime=100                                " Faster refreshing
@@ -287,8 +286,8 @@ smap <expr> <s-tab> vsnip#jumpable(-1) ? '<Plug>(vsnip-jump-prev)' : '<s-tab>'
 
 " Arista-specifics if in /src directory
 if getcwd() =~# '^/src\(/\|$\)'
-	let s:mut = trim(system('M || hostname'))
-	echohl MoreMsg | echo 'Arista-specifics enabled for MUT '.s:mut | echohl None
+	let s:mut = trim(system('(findmnt -no SOURCE /src || hostname) | cut -d: -f1'))
+	echohl MoreMsg | echo 'Arista-specifics enabled for '.s:mut | echohl None
 	" Manual control
 	let a4_auto_edit = 0
 	command! A4edit call A4edit()
