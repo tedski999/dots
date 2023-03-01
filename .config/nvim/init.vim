@@ -173,6 +173,7 @@ end)
 EOF
 
 " Settings
+set shell=zsh\ -i                                 " Use zsh as shell
 set title                                         " Update window title
 set mouse=a                                       " Enable mouse support
 set updatetime=100                                " Faster refreshing
@@ -284,20 +285,29 @@ smap <expr> <tab>   vsnip#jumpable(+1) ? '<Plug>(vsnip-jump-next)' : '<tab>'
 imap <expr> <s-tab> vsnip#jumpable(-1) ? '<Plug>(vsnip-jump-prev)' : '<s-tab>'
 smap <expr> <s-tab> vsnip#jumpable(-1) ? '<Plug>(vsnip-jump-prev)' : '<s-tab>'
 
-" Arista-specifics if available and in /src directory
-if filereadable('/usr/share/vim/vimfiles/arista.vim') && getcwd().'/' =~# '^/src/'
-	echohl MoreMsg | echo 'Arista-specifics enabled!' | echohl None
+" Arista-specifics if in /src directory
+if getcwd() =~# '^/src\(/\|$\)'
+	let s:mut = trim(system('M || hostname'))
+	echohl MoreMsg | echo 'Arista-specifics enabled for MUT '.s:mut | echohl None
 	" Manual control
 	let a4_auto_edit = 0
 	command! A4edit call A4edit()
 	" Include Arista config
 	source /usr/share/vim/vimfiles/arista.vim
+	" Override A4edit to use ssh
+	function! A4edit()
+		if strlen(glob(expand("%"))) && confirm("Checkout from Perforce?", "&Yes\n&No", 1) == 1
+			call system('ssh '.s:mut.' -- a p4 login')
+			echo system('ssh '.s:mut.' -- a p4 edit '.shellescape(expand('%:p')))
+			if v:shell_error == 0 | set noreadonly | endif
+		endif
+	endfunction
 	" 85-column width
 	highlight! link ColorColumn CursorColumn
 	let &colorcolumn=join(range(86,999),',')
 	" In-house VCS based on Perforce
-	let g:signify_vcs_cmds = { 'perforce': 'env P4DIFF= P4COLORS= a p4 diff -du 0 %f' }
-	let g:signify_vcs_cmds_diffmode = { 'perforce': 'a p4 print %f' }
+	let g:signify_vcs_cmds = { 'perforce': 'ssh '.s:mut.' -- env P4DIFF= P4COLORS= a p4 diff -du 0 %f' }
+	let g:signify_vcs_cmds_diffmode = { 'perforce': 'ssh '.s:mut.' -- a p4 print %f' }
 	" Fix TACC indentation
 	function! TaccIndentOverrides()
 		let prevLine = getline(SkipTaccBlanksAndComments(v:lnum - 1))
@@ -317,13 +327,12 @@ if filereadable('/usr/share/vim/vimfiles/arista.vim') && getcwd().'/' =~# '^/src
 	autocmd! BufNewFile,BufRead *.cgi,*.fcgi,*.gyp,*.gypi,*.lmi,*.ptl,*.py,*.py3,*.pyde,*.pyi,*.pyp,*.pyt,*.pyw,*.rpy,*.smk,*.spec,*.wsgi,*.xpy,{.,}gclient,{.,}pythonrc,{.,}pythonstartup,DEPS,SConscript,SConstruct,Snakefile,wscript setf python
 	augroup END
 	" Fuzzy-search files using caching
-	let afiles_cmd = 'find /src -type f'
 	function! Afiles(path)
 		let p = expand(a:path)
 		let f = stdpath('cache').'/afiles'
 		if !filereadable(f)
 			echo 'Generating Afiles cache...' | redraw
-			let res = systemlist(g:afiles_cmd)
+			let res = systemlist('ssh '.s:mut.' -- find /src -type f')
 			if v:shell_error | echohl ErrorMsg | echomsg res | echohl None | return | endif
 			if res == [] | echohl ErrorMsg | echo 'No files found for afiles' | echohl None | return | endif
 			call writefile(res, f)
@@ -334,55 +343,16 @@ if filereadable('/usr/share/vim/vimfiles/arista.vim') && getcwd().'/' =~# '^/src
 	nnoremap <leader>f <cmd>Afiles %:p:h<cr>
 	nnoremap <leader>F <cmd>Afiles `pwd`<cr>
 	" OpenGrok search
-	function! OpenGrok(params)
-		let s:proj = 'eos-trunk'
-		" Format request command
-		let cookies = stdpath('data').'/opengrok.cookie'
-		let params = 'maxresults=128&projects='.s:proj.'&'.substitute(a:params, '\s\+', '\&', 'g')
-		let cmd = "curl 'https://opengrok.infra.corp.arista.io/source/api/v1/search?".params."' --http1.1 -Lsb ".cookies." -c ".cookies
-		" Callbacks to retrieve all data from request command
-		let s:data = ['']
-		function! s:on_data(job_id, data, event)
-			let s:data[-1] .= a:data[0]
-			call extend(s:data, a:data[1:])
-		endfunction
-		function! s:on_exit(job_id, data, event)
-			" Parse data
-			let res = join(s:data, "\n")."\n"
-			if v:shell_error | echohl ErrorMsg | echomsg res | echohl None | return | endif
-			try | let data = json_decode(res) | catch | echohl ErrorMsg | echo 'Bad response, maybe auth token cookies have expired?' | echohl None | return | endtry
-			" Construct list of locations from json data
-			let locs = []
-			for [projfile,res] in items(data.results)
-				let file = projfile[len('/'.s:proj):-1]
-				for r in res
-					let locs += [file.'	'.r.lineNumber.'	'.substitute(r.line, '</\?b>', '', 'g')]
-				endfor
-			endfor
-			if locs == [] | echohl ErrorMsg | echo 'Nothing found' | echohl None | return | endif
-			" Place list into the window location list
-			let e = &efm
-			set efm=%f\	%l\	%m
-			lexpr locs
-			let &efm = e
-		endfunction
-		" Send request and parse json response
+	function! Agrok(args)
 		echo 'Searching OpenGrok...' | redraw
-		call jobstart(cmd, { 'pty': '1', 'on_stdout': function('s:on_data'), 'on_exit': function('s:on_exit') })
+		let res = systemlist('ssh '.s:mut.' -- a grok --editor --max 99 '.a:args.' | grep "^/src/.*"')
+		" TODO: alert when failed due to not being logged in
+		if res == [] | echohl ErrorMsg | echo 'Nothing found' | echohl None | return | endif
+		lexpr res
 	endfunction
-	command! -nargs=1 A call OpenGrok(<f-args>)
-	nnoremap <leader>r <cmd>exe 'A symbol='.expand('<cword>').' path='.split(expand('%:p:h'), '/')[1].'*'<cr>
-	nnoremap <leader>d <cmd>exe 'A    def='.expand('<cword>').' path='.split(expand('%:p:h'), '/')[1].'*'<cr>
-	nnoremap <leader>R <cmd>exe 'A symbol='.expand('<cword>')<cr>
-	nnoremap <leader>D <cmd>exe 'A    def='.expand('<cword>')<cr>
-	" If remote, use ssh for some commands
-	let old_shell = &shell
-	set shell=zsh\ -i
-	let amut = trim(system('M'))
-	let &shell = old_shell
-	if v:shell_error == 0
-		let afiles_cmd = 'ssh '.amut.' -- '.afiles_cmd
-		let g:signify_vcs_cmds.perforce = 'ssh '.amut.' -- '.g:signify_vcs_cmds.perforce
-		let g:signify_vcs_cmds_diffmode.perforce = 'ssh '.amut.' -- '.g:signify_vcs_cmds_diffmode.perforce
-	endif
+	command! -nargs=1 Agrok call Agrok(<f-args>)
+	nnoremap <leader>r <cmd>exe 'Agrok -s '.expand('<cword>').' -f '.split(expand('%:p:h'), '/')[1].'*'<cr>
+	nnoremap <leader>d <cmd>exe 'Agrok -d '.expand('<cword>').' -f '.split(expand('%:p:h'), '/')[1].'*'<cr>
+	nnoremap <leader>R <cmd>exe 'Agrok -s '.expand('<cword>')<cr>
+	nnoremap <leader>D <cmd>exe 'Agrok -d '.expand('<cword>')<cr>
 endif
