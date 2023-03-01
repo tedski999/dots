@@ -73,9 +73,9 @@ function m {
 
 # Print current mounted MUT hostname
 function M {
-	set -o pipefail
-	findmnt -no SOURCE /src | cut -d: -f1 \
-		|| { >&2 echo "No MUT mounted"; return 1 }
+	mut="$(findmnt -no SOURCE /src | cut -d: -f1)"
+	[ -z "$mut" ] && { >&2 echo "No MUT mounted"; return 1 }
+	echo "$mut"
 }
 
 # Cheatsheets
