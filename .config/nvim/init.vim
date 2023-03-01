@@ -376,8 +376,11 @@ if filereadable('/usr/share/vim/vimfiles/arista.vim') && getcwd().'/' =~# '^/src
 	nnoremap <leader>R <cmd>exe 'A symbol='.expand('<cword>')<cr>
 	nnoremap <leader>D <cmd>exe 'A    def='.expand('<cword>')<cr>
 	" If remote, use ssh for some commands
-	let amut = trim(system('findmnt -no SOURCE /src | cut -d: -f1'))
-	if amut != ''
+	let old_shell = &shell
+	set shell=zsh\ -i
+	let amut = trim(system('M'))
+	let &shell = old_shell
+	if v:shell_error == 0
 		let afiles_cmd = 'ssh '.amut.' -- '.afiles_cmd
 		let g:signify_vcs_cmds.perforce = 'ssh '.amut.' -- '.g:signify_vcs_cmds.perforce
 		let g:signify_vcs_cmds_diffmode.perforce = 'ssh '.amut.' -- '.g:signify_vcs_cmds_diffmode.perforce
