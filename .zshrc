@@ -51,8 +51,12 @@ alias la="ls -la"
 alias d="dirs -v"
 for i ({1..9}) alias "$i"="cd +$i"
 for i ({3..9}) alias "${(l:i::.:)}"="${(l:i-1::.:)};.."
-alias s="ssh -t us260 -- tmux new -A"
-alias S="h=\$(M) && ssh -t us260 -- tmux new -c a ssh \$h"
+if [ "${HOST%%.*}" = "us260" ]; then
+	alias s="a4c shell"
+else
+	alias s="ssh -t us260 -- tmux new"
+	alias S='mut=$(M) && s -c a ssh $mut'
+fi
 
 # Shorthand for un/mounting MUTs using SSHFS
 function m {
