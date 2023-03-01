@@ -194,6 +194,7 @@ workspaces-only-on-primary=false
 [org/gnome/mutter/keybindings]
 toggle-tiled-left=@as []
 toggle-tiled-right=@as []
+switch-monitor=@as []
 
 [org/gnome/settings-daemon/plugins/media-keys]
 area-screenshot=['Print']
