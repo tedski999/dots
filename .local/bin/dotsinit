@@ -277,6 +277,7 @@ gap-outer=uint32 1
 hint-color-rgba='rgba(255,255,255,0.25)'
 show-title=false
 smart-gaps=false
+stacking-with-mouse=false
 tile-by-default=true
 focus-left=['<Super>h']
 focus-down=['<Super>j']
