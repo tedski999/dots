@@ -18,6 +18,7 @@ export NODE_REPL_HISTORY="$XDG_DATA_HOME/node_repl_history"
 export npm_config_userconfig="$XDG_CONFIG_HOME/npm/npmrc"
 export PYTHONSTARTUP="$XDG_CONFIG_HOME/python/pythonrc"
 export ZSH_DATA="$XDG_DATA_HOME/zsh"
+export MakoProfile="SwitchApp_layer3-mid-latency_48x10G"
 export LESS_TERMCAP_mb=$'\e[1;31m'
 export LESS_TERMCAP_md=$'\e[1;36m'
 export LESS_TERMCAP_me=$'\e[0m'
