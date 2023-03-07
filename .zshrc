@@ -52,11 +52,11 @@ alias la="ls -la"
 alias d="dirs -v"
 for i ({1..9}) alias "$i"="cd +$i"
 for i ({3..9}) alias "${(l:i::.:)}"="${(l:i-1::.:)};.."
-if [ "${HOST%%.*}" = "us260" ]; then
-	alias s="a4c shell"
-else
-	alias s="mosh --predict=always --predict-overwrite --experimental-remote-ip=local us260 -- tmux new"
+if [ "${HOST%%.*}" != "us260" ]; then
+	alias s="mosh -a -o --experimental-remote-ip=remote us260 -- tmux new 2>/dev/null"
 	alias S='mut=$(M) && s -c a ssh $mut'
+else
+	alias s="a4c shell"
 fi
 
 # Shorthand for un/mounting MUTs using SSHFS
