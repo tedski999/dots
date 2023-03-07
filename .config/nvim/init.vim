@@ -285,9 +285,10 @@ imap <expr> <s-tab> vsnip#jumpable(-1) ? '<Plug>(vsnip-jump-prev)' : '<s-tab>'
 smap <expr> <s-tab> vsnip#jumpable(-1) ? '<Plug>(vsnip-jump-prev)' : '<s-tab>'
 
 " Arista-specifics if in /src directory
+" TODO: per buffer possible?
 if getcwd() =~# '^/src\(/\|$\)'
-	let s:mut = trim(system('(findmnt -no SOURCE /src || hostname) | cut -d: -f1'))
-	echohl MoreMsg | echo 'Arista-specifics enabled for '.s:mut | echohl None
+	let s:ssh = 'host="$(findmnt -no SOURCE /src | cut -d: -f1)"; ${host:+ssh $host --} '
+	echohl MoreMsg | echo 'Arista-specifics enabled!' | echohl None
 	" Manual control
 	let a4_auto_edit = 0
 	command! A4edit call A4edit()
@@ -296,8 +297,8 @@ if getcwd() =~# '^/src\(/\|$\)'
 	" Override A4edit to use ssh
 	function! A4edit()
 		if strlen(glob(expand("%"))) && confirm("Checkout from Perforce?", "&Yes\n&No", 1) == 1
-			call system('ssh '.s:mut.' -- a p4 login')
-			echo system('ssh '.s:mut.' -- a p4 edit '.shellescape(expand('%:p')))
+			call system(s:ssh.'a p4 login')
+			echo system(s:ssh.'a p4 edit '.shellescape(expand('%:p')))
 			if v:shell_error == 0 | set noreadonly | endif
 		endif
 	endfunction
@@ -305,8 +306,8 @@ if getcwd() =~# '^/src\(/\|$\)'
 	highlight! link ColorColumn CursorColumn
 	let &colorcolumn=join(range(86,999),',')
 	" In-house VCS based on Perforce
-	let g:signify_vcs_cmds = { 'perforce': 'ssh '.s:mut.' -- env P4DIFF= P4COLORS= a p4 diff -du 0 %f' }
-	let g:signify_vcs_cmds_diffmode = { 'perforce': 'ssh '.s:mut.' -- a p4 print %f' }
+	let g:signify_vcs_cmds = { 'perforce': s:ssh.'env P4DIFF= P4COLORS= a p4 diff -du 0 %f' }
+	let g:signify_vcs_cmds_diffmode = { 'perforce': s:ssh.'a p4 print %f' }
 	" Fix TACC indentation
 	function! TaccIndentOverrides()
 		let prevLine = getline(SkipTaccBlanksAndComments(v:lnum - 1))
@@ -331,7 +332,7 @@ if getcwd() =~# '^/src\(/\|$\)'
 		let f = stdpath('cache').'/afiles'
 		if !filereadable(f)
 			echo 'Generating Afiles cache...' | redraw
-			let res = systemlist('ssh '.s:mut.' -- find /src -type f')
+			let res = systemlist(s:ssh.'find /src -type f')
 			if v:shell_error | echohl ErrorMsg | echomsg res | echohl None | return | endif
 			if res == [] | echohl ErrorMsg | echo 'No files found for afiles' | echohl None | return | endif
 			call writefile(res, f)
@@ -344,8 +345,7 @@ if getcwd() =~# '^/src\(/\|$\)'
 	" OpenGrok search
 	function! Agrok(args)
 		echo 'Searching OpenGrok...' | redraw
-		let res = systemlist('ssh '.s:mut.' -- a grok --editor --max 99 '.a:args.' | grep "^/src/.*"')
-		" TODO: alert when failed due to not being logged in
+		let res = systemlist(s:ssh.'a grok --editor --max 99 '.a:args.' | grep "^/src/.*"')
 		if res == [] | echohl ErrorMsg | echo 'Nothing found' | echohl None | return | endif
 		lexpr res
 	endfunction
