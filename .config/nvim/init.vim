@@ -173,6 +173,7 @@ end)
 EOF
 
 " Settings
+set shell=sh                                      " Use sh as shell
 set title                                         " Update window title
 set mouse=a                                       " Enable mouse support
 set updatetime=100                                " Faster refreshing
@@ -285,9 +286,8 @@ imap <expr> <s-tab> vsnip#jumpable(-1) ? '<Plug>(vsnip-jump-prev)' : '<s-tab>'
 smap <expr> <s-tab> vsnip#jumpable(-1) ? '<Plug>(vsnip-jump-prev)' : '<s-tab>'
 
 " Arista-specifics if in /src directory
-" TODO: per buffer possible?
 if getcwd() =~# '^/src\(/\|$\)'
-	let s:ssh = 'host="$(findmnt -no SOURCE /src | cut -d: -f1)"; ${host:+ssh $host --} '
+	let s:ssh = 'true && host="$(findmnt -no SOURCE /src | cut -d: -f1)" && eval ${host:+ssh us260 a ssh -q $host --} '
 	echohl MoreMsg | echo 'Arista-specifics enabled!' | echohl None
 	" Manual control
 	let a4_auto_edit = 0
@@ -308,6 +308,7 @@ if getcwd() =~# '^/src\(/\|$\)'
 	" In-house VCS based on Perforce
 	let g:signify_vcs_cmds = { 'perforce': s:ssh.'env P4DIFF= P4COLORS= a p4 diff -du 0 %f' }
 	let g:signify_vcs_cmds_diffmode = { 'perforce': s:ssh.'a p4 print %f' }
+	let g:signify_skip = { 'vcs': { 'allow': ['perforce'] } }
 	" Fix TACC indentation
 	function! TaccIndentOverrides()
 		let prevLine = getline(SkipTaccBlanksAndComments(v:lnum - 1))
