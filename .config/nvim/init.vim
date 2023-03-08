@@ -351,8 +351,8 @@ if getcwd() =~# '^/src\(/\|$\)'
 		lexpr res
 	endfunction
 	command! -nargs=1 Agrok call Agrok(<f-args>)
-	nnoremap <leader>r <cmd>exe 'Agrok -s '.expand('<cword>').' -f '.split(expand('%:p:h'), '/')[1].'*'<cr>
-	nnoremap <leader>d <cmd>exe 'Agrok -d '.expand('<cword>').' -f '.split(expand('%:p:h'), '/')[1].'*'<cr>
-	nnoremap <leader>R <cmd>exe 'Agrok -s '.expand('<cword>')<cr>
-	nnoremap <leader>D <cmd>exe 'Agrok -d '.expand('<cword>')<cr>
+	nnoremap <leader>r <cmd>exe 'Agrok --symbol     '.expand('<cword>').' --filepath '.split(expand('%:p:h'), '/')[1].'*'<cr>
+	nnoremap <leader>d <cmd>exe 'Agrok --definition '.expand('<cword>').' --filepath '.split(expand('%:p:h'), '/')[1].'*'<cr>
+	nnoremap <leader>R <cmd>exe 'Agrok --symbol     '.expand('<cword>')<cr>
+	nnoremap <leader>D <cmd>exe 'Agrok --definition '.expand('<cword>')<cr>
 endif
