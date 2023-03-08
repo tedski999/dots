@@ -37,9 +37,6 @@ git clone https://github.com/Tudmotu/gnome-shell-extension-clipboard-indicator $
 # expandable-notifications@kaan.g.inam.org
 git clone https://github.com/kaanginam/expandable-notifications $tmpdir/notifs
 mv $tmpdir/notifs/expandable-notifications@kaan.g.inam.org $extdir
-# hidetopbar@mathieu.bidon.ca
-git clone https://gitlab.gnome.org/tuxor1337/hidetopbar.git $extdir/hidetopbar@mathieu.bidon.ca
-make --directory $extdir/hidetopbar@mathieu.bidon.ca
 # no-overview@fthx
 git clone https://github.com/fthx/no-overview.git $extdir/no-overview@fthx
 
@@ -252,7 +249,7 @@ sleep-inactive-battery-timeout=1800
 app-picker-view=uint32 1
 disable-user-extensions=false
 disabled-extensions=['ubuntu-dock@ubuntu.com', 'ubuntu-appindicators@ubuntu.com', 'ding@rastersoft.com']
-enabled-extensions=['pop-shell@system76.com', 'clipboard-indicator@tudmotu.com', 'expandable-notifications@kaan.g.inam.org', 'unite@hardpixel.eu', 'hidetopbar@mathieu.bidon.ca', 'no-overview@fthx']
+enabled-extensions=['pop-shell@system76.com', 'clipboard-indicator@tudmotu.com', 'expandable-notifications@kaan.g.inam.org', 'unite@hardpixel.eu', 'no-overview@fthx']
 favorite-apps=@as []
 had-bluetooth-devices-setup=true
 welcome-dialog-last-shown-version='42.5'
@@ -334,17 +331,6 @@ show-legacy-tray=true
 show-window-buttons='never'
 show-window-title='always'
 window-buttons-placement='auto'
-
-[org/gnome/shell/extensions/hidetopbar]
-animation-time-autohide=0.20000000000000001
-animation-time-overview=0.20000000000000001
-enable-active-window=false
-enable-intellihide=false
-mouse-sensitive=true
-mouse-sensitive-fullscreen-window=false
-shortcut-delay=4.9999999999999991
-shortcut-keybind=['<Super>b']
-show-in-overview=true
 
 [org/gnome/shell/keybindings]
 focus-active-notification=['<Super>n']
