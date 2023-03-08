@@ -87,7 +87,7 @@ function cht {
 # Options
 setopt autocd interactive_comments notify
 setopt auto_pushd pushd_ignore_dups pushd_silent
-setopt hist_ignore_all_dups hist_reduce_blanks share_history extended_history
+setopt hist_ignore_all_dups hist_reduce_blanks inc_append_history extended_history
 setopt numericglobsort prompt_subst
 setopt glob_complete complete_in_word
 
@@ -108,7 +108,12 @@ bindkey -M vicmd "^V" edit-command-line
 bindkey "^W" backward-kill-word
 bindkey "^H" backward-delete-char
 bindkey "^?" backward-delete-char
-for km in vicmd viins; bindkey -M $km "^[[3~" delete-char
+for km in vicmd viins; do
+	bindkey -M $km "^[[3~" delete-char
+	bindkey -M $km '^[[H' beginning-of-line
+	bindkey -M $km '^[[F' end-of-line
+	bindkey -M $km '^R' history-incremental-search-backward
+done
 
 # Block/beam cursor and dynamic prompt
 PS1=$'\n%F{red}%n@%m%f %F{blue}%~%f %F{red}%(?..%?)%f\n>%f '
