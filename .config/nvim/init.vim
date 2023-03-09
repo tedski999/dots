@@ -231,8 +231,9 @@ autocmd!
 autocmd TextYankPost * lua vim.highlight.on_yank({higroup='Visual', timeout=150})
 " Yank with OSC52
 autocmd TextYankPost * if v:event.operator is 'y' && v:event.regname is '' | exe 'OSCYankReg "' | endif
-" Don't format new-line comments
+" Comment formatting
 autocmd BufEnter     * set formatoptions-=c formatoptions-=o
+autocmd FileType c,cpp,hpp,ts,js,java setlocal commentstring=//\ %s
 " Restore cursor position when opening buffers
 autocmd BufReadPost  * if expand('%:p') !~# '\m/\.git/' && line("'\"") > 0 && line("'\"") <= line('$') | exe 'normal! g`"' | endif
 " Switch between alternative files
