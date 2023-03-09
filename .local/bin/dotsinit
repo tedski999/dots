@@ -58,7 +58,6 @@ mkdir -p $HOME/.local/dots/info
 !/.config/git
 !/.config/npm
 !/.config/nvim
-!/.config/python
 !/.config/tmux
 !/.config/wget
 !/.config/mimeapps.list
