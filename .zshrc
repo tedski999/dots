@@ -53,8 +53,9 @@ alias d="dirs -v"
 for i ({1..9}) alias "$i"="cd +$i"
 for i ({3..9}) alias "${(l:i::.:)}"="${(l:i-1::.:)};.."
 if [ "${HOST%%.*}" != "us260" ]; then
-	alias s="mosh -a -o --experimental-remote-ip=remote us260 -- tmux new 2>/dev/null"
-	alias S='mut=$(M) && s -c a ssh $mut'
+	alias us="2>/dev/null mosh -a -o --experimental-remote-ip=remote us260 -- tmux new"
+	alias s="us -A"
+	alias S='mut=$(M) && us -c a ssh $mut'
 else
 	alias s="a4c shell"
 fi
