@@ -293,14 +293,22 @@ if getcwd() =~# '^/src\(/\|$\)'
 	" Manual control
 	let a4_auto_edit = 0
 	command! A4edit call A4edit()
+	command! A4revert call A4revert()
 	" Include Arista config
 	source /usr/share/vim/vimfiles/arista.vim
-	" Override A4edit to use ssh
+	" Override A4edit and A4revert to use ssh
 	function! A4edit()
 		if strlen(glob(expand("%"))) && confirm("Checkout from Perforce?", "&Yes\n&No", 1) == 1
 			call system(s:ssh.'a p4 login')
 			echo system(s:ssh.'a p4 edit '.shellescape(expand('%:p')))
 			if v:shell_error == 0 | set noreadonly | endif
+		endif
+	endfunction
+	function! A4revert()
+		if strlen(glob(expand("%"))) && confirm("Revert changes from Perforce?", "&Yes\n&No", 1) == 1
+			call system(s:ssh.'a p4 login')
+			echo system(s:ssh.'a p4 revert '.shellescape(expand('%:p')))
+			if v:shell_error == 0 | set readonly | endif
 		endif
 	endfunction
 	" 85-column width
