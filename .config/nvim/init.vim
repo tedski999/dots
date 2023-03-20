@@ -288,15 +288,15 @@ smap <expr> <s-tab> vsnip#jumpable(-1) ? '<Plug>(vsnip-jump-prev)' : '<s-tab>'
 
 " Arista-specifics if in /src directory
 if getcwd() =~# '^/src\(/\|$\)'
-	let s:ssh = 'true && host="$(findmnt -no SOURCE /src | cut -d: -f1)" && eval ${host:+ssh us260 a ssh -q $host --} '
 	echohl MoreMsg | echo 'Arista-specifics enabled!' | echohl None
-	" Manual control
-	let a4_auto_edit = 0
-	command! A4edit call A4edit()
-	command! A4revert call A4revert()
+	let s:ssh = 'true && host="$(findmnt -no SOURCE /src | cut -d: -f1)" && eval ${host:+ssh us260 a ssh -q $host --} '
+	chdir /src
 	" Include Arista config
+	let a4_auto_edit = 0
 	source /usr/share/vim/vimfiles/arista.vim
 	" Override A4edit and A4revert to use ssh
+	command! A4edit call A4edit()
+	command! A4revert call A4revert()
 	function! A4edit()
 		if strlen(glob(expand("%"))) && confirm("Checkout from Perforce?", "&Yes\n&No", 1) == 1
 			call system(s:ssh.'a p4 login')
@@ -336,32 +336,30 @@ if getcwd() =~# '^/src\(/\|$\)'
 	autocmd! BufNewFile,BufRead *.cgi,*.fcgi,*.gyp,*.gypi,*.lmi,*.ptl,*.py,*.py3,*.pyde,*.pyi,*.pyp,*.pyt,*.pyw,*.rpy,*.smk,*.spec,*.tac,*.wsgi,*.xpy,{.,}gclient,{.,}pythonrc,{.,}pythonstartup,DEPS,SConscript,SConstruct,Snakefile,wscript setf foo
 	autocmd! BufNewFile,BufRead *.cgi,*.fcgi,*.gyp,*.gypi,*.lmi,*.ptl,*.py,*.py3,*.pyde,*.pyi,*.pyp,*.pyt,*.pyw,*.rpy,*.smk,*.spec,*.wsgi,*.xpy,{.,}gclient,{.,}pythonrc,{.,}pythonstartup,DEPS,SConscript,SConstruct,Snakefile,wscript setf python
 	augroup END
-	" Fuzzy-search files using caching
-	function! Afiles(path)
-		let p = expand(a:path)
-		let f = stdpath('cache').'/afiles'
-		if !filereadable(f)
-			echo 'Generating Afiles cache...' | redraw
-			let res = systemlist(s:ssh.'find /src -type f')
-			if v:shell_error | echohl ErrorMsg | echomsg res | echohl None | return | endif
-			if res == [] | echohl ErrorMsg | echo 'No files found for afiles' | echohl None | return | endif
-			call writefile(res, f)
-		endif
-		call fzf#run(fzf#wrap({'source': 'grep -F "'.p.'" '.f, 'options': ['--preview', 'cat {}']}))
-	endfunction
-	command! -nargs=1 Afiles call Afiles(<q-args>)
+	" Fuzzy-search files using cache
+	command! -nargs=1 Afiles call fzf#run(fzf#vim#with_preview(fzf#wrap({'source': 'rg -F "'.expand(<q-args>).'" '.AfilesCache()})))
 	nnoremap <leader>f <cmd>Afiles %:p:h<cr>
 	nnoremap <leader>F <cmd>Afiles `pwd`<cr>
-	" OpenGrok search
-	function! Agrok(args)
-		echo 'Searching OpenGrok...' | redraw
-		let res = systemlist(s:ssh.'a grok --editor --max 99 '.a:args.' | grep "^/src/.*"')
-		if res == [] | echohl ErrorMsg | echo 'Nothing found' | echohl None | return | endif
-		lexpr res
+	command! AfilesCache call AfilesCache()
+	function! AfilesCache()
+		let cache = stdpath('cache').'/afiles'
+		if !filereadable(cache)
+			echo 'Generating Afiles cache at 'a:cache'...' | redraw
+			let res = systemlist(s:ssh.'find /src -type f')
+			if v:shell_error | echohl ErrorMsg | echomsg res | echohl None | return | endif
+			if res == [] | echohl ErrorMsg | echo 'No files found for Afiles' | echohl None | return | endif
+			call writefile(res, a:cache)
+		endif
+		return cache
 	endfunction
-	command! -nargs=1 Agrok call Agrok(<f-args>)
-	nnoremap <leader>r <cmd>exe 'Agrok --symbol     '.expand('<cword>').' --filepath '.split(expand('%:p:h'), '/')[1].'*'<cr>
-	nnoremap <leader>d <cmd>exe 'Agrok --definition '.expand('<cword>').' --filepath '.split(expand('%:p:h'), '/')[1].'*'<cr>
-	nnoremap <leader>R <cmd>exe 'Agrok --symbol     '.expand('<cword>')<cr>
-	nnoremap <leader>D <cmd>exe 'Agrok --definition '.expand('<cword>')<cr>
+	" OpenGrok search
+	command! -nargs=1 Agrok call fzf#vim#grep(s:ssh.'a grok --editor --max 99 '.shellescape(<q-args>).' | grep "^/src/.*"', 0, fzf#vim#with_preview({'options':['--prompt','Grok>']}))
+	" Agid
+	" TODO: prune most packages
+	command! Amkid echo 'Generating ID file...' | redraw | echo system(s:ssh.'a ws mkid')
+	command! -nargs=1 Agid call fzf#vim#grep(s:ssh.'a ws gid -f /src/ID -q '.shellescape(<q-args>), 0, fzf#vim#with_preview({'options':['--prompt','Gid>']}))
+	nnoremap <leader>r <cmd>exe 'Agid    -p '.split(expand('%:p:h'), '/')[1].' '.expand('<cword>')<cr>
+	nnoremap <leader>d <cmd>exe 'Agid -D -p '.split(expand('%:p:h'), '/')[1].' '.expand('<cword>')<cr>
+	nnoremap <leader>R <cmd>exe 'Agid    '.expand('<cword>')<cr>
+	nnoremap <leader>D <cmd>exe 'Agid -D '.expand('<cword>')<cr>
 endif
