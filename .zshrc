@@ -34,6 +34,9 @@ HISTFILE="$ZSH_DATA/history"
 HISTSIZE="10000"
 SAVEHIST="10000"
 
+# Prompt
+PS1=$'\n%F{red}%n@%m%f %F{blue}%~%f %F{red}%(?..%?)%f\n>%f '
+
 # Better time format
 TIMEFMT=$'\nreal\t%E\nuser\t%U\nsys\t%S\ncpu\t%P'
 
@@ -95,61 +98,24 @@ setopt glob_complete complete_in_word
 # Colours
 eval "$(dircolors -b)"
 
-# Vi keybindings
-bindkey -v
-export KEYTIMEOUT=1
+# Give me back C-s
+stty -ixon
 
 # External editor
 autoload edit-command-line
 zle -N edit-command-line
 bindkey "^V" edit-command-line
-bindkey -M vicmd "^V" edit-command-line
 
-# Better keybindings
-bindkey "^W" backward-kill-word
-bindkey "^H" backward-delete-char
-bindkey "^?" backward-delete-char
-for km in vicmd viins; do
-	bindkey -M $km "^[[3~" delete-char
-	bindkey -M $km '^[[H' beginning-of-line
-	bindkey -M $km '^[[F' end-of-line
-	bindkey -M $km '^R' history-incremental-search-backward
-done
-
-# Block/beam cursor and dynamic prompt
-PS1=$'\n%F{red}%n@%m%f %F{blue}%~%f %F{red}%(?..%?)%f\n>%f '
-function zle-line-init zle-keymap-select {
-	echo -ne ${${KEYMAP/vicmd/"\e[2 q"}/(main|viins)/"\e[6 q"}
-	PS1=$'\n%F{red}%n@%m%f %F{blue}%~%f %F{red}%(?..%?)%f\n${${KEYMAP/vicmd/"%F{magenta}"}/(main|viins)/}>%f '
-	PS2=$'${${KEYMAP/vicmd/"%F{magenta}"}/(main|viins)/}>%f '
-	zle reset-prompt
-}
+# Beam cursor
 zle -N zle-line-init
-zle -N zle-keymap-select
-
-# Text objects
-if bindkey -M viopp &>/dev/null && bindkey -M visual &>/dev/null; then
-	autoload -Uz select-bracketed select-quoted
-	zle -N select-bracketed
-	zle -N select-quoted
-	for km in viopp visual; do
-		for c in {a,i}${(s..)^:-"()[]{}<>bB"}; bindkey -M $km $c select-bracketed
-		for c in {a,i}${(s..)^:-\'\"\`\|,./:;=+@}; bindkey -M $km $c select-quoted
-	done
-fi
-
-# Command line editor
-autoload -z edit-command-line
-zle -N edit-command-line
+function zle-line-init { echo -ne "\e[6 q" }
 
 # History search
 autoload -Uz up-line-or-beginning-search down-line-or-beginning-search
 zle -N up-line-or-beginning-search
 zle -N down-line-or-beginning-search
-for km in vicmd viins; do
-	for c in "^p" "^[OA" "^[[A"; bindkey -M $km $c up-line-or-beginning-search
-	for c in "^n" "^[OB" "^[[B"; bindkey -M $km $c down-line-or-beginning-search
-done
+bindkey "^p" up-line-or-beginning-search
+bindkey "^n" down-line-or-beginning-search
 
 # Completion
 [[ -d $ZSH_DATA/plugins/arzsh-complete ]] && fpath=($fpath $ZSH_DATA/plugins/arzsh-complete)
@@ -169,11 +135,6 @@ zstyle ":completion:*:*:*:*:descriptions" format "%F{green}-- %d --%f"
 zstyle ":completion:*:messages" format " %F{purple} -- %d --%f"
 zstyle ":completion:*:warnings" format " %F{red}-- no matches found --%f"
 bindkey "^[[Z" reverse-menu-complete
-bindkey -M menuselect "h" vi-backward-char
-bindkey -M menuselect "k" vi-up-line-or-history
-bindkey -M menuselect "l" vi-forward-char
-bindkey -M menuselect "j" vi-down-line-or-history
-bindkey -M menuselect "\e" send-break
 
 # Word delimiters
 autoload -U select-word-style
