@@ -1,0 +1,6 @@
+#!/bin/bash
+
+[[ $# -lt 3 ]] && { >&2 echo "Usage: $0 <file> <timeout> <command>"; exit 1; }
+
+[[ -f $1 && $(($(date +%s)-$(stat -c %Y $1))) -lt $2 ]] \
+	&& cat $1 || eval ${@:3} | tee $1
