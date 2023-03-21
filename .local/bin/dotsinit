@@ -2,44 +2,45 @@
 
 set -e
 
-hash apt-get sudo
+hash apt-get sudo git
 [ "$USER" = "root" ] && { >&2 echo "Run as non-root user"; exit 1; }
 
-# packages
-sudo curl -fsSLo /usr/share/keyrings/brave-browser-archive-keyring.gpg https://brave-browser-apt-release.s3.brave.com/brave-browser-archive-keyring.gpg
-echo "deb [signed-by=/usr/share/keyrings/brave-browser-archive-keyring.gpg arch=amd64] https://brave-browser-apt-release.s3.brave.com/ stable main" | sudo tee /etc/apt/sources.list.d/brave-browser-release.list
-echo "deb http://download.opensuse.org/repositories/shells:/zsh-users:/zsh-completions/xUbuntu_22.04/ /" | sudo tee /etc/apt/sources.list.d/shells:zsh-users:zsh-completions.list
-curl -fsSL https://download.opensuse.org/repositories/shells:zsh-users:zsh-completions/xUbuntu_22.04/Release.key | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/shells_zsh-users_zsh-completions.gpg > /dev/null
-sudo apt-get update --yes
-sudo apt-get upgrade --yes
-sudo apt-get install --yes \
-	alacritty exa btop python3 ranger \
-	fd-find ripgrep bat fzf \
-	npm fonts-terminus brave-browser \
-	zsh zsh-syntax-highlighting zsh-completions \
-	software-properties-common
-sudo add-apt-repository --yes ppa:neovim-ppa/stable
-sudo apt-get --yes install neovim python3-neovim
-
-# gnome extensions
-tmpdir=$(mktemp --directory)
-extdir=$XDG_DATA_HOME/gnome-shell/extensions
-mkdir -p $extdir
-rm -rf $extdir/*
-# pop-shell@system76.com
-sudo apt-get install --yes git make node-typescript
-git clone https://github.com/pop-os/shell $tmpdir/pop
-make --directory $tmpdir/pop depcheck compile install
-# unite@hardpixel.eu
-git clone https://github.com/hardpixel/unite-shell $tmpdir/unite
-mv $tmpdir/unite/unite@hardpixel.eu $extdir
-# clipboard-indicator@tudmotu.com
-git clone https://github.com/Tudmotu/gnome-shell-extension-clipboard-indicator $extdir/clipboard-indicator@tudmotu.com
-# expandable-notifications@kaan.g.inam.org
-git clone https://github.com/kaanginam/expandable-notifications $tmpdir/notifs
-mv $tmpdir/notifs/expandable-notifications@kaan.g.inam.org $extdir
-# no-overview@fthx
-git clone https://github.com/fthx/no-overview.git $extdir/no-overview@fthx
+if [ "$1" = "install" ]; then
+	# packages
+	sudo curl -fsSLo /usr/share/keyrings/brave-browser-archive-keyring.gpg https://brave-browser-apt-release.s3.brave.com/brave-browser-archive-keyring.gpg
+	echo "deb [signed-by=/usr/share/keyrings/brave-browser-archive-keyring.gpg arch=amd64] https://brave-browser-apt-release.s3.brave.com/ stable main" | sudo tee /etc/apt/sources.list.d/brave-browser-release.list
+	echo "deb http://download.opensuse.org/repositories/shells:/zsh-users:/zsh-completions/xUbuntu_22.04/ /" | sudo tee /etc/apt/sources.list.d/shells:zsh-users:zsh-completions.list
+	curl -fsSL https://download.opensuse.org/repositories/shells:zsh-users:zsh-completions/xUbuntu_22.04/Release.key | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/shells_zsh-users_zsh-completions.gpg > /dev/null
+	sudo apt-get update --yes
+	sudo apt-get upgrade --yes
+	sudo apt-get install --yes \
+		alacritty exa btop python3 ranger \
+		fd-find ripgrep bat fzf \
+		npm fonts-terminus brave-browser \
+		zsh zsh-syntax-highlighting zsh-completions \
+		software-properties-common
+	sudo add-apt-repository --yes ppa:neovim-ppa/stable
+	sudo apt-get --yes install neovim python3-neovim
+	# gnome extensions
+	tmpdir=$(mktemp --directory)
+	extdir=$XDG_DATA_HOME/gnome-shell/extensions
+	mkdir -p $extdir
+	rm -rf $extdir/*
+	# pop-shell@system76.com
+	sudo apt-get install --yes git make node-typescript
+	git clone https://github.com/pop-os/shell $tmpdir/pop
+	make --directory $tmpdir/pop depcheck compile install
+	# unite@hardpixel.eu
+	git clone https://github.com/hardpixel/unite-shell $tmpdir/unite
+	mv $tmpdir/unite/unite@hardpixel.eu $extdir
+	# clipboard-indicator@tudmotu.com
+	git clone https://github.com/Tudmotu/gnome-shell-extension-clipboard-indicator $extdir/clipboard-indicator@tudmotu.com
+	# expandable-notifications@kaan.g.inam.org
+	git clone https://github.com/kaanginam/expandable-notifications $tmpdir/notifs
+	mv $tmpdir/notifs/expandable-notifications@kaan.g.inam.org $extdir
+	# no-overview@fthx
+	git clone https://github.com/fthx/no-overview.git $extdir/no-overview@fthx
+fi
 
 # shell
 sudo chsh $USER -s /usr/bin/zsh
@@ -73,6 +74,7 @@ mkdir -p $HOME/.local/dots/info
 /.local/*
 !/.local/bin
 /.local/bin/*
+!/.local/bin/cachecmd
 !/.local/bin/dotsinit
 
 /.ssh/*
@@ -351,6 +353,3 @@ switch-to-application-9=@as []
 toggle-application-view=@as []
 toggle-message-tray=['<Shift><Super>n']
 toggle-overview=['<Super>space']" | dconf load /
-
-echo ""
-echo "Dots successfully installed. Please relogin now."
