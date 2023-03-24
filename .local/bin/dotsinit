@@ -66,6 +66,7 @@ mkdir -p $HOME/.local/dots/info
 !/.config/mimeapps.list
 !/.config/user-dirs.dirs
 !/.config/user-dirs.locale
+!/.config/ripgrep
 
 /.gnupg/*
 !/.gnupg/gpg-agent.conf
