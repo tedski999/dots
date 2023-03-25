@@ -99,9 +99,6 @@ setopt glob_complete complete_in_word
 # Colours
 eval "$(dircolors -b)"
 
-# Give me back C-s
-stty -ixon
-
 # External editor
 autoload edit-command-line
 zle -N edit-command-line
