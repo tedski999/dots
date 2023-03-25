@@ -225,7 +225,7 @@ match Error /\s\+$/
 
 " Switch to alternative file based on provided extensions
 function! AltFile(exts)
-	let files = map(split(a:exts, ','), 'expand("%:p:r").".".v:val')
+	let files = map(split(a:exts, ','), 'expand("%:p:r:r:r:r").".".v:val')
 	for file in files | if filereadable(file) | edit `=file` | return | endif | endfor
 	edit `=files[0]`
 endfunction
@@ -238,12 +238,16 @@ autocmd TextYankPost * lua vim.highlight.on_yank({higroup='Visual', timeout=150}
 autocmd TextYankPost * if v:event.operator is 'y' && v:event.regname is '' | exe 'OSCYankReg "' | endif
 " Comment formatting
 autocmd BufEnter     * set formatoptions-=c formatoptions-=o
-autocmd FileType c,cpp,hpp,ts,js,java setlocal commentstring=//\ %s
+autocmd FileType c,cpp,hpp,ts,js,java,glsl setlocal commentstring=//\ %s
 " Restore cursor position when opening buffers
 autocmd BufReadPost  * if expand('%:p') !~# '\m/\.git/' && line("'\"") > 0 && line("'\"") <= line('$') | exe 'normal! g`"' | endif
 " Switch between alternative files
 autocmd BufEnter     *.c,*.cpp nnoremap <leader>a <cmd>call AltFile('h,hpp')<cr>
 autocmd BufEnter     *.h,*.hpp nnoremap <leader>a <cmd>call AltFile('c,cpp')<cr>
+autocmd BufEnter     *.vert.glsl nnoremap <leader>a <cmd>call AltFile('frag.glsl')<cr>
+autocmd BufEnter     *.frag.glsl nnoremap <leader>a <cmd>call AltFile('vert.glsl')<cr>
+" Keep v:oldfiles updated
+autocmd BufNewFile,BufRead,BufFilePre * let f = expand('<afile>:p') | if index(v:oldfiles, f) == -1 | call insert(v:oldfiles, f) | endif
 augroup END
 
 let mapleader = ' '
