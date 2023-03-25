@@ -76,8 +76,13 @@ let undotree_DiffAutoOpen = 0
 let undotree_HelpLine = 0
 
 " FZF for fuzzy searching files, lines, help tags and man pages
-let g:fzf_layout = { 'window': { 'width': 1, 'height': 0.75, 'yoffset': 1.0 } }
-let g:fzf_action = { 'ctrl-j': 'edit', 'ctrl-t': 'tab split', 'ctrl-s': 'split', 'ctrl-v': 'vsplit' }
+function s:fzf_quickfix(list)
+	call setqflist(map(copy(a:list), '{ "filename": v:val }'))
+	copen
+	cc
+endfunction
+let g:fzf_layout = { 'window': { 'width': 1, 'height': 0.75, 'yoffset': 1.0, 'border': 'sharp' } }
+let g:fzf_action = { 'ctrl-q': function('s:fzf_quickfix') }
 
 " Snippets location
 let g:vsnip_snippet_dir = stdpath('config').'/snippets'
@@ -266,17 +271,19 @@ nnoremap <leader>n <cmd>lcd ~/Documents/notes \| enew \| set filetype=markdown<c
 nnoremap <leader>N <cmd>lcd ~/Documents/notes \| edit `=strftime('./journal/%Y/%V.md')` \| call mkdir(expand('%:h'), 'p')<cr>
 " FZF search
 nnoremap <leader>b <cmd>Buffers<cr>
+nnoremap <leader>l <cmd>Lines<cr>
 nnoremap <leader>f <cmd>Files %:p:h<cr>
 nnoremap <leader>F <cmd>Files<cr>
 nnoremap <leader>s <cmd>call fzf#vim#grep('rg --column --line-number --no-heading --color=always --smart-case ""', 1, fzf#vim#with_preview({'dir': expand('%:p:h')}))<cr>
 nnoremap <leader>S <cmd>Rg<cr>
 nnoremap <leader>h <cmd>Helptags<cr>
 nnoremap <leader>m <cmd>call fzf#run(fzf#wrap({'source': 'man -k "" \| cut -d " " -f 1', 'sink': 'tab Man', 'options': ['--preview', 'man {}']}))<cr>
+nnoremap <leader>o <cmd>call fzf#run(fzf#vim#with_preview(fzf#wrap({'source': map(filter(copy(v:oldfiles), "v:val =~ '^/'"), 'fnamemodify(v:val, ":~:.")')})))<cr>
 " LSP
 nnoremap <leader><leader> <cmd>lua vim.lsp.buf.hover()<cr>
 nnoremap <leader>k <cmd>lua vim.lsp.buf.code_action()<cr>
 nnoremap <leader>e <cmd>lua vim.diagnostic.open_float()<cr>
-nnoremap <leader>E <cmd>lua vim.diagnostic.setloclist()<cr>
+nnoremap <leader>E <cmd>lua vim.diagnostic.setquickfix()<cr>
 nnoremap <leader>d <cmd>lua vim.lsp.buf.definition()<cr>
 nnoremap <leader>r <cmd>lua vim.lsp.buf.references()<cr>
 vnoremap <leader>f <esc><cmd>lua vim.lsp.buf.range_formatting()<cr>
@@ -318,6 +325,15 @@ if getcwd() =~# '^/src\(/\|$\)'
 	let g:signify_vcs_cmds = { 'perforce': s:ssh.'env P4DIFF= P4COLORS= a p4 diff -du 0 %f' }
 	let g:signify_vcs_cmds_diffmode = { 'perforce': s:ssh.'a p4 print %f' }
 	let g:signify_skip = { 'vcs': { 'allow': ['perforce'] } }
+	" TODO: generalise some of these non-arista as well with git
+	command! Achanged call fzf#run(fzf#vim#with_preview(fzf#wrap({'source': s:ssh.'a p4 diff --summary | sed "s/^/\//"'})))
+	command! Aopened echo 'Looking for open files...' | redraw | let o = system(s:ssh.'a p4 opened') | if o != '' | echo o | else | echo 'Nothing opened' | endif
+	command! Aedit call A4edit()
+	command! Arevert call A4revert()
+	nnoremap <leader>gg <cmd>Achanged<cr>
+	nnoremap <leader>go <cmd>Aopened<cr>
+	nnoremap <leader>ge <cmd>Aedit<cr>
+	nnoremap <leader>gr <cmd>Arevert<cr>
 	" Fix TACC indentation
 	function! TaccIndentOverrides()
 		let prevLine = getline(SkipTaccBlanksAndComments(v:lnum - 1))
@@ -353,13 +369,14 @@ if getcwd() =~# '^/src\(/\|$\)'
 		return cache
 	endfunction
 	" OpenGrok search
-	command! -nargs=1 Agrok call fzf#vim#grep(s:ssh.'a grok --editor --max 99 '.shellescape(<q-args>).' | grep "^/src/.*"', 0, fzf#vim#with_preview({'options':['--prompt','Grok>']}))
+	command! -nargs=1 Agrok  call fzf#vim#grep(s:ssh.'a grok -em 99 '.shellescape(<q-args>).' | grep "^/src/.*"', 1, fzf#vim#with_preview({'options':['--prompt','Grok>']}))
+	command! -nargs=1 AgrokP call fzf#vim#grep(s:ssh.'a grok -em 99 -f /src/'.split(expand('%:p:h'), '/')[1].' '.shellescape(<q-args>).' | grep "^/src/.*"', 1, fzf#vim#with_preview({'options':['--prompt','Grok>']}))
 	" Agid
-	" TODO: prune most packages
-	command! Amkid echo 'Generating ID file...' | redraw | echo system(s:ssh.'a ws mkid')
-	command! -nargs=1 Agid call fzf#vim#grep(s:ssh.'a ws gid -f /src/ID -q '.shellescape(<q-args>), 0, fzf#vim#with_preview({'options':['--prompt','Gid>']}))
-	nnoremap <leader>r <cmd>exe 'Agid    -p '.split(expand('%:p:h'), '/')[1].' '.expand('<cword>')<cr>
-	nnoremap <leader>d <cmd>exe 'Agid -D -p '.split(expand('%:p:h'), '/')[1].' '.expand('<cword>')<cr>
-	nnoremap <leader>R <cmd>exe 'Agid    '.expand('<cword>')<cr>
-	nnoremap <leader>D <cmd>exe 'Agid -D '.expand('<cword>')<cr>
+	" TODO: better warning when ID is not found
+	command! -nargs=1 Agid  call fzf#vim#grep(s:ssh.'a ws gid -f /src/ID -cq '.shellescape(<q-args>), 1, fzf#vim#with_preview({'options':['--prompt','Gid>']}))
+	command! -nargs=1 AgidP call fzf#vim#grep(s:ssh.'a ws gid -f /src/ID -cqp '.split(expand('%:p:h'), '/')[1].' '.shellescape(<q-args>), 1, fzf#vim#with_preview({'options':['--prompt','Gid>']}))
+	nnoremap <leader>r <cmd>exe 'AgidP    '.expand('<cword>')<cr>
+	nnoremap <leader>d <cmd>exe 'AgidP -D '.expand('<cword>')<cr>
+	nnoremap <leader>R <cmd>exe 'Agid     '.expand('<cword>')<cr>
+	nnoremap <leader>D <cmd>exe 'Agid -D  '.expand('<cword>')<cr>
 endif
