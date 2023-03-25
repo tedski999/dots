@@ -2,7 +2,7 @@
 export PATH="$HOME/.local/bin:$PATH"
 export EDITOR="nvim"
 export VISUAL="nvim"
-export MANPAGER="less --long-prompt --ignore-case"
+export MANPAGER="less"
 export XDG_DATA_HOME="$HOME/.local/share"
 export XDG_CONFIG_HOME="$HOME/.config"
 export XDG_STATE_HOME="$HOME/.local/state"
@@ -17,6 +17,7 @@ export NODE_REPL_HISTORY="$XDG_DATA_HOME/node_repl_history"
 export npm_config_userconfig="$XDG_CONFIG_HOME/npm/npmrc"
 export ZSH_DATA="$XDG_DATA_HOME/zsh"
 export MakoProfile="SwitchApp_layer3-mid-latency_48x10G"
+export LESS="--incsearch --ignore-case --status-column --LONG-PROMPT --RAW-CONTROL-CHARS"
 export LESS_TERMCAP_mb=$'\e[1;31m'
 export LESS_TERMCAP_md=$'\e[1;36m'
 export LESS_TERMCAP_me=$'\e[0m'
