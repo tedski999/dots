@@ -298,7 +298,7 @@ imap <expr> <s-tab> vsnip#jumpable(-1) ? '<Plug>(vsnip-jump-prev)' : '<s-tab>'
 smap <expr> <s-tab> vsnip#jumpable(-1) ? '<Plug>(vsnip-jump-prev)' : '<s-tab>'
 
 " Arista-specifics if in /src directory
-if getcwd() =~# '^/src\(/\|$\)'
+if getcwd() =~# '^/src\(/\|$\)' && filereadable('/usr/share/vim/vimfiles/arista.vim')
 	echohl MoreMsg | echo 'Arista-specifics enabled!' | echohl None
 	let s:ssh = 'true && host="$(findmnt -no SOURCE /src | cut -d: -f1)" && eval ${host:+ssh us260 a ssh -q $host --} '
 	chdir /src
@@ -306,17 +306,15 @@ if getcwd() =~# '^/src\(/\|$\)'
 	let a4_auto_edit = 0
 	source /usr/share/vim/vimfiles/arista.vim
 	" Override A4edit and A4revert to use ssh
-	command! A4edit call A4edit()
-	command! A4revert call A4revert()
 	function! A4edit()
-		if strlen(glob(expand("%"))) && confirm("Checkout from Perforce?", "&Yes\n&No", 1) == 1
+		if strlen(glob(expand("%")))
 			call system(s:ssh.'a p4 login')
 			echo system(s:ssh.'a p4 edit '.shellescape(expand('%:p')))
 			if v:shell_error == 0 | set noreadonly | endif
 		endif
 	endfunction
 	function! A4revert()
-		if strlen(glob(expand("%"))) && confirm("Revert changes from Perforce?", "&Yes\n&No", 1) == 1
+		if strlen(glob(expand("%"))) && confirm("Revert Perforce file changes?", "&Yes\n&No", 1) == 1
 			call system(s:ssh.'a p4 login')
 			echo system(s:ssh.'a p4 revert '.shellescape(expand('%:p')))
 			if v:shell_error == 0 | set readonly | endif
@@ -356,7 +354,10 @@ if getcwd() =~# '^/src\(/\|$\)'
 	autocmd! BufNewFile,BufRead *.cgi,*.fcgi,*.gyp,*.gypi,*.lmi,*.ptl,*.py,*.py3,*.pyde,*.pyi,*.pyp,*.pyt,*.pyw,*.rpy,*.smk,*.spec,*.tac,*.wsgi,*.xpy,{.,}gclient,{.,}pythonrc,{.,}pythonstartup,DEPS,SConscript,SConstruct,Snakefile,wscript setf foo
 	autocmd! BufNewFile,BufRead *.cgi,*.fcgi,*.gyp,*.gypi,*.lmi,*.ptl,*.py,*.py3,*.pyde,*.pyi,*.pyp,*.pyt,*.pyw,*.rpy,*.smk,*.spec,*.wsgi,*.xpy,{.,}gclient,{.,}pythonrc,{.,}pythonstartup,DEPS,SConscript,SConstruct,Snakefile,wscript setf python
 	augroup END
+	" Building packages
+	command! -nargs=1 Amake echo 'Building packages <args>...' | redraw | echo system(s:ssh.'a ws mk <q-args>')
 	" Fuzzy-search files using cache
+	" TODO: L-f should be within package, L-f should be within /src
 	command! -nargs=1 Afiles call fzf#run(fzf#vim#with_preview(fzf#wrap({'source': 'rg -F "'.expand(<q-args>).'" '.AfilesCache()})))
 	nnoremap <leader>f <cmd>Afiles %:p:h<cr>
 	nnoremap <leader>F <cmd>Afiles `pwd`<cr>
