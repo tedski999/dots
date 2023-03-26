@@ -41,6 +41,7 @@ endif
 
 " Set the colorscheme and extra highlights
 colorscheme gotham
+highlight Folded guibg=NONE guifg=#888ca6
 highlight SpellBad guibg=NONE guifg=NONE gui=undercurl guisp=red
 highlight SpellCap guibg=NONE guifg=NONE gui=undercurl guisp=blue
 highlight SpellRare guibg=NONE guifg=NONE gui=undercurl guisp=purple
@@ -190,7 +191,6 @@ set nomodeline                                    " Don't read mode line
 set virtualedit=onemore                           " Allow cursor to extend one character past the end of the line
 set grepprg=rg\ --vimgrep\ --smart-case\ --follow " Use ripgrep for grepping
 set number                                        " Enable line numbers...
-set relativenumber                                " ...relative to the current line
 set cursorline                                    " Highlight current line...
 set cursorcolumn                                  " ...and column
 set noruler                                       " No need to show line/column number with lightline
@@ -207,7 +207,8 @@ set list                                          " Enable whitespace characters
 set listchars=space:·,tab:›\ ,trail:•,precedes:<,extends:>,nbsp:␣
 set suffixes-=.h                                  " Header files are important...
 set suffixes+=.git                                " ...but .git files are not
-set nofoldenable                                  " Don't fold
+set foldmethod=indent                             " Fold based on indent
+set foldlevelstart=20                             " ...and start with everything open
 set nowrap                                        " Don't wrap
 set lazyredraw                                    " Redraw only after commands have completed
 set termguicolors                                 " Enable true colors
@@ -237,17 +238,20 @@ autocmd TextYankPost * lua vim.highlight.on_yank({higroup='Visual', timeout=150}
 " Yank with OSC52
 autocmd TextYankPost * if v:event.operator is 'y' && v:event.regname is '' | exe 'OSCYankReg "' | endif
 " Comment formatting
-autocmd BufEnter     * set formatoptions-=c formatoptions-=o
+autocmd BufEnter * set formatoptions-=c formatoptions-=o
 autocmd FileType c,cpp,hpp,ts,js,java,glsl setlocal commentstring=//\ %s
 " Restore cursor position when opening buffers
-autocmd BufReadPost  * if expand('%:p') !~# '\m/\.git/' && line("'\"") > 0 && line("'\"") <= line('$') | exe 'normal! g`"' | endif
+autocmd BufReadPost * if expand('%:p') !~# '\m/\.git/' && line("'\"") > 0 && line("'\"") <= line('$') | exe 'normal! g`"' | endif
 " Switch between alternative files
-autocmd BufEnter     *.c,*.cpp nnoremap <leader>a <cmd>call AltFile('h,hpp')<cr>
-autocmd BufEnter     *.h,*.hpp nnoremap <leader>a <cmd>call AltFile('c,cpp')<cr>
-autocmd BufEnter     *.vert.glsl nnoremap <leader>a <cmd>call AltFile('frag.glsl')<cr>
-autocmd BufEnter     *.frag.glsl nnoremap <leader>a <cmd>call AltFile('vert.glsl')<cr>
+autocmd BufEnter *.c,*.cpp nnoremap <leader>a <cmd>call AltFile('h,hpp')<cr>
+autocmd BufEnter *.h,*.hpp nnoremap <leader>a <cmd>call AltFile('c,cpp')<cr>
+autocmd BufEnter *.vert.glsl nnoremap <leader>a <cmd>call AltFile('frag.glsl')<cr>
+autocmd BufEnter *.frag.glsl nnoremap <leader>a <cmd>call AltFile('vert.glsl')<cr>
 " Keep v:oldfiles updated
 autocmd BufNewFile,BufRead,BufFilePre * let f = expand('<afile>:p') | if index(v:oldfiles, f) == -1 | call insert(v:oldfiles, f) | endif
+" Drop from indent into manual folding mode
+autocmd BufReadPre * setlocal foldmethod=indent
+autocmd BufWinEnter * setlocal foldmethod=manual
 augroup END
 
 let mapleader = ' '
