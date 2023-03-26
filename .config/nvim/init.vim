@@ -222,7 +222,7 @@ set omnifunc=syntaxcomplete#Complete              " Generic completion
 set pumheight=8                                   " Limit complete menu height
 set spell                                         " Enable spelling by default
 set spellsuggest=best,20                          " Only show best spelling corrections
-set shada=!,'20,<50,s100,h,r/src,r/media          " Also specify removable media for shada
+set shada=!,'50,<50,s100,h,r/src,r/media          " Also specify removable media for shada
 
 " Highlight trailing whitespace
 match Error /\s\+$/
