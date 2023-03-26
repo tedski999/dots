@@ -371,10 +371,10 @@ if getcwd() =~# '^/src\(/\|$\)' && filereadable('/usr/share/vim/vimfiles/arista.
 	" Building packages
 	command! -nargs=1 Amake echo 'Building packages <args>...' | redraw | echo system(s:ssh.'a ws mk <q-args>')
 	" Fuzzy-search files using cache
-	" TODO: L-f should be within package, L-f should be within /src
-	command! -nargs=1 Afiles call fzf#run(fzf#vim#with_preview(fzf#wrap({'source': 'rg -F "'.expand(<q-args>).'" '.AfilesCache()})))
-	nnoremap <leader>f <cmd>Afiles %:p:h<cr>
-	nnoremap <leader>F <cmd>Afiles `pwd`<cr>
+	command! Afiles  call fzf#run(fzf#vim#with_preview(fzf#wrap({'source': 'rg -F "'.join(split(expand('%:p:h'), '/')[:0], '/').'" '.AfilesCache()})))
+	command! AfilesP call fzf#run(fzf#vim#with_preview(fzf#wrap({'source': 'rg -F "'.join(split(expand('%:p:h'), '/')[:1], '/').'" '.AfilesCache()})))
+	nnoremap <leader>f <cmd>AfilesP<cr>
+	nnoremap <leader>F <cmd>Afiles<cr>
 	command! AfilesCache call AfilesCache()
 	function! AfilesCache()
 		let cache = stdpath('cache').'/afiles'
@@ -388,12 +388,11 @@ if getcwd() =~# '^/src\(/\|$\)' && filereadable('/usr/share/vim/vimfiles/arista.
 		return cache
 	endfunction
 	" OpenGrok search
-	command! -nargs=1 Agrok  call fzf#vim#grep(s:ssh.'a grok -em 99 '.shellescape(<q-args>).' | grep "^/src/.*"', 1, fzf#vim#with_preview({'options':['--prompt','Grok>']}))
-	command! -nargs=1 AgrokP call fzf#vim#grep(s:ssh.'a grok -em 99 -f /src/'.split(expand('%:p:h'), '/')[1].' '.shellescape(<q-args>).' | grep "^/src/.*"', 1, fzf#vim#with_preview({'options':['--prompt','Grok>']}))
+	command! -nargs=1 Agrok  call fzf#vim#grep(s:ssh.'a grok -em 99                                                   '.shellescape(<q-args>).' | grep "^/src/.*"', 1, fzf#vim#with_preview({'options':['--prompt','Grok>']}))
+	command! -nargs=1 AgrokP call fzf#vim#grep(s:ssh.'a grok -em 99 -f '.join(split(expand('%:p:h'), '/')[:1], '/').' '.shellescape(<q-args>).' | grep "^/src/.*"', 1, fzf#vim#with_preview({'options':['--prompt','Grok>']}))
 	" Agid
-	" TODO: better warning when ID is not found
-	command! -nargs=1 Agid  call fzf#vim#grep(s:ssh.'a ws gid -f /src/ID -cq '.shellescape(<q-args>), 1, fzf#vim#with_preview({'options':['--prompt','Gid>']}))
-	command! -nargs=1 AgidP call fzf#vim#grep(s:ssh.'a ws gid -f /src/ID -cqp '.split(expand('%:p:h'), '/')[1].' '.shellescape(<q-args>), 1, fzf#vim#with_preview({'options':['--prompt','Gid>']}))
+	command! -nargs=1 Agid  call fzf#vim#grep(s:ssh.'a ws gid -f /src/ID -cq                                                  '.shellescape(<q-args>), 1, fzf#vim#with_preview({'options':['--prompt','Gid>']}))
+	command! -nargs=1 AgidP call fzf#vim#grep(s:ssh.'a ws gid -f /src/ID -cqp '.join(split(expand('%:p:h'), '/')[1:1], '/').' '.shellescape(<q-args>), 1, fzf#vim#with_preview({'options':['--prompt','Gid>']}))
 	nnoremap <leader>r <cmd>exe 'AgidP    '.expand('<cword>')<cr>
 	nnoremap <leader>d <cmd>exe 'AgidP -D '.expand('<cword>')<cr>
 	nnoremap <leader>R <cmd>exe 'Agid     '.expand('<cword>')<cr>
