@@ -30,6 +30,8 @@ Plug 'hrsh7th/cmp-buffer'                           " Buffer completion source
 Plug 'hrsh7th/cmp-path'                             " Path completion source
 Plug 'hrsh7th/cmp-cmdline'                          " Cmd completion source
 Plug 'hrsh7th/cmp-vsnip'                            " Snippets completion source
+Plug 'hrsh7th/cmp-calc'                             " Math completion source
+Plug 'f3fora/cmp-spell'                             " Spelling completion source
 call plug#end()
 
 " Ensure plugins are installed
@@ -47,15 +49,18 @@ highlight SpellCap guibg=NONE guifg=NONE gui=undercurl guisp=blue
 highlight SpellRare guibg=NONE guifg=NONE gui=undercurl guisp=purple
 highlight SpellLocal guibg=NONE guifg=NONE gui=undercurl guisp=yellow
 highlight CmpItemAbbrMatch gui=bold guifg=#569cd6
-
-" VCS sign column
-let g:signify_number_highlight = 1
-highlight SignifySignAdd    guifg=#2aa889 guibg=#11151c gui=bold
-highlight SignifySignChange guifg=#d26937 guibg=#11151c gui=bold
-highlight SignifySignDelete guifg=#c23127 guibg=#11151c gui=bold
+highlight SignifySignAdd    guifg=#2aa889 guibg=#11151c
+highlight SignifySignChange guifg=#d26937 guibg=#11151c
+highlight SignifySignDelete guifg=#c23127 guibg=#11151c
 highlight LspReferenceText gui=bold
 highlight LspReferenceRead gui=bold
 highlight LspReferenceWrite gui=bold
+
+" Try dots repo as git alternative
+let dotsrepo = '--git-dir=$HOME/.local/dots --work-tree=$HOME'
+let g:signify_vcs_cmds = { 'git': 'git diff --no-color --no-ext-diff -U0 -- %f || git '.dotsrepo.' diff --no-color --no-ext-diff -U0 -- %f' }
+let g:signify_vcs_cmds_diffmode = { 'git': 'git show HEAD:./%f || git '.dotsrepo.' show HEAD:./%f' }
+let g:signify_number_highlight = 1
 
 " Use , and . to align text by a deliminator
 let lion_map_left = '<leader>,'
@@ -77,13 +82,8 @@ let undotree_DiffAutoOpen = 0
 let undotree_HelpLine = 0
 
 " FZF for fuzzy searching files, lines, help tags and man pages
-function s:fzf_quickfix(list)
-	call setqflist(map(copy(a:list), '{ "filename": v:val }'))
-	copen
-	cc
-endfunction
-let g:fzf_layout = { 'window': { 'width': 1, 'height': 0.75, 'yoffset': 1.0, 'border': 'sharp' } }
-let g:fzf_action = { 'ctrl-q': function('s:fzf_quickfix') }
+let g:fzf_layout = { 'window': { 'width': 0.9, 'height': 0.9, 'border': 'sharp' } }
+let g:fzf_action = { 'ctrl-s': 'split' }
 
 " Snippets location
 let g:vsnip_snippet_dir = stdpath('config').'/snippets'
@@ -127,12 +127,12 @@ require('lualine').setup({
 
 -- Autocompletion
 local cmp = require('cmp')
+local cmptab  = function(fallback) if not cmp.select_next_item() then fallback() end end
+local cmpstab = function(fallback) if not cmp.select_prev_item() then cmp.complete() end end
 cmp.setup({
-	enabled = function() return not require('cmp.config.context').in_syntax_group('Comment') end,
-	mapping = cmp.mapping.preset.insert({['<c-j>']=cmp.mapping.confirm({select=true})}),
-	sources = cmp.config.sources({{name='nvim_lsp'},{name='vsnip'}},{{name='path'},{name='buffer'}}),
+	mapping = { ['<Tab>']=cmptab, ['<S-Tab>']=cmpstab, ['<c-j>']=cmp.mapping.confirm({select=true}) },
+	sources = cmp.config.sources({{name='nvim_lsp'},{name='vsnip'}},{{name='path'},{name='buffer'},{name='calc'}},{{name='spell'}}),
 	snippet = { expand = function(args) vim.fn['vsnip#anonymous'](args.body) end },
-	experimental = { ghost_text = true },
 	formatting = {
 		expandable_indicator = false,
 		format = function(_, item)
@@ -152,14 +152,15 @@ cmp.setup({
 	},
 })
 cmp.setup.cmdline({'/','?'}, {
-	mapping = cmp.mapping.preset.cmdline(),
+	mapping = { ['<Tab>']={c=cmptab}, ['<S-Tab>']={c=cmpstab} },
+	mapping = cmpmapping,
 	sources = {{name='buffer'}},
-	formatting = { format = function(_, item) item.kind = ''; return item end }
+	formatting = {format=function(_, item) item.kind = ''; return item end}
 })
 cmp.setup.cmdline(':', {
-	mapping = cmp.mapping.preset.cmdline(),
+	mapping = { ['<Tab>']={c=cmptab}, ['<S-Tab>']={c=cmpstab} },
 	sources = cmp.config.sources({{name='path'}, {name='cmdline'}}),
-	formatting = { format = function(_, item) item.kind = ''; return item end }
+	formatting = {format=function(_, item) item.kind = ''; return item end}
 })
 
 -- LSP server configs
@@ -219,7 +220,9 @@ set wildmode=longest:full,full                    " Show command complete menu a
 set completeopt=menu,menuone,noselect             " (Auto)complete menu
 set omnifunc=syntaxcomplete#Complete              " Generic completion
 set pumheight=8                                   " Limit complete menu height
+set spell                                         " Enable spelling by default
 set spellsuggest=best,20                          " Only show best spelling corrections
+set shada=!,'20,<50,s100,h,r/src,r/media          " Also specify removable media for shada
 
 " Highlight trailing whitespace
 match Error /\s\+$/
@@ -264,6 +267,9 @@ nnoremap <nowait> <leader>w <cmd>w<cr>
 nnoremap <nowait> <leader>W <cmd>wq<cr>
 nnoremap <nowait> <leader>q <cmd>q<cr>
 nnoremap <nowait> <leader>Q <cmd>q!<cr>
+" Use arrow behaviour on command line
+cnoremap <c-p> <up>
+cnoremap <c-n> <down>
 " Open config
 nnoremap <leader>c <cmd>edit $MYVIMRC<cr>
 " Search and replace
@@ -278,6 +284,10 @@ nnoremap <leader>u <cmd>UndotreeToggle<cr>
 nnoremap <leader>n <cmd>lcd ~/Documents/notes \| enew \| set filetype=markdown<cr>
 nnoremap <leader>N <cmd>lcd ~/Documents/notes \| edit `=strftime('./journal/%Y/%V.md')` \| call mkdir(expand('%:h'), 'p')<cr>
 " FZF search
+function! FzfSpellSink(word)
+	exe 'normal! "_ciw'.a:word
+endfunction
+nnoremap z= <cmd>call fzf#run(fzf#wrap({'source': spellsuggest(expand("<cword>")), 'sink': function('FzfSpellSink')}))<cr>
 nnoremap <leader>b <cmd>Buffers<cr>
 nnoremap <leader>l <cmd>Lines<cr>
 nnoremap <leader>f <cmd>Files %:p:h<cr>
