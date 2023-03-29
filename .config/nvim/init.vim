@@ -174,8 +174,10 @@ lsp.util.on_setup = lsp.util.add_hook_before(lsp.util.on_setup, function(cfg)
 		end
 	end
 end)
+--TODO:arista remote lsp :shakes-fist:
 --lsp.clangd.setup({})
 --lsp.pylsp.setup({})
+lsp.rust_analyzer.setup({cmd={"rustup", "run", "stable", "rust-analyzer"}})
 
 EOF
 
@@ -252,9 +254,6 @@ autocmd BufEnter *.vert.glsl nnoremap <leader>a <cmd>call AltFile('frag.glsl')<c
 autocmd BufEnter *.frag.glsl nnoremap <leader>a <cmd>call AltFile('vert.glsl')<cr>
 " Keep v:oldfiles updated
 autocmd BufNewFile,BufRead,BufFilePre * let f = expand('<afile>:p') | if index(v:oldfiles, f) == -1 | call insert(v:oldfiles, f) | endif
-" Drop from indent into manual folding mode
-autocmd BufReadPre * setlocal foldmethod=indent
-autocmd BufWinEnter * setlocal foldmethod=manual
 augroup END
 
 let mapleader = ' '

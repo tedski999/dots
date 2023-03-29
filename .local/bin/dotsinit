@@ -23,6 +23,11 @@ if [ "$1" = "install" ]; then
 		software-properties-common
 	sudo add-apt-repository --yes ppa:neovim-ppa/stable
 	sudo apt-get --yes install neovim python3-neovim
+	# rust
+	curl https://sh.rustup.rs -sSf | sh -s -- --component rust-analyzer --component rust-src --no-modify-path -y
+	source "$XDG_DATA_HOME/cargo/env"
+	mkdir -p $ZSH_DATA/plugins/rustup
+	rustup completions zsh > "$ZSH_DATA/plugins/rustup/_rustup"
 	# gnome extensions
 	tmpdir=$(mktemp --directory)
 	extdir=$XDG_DATA_HOME/gnome-shell/extensions
