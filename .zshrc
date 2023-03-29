@@ -1,45 +1,14 @@
-# Environment variables
-export PATH="$HOME/.local/bin:$PATH"
-export EDITOR="nvim"
-export VISUAL="nvim"
-export MANPAGER="less"
-export XDG_DATA_HOME="$HOME/.local/share"
-export XDG_CONFIG_HOME="$HOME/.config"
-export XDG_STATE_HOME="$HOME/.local/state"
-export XDG_CACHE_HOME="$HOME/.cache"
-export ANDROID_HOME="$XDG_DATA_HOME/android"
-export CARGO_HOME="$XDG_DATA_HOME/cargo"
-export CUDA_CACHE_PATH="$XDG_CACHE_HOME/nv"
-export DOCKER_CONFIG="$XDG_CONFIG_HOME/docker"
-export RIPGREP_CONFIG_PATH="$XDG_CONFIG_HOME/ripgrep/config"
-export GOPATH="$XDG_DATA_HOME/go"
-export NODE_REPL_HISTORY="$XDG_DATA_HOME/node_repl_history"
-export npm_config_userconfig="$XDG_CONFIG_HOME/npm/npmrc"
-export ZSH_DATA="$XDG_DATA_HOME/zsh"
-export MakoProfile="SwitchApp_layer3-mid-latency_48x10G"
-export LESS="--ignore-case --status-column --LONG-PROMPT --RAW-CONTROL-CHARS"
-export LESS_TERMCAP_mb=$'\e[1;31m'
-export LESS_TERMCAP_md=$'\e[1;36m'
-export LESS_TERMCAP_me=$'\e[0m'
-export LESS_TERMCAP_so=$'\e[01;33m'
-export LESS_TERMCAP_se=$'\e[0m'
-export LESS_TERMCAP_us=$'\e[1;32m'
-export LESS_TERMCAP_ue=$'\e[0m'
-
-# GPG+SSH
-export SSH_AUTH_SOCK="$(gpgconf --list-dirs agent-ssh-socket)"
-gpgconf --launch gpg-agent
-
-# History
-HISTFILE="$ZSH_DATA/history"
+PS1=$'\n%F{red}%n@%m%f %F{blue}%~%f %F{red}%(?..%?)%f\n>%f '
 HISTSIZE="10000"
 SAVEHIST="10000"
-
-# Prompt
-PS1=$'\n%F{red}%n@%m%f %F{blue}%~%f %F{red}%(?..%?)%f\n>%f '
-
-# Better time format
 TIMEFMT=$'\nreal\t%E\nuser\t%U\nsys\t%S\ncpu\t%P'
+
+# Options
+setopt autocd interactive_comments notify
+setopt auto_pushd pushd_ignore_dups pushd_silent
+setopt hist_ignore_all_dups hist_reduce_blanks inc_append_history
+setopt numericglobsort prompt_subst
+setopt glob_complete complete_in_word
 
 # Aliases
 alias sudo="sudo --preserve-env env PATH=$PATH "
@@ -47,8 +16,10 @@ alias dots="git --git-dir=$HOME/.local/dots --work-tree=$HOME"
 alias v="nvim"
 alias r="ranger"
 alias p="python3"
+alias c="cargo"
 alias fd="fdfind"
 alias bat="batcat"
+alias wget="wget --hsts-file=\"$XDG_DATA_HOME/wget-hsts\""
 alias grep="grep --color=auto"
 alias diff="diff --color=auto"
 alias ip="ip --color=auto"
@@ -89,16 +60,6 @@ function cht {
 	curl cht.sh/$1
 }
 
-# Options
-setopt autocd interactive_comments notify
-setopt auto_pushd pushd_ignore_dups pushd_silent
-setopt hist_ignore_all_dups hist_reduce_blanks inc_append_history extended_history
-setopt numericglobsort prompt_subst
-setopt glob_complete complete_in_word
-
-# Colours
-eval "$(dircolors -b)"
-
 # External editor
 autoload edit-command-line
 zle -N edit-command-line
@@ -116,12 +77,13 @@ for k in "^p" "^[OA" "^[[A"; bindkey $k up-line-or-beginning-search
 for k in "^n" "^[OB" "^[[B"; bindkey $k down-line-or-beginning-search
 
 # Completion
+[[ -d $ZSH_DATA/plugins/rustup ]] && fpath=($fpath $ZSH_DATA/plugins/rustup)
 [[ -d $ZSH_DATA/plugins/arzsh-complete ]] && fpath=($fpath $ZSH_DATA/plugins/arzsh-complete)
 [[ -d $ZSH_DATA/plugins/zsh-completions ]] && fpath=($fpath $ZSH_DATA/plugins/zsh-completions/src)
-zmodload zsh/complist
+[[ -d $RUSTUP_HOME/toolchains/stable-x86_64-unknown-linux-gnu/share/zsh/site-functions ]] && fpath=($fpath $RUSTUP_HOME/toolchains/stable-x86_64-unknown-linux-gnu/share/zsh/site-functions)
 autoload -Uz compinit
-compinit -d $XDG_CACHE_HOME/zcompdump
 _comp_options+=(globdots)
+compinit -d "$XDG_CACHE_HOME/zcompdump" $([[ -n "$XDG_CACHE_HOME/zcompdump"(#qN.mh+24) ]] && echo -C)
 zstyle ":completion:*" menu select
 zstyle ":completion:*" completer _complete _match _approximate
 zstyle ":completion:*" matcher-list "" "m:{[:lower:][:upper:]}={[:upper:][:lower:]}" "+l:|=* r:|=*"
@@ -138,7 +100,22 @@ bindkey "^[[Z" reverse-menu-complete
 autoload -U select-word-style
 select-word-style bash
 
-# FZF integration
+# GPG+SSH
+export SSH_AUTH_SOCK="$(gpgconf --list-dirs agent-ssh-socket)"
+(gpgconf --launch gpg-agent &)
+
+# Pager
+eval "$(dircolors -b)"
+export LESS="--ignore-case --status-column --LONG-PROMPT --RAW-CONTROL-CHARS"
+export LESS_TERMCAP_mb=$'\e[1;31m'
+export LESS_TERMCAP_md=$'\e[1;36m'
+export LESS_TERMCAP_me=$'\e[0m'
+export LESS_TERMCAP_so=$'\e[01;33m'
+export LESS_TERMCAP_se=$'\e[0m'
+export LESS_TERMCAP_us=$'\e[1;32m'
+export LESS_TERMCAP_ue=$'\e[0m'
+
+# FZF
 export FZF_DEFAULT_OPTS='--multi --bind=ctrl-j:accept,ctrl-k:toggle --preview-window sharp --marker=k --color=fg+:bold,pointer:red,hl:red,hl+:red,gutter:-1,marker:red'
 export FZF_DEFAULT_COMMAND='rg --files --no-messages'
 export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"

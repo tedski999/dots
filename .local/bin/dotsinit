@@ -5,6 +5,8 @@ set -e
 hash apt-get sudo git
 [ "$USER" = "root" ] && { >&2 echo "Run as non-root user"; exit 1; }
 
+. "$HOME/.zshenv"
+
 if [ "$1" = "install" ]; then
 	# packages
 	sudo curl -fsSLo /usr/share/keyrings/brave-browser-archive-keyring.gpg https://brave-browser-apt-release.s3.brave.com/brave-browser-archive-keyring.gpg
@@ -53,6 +55,7 @@ mkdir -p $HOME/.local/dots/info
 !/.gnupg
 !/.local
 !/.ssh
+!/.zshenv
 !/.zshrc
 
 /.config/*
