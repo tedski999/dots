@@ -83,7 +83,7 @@ let undotree_HelpLine = 0
 
 " FZF for fuzzy searching files, lines, help tags and man pages
 let g:fzf_layout = { 'window': { 'width': 0.9, 'height': 0.9, 'border': 'sharp' } }
-let g:fzf_action = { 'ctrl-s': 'split' }
+let g:fzf_action = { 'ctrl-t': 'tab split', 'ctrl-s': 'split', 'ctrl-v': 'vsplit' }
 
 " Snippets location
 let g:vsnip_snippet_dir = stdpath('config').'/snippets'
@@ -261,6 +261,8 @@ nnoremap Q nop
 " Don't jump over wrapped lines with j and k
 nnoremap j gj
 nnoremap k gk
+vnoremap j gj
+vnoremap k gk
 " Handy buffer shortcuts
 nnoremap <nowait> <leader>w <cmd>w<cr>
 nnoremap <nowait> <leader>W <cmd>wq<cr>
