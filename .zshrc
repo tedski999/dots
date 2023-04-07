@@ -17,6 +17,7 @@ alias v="nvim"
 alias r="ranger"
 alias p="python3"
 alias c="cargo"
+alias g="git"
 alias fd="fdfind"
 alias bat="batcat"
 alias wget="wget --hsts-file=\"$XDG_DATA_HOME/wget-hsts\""
@@ -59,6 +60,8 @@ function M {
 function cht {
 	curl cht.sh/$1
 }
+
+bindkey -e
 
 # External editor
 autoload edit-command-line
