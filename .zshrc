@@ -50,7 +50,7 @@ for k in "^n" "^[OB" "^[[B"; bindkey $k down-line-or-beginning-search
 
 # Completion
 [[ -d $ZSH_DATA/plugins/rustup ]] && fpath=($fpath $ZSH_DATA/plugins/rustup)
-[[ -d $ZSH_DATA/plugins/arzsh-complete ]] && fpath=($fpath $ZSH_DATA/plugins/arzsh-complete)
+[[ -d $ZSH_DATA/plugins/arzsh-complete ]] && fpath=($fpath $ZSH_DATA/plugins/arzsh-complete) && export ARZSH_COMP_UNSAFE=1
 [[ -d $ZSH_DATA/plugins/zsh-completions ]] && fpath=($fpath $ZSH_DATA/plugins/zsh-completions/src)
 [[ -d $RUSTUP_HOME/toolchains/stable-x86_64-unknown-linux-gnu/share/zsh/site-functions ]] && fpath=($fpath $RUSTUP_HOME/toolchains/stable-x86_64-unknown-linux-gnu/share/zsh/site-functions)
 autoload -Uz compinit
