@@ -29,37 +29,6 @@ alias la="ls -la"
 alias d="dirs -v"
 for i ({1..9}) alias "$i"="cd +$i"
 for i ({3..9}) alias "${(l:i::.:)}"="${(l:i-1::.:)};.."
-if [ "${HOST%%.*}" != "us260" ]; then
-	alias us="2>/dev/null mosh -a -o --experimental-remote-ip=remote us260 -- tmux new"
-	alias s="us -A"
-	alias S='mut=$(M) && us -c a ssh $mut'
-else
-	alias s="a4c shell"
-fi
-
-# Shorthand for un/mounting MUTs using SSHFS
-function m {
-	fusermount -uq /src
-	M >/dev/null 2>&1 && { >&2 echo "Unable to unmount"; return 1 }
-	[ -z "$1" ] && return 0
-	sshfs "$1:/src" "/src" \
-		-o reconnect -o kernel_cache -o idmap=user -o compression=yes -o ServerAliveInterval=15 -o max_conns=8 \
-		-o cache_timeout=600 -o cache_stat_timeout=600 -o cache_dir_timeout=600 -o cache_link_timeout=600 \
-		-o dcache_timeout=600 -o dcache_stat_timeout=600 -o dcache_dir_timeout=600 -o dcache_link_timeout=600 \
-		-o entry_timeout=600 -o negative_timeout=600 -o attr_timeout=600
-}
-
-# Print current mounted MUT hostname
-function M {
-	mut="$(findmnt -no SOURCE /src | cut -d: -f1)"
-	[ -z "$mut" ] && { >&2 echo "No MUT mounted"; return 1 }
-	echo "$mut"
-}
-
-# Cheatsheets
-function cht {
-	curl cht.sh/$1
-}
 
 bindkey -e
 
@@ -153,3 +122,13 @@ ZSH_HIGHLIGHT_STYLES[assign]="none"
 ZSH_HIGHLIGHT_STYLES[redirection]="fg=yellow,bold"
 ZSH_HIGHLIGHT_STYLES[named-fd]="none"
 ZSH_HIGHLIGHT_STYLES[arg0]="fg=blue"
+
+# Arista Shell
+ash() { eval 2>/dev/null mosh -a -o --experimental-remote-ip=remote us260 -- tmux new ${@:+-c -- a4c shell $@} }
+_ash() { compadd $(ssh us260 -- a4c ps -N) }
+compdef _ash ash
+
+# Cheatsheets
+function cht { curl cht.sh/$1 }
+_cht() { compadd $commands:t }
+compdef _cht cht
