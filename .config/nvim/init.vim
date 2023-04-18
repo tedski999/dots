@@ -371,8 +371,8 @@ if getcwd() =~# '^/src\(/\|$\)' && filereadable('/usr/share/vim/vimfiles/arista.
 	command! -nargs=1 AgrokP call fzf#vim#grep('a grok -em 99 -f '.join(split(expand('%:p:h'), '/')[:1], '/').' '.shellescape(<q-args>).' | grep "^/src/.*"', 1, fzf#vim#with_preview({'options':['--prompt','Grok>']}))
 	" Agid
 	command! Amkid echo 'Generating ID file...' | redraw | echo system('a ws mkid')
-	command! -nargs=1 Agid  call fzf#vim#grep('a ws gid -f /src/ID -cq                                                  '.shellescape(<q-args>), 1, fzf#vim#with_preview({'options':['--prompt','Gid>']}))
-	command! -nargs=1 AgidP call fzf#vim#grep('a ws gid -f /src/ID -cqp '.join(split(expand('%:p:h'), '/')[1:1], '/').' '.shellescape(<q-args>), 1, fzf#vim#with_preview({'options':['--prompt','Gid>']}))
+	command! -nargs=1 Agid  call fzf#vim#grep('a ws gid -cq                                                  '.<q-args>, 1, fzf#vim#with_preview({'options':['--prompt','Gid>']}))
+	command! -nargs=1 AgidP call fzf#vim#grep('a ws gid -cqp '.join(split(expand('%:p:h'), '/')[1:1], '/').' '.<q-args>, 1, fzf#vim#with_preview({'options':['--prompt','Gid>']}))
 	nnoremap <leader>r <cmd>exe 'AgidP    '.expand('<cword>')<cr>
 	nnoremap <leader>d <cmd>exe 'AgidP -D '.expand('<cword>')<cr>
 	nnoremap <leader>R <cmd>exe 'Agid     '.expand('<cword>')<cr>
