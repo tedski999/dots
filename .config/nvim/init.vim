@@ -252,8 +252,6 @@ autocmd BufEnter *.c,*.cpp nnoremap <leader>a <cmd>call AltFile('h,hpp')<cr>
 autocmd BufEnter *.h,*.hpp nnoremap <leader>a <cmd>call AltFile('c,cpp')<cr>
 autocmd BufEnter *.vert.glsl nnoremap <leader>a <cmd>call AltFile('frag.glsl')<cr>
 autocmd BufEnter *.frag.glsl nnoremap <leader>a <cmd>call AltFile('vert.glsl')<cr>
-" Keep v:oldfiles updated
-autocmd BufNewFile,BufRead,BufFilePre * let f = expand('<afile>:p') | if index(v:oldfiles, f) == -1 | call insert(v:oldfiles, f) | endif
 augroup END
 
 let mapleader = ' '
@@ -297,7 +295,7 @@ nnoremap <leader>s <cmd>call fzf#vim#grep('rg --column --line-number --no-headin
 nnoremap <leader>S <cmd>Rg<cr>
 nnoremap <leader>h <cmd>Helptags<cr>
 nnoremap <leader>m <cmd>call fzf#run(fzf#wrap({'source': 'man -k "" \| cut -d " " -f 1', 'sink': 'tab Man', 'options': ['--preview', 'man {}']}))<cr>
-nnoremap <leader>o <cmd>call fzf#run(fzf#vim#with_preview(fzf#wrap({'source': map(filter(copy(v:oldfiles), "v:val =~ '^/'"), 'fnamemodify(v:val, ":~:.")')})))<cr>
+nnoremap <leader>o <cmd>History<cr>
 " LSP
 nnoremap <leader><leader> <cmd>lua vim.lsp.buf.hover()<cr>
 nnoremap <leader>k <cmd>lua vim.lsp.buf.code_action()<cr>
