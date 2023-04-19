@@ -388,4 +388,18 @@ if getcwd() =~# '^/src\(/\|$\)' && filereadable('/usr/share/vim/vimfiles/arista.
 	nnoremap <leader>d <cmd>exe 'AgidP -D '.expand('<cword>')<cr>
 	nnoremap <leader>R <cmd>exe 'Agid     '.expand('<cword>')<cr>
 	nnoremap <leader>D <cmd>exe 'Agid  -D '.expand('<cword>')<cr>
+	" cdbtool
+	command! -nargs=* Acdb echo 'Generating compile_commands.json for '<q-args> | redraw | echo system('cdbtool --tin '<q-args>)
+	" TACC language server
+lua << EOF
+	require('lspconfig.configs').tac = {
+		default_config = {
+			cmd = {'/usr/bin/artaclsp'},
+			cmd_args = {'-I', '/bld/'},
+			filetypes = { 'tac' },
+			root_dir = function() return '/src' end
+		}
+	}
+	require('lspconfig').tac.setup({})
+EOF
 endif
