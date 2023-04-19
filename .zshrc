@@ -132,3 +132,6 @@ compdef _ash ash
 function cht { curl cht.sh/$1 }
 _cht() { compadd $commands:t }
 compdef _cht cht
+
+# File sharing
+0x0() { curl -F'file=@'$1 https://0x0.st }
