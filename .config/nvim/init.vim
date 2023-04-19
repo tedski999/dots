@@ -21,7 +21,7 @@ Plug 'mbbill/undotree'                              " Visualised undo tree
 Plug 'junegunn/fzf.vim'                             " FZF shortcuts
 Plug 'junegunn/fzf', { 'do': { -> fzf#install() } } " Install FZF
 Plug 'nvim-lualine/lualine.nvim'                    " Status bar
-Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
+Plug 'sheerun/vim-polyglot'                         " Language packs
 Plug 'neovim/nvim-lspconfig'                        " LSP client
 Plug 'hrsh7th/vim-vsnip'                            " Snippets engine
 Plug 'hrsh7th/nvim-cmp'                             " Autocompletion
@@ -188,21 +188,6 @@ lsp.rust_analyzer.setup({
 				overrideCommand = { 'cargo', 'clippy', '--workspace', '--message-format=json', '--all-targets', '--all-features' }
 			}
 		}
-	}
-})
-
-require('nvim-treesitter.configs').setup({
-	ensure_installed = { 'c', 'lua', 'vim', 'vimdoc', 'query' },
-	highlight = {
-		enable = true,
-		disable = function(lang, buf)
-			local max_filesize = 100 * 1024
-			local ok, stats = pcall(vim.loop.fs_stat, vim.api.nvim_buf_get_name(buf))
-			return ok and stats and stats.size > max_filesize
-		end
-	},
-	indent = {
-		enable = true
 	}
 })
 
