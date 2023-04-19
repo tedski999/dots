@@ -12,16 +12,16 @@ Plug 'tpope/vim-sensible'                           " Sane defaults
 Plug 'tpope/vim-vinegar'                            " Better file browsing
 Plug 'tpope/vim-surround'                           " Surround motion
 Plug 'tpope/vim-unimpaired'                         " More bracket mappings
-Plug 'tpope/vim-commentary'                         " Comment keybinding
 Plug 'tpope/vim-fugitive'                           " Git integration
 Plug 'mhinz/vim-signify'                            " Git changes
 Plug 'tommcdo/vim-lion'                             " Text aligning
 Plug 'ojroques/vim-oscyank'                         " OSC52 yank
+Plug 'numToStr/Comment.nvim'                        " Comment keybinding
 Plug 'mbbill/undotree'                              " Visualised undo tree
 Plug 'junegunn/fzf.vim'                             " FZF shortcuts
 Plug 'junegunn/fzf', { 'do': { -> fzf#install() } } " Install FZF
 Plug 'nvim-lualine/lualine.nvim'                    " Status bar
-Plug 'sheerun/vim-polyglot'                         " Language packs
+Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
 Plug 'neovim/nvim-lspconfig'                        " LSP client
 Plug 'hrsh7th/vim-vsnip'                            " Snippets engine
 Plug 'hrsh7th/nvim-cmp'                             " Autocompletion
@@ -125,6 +125,9 @@ require('lualine').setup({
 	}
 })
 
+-- Commenting
+require('Comment').setup({})
+
 -- Autocompletion
 local cmp = require('cmp')
 local cmptab  = function(fallback) if not cmp.select_next_item() then fallback() end end
@@ -174,10 +177,34 @@ lsp.util.on_setup = lsp.util.add_hook_before(lsp.util.on_setup, function(cfg)
 		end
 	end
 end)
---TODO:arista remote lsp :shakes-fist:
---lsp.clangd.setup({})
---lsp.pylsp.setup({})
-lsp.rust_analyzer.setup({cmd={"rustup", "run", "stable", "rust-analyzer"}})
+lsp.clangd.setup({})
+lsp.pylsp.setup({})
+lsp.rust_analyzer.setup({
+	cmd = {'rustup', 'run', 'stable', 'rust-analyzer'},
+	settings = {
+		['rust-analyzer'] = {
+			checkOnSave = {
+				allFeatures = true,
+				overrideCommand = { 'cargo', 'clippy', '--workspace', '--message-format=json', '--all-targets', '--all-features' }
+			}
+		}
+	}
+})
+
+require('nvim-treesitter.configs').setup({
+	ensure_installed = { 'c', 'lua', 'vim', 'vimdoc', 'query' },
+	highlight = {
+		enable = true,
+		disable = function(lang, buf)
+			local max_filesize = 100 * 1024
+			local ok, stats = pcall(vim.loop.fs_stat, vim.api.nvim_buf_get_name(buf))
+			return ok and stats and stats.size > max_filesize
+		end
+	},
+	indent = {
+		enable = true
+	}
+})
 
 EOF
 
@@ -241,10 +268,9 @@ autocmd!
 " Highlight on yank
 autocmd TextYankPost * lua vim.highlight.on_yank({higroup='Visual', timeout=150})
 " Yank with OSC52
-autocmd TextYankPost * if v:event.operator is 'y' && v:event.regname is '' | exe 'OSCYankReg "' | endif
+autocmd TextYankPost * if v:event.operator is 'y' && v:event.regname is '' | exe 'OSCYankRegister "' | endif
 " Comment formatting
 autocmd BufEnter * set formatoptions-=c formatoptions-=o
-autocmd FileType c,cpp,hpp,ts,js,java,glsl setlocal commentstring=//\ %s
 " Restore cursor position when opening buffers
 autocmd BufReadPost * if expand('%:p') !~# '\m/\.git/' && line("'\"") > 0 && line("'\"") <= line('$') | exe 'normal! g`"' | endif
 " Switch between alternative files
