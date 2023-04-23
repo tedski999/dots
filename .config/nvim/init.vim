@@ -310,8 +310,10 @@ nnoremap <leader>o <cmd>History<cr>
 " LSP
 nnoremap <leader><leader> <cmd>lua vim.lsp.buf.hover()<cr>
 nnoremap <leader>k <cmd>lua vim.lsp.buf.code_action()<cr>
+nnoremap ]e <cmd>lua vim.diagnostic.goto_next()<cr>
+nnoremap [e <cmd>lua vim.diagnostic.goto_prev()<cr>
 nnoremap <leader>e <cmd>lua vim.diagnostic.open_float()<cr>
-nnoremap <leader>E <cmd>lua vim.diagnostic.setquickfix()<cr>
+nnoremap <leader>E <cmd>lua vim.diagnostic.setqflist()<cr>
 nnoremap <leader>d <cmd>lua vim.lsp.buf.definition()<cr>
 nnoremap <leader>r <cmd>lua vim.lsp.buf.references()<cr>
 vnoremap <leader>f <esc><cmd>lua vim.lsp.buf.range_formatting()<cr>
