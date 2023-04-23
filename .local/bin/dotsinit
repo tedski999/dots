@@ -47,6 +47,8 @@ if [ "$1" = "install" ]; then
 	mv $tmpdir/notifs/expandable-notifications@kaan.g.inam.org $extdir
 	# no-overview@fthx
 	git clone https://github.com/fthx/no-overview.git $extdir/no-overview@fthx
+	# draw-on-your-screen2@zhrexl.github.com
+	git clone https://github.com/zhrexl/DrawOnYourScreen2.git $extdir/draw-on-your-screen2@zhrexl.github.com
 fi
 
 # shell
@@ -91,6 +93,18 @@ mkdir -p $HOME/.local/dots/info
 
 # dconf
 echo "
+[org/gnome/desktop/a11y/applications]
+screen-magnifier-enabled=false
+
+[org/gnome/desktop/a11y/magnifier]
+cross-hairs-clip=false
+invert-lightness=false
+lens-mode=true
+mag-factor=1.0
+mouse-tracking='proportional'
+scroll-at-edges=true
+show-cross-hairs=false
+
 [org/gnome/desktop/background]
 color-shading-type='solid'
 picture-uri='none'
@@ -217,9 +231,9 @@ custom-keybindings=['/org/gnome/settings-daemon/plugins/media-keys/custom-keybin
 help=@as []
 home=@as []
 logout=['<Primary><Super>Escape']
-magnifier=@as []
-magnifier-zoom-in=@as []
-magnifier-zoom-out=@as []
+magnifier=['<Shift><Super>plus']
+magnifier-zoom-in=['<Super>equal']
+magnifier-zoom-out=['<Super>minus']
 rotate-video-lock-static=@as []
 screencast=['<Shift>Print']
 screenreader=@as []
@@ -261,7 +275,7 @@ sleep-inactive-battery-timeout=1800
 app-picker-view=uint32 1
 disable-user-extensions=false
 disabled-extensions=['ubuntu-dock@ubuntu.com', 'ubuntu-appindicators@ubuntu.com', 'ding@rastersoft.com']
-enabled-extensions=['pop-shell@system76.com', 'clipboard-indicator@tudmotu.com', 'expandable-notifications@kaan.g.inam.org', 'unite@hardpixel.eu', 'no-overview@fthx']
+enabled-extensions=['pop-shell@system76.com', 'clipboard-indicator@tudmotu.com', 'expandable-notifications@kaan.g.inam.org', 'unite@hardpixel.eu', 'no-overview@fthx', 'draw-on-your-screen2@zhrexl.github.com']
 favorite-apps=@as []
 had-bluetooth-devices-setup=true
 welcome-dialog-last-shown-version='42.5'
@@ -282,6 +296,14 @@ prev-entry=['<Primary><Super>v']
 preview-size=50
 strip-text=false
 toggle-menu=['<Super>v']
+
+[org/gnome/shell/extensions/draw-on-your-screen]
+drawing-on-desktop=false
+erase-drawings=['<Control><Super>p']
+indicator-disabled=false
+osd-disabled=false
+toggle-drawing=['<Super>p']
+toggle-modal=['<Shift><Super>p']
 
 [org/gnome/shell/extensions/pop-shell]
 activate-launcher=@as []
