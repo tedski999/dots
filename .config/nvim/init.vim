@@ -1,3 +1,5 @@
+let mapleader = ' '
+
 " Ensure plug.vim is installed
 let plug_vim = stdpath('data').'/site/autoload/plug.vim'
 if !filereadable(plug_vim)
@@ -18,6 +20,8 @@ Plug 'tommcdo/vim-lion'                             " Text aligning
 Plug 'ojroques/vim-oscyank'                         " OSC52 yank
 Plug 'numToStr/Comment.nvim'                        " Comment keybinding
 Plug 'mbbill/undotree'                              " Visualised undo tree
+Plug 'ggandor/leap.nvim'                            " Better mid-range movement
+Plug 'windwp/nvim-autopairs'                        " Automatic pair insertion
 Plug 'junegunn/fzf.vim'                             " FZF shortcuts
 Plug 'junegunn/fzf', { 'do': { -> fzf#install() } } " Install FZF
 Plug 'nvim-lualine/lualine.nvim'                    " Status bar
@@ -68,6 +72,7 @@ let lion_map_right = '<leader>.'
 let lion_squeeze_spaces = 1
 
 " Throw yank straight to local terminal using OSC52
+" TODO: large yanks and quick yanks borked
 let g:oscyank_term = 'default'
 let g:oscyank_silent = v:true
 
@@ -128,16 +133,28 @@ require('lualine').setup({
 -- Commenting
 require('Comment').setup({})
 
+-- Leaping
+local leap = require('leap')
+leap.opts.case_sensitive = true
+leap.opts.safe_labels = {}
+vim.api.nvim_set_hl(0, 'LeapBackdrop', { link = 'Comment' })
+vim.keymap.set({'n', 'x', 'o'}, '<leader>j', '<Plug>(leap-forward-to)')
+vim.keymap.set({'n', 'x', 'o'}, '<leader><s-j>', '<Plug>(leap-backward-to)')
+
+-- Autopairs
+require("nvim-autopairs").setup({})
+
 -- Autocompletion
+-- TODO: dont select, first tab should select first entry
+-- TODO: needs some love with lsp
 local cmp = require('cmp')
 local cmptab  = function(fallback) if not cmp.select_next_item() then fallback() end end
 local cmpstab = function(fallback) if not cmp.select_prev_item() then cmp.complete() end end
 cmp.setup({
 	mapping = { ['<Tab>']=cmptab, ['<S-Tab>']=cmpstab, ['<c-j>']=cmp.mapping.confirm({select=true}) },
-	sources = cmp.config.sources({{name='nvim_lsp'},{name='vsnip'}},{{name='path'},{name='buffer'},{name='calc'}},{{name='spell'}}),
+	sources = cmp.config.sources({{name='nvim_lsp'},{name='vsnip'}},{{name='path'},{name='buffer'},{name='calc'},{name='spell'}}),
 	snippet = { expand = function(args) vim.fn['vsnip#anonymous'](args.body) end },
 	formatting = {
-		expandable_indicator = false,
 		format = function(_, item)
 			local max_len = 50
 			item.abbr = #item.abbr > max_len
@@ -235,6 +252,7 @@ set completeopt=menu,menuone,noselect             " (Auto)complete menu
 set omnifunc=syntaxcomplete#Complete              " Generic completion
 set pumheight=8                                   " Limit complete menu height
 set spell                                         " Enable spelling by default
+set spelloptions=camel                            " Enable CamelCase word spelling
 set spellsuggest=best,20                          " Only show best spelling corrections
 set shada=!,'50,<50,s100,h,r/media                " Specify removable media for shada
 
@@ -265,7 +283,6 @@ autocmd BufEnter *.vert.glsl nnoremap <leader>a <cmd>call AltFile('frag.glsl')<c
 autocmd BufEnter *.frag.glsl nnoremap <leader>a <cmd>call AltFile('vert.glsl')<cr>
 augroup END
 
-let mapleader = ' '
 nnoremap Q nop
 " Don't jump over wrapped lines with j and k
 nnoremap j gj
@@ -285,7 +302,7 @@ nnoremap <leader>c <cmd>edit $MYVIMRC<cr>
 " Search and replace
 nnoremap <leader>R *:%s///gcI<left><left><left><left>
 " Split lines at cursor, opposite of <s-j>
-nnoremap <s-k> m`i<cr><esc>``
+nnoremap <c-j> m`i<cr><esc>``
 " Git
 nnoremap <leader>gd <cmd>SignifyHunkDiff<cr>
 " Undotree
