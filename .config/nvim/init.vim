@@ -211,7 +211,6 @@ lsp.rust_analyzer.setup({
 EOF
 
 " Settings
-set shell=sh                                      " Use sh as shell
 set title                                         " Update window title
 set mouse=a                                       " Enable mouse support
 set updatetime=100                                " Faster refreshing
@@ -274,6 +273,8 @@ autocmd TextYankPost * lua vim.highlight.on_yank({higroup='Visual', timeout=150}
 autocmd TextYankPost * if v:event.operator is 'y' && v:event.regname is '' | exe 'OSCYankRegister "' | endif
 " Comment formatting
 autocmd BufEnter * set formatoptions-=c formatoptions-=o
+" Start terminal in terminal mode
+autocmd TermOpen * startinsert
 " Restore cursor position when opening buffers
 autocmd BufReadPost * if expand('%:p') !~# '\m/\.git/' && line("'\"") > 0 && line("'\"") <= line('$') | exe 'normal! g`"' | endif
 " Switch between alternative files
@@ -297,6 +298,9 @@ nnoremap <nowait> <leader>Q <cmd>q!<cr>
 " Use arrow behaviour on command line
 cnoremap <c-p> <up>
 cnoremap <c-n> <down>
+" Terminal
+nnoremap <leader><return> <cmd>belowright split \| terminal<cr>
+tnoremap <c-\> <c-\><c-n>
 " Open config
 nnoremap <leader>c <cmd>edit $MYVIMRC<cr>
 " Search and replace
@@ -350,16 +354,15 @@ if getcwd() =~# '^/src\(/\|$\)' && filereadable('/usr/share/vim/vimfiles/arista.
 	" Override A4edit and A4revert
 	function! A4edit()
 		if strlen(glob(expand("%")))
-			call system('a p4 login')
-			echo system('a p4 edit '.shellescape(expand('%:p')))
-			if v:shell_error == 0 | set noreadonly | endif
+			belowright split
+			exec 'terminal a p4 login && a p4 edit '.shellescape(expand('%:p'))
+			set noreadonly
 		endif
 	endfunction
 	function! A4revert()
 		if strlen(glob(expand("%"))) && confirm("Revert Perforce file changes?", "&Yes\n&No", 1) == 1
-			call system('a p4 login')
-			echo system('a p4 revert '.shellescape(expand('%:p')))
-			if v:shell_error == 0 | set readonly | endif
+			exec 'terminal a p4 login && a p4 revert '.shellescape(expand('%:p'))
+			set readonly
 		endif
 	endfunction
 	" 85-column width
@@ -400,7 +403,7 @@ if getcwd() =~# '^/src\(/\|$\)' && filereadable('/usr/share/vim/vimfiles/arista.
 	command! -nargs=1 Agrok  call fzf#vim#grep('a grok -em 99                                                   '.shellescape(<q-args>).' | grep "^/src/.*"', 1, fzf#vim#with_preview({'options':['--prompt','Grok>']}))
 	command! -nargs=1 AgrokP call fzf#vim#grep('a grok -em 99 -f '.join(split(expand('%:p:h'), '/')[:1], '/').' '.shellescape(<q-args>).' | grep "^/src/.*"', 1, fzf#vim#with_preview({'options':['--prompt','Grok>']}))
 	" Agid
-	command! Amkid echo 'Generating ID file...' | redraw | echo system('a ws mkid')
+	command! belowright split | terminal a ws mkid
 	command! -nargs=1 Agid  call fzf#vim#grep('a ws gid -cq                                                  '.<q-args>, 1, fzf#vim#with_preview({'options':['--prompt','Gid>']}))
 	command! -nargs=1 AgidP call fzf#vim#grep('a ws gid -cqp '.join(split(expand('%:p:h'), '/')[1:1], '/').' '.<q-args>, 1, fzf#vim#with_preview({'options':['--prompt','Gid>']}))
 	nnoremap <leader>r <cmd>exe 'AgidP    '.expand('<cword>')<cr>
@@ -408,7 +411,7 @@ if getcwd() =~# '^/src\(/\|$\)' && filereadable('/usr/share/vim/vimfiles/arista.
 	nnoremap <leader>R <cmd>exe 'Agid     '.expand('<cword>')<cr>
 	nnoremap <leader>D <cmd>exe 'Agid  -D '.expand('<cword>')<cr>
 	" cdbtool
-	command! -nargs=* Acdb echo 'Generating compile_commands.json for '.<q-args> | redraw | echo system('cdbtool --tin '.<q-args>)
+	command! belowright split | exec 'terminal cdbtool --tin '.<q-args>
 	" TACC language server
 lua << EOF
 	require('lspconfig.configs').tac = {
