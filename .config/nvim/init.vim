@@ -7,21 +7,20 @@ if !filereadable(plug_vim)
 	silent exe 'source '.plug_vim
 endif
 
+" TODO: look into mini.nvim
 call plug#begin()
 Plug 'whatyouhide/vim-gotham'                       " Colorscheme
 Plug 'tpope/vim-repeat'                             " tpope period-repeat
-Plug 'tpope/vim-sensible'                           " Sane defaults
 Plug 'tpope/vim-vinegar'                            " Better file browsing
 Plug 'tpope/vim-surround'                           " Surround motion
 Plug 'tpope/vim-unimpaired'                         " More bracket mappings
-Plug 'tpope/vim-fugitive'                           " Git integration
+"Plug 'tpope/vim-fugitive'                           " Git integration
 Plug 'mhinz/vim-signify'                            " Git changes
 Plug 'tommcdo/vim-lion'                             " Text aligning
 Plug 'ojroques/vim-oscyank'                         " OSC52 yank
 Plug 'numToStr/Comment.nvim'                        " Comment keybinding
 Plug 'mbbill/undotree'                              " Visualised undo tree
 Plug 'ggandor/leap.nvim'                            " Better mid-range movement
-Plug 'windwp/nvim-autopairs'                        " Automatic pair insertion
 Plug 'junegunn/fzf.vim'                             " FZF shortcuts
 Plug 'junegunn/fzf', { 'do': { -> fzf#install() } } " Install FZF
 Plug 'nvim-lualine/lualine.nvim'                    " Status bar
@@ -34,8 +33,8 @@ Plug 'hrsh7th/cmp-buffer'                           " Buffer completion source
 Plug 'hrsh7th/cmp-path'                             " Path completion source
 Plug 'hrsh7th/cmp-cmdline'                          " Cmd completion source
 Plug 'hrsh7th/cmp-vsnip'                            " Snippets completion source
-Plug 'hrsh7th/cmp-calc'                             " Math completion source
-Plug 'f3fora/cmp-spell'                             " Spelling completion source
+Plug 'ray-x/lsp_signature.nvim'                     " Function signature
+Plug 'ojroques/nvim-lspfuzzy'                       " Use FZF for LSP results
 call plug#end()
 
 " Ensure plugins are installed
@@ -134,31 +133,30 @@ require('Comment').setup({})
 
 -- Leaping
 local leap = require('leap')
-leap.opts.case_sensitive = true
 leap.opts.safe_labels = {}
-vim.api.nvim_set_hl(0, 'LeapBackdrop', { link = 'Comment' })
+vim.api.nvim_set_hl(0, 'LeapBackdrop', { fg = 'grey', bg = '' })
+vim.api.nvim_set_hl(0, 'LeapLabelPrimary', { fg = 'red', bg = '' })
+vim.api.nvim_set_hl(0, 'LeapLabelSecondary', { fg = 'white', bg = '' })
 vim.keymap.set({'n', 'x', 'o'}, '<leader>j', '<Plug>(leap-forward-to)')
 vim.keymap.set({'n', 'x', 'o'}, '<leader><s-j>', '<Plug>(leap-backward-to)')
 
--- Autopairs
-require("nvim-autopairs").setup({})
-
 -- Autocompletion
--- TODO: dont select, first tab should select first entry
--- TODO: needs some love with lsp
 local cmp = require('cmp')
-local cmptab  = function(fallback) if not cmp.select_next_item() then fallback() end end
-local cmpstab = function(fallback) if not cmp.select_prev_item() then cmp.complete() end end
+local cmpmap = {
+	['<c-j>'] = cmp.mapping(cmp.mapping.confirm({select=true}), { 'i', 's', 'c' }),
+	['<c-n>'] = cmp.mapping(function() if not cmp.select_next_item() then cmp.complete() end end, { 'i', 's', 'c' }),
+	['<c-p>'] = cmp.mapping(function() if not cmp.select_prev_item() then cmp.complete() end end, { 'i', 's', 'c' }),
+}
 cmp.setup({
-	mapping = { ['<Tab>']=cmptab, ['<S-Tab>']=cmpstab, ['<c-j>']=cmp.mapping.confirm({select=true}) },
-	sources = cmp.config.sources({{name='nvim_lsp'},{name='vsnip'}},{{name='path'},{name='buffer'},{name='calc'},{name='spell'}}),
+	mapping = cmpmap,
+	sources = cmp.config.sources({{name='nvim_lsp'},{name='vsnip'}},{{name='path'},{name='buffer'}}),
 	snippet = { expand = function(args) vim.fn['vsnip#anonymous'](args.body) end },
+	view = { entries = { name = 'custom', selection_order = 'near_cursor' } },
+	completion = { completeopt = "menu,menuone,preview" },
+	experimental = { ghost_text = true },
 	formatting = {
 		format = function(_, item)
-			local max_len = 50
-			item.abbr = #item.abbr > max_len
-				and vim.fn.strcharpart(item.abbr, 0, max_len-1) .. '…'
-				or item.abbr .. (' '):rep(max_len - #item.abbr)
+			item.abbr = #item.abbr > 50 and vim.fn.strcharpart(item.abbr, 0, 49)..'…' or item.abbr..(' '):rep(50-#item.abbr)
 			item.kind = ({
 				Text = '""',     Method = '.f', Function = 'fn',  Constructor = '()', Field = '.x',
 				Variable = 'xy', Class = '{}',  Interface = '{}', Module = '[]',      Property = '.p',
@@ -168,19 +166,10 @@ cmp.setup({
 			})[item.kind]
 			return item
 		end
-	},
+	}
 })
-cmp.setup.cmdline({'/','?'}, {
-	mapping = { ['<Tab>']={c=cmptab}, ['<S-Tab>']={c=cmpstab} },
-	mapping = cmpmapping,
-	sources = {{name='buffer'}},
-	formatting = {format=function(_, item) item.kind = ''; return item end}
-})
-cmp.setup.cmdline(':', {
-	mapping = { ['<Tab>']={c=cmptab}, ['<S-Tab>']={c=cmpstab} },
-	sources = cmp.config.sources({{name='path'}, {name='cmdline'}}),
-	formatting = {format=function(_, item) item.kind = ''; return item end}
-})
+cmp.setup.cmdline({'/','?'}, { mapping = cmpmap, sources = cmp.config.sources({{name='buffer'}}) })
+cmp.setup.cmdline(':', { mapping = cmpmap, sources = cmp.config.sources({{name='path'}}, {{name='cmdline'}}) })
 
 -- LSP server configs
 local lsp = require('lspconfig')
@@ -197,15 +186,26 @@ lsp.clangd.setup({})
 lsp.pylsp.setup({})
 lsp.rust_analyzer.setup({
 	cmd = {'rustup', 'run', 'stable', 'rust-analyzer'},
-	settings = {
-		['rust-analyzer'] = {
-			checkOnSave = {
-				allFeatures = true,
-				overrideCommand = { 'cargo', 'clippy', '--workspace', '--message-format=json', '--all-targets', '--all-features' }
-			}
-		}
-	}
+	settings = { ['rust-analyzer'] = { checkOnSave = { overrideCommand = { 'cargo', 'clippy', '--workspace', '--message-format=json', '--all-targets', '--all-features' } } } }
 })
+
+-- LSP function signatures
+-- TODO: this seems like very simple usage, roll own handler?
+require('lsp_signature').setup({ floating_window = false, hint_prefix = '' })
+
+-- FZF LSP results
+-- TODO: replace
+require('lspfuzzy').setup({ jump_one = false })
+local function lsphandler(err, result, ctx, config)
+	if err then return vim.cmd('echohl ErrorMsg | echom "'..err.message..'" | echohl None') end
+	vim.cmd('call fzf#run(fzf#vim#with_preview(fzf#wrap({\'source\': '..result..' })))')
+	--vim.c['fzf#run'](vim.fn['fzf#vim#with_preview'](vim.fn['fzf#wrap']({source = result})))
+	-- result = vim.tbl_islist(result) and result or {result}
+	-- local items = vim.lsp.util.locations_to_items(result, offset_encoding)
+	-- local source = vim.tbl_map(lsp_to_fzf, items)
+	-- fzf(source, label, jump, true, true)
+end
+--vim.lsp.handlers['textDocument/references'] = lsphandler
 
 EOF
 
@@ -245,9 +245,6 @@ set termguicolors                                 " Enable true colors
 set guicursor=n-v-c-sm:block,i-ci-ve:ver25,r-cr-o:hor20,a:blinkwait400-blinkoff400-blinkon400
 set ignorecase                                    " Ignore case when searching...
 set smartcase                                     " ...except for searching with uppercase characters
-set wildmode=longest:full,full                    " Show command complete menu after matching longest common command
-set completeopt=menu,menuone,noselect             " (Auto)complete menu
-set omnifunc=syntaxcomplete#Complete              " Generic completion
 set pumheight=8                                   " Limit complete menu height
 set spell                                         " Enable spelling by default
 set spelloptions=camel                            " Enable CamelCase word spelling
@@ -292,13 +289,12 @@ nnoremap <nowait> <leader>w <cmd>w<cr>
 nnoremap <nowait> <leader>W <cmd>wq<cr>
 nnoremap <nowait> <leader>q <cmd>q<cr>
 nnoremap <nowait> <leader>Q <cmd>q!<cr>
-" Use arrow behaviour on command line
-cnoremap <c-p> <up>
-cnoremap <c-n> <down>
+" Disable cmdline tab completion
+cnoremap <tab> <tab>
+cnoremap <s-tab> <s-tab>
 " Terminal
-nnoremap <leader><return> <cmd>belowright split \| exec 'terminal' \| startinsert<cr>
-tnoremap <esc> <c-\><c-n>
-tnoremap <c-esc> <esc>
+nnoremap <leader><return> <cmd>exec 'terminal' \| startinsert<cr>
+tnoremap <expr> <esc> (&filetype == "fzf") ? "<esc>" : "<c-\><c-n>"
 " Open config
 nnoremap <leader>c <cmd>edit $MYVIMRC<cr>
 " Search and replace
@@ -313,10 +309,6 @@ nnoremap <leader>u <cmd>UndotreeToggle<cr>
 nnoremap <leader>n <cmd>lcd ~/Documents/notes \| enew \| set filetype=markdown<cr>
 nnoremap <leader>N <cmd>lcd ~/Documents/notes \| edit `=strftime('./journal/%Y/%V.md')` \| call mkdir(expand('%:h'), 'p')<cr>
 " FZF search
-function! FzfSpellSink(word)
-	exe 'normal! "_ciw'.a:word
-endfunction
-nnoremap z= <cmd>call fzf#run(fzf#wrap({'source': spellsuggest(expand("<cword>")), 'sink': function('FzfSpellSink')}))<cr>
 nnoremap <leader>b <cmd>Buffers<cr>
 nnoremap <leader>l <cmd>Lines<cr>
 nnoremap <leader>f <cmd>Files %:p:h<cr>
@@ -334,13 +326,14 @@ nnoremap [e <cmd>lua vim.diagnostic.goto_prev()<cr>
 nnoremap <leader>e <cmd>lua vim.diagnostic.open_float()<cr>
 nnoremap <leader>E <cmd>lua vim.diagnostic.setqflist()<cr>
 nnoremap <leader>d <cmd>lua vim.lsp.buf.definition()<cr>
+nnoremap <leader>t <cmd>lua vim.lsp.buf.type_definition()<cr>
 nnoremap <leader>r <cmd>lua vim.lsp.buf.references()<cr>
 vnoremap <leader>f <esc><cmd>lua vim.lsp.buf.range_formatting()<cr>
 " Snippets
-imap <expr> <tab>   vsnip#jumpable(+1) ? '<Plug>(vsnip-jump-next)' : '<tab>'
-smap <expr> <tab>   vsnip#jumpable(+1) ? '<Plug>(vsnip-jump-next)' : '<tab>'
-imap <expr> <s-tab> vsnip#jumpable(-1) ? '<Plug>(vsnip-jump-prev)' : '<s-tab>'
-smap <expr> <s-tab> vsnip#jumpable(-1) ? '<Plug>(vsnip-jump-prev)' : '<s-tab>'
+inoremap <expr> <tab>   vsnip#jumpable(+1) ? '<Plug>(vsnip-jump-next)' : '<tab>'
+snoremap <expr> <tab>   vsnip#jumpable(+1) ? '<Plug>(vsnip-jump-next)' : '<tab>'
+inoremap <expr> <s-tab> vsnip#jumpable(-1) ? '<Plug>(vsnip-jump-prev)' : '<s-tab>'
+snoremap <expr> <s-tab> vsnip#jumpable(-1) ? '<Plug>(vsnip-jump-prev)' : '<s-tab>'
 
 " Arista-specifics if in /src directory
 if getcwd() =~# '^/src\(/\|$\)' && filereadable('/usr/share/vim/vimfiles/arista.vim')
@@ -423,3 +416,46 @@ lua << EOF
 	require('lspconfig').tac.setup({})
 EOF
 endif
+
+" Below here is the pit of shame
+
+" Plug 'nvim-lua/plenary.nvim'
+" Plug 'nvim-telescope/telescope.nvim', { 'branch': '0.1.x' }
+" Plug 'nvim-telescope/telescope-fzf-native.nvim', { 'do': 'make' }
+"
+" highlight TelescopeBorder guifg=#195466
+"
+" local actions = require("telescope.actions")
+" require('telescope').setup {
+" 	defaults = {
+" 		mappings = { i = {
+" 			["<down>"] = actions.cycle_history_next,
+" 			["<up>"] = actions.cycle_history_prev,
+" 			["<esc>"] = actions.close
+" 		} },
+" 		layout_strategy = 'flex',
+" 		borderchars = { '─', '│', '─', '│', '┌', '┐', '┘', '└' },
+" 		dynamic_preview_title = true,
+" 	},
+" 	extensions = {
+" 		fzf = { }
+" 	}
+" }
+" require('telescope').load_extension('fzf')
+"
+" nnoremap <leader>b <cmd>Telescope buffers<cr>
+" nnoremap <leader>l <cmd>Telescope current_buffer_fuzzy_find<cr>
+" nnoremap <leader>f <cmd>Telescope find_files hidden=true search_dirs={"%:p:h"}<cr>
+" nnoremap <leader>F <cmd>Telescope find_files hidden=true<cr>
+" nnoremap <leader>s <cmd>Telescope grep_string search= search_dirs={"%:p:h"}<cr>
+" nnoremap <leader>S <cmd>Telescope grep_string search=<cr>
+" nnoremap <leader>h <cmd>Telescope help_tags<cr>
+" nnoremap <leader>m <cmd>Telescope man_pages sections=ALL<cr>
+" nnoremap <leader>o <cmd>Telescope oldfiles<cr>
+"
+" " lsp_dynamic_workspace_symbols	Dynamically Lists LSP for all workspace symbols
+" " lsp_implementations	Goto the implementation of the word under the cursor if there's only one, otherwise show all options in Telescope
+" nnoremap <leader>E <cmd>Telescope diagnostics bufnr=0<cr>
+" nnoremap <leader>d <cmd>Telescope lsp_definitions jump_type=never<cr>
+" nnoremap <leader>r <cmd>Telescope lsp_references<cr>
+" nnoremap <leader>t <cmd>Telescope lsp_type_definitions jump_type=never<cr>
