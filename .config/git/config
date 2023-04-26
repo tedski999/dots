@@ -14,10 +14,9 @@
 	l = log
 	s = status
 	a = add
-	aa = add -A
 	c = commit
 	cm = commit --message
+	ph = push
+	pl = pull
 	d = diff
 	ds = diff --staged
-	r = reset
-	u = reset HEAD~
