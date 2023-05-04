@@ -1,1 +1,2 @@
 --map-syntax "*.tin:C++"
+--map-syntax='*.tac:C++'

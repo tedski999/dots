@@ -5,9 +5,9 @@ vim.g.border_chars = { "┌", "─", "┐", "│", "┘", "─", "└", "│" }
 
 vim.g.altfile_map = {
 	[".c"] = { ".h", ".hpp" },
-	[".h"] = { ".c", ".cpp", ".cc" },
+	[".h"] = { ".c", ".cpp" },
 	[".cpp"] = { ".hpp", ".h" },
-	[".hpp"] = { ".cpp", ".cc", ".c" },
+	[".hpp"] = { ".cpp", ".c" },
 	[".vert.glsl"] = { ".frag.glsl" },
 	[".frag.glsl"] = { ".vert.glsl" }
 }
@@ -40,15 +40,13 @@ if vim.g.arista then
 	]])
 	vim.api.nvim_create_user_command("Aedit", "A4edit", {})
 	vim.api.nvim_create_user_command("Arevert", "A4revert", {})
-	-- TODO: insert rather than overwrite
-	vim.g.altfile_map = {
-		[".c"] = { ".h", ".hpp", ".tac" },
-		[".h"] = { ".c", ".cpp", ".cc", ".tin" },
-		[".cpp"] = { ".hpp", ".h", ".tac" },
-		[".hpp"] = { ".cpp", ".cc", ".c", ".tin" },
-		[".vert.glsl"] = { ".frag.glsl" },
-		[".frag.glsl"] = { ".vert.glsl" },
-		[".tin"] = { ".tac", ".hpp", ".h" },
-		[".tac"] = { ".tin", ".cpp", ".cc", ".c" },
-	}
+
+	local altfile_map = vim.g.altfile_map or {}
+	altfile_map[".tac"] = { ".tin", ".cpp", ".c" }
+	altfile_map[".tin"] = { ".tac", ".hpp", ".h" }
+	table.insert(altfile_map[".c"], ".tac")
+	table.insert(altfile_map[".h"], ".tin")
+	table.insert(altfile_map[".cpp"], ".tac")
+	table.insert(altfile_map[".hpp"], ".tin")
+	vim.g.altfile_map = altfile_map
 end

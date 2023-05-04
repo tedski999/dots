@@ -88,10 +88,12 @@ export LESS_TERMCAP_us=$'\e[1;32m'
 export LESS_TERMCAP_ue=$'\e[0m'
 
 # FZF
-export FZF_DEFAULT_OPTS='--multi --bind=ctrl-j:accept,ctrl-k:toggle,ctrl-a:toggle-all --preview-window sharp --marker=k --color=fg+:bold,pointer:red,hl:red,hl+:red,gutter:-1,marker:red'
-export FZF_DEFAULT_COMMAND='rg --files --no-messages'
+export FZF_COLORS="fg+:bold,pointer:red,hl:red,hl+:red,gutter:-1,marker:red"
+export FZF_BINDINGS="ctrl-n:down,ctrl-p:up,up:previous-history,down:next-history,ctrl-j:accept,ctrl-k:toggle,ctrl-a:toggle-all"
+export FZF_DEFAULT_OPTS="--multi --bind=$FZF_BINDINGS --preview-window sharp --marker=k --color=$FZF_COLORS --history $XDG_DATA_HOME/fzf_history"
+export FZF_DEFAULT_COMMAND="rg --files --no-messages"
 export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
-export FZF_ALT_C_COMMAND='fdfind --type=d --color=never --hidden --strip-cwd-prefix'
+export FZF_ALT_C_COMMAND="fdfind --type=d --color=never --hidden --strip-cwd-prefix"
 [[ -f /usr/share/doc/fzf/examples/key-bindings.zsh ]] \
 	&& source /usr/share/doc/fzf/examples/key-bindings.zsh \
 	|| source $ZSH_DATA/plugins/fzf/key-bindings.zsh
