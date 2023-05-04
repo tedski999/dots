@@ -88,7 +88,7 @@ export LESS_TERMCAP_us=$'\e[1;32m'
 export LESS_TERMCAP_ue=$'\e[0m'
 
 # FZF
-export FZF_DEFAULT_OPTS='--multi --bind=ctrl-j:accept,ctrl-k:toggle --preview-window sharp --marker=k --color=fg+:bold,pointer:red,hl:red,hl+:red,gutter:-1,marker:red'
+export FZF_DEFAULT_OPTS='--multi --bind=ctrl-j:accept,ctrl-k:toggle,ctrl-a:toggle-all --preview-window sharp --marker=k --color=fg+:bold,pointer:red,hl:red,hl+:red,gutter:-1,marker:red'
 export FZF_DEFAULT_COMMAND='rg --files --no-messages'
 export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
 export FZF_ALT_C_COMMAND='fdfind --type=d --color=never --hidden --strip-cwd-prefix'

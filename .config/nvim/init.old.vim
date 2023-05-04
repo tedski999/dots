@@ -11,19 +11,19 @@ endif
 call plug#begin()
 Plug 'whatyouhide/vim-gotham'                       " Colorscheme
 Plug 'tpope/vim-repeat'                             " tpope period-repeat
-Plug 'tpope/vim-vinegar'                            " Better file browsing
+Plug 'tpope/vim-vinegar'                            " Better file browsing *
 Plug 'tpope/vim-surround'                           " Surround motion
-Plug 'tpope/vim-unimpaired'                         " More bracket mappings
+Plug 'tpope/vim-unimpaired'                         " More bracket mappings *reimplement
 "Plug 'tpope/vim-fugitive'                           " Git integration
-Plug 'mhinz/vim-signify'                            " Git changes
-Plug 'tommcdo/vim-lion'                             " Text aligning
-Plug 'ojroques/vim-oscyank'                         " OSC52 yank
+Plug 'mhinz/vim-signify'                            " Git changes *
+Plug 'tommcdo/vim-lion'                             " Text aligning *replaced?
+Plug 'ojroques/vim-oscyank'                         " OSC52 yank *reimplement?
 Plug 'numToStr/Comment.nvim'                        " Comment keybinding
-Plug 'mbbill/undotree'                              " Visualised undo tree
+Plug 'mbbill/undotree'                              " Visualised undo tree *fix
 Plug 'ggandor/leap.nvim'                            " Better mid-range movement
-Plug 'junegunn/fzf.vim'                             " FZF shortcuts
-Plug 'junegunn/fzf', { 'do': { -> fzf#install() } } " Install FZF
-Plug 'nvim-lualine/lualine.nvim'                    " Status bar
+Plug 'junegunn/fzf.vim'                             " FZF shortcuts *
+Plug 'junegunn/fzf', { 'do': { -> fzf#install() } } " Install FZF *needed?
+Plug 'nvim-lualine/lualine.nvim'                    " Status bar *
 Plug 'sheerun/vim-polyglot'                         " Language packs
 Plug 'neovim/nvim-lspconfig'                        " LSP client
 Plug 'hrsh7th/vim-vsnip'                            " Snippets engine
