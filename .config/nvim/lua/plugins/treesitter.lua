@@ -4,7 +4,13 @@ return {
 	cmd = { "TSInstall", "TSBufEnable", "TSBufDisable", "TSModuleInfo" },
 	build = ":TSUpdate",
 	opts = {
-		ensure_installed = {}, -- TODO: ts ensure_installed
+		ensure_installed = {
+			"bash", "c", "cmake", "comment", "cpp",
+			"css", "dockerfile", "fish", "glsl", "go",
+			"html", "java", "javascript", "jsdoc", "json",
+			"latex", "lua", "make", "python", "rust",
+			"scss", "toml", "typescript", "vim", "yaml"
+		},
 		highlight = { enable = true },
 		indent = { enable = true }
 	},

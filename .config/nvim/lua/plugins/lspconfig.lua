@@ -14,7 +14,7 @@ return {
 			end
 		end)
 
-		-- TODO: move lsp server settings to a table
+		-- TODO(aesthetic): move lsp server settings to a table
 		lsp.clangd.setup({})
 		lsp.pylsp.setup({})
 		lsp.rust_analyzer.setup({
@@ -27,7 +27,7 @@ return {
 			-- lsp[server].setup(serveropts[server])
 		-- end
 
-		-- TODO: keybinding to reload all lsp servers
+		-- TODO(aesthetic): keybinding to reload all lsp servers
 
 		if vim.g.arista then
 			vim.api.nvim_create_user_command("Acdb", "belowright split | exec 'terminal echo \"Generating compile_commands.json...\" && cdbtool --tin '.<q-args>", { nargs = 1 })

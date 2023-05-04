@@ -1,6 +1,6 @@
 return {
 	"hrsh7th/nvim-cmp",
-	event = "InsertEnter",
+	lazy = false,
 	dependencies = {
 		{
 			"L3MON4D3/LuaSnip",
@@ -18,14 +18,17 @@ return {
 	},
 	config = function()
 		-- TODO(next): cmp config
+		-- highlight CmpItemAbbrMatch gui=bold guifg=#569cd6
 		local cmp = require("cmp")
+
 		local cmpmap = {
-			["<c-j>"] = cmp.mapping(cmp.mapping.confirm({select=true}), { 'i', 's', 'c' }),
-			["<c-n>"] = cmp.mapping(function() if not cmp.select_next_item() then cmp.complete() end end, { 'i', 's', 'c' }),
-			["<c-p>"] = cmp.mapping(function() if not cmp.select_prev_item() then cmp.complete() end end, { 'i', 's', 'c' }),
-			["<c-d>"] = cmp.mapping.scroll_docs(-4),
-			["<c-f>"] = cmp.mapping.scroll_docs(4),
+			["<c-j>"] = cmp.mapping(cmp.mapping.confirm({select=true}), { "i", "s", "c" }),
+			["<c-n>"] = cmp.mapping(function() if not cmp.select_next_item() then cmp.complete() end end, { "i", "s", "c" }),
+			["<c-p>"] = cmp.mapping(function() if not cmp.select_prev_item() then cmp.complete() end end, { "i", "s", "c" }),
+			-- ["<c-d>"] = cmp.mapping.scroll_docs(-4),
+			-- ["<c-f>"] = cmp.mapping.scroll_docs(4),
 		}
+
 		cmp.setup({
 			mapping = cmpmap,
 			sources = cmp.config.sources({{name="nvim_lsp"},{name="luasnip"}},{{name="path"},{name="buffer"}}),
@@ -35,13 +38,13 @@ return {
 			experimental = { ghost_text = true },
 			formatting = {
 				format = function(_, item)
-					item.abbr = #item.abbr > 50 and vim.fn.strcharpart(item.abbr, 0, 49)..'…' or item.abbr..(' '):rep(50-#item.abbr)
+					item.abbr = #item.abbr > 50 and vim.fn.strcharpart(item.abbr, 0, 49).."…" or item.abbr..(" "):rep(50-#item.abbr)
 					item.kind = ({
-						Text = '""',     Method = '.f', Function = 'fn',  Constructor = '()', Field = '.x',
-						Variable = 'xy', Class = '{}',  Interface = '{}', Module = '[]',      Property = '.p',
-						Unit = '$$',     Value = '00',  Enum = '∀e',      Keyword = ';;',     Snippet = '~~',
-						Color = 'rgb',   File = '/.',   Reference = '&x', Folder = '//',      EnumMember = '∃e',
-						Constant = '#x', Struct = '{}', Event = 'ev',     Operator = '++',    TypeParameter = '<>'
+						Text = '""',     Method = ".f", Function = "fn",  Constructor = "()", Field = ".x",
+						Variable = "xy", Class = "{}",  Interface = "{}", Module = "[]",      Property = ".p",
+						Unit = "$$",     Value = "00",  Enum = "∀e",      Keyword = ";;",     Snippet = "~~",
+						Color = "rgb",   File = "/.",   Reference = "&x", Folder = "//",      EnumMember = "∃e",
+						Constant = "#x", Struct = "{}", Event = "ev",     Operator = "++",    TypeParameter = "<>"
 					})[item.kind]
 					return item
 				end
@@ -58,6 +61,15 @@ return {
 				-- },
 			-- },
 		})
-		-- highlight CmpItemAbbrMatch gui=bold guifg=#569cd6
+
+		cmp.setup.cmdline({"/","?"}, {
+			mapping = cmpmap,
+			sources = cmp.config.sources({{name="buffer"}})
+		})
+
+		cmp.setup.cmdline(":", {
+			mapping = cmpmap,
+			sources = cmp.config.sources({{name="path"}}, {{name="cmdline"}})
+		})
 	end
 }
