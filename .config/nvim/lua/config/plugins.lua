@@ -9,9 +9,10 @@ require("lazy").setup("plugins", {
 	defaults = { lazy = true },
 	install = { colorscheme = { "gotham" } },
 	change_detection = { enabled = false },
+	lockfile = vim.fn.stdpath("data").."/lazy/lock.json",
 	ui = {
 		border = vim.g.border_chars,
-		icons = { -- TODO
+		icons = { -- TODO(aesthetic): icons and theming
 			cmd = "?", config = "?", event = "?", ft = "?",
 			init = "?", keys = "?", plugin = "?", runtime = "?",
 			source = "?", start = "?", task = "?", lazy = "?"

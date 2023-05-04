@@ -12,14 +12,15 @@ vim.g.altfile_map = {
 	[".frag.glsl"] = { ".vert.glsl" }
 }
 
--- TODO: steal and integrate a base46 theme
+-- TODO(aesthetic): steal and integrate a base46 theme
 
 vim.g.arista =
 	vim.loop.fs_stat("/usr/share/vim/vimfiles/arista.vim") and
 	vim.fn.getcwd():find("^/src") ~= nil
 
 if vim.g.arista then
-	print("Note: Arista-specifics have been enabled for this Neovim instance")
+	vim.api.nvim_echo({ { "Note: Arista-specifics have been enabled for this Neovim instance", "MoreMsg" } }, false, {})
+
 	vim.cmd([[
 		chdir /src
 		let a4_auto_edit = 0

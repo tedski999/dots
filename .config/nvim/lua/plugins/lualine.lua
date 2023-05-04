@@ -7,7 +7,7 @@ return {
 			section_separators = "",
 			component_separators = "",
 			refresh = { statusline = 100, tabline = 100, winbar = 100 },
-			theme = { -- TODO: write lualine theme using globals
+			theme = { -- TODO(aesthetic): write lualine theme using globals
 				normal =   {a={bg="#195466", fg="#d3ebe9", gui="bold"}, b={bg="#0a3749", fg="#99d1ce"}, c={bg="#111a23", fg="#599cab"}},
 				insert =   {a={bg="#009368", fg="#d3ebe9", gui="bold"}, b={bg="#0a3749", fg="#99d1ce"}, c={bg="#111a23", fg="#599cab"}},
 				visual =   {a={bg="#cb6635", fg="#d3ebe9", gui="bold"}, b={bg="#0a3749", fg="#99d1ce"}, c={bg="#111a23", fg="#599cab"}},

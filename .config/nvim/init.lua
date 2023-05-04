@@ -1,6 +1,6 @@
 -- TODO
+-- disable treesitter highlighting in tac (what about comments?)
 -- some stuff is slow to load (lspconfig, signify, unimpaired and treesitter should be fixable)
--- kevinhwang91/nvim-hlslens?
 -- better vcs integration
 -- null ls?
 -- dap

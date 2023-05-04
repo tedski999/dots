@@ -1,6 +1,6 @@
 local o = vim.opt
 
--- TODO: cleanup
+-- TODO(aesthetic): cleanup
 o.title = true                                   -- Update window title
 o.mouse = "a"                                    -- Enable mouse support
 o.updatetime = 100                               -- Faster refreshing
