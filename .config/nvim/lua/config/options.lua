@@ -41,6 +41,7 @@ o.spell = true                                   -- Enable spelling by default
 o.spelloptions = "camel"                         -- Enable CamelCase word spelling
 o.spellsuggest = "best,20"                       -- Only show best spelling corrections
 o.shada = "!,'50,<50,s100,h,r/media"             -- Specify removable media for shada
+o.undolevels = 2048                              -- More undo space
 
 if vim.g.arista then
 	o.shiftwidth = 3
