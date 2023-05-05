@@ -1,5 +1,3 @@
--- TODO(fzf): yank result as an action
--- TODO(fzf): fzf file explorer/manager? see advanced wiki
 
 function find_altfiles()
 	-- TODO(alt): relative to file
@@ -28,13 +26,38 @@ function find_altfiles()
 	end
 end
 
+local projects_dir = vim.fn.stdpath("data").."/projects/"
+
+function find_projects()
+	local projects = {}
+	for path in vim.fn.glob(projects_dir.."*"):gmatch("[^\n]+") do
+		table.insert(projects, path:match("[^/]*$"))
+	end
+	require("fzf-lua").fzf_exec(projects, { actions = {
+		["default"] = function(selected) vim.cmd("source "..vim.fn.fnameescape(projects_dir..selected[1])) end,
+		["ctrl-x"] = function(selected) for i = 1, #selected do vim.fn.delete(vim.fn.fnameescape(projects_dir..selected[o])) end end
+	}})
+end
+
+function save_project()
+	local project = vim.fn.input("Save project: ", vim.v.this_session:match("[^/]*$") or "")
+	if project == "" then return end
+	vim.fn.mkdir(projects_dir, "p")
+	vim.cmd("mksession! "..vim.fn.fnameescape(projects_dir..project))
+end
+
+function yank_selection(selected)
+	for i = 1, #selected do
+		vim.fn.setreg("+", selected[i])
+	end
+end
+
 return {
 	"ibhagwan/fzf-lua",
 	cmd = "FzfLua",
 	keys = {
 		{ "z=", "<cmd>FzfLua spell_suggest<cr>" },
-		{ "<leader>b", "<cmd>FzfLua buffers cwd=%:p:h<cr>" },
-		{ "<leader>B", "<cmd>FzfLua buffers<cr>" },
+		{ "<leader>b", "<cmd>FzfLua buffers<cr>" },
 		{ "<leader>l", "<cmd>FzfLua blines<cr>" },
 		{ "<leader>f", "<cmd>FzfLua files cwd=%:p:h<cr>" },
 		{ "<leader>F", "<cmd>FzfLua files<cr>" },
@@ -56,6 +79,8 @@ return {
 		{ "<leader>c", "<cmd>FzfLua quickfix<cr>" },
 		{ "<leader>C", "<cmd>FzfLua quickfix_stack<cr>" },
 		{ "<leader>a", find_altfiles },
+		{ "<leader>p", find_projects },
+		{ "<leader>P", save_project },
 	},
 	config = function()
 		fzf = require("fzf-lua")
@@ -68,6 +93,22 @@ return {
 				border = vim.g.border_chars,
 				-- TODO(aesthetic): fix colorscheme FloatBorder
 				hl = { normal = "Normal", border = "FloatBorder" }
+			},
+			actions = {
+				files = {
+					["default"] = fzf.actions.file_edit_or_qf,
+					["ctrl-s"] = fzf.actions.file_split,
+					["ctrl-v"] = fzf.actions.file_vsplit,
+					["ctrl-t"] = fzf.actions.file_tabedit,
+					["ctrl-y"] = yank_selection
+				},
+				buffers = {
+					["default"] = fzf.actions.buf_edit_or_qf,
+					["ctrl-s"] = fzf.actions.buf_split,
+					["ctrl-v"] = fzf.actions.buf_vsplit,
+					["ctrl-t"] = fzf.actions.buf_tabedit,
+					["ctrl-y"] = yank_selection
+				}
 			},
 			global_file_icons = false,
 			global_git_icons = false,

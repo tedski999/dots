@@ -7,7 +7,7 @@ km({ "n", "v" }, "k", "gk")
 km("n", "<leader>w", "<cmd>w<cr>",  { nowait = true })
 km("n", "<leader>W", "<cmd>wq<cr>", { nowait = true })
 km("n", "<leader>q", "<cmd>q<cr>",  { nowait = true })
-km("n", "<leader>Q", "<cmd>q!<cr>", { nowait = true })
+km("n", "<leader>Q", "<cmd>qa<cr>", { nowait = true })
 -- Split lines at cursor, opposite of <s-j>
 km("n", "<c-j>", "m`i<cr><esc>``")
 -- Terminal shortcuts
@@ -17,8 +17,8 @@ km("t", "<esc>", "(&filetype == 'fzf') ? '<esc>' : '<c-\\><c-n>'", { expr = true
 km("c", "<tab>", "<tab>")
 km("c", "<s-tab>", "<s-tab>")
 -- Open config
-km("n", "<leader>c", "<cmd>edit "..vim.fn.stdpath("config").."<cr>")
-km("n", "<leader>C", "<cmd>edit "..vim.fn.stdpath("data").."<cr>")
+km("n", "<leader>;", "<cmd>edit "..vim.fn.stdpath("config").."<cr>")
+km("n", "<leader>:", "<cmd>edit "..vim.fn.stdpath("data").."<cr>")
 -- Open notes
 km("n", "<leader>n", "<cmd>lcd ~/Documents/notes | enew | set filetype=markdown<cr>")
 km("n", "<leader>N", "<cmd>lcd ~/Documents/notes | edit `=strftime('./journal/%Y/%V.md')` | call mkdir(expand('%:h'), 'p')<cr>")
