@@ -42,6 +42,7 @@ o.spelloptions = "camel"                         -- Enable CamelCase word spelli
 o.spellsuggest = "best,20"                       -- Only show best spelling corrections
 o.shada = "!,'50,<50,s100,h,r/media"             -- Specify removable media for shada
 o.undolevels = 2048                              -- More undo space
+o.hidden = false                                 -- Don't let modified buffers hide
 
 if vim.g.arista then
 	o.shiftwidth = 3

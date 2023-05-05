@@ -89,7 +89,7 @@ export LESS_TERMCAP_ue=$'\e[0m'
 
 # FZF
 export FZF_COLORS="fg+:bold,pointer:red,hl:red,hl+:red,gutter:-1,marker:red"
-export FZF_BINDINGS="ctrl-n:down,ctrl-p:up,up:previous-history,down:next-history,ctrl-j:accept,ctrl-k:toggle,ctrl-a:toggle-all"
+export FZF_BINDINGS="ctrl-n:down,ctrl-p:up,up:previous-history,down:next-history,ctrl-j:accept,ctrl-k:toggle,alt-a:toggle-all,ctrl-/:toggle-preview"
 export FZF_DEFAULT_OPTS="--multi --bind=$FZF_BINDINGS --preview-window sharp --marker=k --color=$FZF_COLORS --history $XDG_DATA_HOME/fzf_history"
 export FZF_DEFAULT_COMMAND="rg --files --no-messages"
 export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"

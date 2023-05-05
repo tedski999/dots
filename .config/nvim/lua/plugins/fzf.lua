@@ -1,73 +1,111 @@
--- TODO(lsp): fzf lsp handlers
+-- TODO(fzf): yank result as an action
+-- TODO(fzf): fzf file explorer/manager? see advanced wiki
 
--- TODO(alt): relative to file
-function find_altfiles(file)
-	local possible_files_set = {}
+function find_altfiles()
+	-- TODO(alt): relative to file
+	fzf = require("fzf-lua")
+	local file = vim.fn.expand("%:p:~:.")
+	local possible, existing = {}, {}
 	for key, exts in pairs(vim.g.altfile_map) do
 		if file:sub(-#key) == key then
 			for _, ext in ipairs(exts) do
-				possible_files_set[file:sub(1, -#key-1)..ext] = true
+				altfile = file:sub(1, -#key-1)..ext
+				table.insert(possible, altfile)
+				if vim.loop.fs_stat(altfile) then
+					table.insert(existing, altfile)
+				end
 			end
 		end
 	end
-
-	local possible_files = {}
-	for file in pairs(possible_files_set) do
-		table.insert(possible_files, file)
-	end
-
-	local existing_files = {}
-	for _, file in pairs(possible_files) do
-		if vim.loop.fs_stat(file) then
-			table.insert(existing_files, file)
-		end
-	end
-
-	if #existing_files ~= 0 then
-		vim.g.altfiles = existing_files
-		vim.cmd("call fzf#run(fzf#vim#with_preview(fzf#wrap({'source': g:altfiles, 'options': '-1'})))")
-	elseif #possible_files ~= 0 then
-		vim.g.altfiles = possible_files
-		vim.api.nvim_echo({ { "Warning: No altfile found, create one?", "Error" } }, false, {})
-		vim.cmd("call fzf#run(fzf#vim#with_preview(fzf#wrap({'source': g:altfiles})))")
+	if #existing == 1 then
+		vim.cmd("edit "..existing[1])
+	elseif #existing ~= 0 then
+		fzf.fzf_exec(existing, { actions = fzf.defaults.actions.files, previewer = "builtin" })
+	elseif #possible ~= 0 then
+		fzf.fzf_exec(possible, { actions = fzf.defaults.actions.files, fzf_opts = { ["--header"] = [["No configured altfiles found"]]  } })
 	else
 		vim.api.nvim_echo({ { "Error: No altfiles configured", "Error" } }, false, {})
 	end
 end
 
 return {
-	"junegunn/fzf.vim",
-	event = "VeryLazy",
-	dependencies = { "junegunn/fzf" },
+	"ibhagwan/fzf-lua",
+	cmd = "FzfLua",
 	keys = {
-		{ "<leader>b", "<cmd>Buffers<cr>" },
-		{ "<leader>l", "<cmd>Lines<cr>" },
-		{ "<leader>f", "<cmd>Files %:p:h<cr>" },
-		{ "<leader>F", "<cmd>Files<cr>" },
-		{ "<leader>s", "<cmd>call fzf#vim#grep('rg --column --line-number --no-heading --color=always --smart-case \"\"', 1, fzf#vim#with_preview({'dir': expand('%:p:h')}))<cr>" },
-		{ "<leader>S", "<cmd>Rg<cr>" },
-		{ "<leader>h", "<cmd>Helptags<cr>" },
-		{ "<leader>H", "<cmd>call fzf#run(fzf#wrap({'source': 'man -k \"\" | cut -d \" \" -f 1', 'sink': 'tab Man', 'options': ['--preview', 'man {}']}))<cr>" },
-		{ "<leader>o", "<cmd>History<cr>" },
-		{ "<leader>a", function() find_altfiles(vim.fn.expand("%:p:~:.")) end },
-		{ "<leader>gg", "<cmd>BCommits<cr>" },
-		{ "<leader>gG", "<cmd>Commits<cr>" },
+		{ "z=", "<cmd>FzfLua spell_suggest<cr>" },
+		{ "<leader>b", "<cmd>FzfLua buffers cwd=%:p:h<cr>" },
+		{ "<leader>B", "<cmd>FzfLua buffers<cr>" },
+		{ "<leader>l", "<cmd>FzfLua blines<cr>" },
+		{ "<leader>f", "<cmd>FzfLua files cwd=%:p:h<cr>" },
+		{ "<leader>F", "<cmd>FzfLua files<cr>" },
+		{ "<leader>s", "<cmd>FzfLua grep_project cwd=%:p:h<cr>" },
+		{ "<leader>S", "<cmd>FzfLua grep_project<cr>" },
+		{ "<leader>h", "<cmd>FzfLua help_tags prompt=>\\ <cr>" },
+		{ "<leader>H", "<cmd>FzfLua man_pages prompt=>\\ <cr>" },
+		{ "<leader>o", "<cmd>FzfLua oldfiles cwd_only=true<cr>" },
+		{ "<leader>O", "<cmd>FzfLua oldfiles<cr>" },
+		{ "<leader>E", "<cmd>FzfLua diagnostics_document<cr>" },
+		{ "<leader>gg", "<cmd>FzfLua git_status<cr>" },
+		{ "<leader>gl", "<cmd>FzfLua git_bcommits<cr>" },
+		{ "<leader>gL", "<cmd>FzfLua git_commits<cr>" },
+		{ "<leader>gb", "<cmd>FzfLua git_branches<cr>" },
+		{ "<leader>d", "<cmd>FzfLua lsp_definitions<cr>" },
+		-- TODO(fzf): previewer currently broken
+		-- { "<leader>r", "<cmd>FzfLua lsp_finder<cr>" },
+		{ "<leader>r", "<cmd>FzfLua lsp_references<cr>" },
+		{ "<leader>c", "<cmd>FzfLua quickfix<cr>" },
+		{ "<leader>C", "<cmd>FzfLua quickfix_stack<cr>" },
+		{ "<leader>a", find_altfiles },
 	},
 	config = function()
-		vim.g.fzf_layout = { window = { width = 0.9, height = 0.9, border = vim.g.border_type } }
-		vim.g.fzf_action = { ["ctrl-t"] = "tab split", ["ctrl-s"] = "split", ["ctrl-v"] = "vsplit" }
-		vim.g.fzf_history_dir = vim.fn.stdpath("data").."/fzf-history"
+		fzf = require("fzf-lua")
+		fzf.setup({
+			winopts = {
+				height = 0.9,
+				width = 0.9,
+				row = 0.2,
+				col = 0.5,
+				border = vim.g.border_chars,
+				-- TODO(aesthetic): fix colorscheme FloatBorder
+				hl = { normal = "Normal", border = "FloatBorder" }
+			},
+			global_file_icons = false,
+			global_git_icons = false,
+			global_color_icons = false,
+			keymap = { builtin = { ["<c-_>"] = "toggle-preview" } },
+			previewers = { man = { cmd = "man %s | col -bx" } },
+			files = { prompt = "> ", copen = "FzfLua quickfix", show_cwd_header = false },
+			grep = { prompt = "> ", copen = "FzfLua quickfix", show_cwd_header = false, no_header = true },
+			oldfiles = { prompt = "> ", copen = "FzfLua quickfix", show_cwd_header = false, stat_file = false, include_current_session = true },
+			buffers = { prompt = "> ", copen = "FzfLua quickfix", show_cwd_header = false },
+			tabs = { prompt = "> ", copen = "FzfLua quickfix", show_cwd_header = false },
+			lines = { prompt = "> ", copen = "FzfLua quickfix", show_cwd_header = false },
+			blines = { prompt = "> ", copen = "FzfLua quickfix", show_cwd_header = false },
+			quickfix = { prompt = "> ", copen = "FzfLua quickfix", show_cwd_header = false },
+			quickfix_stack = { prompt = "> ", copen = "FzfLua quickfix", show_cwd_header = false, marker = "<" },
+			diagnostics = { prompt = "> ", copen = "FzfLua quickfix", show_cwd_header = false },
+			git = {
+				status = { prompt = "> ", copen = "FzfLua quickfix", show_cwd_header = false },
+				commits = { prompt = "> ", copen = "FzfLua quickfix", show_cwd_header = false },
+				bcommits = { prompt = "> ", copen = "FzfLua quickfix", show_cwd_header = false },
+				branches = { prompt = "> ", copen = "FzfLua quickfix", show_cwd_header = false },
+				stash = { prompt = "> ", copen = "FzfLua quickfix", show_cwd_header = false }
+			},
+			lsp = {
+				prompt_postfix = "> ",
+				file_icons = false,
+				code_actions = { prompt = "> ", copen = "FzfLua quickfix", show_cwd_header = false },
+				finder = { prompt = "> ", copen = "FzfLua quickfix", show_cwd_header = false, async = false, separator = " " }
+			}
+		})
 		if vim.g.arista then
-			-- Perforce
-			vim.api.nvim_create_user_command("Achanged", "call fzf#run(fzf#vim#with_preview(fzf#wrap({'source': 'a p4 diff --summary | sed s/^/\\//'})))", {})
+			vim.api.nvim_create_user_command("Achanged", function() fzf.fzf_exec("a p4 diff --summary | sed s/^/\\//", { previewer = "builtin" }) end, {})
 			vim.api.nvim_create_user_command("Aopened",  "let o = system('a p4 opened') | if o != '' | echo o | else | echo 'Nothing opened' | endif", {})
-			-- OpenGrok search
-			vim.api.nvim_create_user_command("Agrok",  "call fzf#vim#grep('a grok -em 99                                                   '.shellescape(<q-args>).' | grep \"^/src/.*\"', 1, fzf#vim#with_preview({'options':['--prompt','Grok>']}))", { nargs = 1 })
-			vim.api.nvim_create_user_command("AgrokP", "call fzf#vim#grep('a grok -em 99 -f '.join(split(expand('%:p:h'), '/')[:1], '/').' '.shellescape(<q-args>).' | grep \"^/src/.*\"', 1, fzf#vim#with_preview({'options':['--prompt','Grok>']}))", { nargs = 1 })
-			-- Agid
+			vim.api.nvim_create_user_command("Agid",  function() fzf.fzf_exec("a grok -em 99", { previewer = "builtin" }) end, { nargs = 1 })
+			vim.api.nvim_create_user_command("AgidP", function() fzf.fzf_exec("a grok -em 99 -f "..(vim.api.nvim_buf_get_name(0):match("^/.-/.-/") or "/"), { previewer = "builtin" }) end, { nargs = 1 })
 			vim.api.nvim_create_user_command("Amkid", "belowright split | terminal echo 'Generating ID file...' && a ws mkid", {})
-			vim.api.nvim_create_user_command("Agid",  "call fzf#vim#grep('a ws gid -cq                                                  '.<q-args>, 1, fzf#vim#with_preview({'options':['--prompt','Gid>']}))", { nargs = 1 })
-			vim.api.nvim_create_user_command("AgidP", "call fzf#vim#grep('a ws gid -cqp '.join(split(expand('%:p:h'), '/')[1:1], '/').' '.<q-args>, 1, fzf#vim#with_preview({'options':['--prompt','Gid>']}))", { nargs = 1 })
+			vim.api.nvim_create_user_command("Agid",  function() fzf.fzf_exec("a ws gid -cq", { previewer = "builtin" }) end, { nargs = 1 })
+			vim.api.nvim_create_user_command("AgidP", function() fzf.fzf_exec("a ws gid -cqp "..(vim.api.nvim_buf_get_name(0):match("^/.-/(.-)/") or "/"), { previewer = "builtin" }) end, { nargs = 1 })
 			vim.keymap.set("n", "<leader>r", "<cmd>AgidP    "..vim.fn.expand("<cword>").."<cr>")
 			vim.keymap.set("n", "<leader>R", "<cmd>Agid     "..vim.fn.expand("<cword>").."<cr>")
 			vim.keymap.set("n", "<leader>d", "<cmd>AgidP -D "..vim.fn.expand("<cword>").."<cr>")
