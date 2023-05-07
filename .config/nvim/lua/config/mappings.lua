@@ -1,6 +1,6 @@
 local km = vim.keymap.set
 
-function prev_and_next_file(file)
+local function prev_and_next_file(file)
 	if file == "" then return ".", "." end
 	local prev, dir = file, file:match(".*/")
 	local files = (vim.fn.glob(dir..".[^.]*").."\n"..vim.fn.glob(dir.."*")):gmatch("[^\n]+")
@@ -69,3 +69,10 @@ km("n", "yor", "<cmd>set relativenumber! relativenumber?<cr>")
 km("n", "yoi", "<cmd>set ignorecase! ignorecase?<cr>")
 km("n", "yol", "<cmd>set list! list?<cr>")
 km("n", "yoz", "<cmd>set spell! spell?<cr>")
+-- Git
+vim.api.nvim_create_user_command("Gcommit", "exec 'terminal git commit <args>' | startinsert", { nargs = "*" })
+vim.api.nvim_create_user_command("Gpull", "terminal echo 'Pulling...' && git pull <args>", { nargs = "*" })
+vim.api.nvim_create_user_command("Gpush", "terminal echo 'Pushing...' && git push <args>", { nargs = "*" })
+km("n", "<leader>gc", "<cmd>Gcommit<cr>")
+km("n", "<leader>gp", "<cmd>Gpull<cr>")
+km("n", "<leader>gP", "<cmd>Gpush<cr>")
