@@ -1,4 +1,4 @@
 return {
-	"tpope/vim-sleuth",
+	"sheerun/vim-polyglot",
 	lazy = false
 }

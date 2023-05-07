@@ -5,8 +5,8 @@ function get_whitespace_pattern()
 end
 
 function apply_whitespace_pattern(pattern)
-	local disabled_filetypes = { diff=1, git=1, gitcommit=1, help=1, markdown=1, fugitive=1, lazy=1, undotree=1 }
-	local disabled_buftypes = { terminal=1 }
+	local disabled_filetypes = { diff=1, git=1, gitcommit=1, markdown=1, fugitive=1, lazy=1, undotree=1 }
+	local disabled_buftypes = { quickfix=1, nofile=1, help=1, terminal=1 }
 	local disabled = disabled_filetypes[vim.o.ft] or disabled_buftypes[vim.o.buftype]
 	if disabled then vim.cmd("match none") else vim.cmd("match ExtraWhitespace '"..pattern.."'") end
 end
@@ -28,6 +28,15 @@ end })
 vim.api.nvim_create_autocmd("BufEnter", { callback = function()
 	vim.opt.formatoptions:remove("c")
 	vim.opt.formatoptions:remove("o")
+end })
+
+vim.api.nvim_create_autocmd("BufWinEnter", { callback = function()
+	local disabled_filetypes = { diff=1, git=1, gitcommit=1, gitrebase=1, lazy=1 }
+	local disabled_buftypes = { quickfix=1, nofile=1, help=1, terminal=1 }
+	local disabled = disabled_filetypes[vim.o.ft] or disabled_buftypes[vim.o.buftype]
+	if not (disabled or vim.fn.line(".") > 1 or vim.fn.line("'\"") <= 0 or vim.fn.line("'\"") > vim.fn.line("$")) then
+		vim.cmd([[normal! g`"]])
+	end
 end })
 
 if vim.g.arista then
