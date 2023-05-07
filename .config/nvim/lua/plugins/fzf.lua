@@ -1,26 +1,26 @@
 
-function find_altfiles()
-	-- TODO(alt): relative to file
-	fzf = require("fzf-lua")
-	local file = vim.fn.expand("%:p:~:.")
+local function find_altfiles()
+	local fzf = require("fzf-lua")
+	local dir = vim.api.nvim_buf_get_name(0):match(".*/") or ""
+	local file = vim.api.nvim_buf_get_name(0):sub(#dir+1)
 	local possible, existing = {}, {}
-	for key, exts in pairs(vim.g.altfile_map) do
-		if file:sub(-#key) == key then
-			for _, ext in ipairs(exts) do
-				altfile = file:sub(1, -#key-1)..ext
+	for ext, altexts in pairs(vim.g.altfile_map) do
+		if file:sub(-#ext) == ext then
+			for _, altext in ipairs(altexts) do
+				altfile = file:sub(1, -#ext-1)..altext
 				table.insert(possible, altfile)
-				if vim.loop.fs_stat(altfile) then
+				if vim.loop.fs_stat(dir..altfile) then
 					table.insert(existing, altfile)
 				end
 			end
 		end
 	end
 	if #existing == 1 then
-		vim.cmd("edit "..existing[1])
+		vim.cmd("edit "..dir..existing[1])
 	elseif #existing ~= 0 then
-		fzf.fzf_exec(existing, { actions = fzf.defaults.actions.files, previewer = "builtin" })
+		fzf.fzf_exec(existing, { actions = fzf.defaults.actions.files, cwd = dir, previewer = "builtin" })
 	elseif #possible ~= 0 then
-		fzf.fzf_exec(possible, { actions = fzf.defaults.actions.files, fzf_opts = { ["--header"] = [["No configured altfiles found"]]  } })
+		fzf.fzf_exec(possible, { actions = fzf.defaults.actions.files, cwd = dir, fzf_opts = { ["--header"] = [["No altfiles found"]]  } })
 	else
 		vim.api.nvim_echo({ { "Error: No altfiles configured", "Error" } }, false, {})
 	end
@@ -28,25 +28,41 @@ end
 
 local projects_dir = vim.fn.stdpath("data").."/projects/"
 
-function find_projects()
+local function find_projects()
 	local projects = {}
 	for path in vim.fn.glob(projects_dir.."*"):gmatch("[^\n]+") do
 		table.insert(projects, path:match("[^/]*$"))
 	end
 	require("fzf-lua").fzf_exec(projects, { actions = {
-		["default"] = function(selected) vim.cmd("source "..vim.fn.fnameescape(projects_dir..selected[1])) end,
-		["ctrl-x"] = function(selected) for i = 1, #selected do vim.fn.delete(vim.fn.fnameescape(projects_dir..selected[o])) end end
+		["default"] = function(projects) vim.cmd("source "..vim.fn.fnameescape(projects_dir..projects[1])) end,
+		["ctrl-x"] = function(projects) for i = 1, #projects do vim.fn.delete(vim.fn.fnameescape(projects_dir..projects[o])) end end
 	}})
 end
 
-function save_project()
+local function save_project()
 	local project = vim.fn.input("Save project: ", vim.v.this_session:match("[^/]*$") or "")
 	if project == "" then return end
 	vim.fn.mkdir(projects_dir, "p")
 	vim.cmd("mksession! "..vim.fn.fnameescape(projects_dir..project))
 end
 
-function yank_selection(selected)
+local function find_hunks(files)
+	local hunks, cur, file = {}, vim.api.nvim_buf_get_name(0) or "", nil
+	local cmd = { "git", "diff", "-U0", unpack(files or { cur ~= "" and cur or "."}) }
+	for line in vim.fn.system(cmd):gmatch("[^\n]+") do
+		file = line:match("^%+%+%+ b/(.-)$") or file
+		lnum, count = line:match("^@@ %-[%d,]+ %+(%d+),(%d+) @@")
+		if file and lnum and count then
+			lnum = lnum + math.floor(count / 2)
+			table.insert(hunks, file..":"..lnum)
+		end
+	end
+	-- TODO(git): ctrl-s stage/unstage, ctrl-x reset
+	-- this would likely require generating diffs and using "git apply --cached"
+	fzf.fzf_exec(hunks, { actions = fzf.defaults.actions.files, previewer = "builtin" })
+end
+
+local function yank_selection(selected)
 	for i = 1, #selected do
 		vim.fn.setreg("+", selected[i])
 	end
@@ -68,7 +84,8 @@ return {
 		{ "<leader>o", "<cmd>FzfLua oldfiles cwd_only=true<cr>" },
 		{ "<leader>O", "<cmd>FzfLua oldfiles<cr>" },
 		{ "<leader>E", "<cmd>FzfLua diagnostics_document<cr>" },
-		{ "<leader>gg", "<cmd>FzfLua git_status<cr>" },
+		{ "<leader>gs", "<cmd>FzfLua git_status<cr>" },
+		{ "<leader>gf", "<cmd>FzfLua git_files<cr>" },
 		{ "<leader>gl", "<cmd>FzfLua git_bcommits<cr>" },
 		{ "<leader>gL", "<cmd>FzfLua git_commits<cr>" },
 		{ "<leader>gb", "<cmd>FzfLua git_branches<cr>" },
@@ -81,6 +98,8 @@ return {
 		{ "<leader>a", find_altfiles },
 		{ "<leader>p", find_projects },
 		{ "<leader>P", save_project },
+		{ "<leader>gh", find_hunks },
+		{ "<leader>gH", function() find_hunks({ "." }) end },
 	},
 	config = function()
 		fzf = require("fzf-lua")
@@ -117,7 +136,7 @@ return {
 			previewers = { man = { cmd = "man %s | col -bx" } },
 			files = { prompt = "> ", copen = "FzfLua quickfix", show_cwd_header = false },
 			grep = { prompt = "> ", copen = "FzfLua quickfix", show_cwd_header = false, no_header = true },
-			oldfiles = { prompt = "> ", copen = "FzfLua quickfix", show_cwd_header = false, stat_file = false, include_current_session = true },
+			oldfiles = { prompt = "> ", copen = "FzfLua quickfix", show_cwd_header = false, include_current_session = true },
 			buffers = { prompt = "> ", copen = "FzfLua quickfix", show_cwd_header = false },
 			tabs = { prompt = "> ", copen = "FzfLua quickfix", show_cwd_header = false },
 			lines = { prompt = "> ", copen = "FzfLua quickfix", show_cwd_header = false },
@@ -126,11 +145,27 @@ return {
 			quickfix_stack = { prompt = "> ", copen = "FzfLua quickfix", show_cwd_header = false, marker = "<" },
 			diagnostics = { prompt = "> ", copen = "FzfLua quickfix", show_cwd_header = false },
 			git = {
-				status = { prompt = "> ", copen = "FzfLua quickfix", show_cwd_header = false },
 				commits = { prompt = "> ", copen = "FzfLua quickfix", show_cwd_header = false },
 				bcommits = { prompt = "> ", copen = "FzfLua quickfix", show_cwd_header = false },
 				branches = { prompt = "> ", copen = "FzfLua quickfix", show_cwd_header = false },
-				stash = { prompt = "> ", copen = "FzfLua quickfix", show_cwd_header = false }
+				stash = { prompt = "> ", copen = "FzfLua quickfix", show_cwd_header = false },
+				status = {
+					prompt = "> ",
+					copen = "FzfLua quickfix",
+					show_cwd_header = false,
+					actions = {
+						["right"] = false,
+						["left"] = false,
+						["ctrl-x"] = { fzf.actions.git_reset, fzf.actions.resume },
+						["ctrl-s"] = { fzf.actions.git_stage_unstage, fzf.actions.resume },
+						["ctrl-h"] = function(files)
+							for i = 1, #files do
+								files[i] = files[i]:match("[^\128-\254]+$")
+							end
+							find_hunks(files)
+						end
+					}
+				}
 			},
 			lsp = {
 				prompt_postfix = "> ",
@@ -140,8 +175,10 @@ return {
 			}
 		})
 		if vim.g.arista then
-			vim.api.nvim_create_user_command("Achanged", function() fzf.fzf_exec("a p4 diff --summary | sed s/^/\\//", { previewer = "builtin" }) end, {})
-			vim.api.nvim_create_user_command("Aopened",  "let o = system('a p4 opened') | if o != '' | echo o | else | echo 'Nothing opened' | endif", {})
+			vim.api.nvim_create_user_command("Achanged", function() fzf.fzf_exec([[a p4 diff --summary | sed s/^/\//]], { previewer = "builtin" }) end, {})
+			vim.api.nvim_create_user_command("Aopened",  function() fzf.fzf_exec([[a p4 opened | sed -n "s/\/\(\/[^\/]\+\/[^\/]\+\/\)[^\/]\+\/\([^#]\+\).*/\1\2/p"]], { previewer = "builtin" }) end, {})
+			vim.keymap.set("n", "<leader>gs", "<cmd>Achanged<cr>")
+			vim.keymap.set("n", "<leader>go", "<cmd>Aopened<cr>")
 			vim.api.nvim_create_user_command("Agid",  function() fzf.fzf_exec("a grok -em 99", { previewer = "builtin" }) end, { nargs = 1 })
 			vim.api.nvim_create_user_command("AgidP", function() fzf.fzf_exec("a grok -em 99 -f "..(vim.api.nvim_buf_get_name(0):match("^/.-/.-/") or "/"), { previewer = "builtin" }) end, { nargs = 1 })
 			vim.api.nvim_create_user_command("Amkid", "belowright split | terminal echo 'Generating ID file...' && a ws mkid", {})

@@ -12,7 +12,6 @@ setopt glob_complete complete_in_word
 
 # Aliases
 alias sudo="sudo --preserve-env env PATH=$PATH "
-alias dots="git --git-dir=$HOME/.local/dots --work-tree=$HOME"
 alias v="nvim"
 alias r="ranger"
 alias p="python3"
