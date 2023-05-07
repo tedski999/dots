@@ -19,7 +19,6 @@ alias c="cargo"
 alias g="git"
 alias fd="fdfind"
 alias bat="batcat"
-alias wget="wget --hsts-file=\"$XDG_DATA_HOME/wget-hsts\""
 alias grep="grep --color=auto"
 alias diff="diff --color=auto"
 alias ip="ip --color=auto"
@@ -124,6 +123,9 @@ ZSH_HIGHLIGHT_STYLES[redirection]="fg=yellow,bold"
 ZSH_HIGHLIGHT_STYLES[named-fd]="none"
 ZSH_HIGHLIGHT_STYLES[arg0]="fg=blue"
 
+# zoxide
+eval "$(zoxide init zsh)"
+
 # Arista Shell
 ash() { eval 2>/dev/null mosh -a -o --experimental-remote-ip=remote us260 -- tmux new ${@:+-c -- a4c shell $@} }
 _ash() { compadd $(ssh us260 -- a4c ps -N) }
@@ -136,3 +138,23 @@ compdef _cht cht
 
 # File sharing
 0x0() { curl -F'file=@'$1 https://0x0.st }
+
+# Generic unpacker
+un() {
+	[[ -z "$1" ]] && echo "Usage: $0 [infile] [outdir]" && return 1
+	infile="$1"
+	outdir="${2:-.}"
+	filetype="$(file -b "$infile")"
+	[[ ! -d "$outdir" ]] && mkdir -p "$outdir"
+	case "${filetype:l}" in
+		"zip archive"*) unzip -d "$outdir" "$infile" ;;
+		"gzip compressed"*) tar -xvzf "$infile" -C "$outdir" ;;
+		"bzip2 compressed"*) tar -xvjf "$infile" -C "$outdir" ;;
+		"posix tar archive"*) tar -xvf "$infile" -C "$outdir" ;;
+		"xz compressed data"*) tar -xvJf "$infile" -C "$outdir" ;;
+		"rar archive"*) unrar x "$infile" "$outdir" ;;
+		"7-zip archive"*) 7z x "$infile" "-o$outdir" ;;
+		"cannot open"*) echo "Could not read file: $infile"; return 1 ;;
+		*) echo "Unsupported file type: $filetype"; return 1 ;;
+	esac
+}

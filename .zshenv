@@ -6,7 +6,8 @@ export PATH="$HOME/.local/bin:$HOME/.local/share/cargo/bin:$PATH"
 # Programs
 export EDITOR="nvim"
 export VISUAL="nvim"
-export MANPAGER="less"
+export MANPAGER="nvim +Man!"
+export MANWIDTH="80"
 export BROWSER="brave-browser"
 # Clean $HOME
 export HISTFILE="$XDG_DATA_HOME/history"
