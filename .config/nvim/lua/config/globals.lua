@@ -3,6 +3,16 @@ vim.g.mapleader = " "
 vim.g.border_type = "sharp"
 vim.g.border_chars = { "┌", "─", "┐", "│", "┘", "─", "└", "│" }
 
+vim.g.netrw_disthistmax = 0
+
+vim.lsp.protocol.CompletionItemKind = {
+	'⎸""', "⎸.f", "⎸fn", "⎸()", "⎸.x",
+	"⎸xy", "⎸{}", "⎸{}", "⎸[]", "⎸.p",
+	"⎸$$", "⎸00", "⎸∀e", "⎸;;", "⎸~~",
+	"⎸rg", "⎸/.", "⎸&x", "⎸//", "⎸∃e",
+	"⎸#x", "⎸{}", "⎸ev", "⎸++", "⎸<>"
+}
+
 vim.g.altfile_map = {
 	[".c"] = { ".h", ".hpp" },
 	[".h"] = { ".c", ".cpp" },
@@ -21,9 +31,9 @@ vim.g.arista =
 if vim.g.arista then
 	vim.api.nvim_echo({ { "Note: Arista-specifics have been enabled for this Neovim instance", "MoreMsg" } }, false, {})
 
+	vim.fn.chdir("/src")
+	vim.g.a4_auto_edit = 0
 	vim.cmd([[
-		chdir /src
-		let a4_auto_edit = 0
 		source /usr/share/vim/vimfiles/arista.vim
 		function! A4edit()
 			if strlen(glob(expand('%')))

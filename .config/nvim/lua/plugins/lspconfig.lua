@@ -6,12 +6,7 @@ return {
 
 		lsp.util.on_setup = lsp.util.add_hook_before(lsp.util.on_setup, function(cfg)
 			cfg.capabilities = require("cmp_nvim_lsp").default_capabilities()
-			cfg.on_attach = function(client, bufnr)
-				if client.server_capabilities.documentHighlightProvider then
-					vim.api.nvim_create_autocmd("CursorMoved", { buffer = bufnr, callback = vim.lsp.buf.clear_references })
-					vim.api.nvim_create_autocmd("CursorMoved", { buffer = bufnr, callback = vim.lsp.buf.document_highlight })
-				end
-			end
+			cfg.on_attach = function(client, bufnr) end
 		end)
 
 		-- TODO(aesthetic): move lsp server settings to a table
