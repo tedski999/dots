@@ -48,7 +48,6 @@ local function config()
 				diff = {
 				},
 				git = {
-					-- TODO(aesthetics): signify bg
 				}
 			}
 		},
@@ -57,6 +56,7 @@ local function config()
 				Visual = { bg = "palette.bg4" },
 				Search = { fg = "black", bg = "yellow" },
 				IncSearch = { fg = "black", bg = "white" },
+				NormalFloat = { bg = "palette.bg1" },
 				ScrollView = { bg = "palette.bg2" },
 				CursorLineNr = { bg = "palette.bg2" },
 				CursorWord = { style = "bold" },

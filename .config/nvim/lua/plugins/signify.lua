@@ -4,15 +4,7 @@ return {
 	keys = { { "<leader>gd", "<cmd>SignifyHunkDiff<cr>" } },
 	config = function()
 		vim.g.signify_number_highlight = 1
-
-		vim.cmd([[
-			SignifyEnableAll
-			" TODO(aesthetic): based on colorscheme
-			highlight SignifySignAdd    guifg=#2aa889 guibg=#11151c
-			highlight SignifySignChange guifg=#d26937 guibg=#11151c
-			highlight SignifySignDelete guifg=#c23127 guibg=#11151c
-		]])
-
+		vim.cmd("SignifyEnableAll")
 		if vim.g.arista then
 			local vcs_cmds = vim.g.signify_vcs_cmds or {}
 			local vcs_cmds_diffmode = vim.g.signify_vcs_cmds_diffmode or {}

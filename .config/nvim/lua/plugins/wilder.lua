@@ -8,7 +8,7 @@ return {
 			w.branch(
 				w.cmdline_pipeline({ fuzzy = 2 }),
 				w.search_pipeline({ pattern = w.python_fuzzy_pattern() })
-				-- TODO: filepaths
+				-- TODO(wilder): filepaths
 			)
 		})
 		-- TODO(aesthetic): match and scrollbar theming

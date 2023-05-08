@@ -1,7 +1,7 @@
 -- TODO(next): try rebelot/heirline.nvim
 return {
 	"nvim-lualine/lualine.nvim",
-	event = "VeryLazy",
+	lazy = false,
 	dependencies = "EdenEast/nightfox.nvim",
 	config = function()
 		local p = require("nightfox.palette").load("carbonfox")

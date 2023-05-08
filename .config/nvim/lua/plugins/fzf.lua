@@ -110,8 +110,7 @@ return {
 				row = 0.3,
 				col = 0.5,
 				border = vim.g.border_chars,
-				-- TODO(aesthetic): fix colorscheme FloatBorder
-				hl = { normal = "Normal", border = "FloatBorder" }
+				hl = { normal = "", border = "FloatBorder" }
 			},
 			keymap = {
 				builtin = {
