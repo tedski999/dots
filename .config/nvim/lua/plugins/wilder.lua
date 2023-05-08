@@ -1,7 +1,6 @@
 return {
 	"gelguy/wilder.nvim",
 	event = "CmdlineEnter",
-	-- init = function() vim.opt.incsearch = false end,
 	config = function()
 		local w = require("wilder")
 		w.setup({ modes = {":", "/", "?"} })
@@ -9,6 +8,7 @@ return {
 			w.branch(
 				w.cmdline_pipeline({ fuzzy = 2 }),
 				w.search_pipeline({ pattern = w.python_fuzzy_pattern() })
+				-- TODO: filepaths
 			)
 		})
 		-- TODO(aesthetic): match and scrollbar theming

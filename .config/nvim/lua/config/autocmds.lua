@@ -24,8 +24,13 @@ vim.api.nvim_create_autocmd({ "InsertEnter", "CursorMovedI" }, { callback = func
 	apply_whitespace_pattern("\\%<"..line.."l"..pattern.."\\|\\%>"..line.."l"..pattern)
 end })
 
+vim.api.nvim_create_autocmd("CursorMoved", { callback = function()
+	vim.g.cursor_pos = vim.fn.getpos(".")
+end })
+
 vim.api.nvim_create_autocmd("TextYankPost", { callback = function()
-	vim.highlight.on_yank({ higroup = "Visual" })
+	vim.highlight.on_yank({ higroup = "Visual", timeout = 200 })
+	vim.fn.setpos(".", vim.v.event.operator == "y" and vim.g.cursor_pos)
 end })
 
 vim.api.nvim_create_autocmd("BufEnter", { callback = function()

@@ -9,12 +9,12 @@ vim.opt.rtp:prepend(path)
 
 require("lazy").setup("plugins", {
 	defaults = { lazy = true },
-	install = { colorscheme = { "gotham" } },
+	install = { colorscheme = { "carbonfox" } },
 	change_detection = { enabled = false },
 	lockfile = vim.fn.stdpath("data").."/lazy/lock.json",
 	ui = {
 		border = vim.g.border_chars,
-		icons = { -- TODO(aesthetic): icons and theming
+		icons = { -- TODO(aesthetic): lazy icons
 			cmd = "?", config = "?", event = "?", ft = "?",
 			init = "?", keys = "?", plugin = "?", runtime = "?",
 			source = "?", start = "?", task = "?", lazy = "?"

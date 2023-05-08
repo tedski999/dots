@@ -1,6 +1,4 @@
--- TODO(next):
--- custom theme
--- language-specifics: LSP, DAP, static analysis, Formatting, Linting
+-- TODO(next): language-specifics: LSP, DAP, static analysis, Formatting, Linting
 vim.loader.enable()
 require("config.globals")
 require("config.options")

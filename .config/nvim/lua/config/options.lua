@@ -6,7 +6,6 @@ if not vim.loop.fs_stat(thesaurus) then
 	vim.fn.system({ "wget", "https://www.gutenberg.org/files/3202/files/mthesaur.txt", "-O", thesaurus })
 end
 
--- TODO(aesthetic): cleanup
 o.title = true                                   -- Update window title
 o.mouse = "a"                                    -- Enable mouse support
 o.updatetime = 100                               -- Faster refreshing
@@ -50,8 +49,8 @@ o.spelloptions = "camel"                         -- Enable CamelCase word spelli
 o.spellsuggest = "best,20"                       -- Only show best spelling corrections
 o.spellcapcheck = ""                             -- Don't care about capitalisation
 o.dictionary = "/usr/share/dict/words"           -- Dictionary file
-o.thesaurus = thesaurus                          ---Thesaurus file
-o.shada = "!,'50,<50,s100,h,r/media"             -- Specify removable media for shada
+o.thesaurus = thesaurus                          -- Thesaurus file
+o.shada = "!,'100,<50,s100,h,r/media"            -- Specify removable media for shada
 o.undolevels = 2048                              -- More undo space
 o.hidden = false                                 -- Don't let modified buffers hide
 

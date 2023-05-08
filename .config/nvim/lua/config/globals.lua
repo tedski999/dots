@@ -22,8 +22,6 @@ vim.g.altfile_map = {
 	[".frag.glsl"] = { ".vert.glsl" }
 }
 
--- TODO(aesthetic): steal and integrate a base46 theme
-
 vim.g.arista =
 	vim.loop.fs_stat("/usr/share/vim/vimfiles/arista.vim") and
 	vim.fn.getcwd():find("^/src") ~= nil

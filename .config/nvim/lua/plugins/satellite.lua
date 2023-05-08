@@ -2,7 +2,7 @@ return {
 	"lewis6991/satellite.nvim",
 	event = "VeryLazy",
 	opts = {
-		winblend = 25,
+		winblend = 0,
 		handlers = {
 			search = { enable = true },
 			diagnostic = { enable = true },
