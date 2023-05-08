@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [[ -z "$GIT_DIR" ]] && [[ "$@" != *"--git-dir"* ]]; then
+if [[ -z "$GIT_DIR" ]] && [[ "$@" != *"clone"* ]] && [[ "$@" != *"--git-dir"* ]]; then
 	dots check-ignore "$(pwd)" 1>/dev/null 2>&1
 	[ $? -eq 1 ] && exec dots "$@"
 fi

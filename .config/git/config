@@ -20,3 +20,4 @@
 	pl = pull
 	d = diff
 	ds = diff --staged
+	rs = restore --staged

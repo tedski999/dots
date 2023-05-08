@@ -21,7 +21,7 @@ msung_setup() {
 msung_apts() {
 	echo "Installing msung system packages..."
 
-	# TODO: move nvim, mosh, fzf, zoxide to opts
+	# TODO: move nvim, mosh, fzf, zoxide, fzf, bat to opts
 
 	sudo curl -fsSLo /usr/share/keyrings/brave-browser-archive-keyring.gpg https://brave-browser-apt-release.s3.brave.com/brave-browser-archive-keyring.gpg
 	echo "deb [signed-by=/usr/share/keyrings/brave-browser-archive-keyring.gpg arch=amd64] https://brave-browser-apt-release.s3.brave.com/ stable main" | sudo tee /etc/apt/sources.list.d/brave-browser-release.list
@@ -56,35 +56,39 @@ msung_opts() {
 msung_exts() {
 	echo "Installing msung Gnome extensions..."
 
-	tmpdir=$(mktemp --directory)
-	extdir=$XDG_DATA_HOME/gnome-shell/extensions
-	mkdir -p $extdir
-	rm -rf $extdir/*
+	tmp="$(mktemp --directory)"
+	ext="$XDG_DATA_HOME/gnome-shell/extensions"
+	mkdir -p "$ext"
+	rm -rf "$ext/*"
 
 	# pop-shell@system76.com
-	sudo apt-get install --yes git make node-typescript
-	git clone https://github.com/pop-os/shell $tmpdir/pop
-	make --directory $tmpdir/pop depcheck compile install
+	sudo apt-get install --yes make node-typescript
+	git clone https://github.com/pop-os/shell "$tmp/pop"
+	make --directory "$tmp/pop" depcheck compile install
 
 	# unite@hardpixel.eu
-	git clone https://github.com/hardpixel/unite-shell $tmpdir/unite
-	mv $tmpdir/unite/unite@hardpixel.eu $extdir
+	git clone https://github.com/hardpixel/unite-shell "$tmp/unite"
+	mv "$tmp/unite/unite@hardpixel.eu" "$ext/unite@hardpixel.eu"
 
 	# clipboard-indicator@tudmotu.com
-	git clone https://github.com/Tudmotu/gnome-shell-extension-clipboard-indicator $extdir/clipboard-indicator@tudmotu.com
+	# TODO: be better
+	git clone https://github.com/Tudmotu/gnome-shell-extension-clipboard-indicator "$ext/clipboard-indicator@tudmotu.com"
 
 	# expandable-notifications@kaan.g.inam.org
-	git clone https://github.com/kaanginam/expandable-notifications $tmpdir/notifs
-	mv $tmpdir/notifs/expandable-notifications@kaan.g.inam.org $extdir
+	# TODO: be better
+	git clone https://github.com/kaanginam/expandable-notifications "$tmp/notifs"
+	mv "$tmp/notifs/expandable-notifications@kaan.g.inam.org" "$ext/expandable-notifications@kaan.g.inam.org"
 
 	# no-overview@fthx
-	git clone https://github.com/fthx/no-overview.git $extdir/no-overview@fthx
+	git clone https://github.com/fthx/no-overview.git "$ext/no-overview@fthx"
 
 	# draw-on-your-screen2@zhrexl.github.com
-	git clone https://github.com/zhrexl/DrawOnYourScreen2.git $extdir/draw-on-your-screen2@zhrexl.github.com
+	git clone https://github.com/zhrexl/DrawOnYourScreen2.git "$ext/draw-on-your-screen2@zhrexl.github.com"
+	git --git-dir "$ext/draw-on-your-screen2@zhrexl.github.com/.git" reset --hard 2615c7a
 
 	# notification-timeout@chlumskyvaclav.gmail.com
-	git clone https://github.com/vchlum/notification-timeout.git $extdir/notification-timeout@chlumskyvaclav.gmail.com
+	# TODO: be better
+	git clone https://github.com/vchlum/notification-timeout.git "$ext/notification-timeout@chlumskyvaclav.gmail.com"
 
 	echo "Finished installing msung Gnome extensions."
 }
@@ -101,11 +105,11 @@ msung_config() {
 	echo "Configuring msung..."
 
 	# shell
-	sudo chsh $USER -s /usr/bin/zsh
+	sudo chsh "$USER" -s /usr/bin/zsh
 
 	# gitignore
-	mkdir -p $HOME/.local/dots/info
-	>$HOME/.local/dots/info/exclude echo "\
+	mkdir -p "$HOME/.local/dots/info"
+	>"$HOME/.local/dots/info/exclude" echo "\
 /*
 !/.config
 !/.gnupg
@@ -503,6 +507,6 @@ done
 
 # Execution
 ${device}_setup
-for func in $funcs; do
+for func in "$funcs"; do
 	$func
 done
