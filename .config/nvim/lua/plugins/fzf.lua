@@ -18,9 +18,9 @@ local function find_altfiles()
 	if #existing == 1 then
 		vim.cmd("edit "..dir..existing[1])
 	elseif #existing ~= 0 then
-		fzf.fzf_exec(existing, { actions = fzf.defaults.actions.files, cwd = dir, previewer = "builtin" })
+		fzf.fzf_exec(existing, { actions = fzf.config.globals.actions.files, cwd = dir, previewer = "builtin" })
 	elseif #possible ~= 0 then
-		fzf.fzf_exec(possible, { actions = fzf.defaults.actions.files, cwd = dir, fzf_opts = { ["--header"] = [["No altfiles found"]]  } })
+		fzf.fzf_exec(possible, { actions = fzf.config.globals.actions.files, cwd = dir, fzf_opts = { ["--header"] = [["No altfiles found"]]  } })
 	else
 		vim.api.nvim_echo({ { "Error: No altfiles configured", "Error" } }, false, {})
 	end
@@ -59,7 +59,7 @@ local function find_hunks(files)
 	end
 	-- TODO(git): ctrl-s stage/unstage, ctrl-x reset
 	-- this would likely require generating diffs and using "git apply --cached"
-	fzf.fzf_exec(hunks, { actions = fzf.defaults.actions.files, previewer = "builtin" })
+	fzf.fzf_exec(hunks, { actions = fzf.config.globals.actions.files, previewer = "builtin" })
 end
 
 local function yank_selection(selected)
@@ -70,7 +70,7 @@ end
 
 return {
 	"ibhagwan/fzf-lua",
-	cmd = "FzfLua",
+	cmd = { "FzfLua", "Achanged", "Aopened", "Agrok", "AgrokP", "Amkid", "Agid", "AgidP" },
 	keys = {
 		{ "z=", "<cmd>FzfLua spell_suggest<cr>" },
 		{ "<leader>b", "<cmd>FzfLua buffers<cr>" },
@@ -107,11 +107,20 @@ return {
 			winopts = {
 				height = 0.9,
 				width = 0.9,
-				row = 0.2,
+				row = 0.3,
 				col = 0.5,
 				border = vim.g.border_chars,
 				-- TODO(aesthetic): fix colorscheme FloatBorder
 				hl = { normal = "Normal", border = "FloatBorder" }
+			},
+			keymap = {
+				builtin = {
+					["<c-_>"] = "toggle-preview",
+					["<c-o>"] = "toggle-preview-cw",
+					["<m-j>"] = "preview-page-reset",
+					["<m-n>"] = "preview-page-down",
+					["<m-p>"] = "preview-page-up",
+				}
 			},
 			actions = {
 				files = {
@@ -132,7 +141,6 @@ return {
 			global_file_icons = false,
 			global_git_icons = false,
 			global_color_icons = false,
-			keymap = { builtin = { ["<c-_>"] = "toggle-preview" } },
 			previewers = { man = { cmd = "man %s | col -bx" } },
 			files = { prompt = "> ", copen = "FzfLua quickfix", show_cwd_header = false },
 			grep = { prompt = "> ", copen = "FzfLua quickfix", show_cwd_header = false, no_header = true },
@@ -175,19 +183,19 @@ return {
 			}
 		})
 		if vim.g.arista then
-			vim.api.nvim_create_user_command("Achanged", function() fzf.fzf_exec([[a p4 diff --summary | sed s/^/\//]], { previewer = "builtin" }) end, {})
-			vim.api.nvim_create_user_command("Aopened",  function() fzf.fzf_exec([[a p4 opened | sed -n "s/\/\(\/[^\/]\+\/[^\/]\+\/\)[^\/]\+\/\([^#]\+\).*/\1\2/p"]], { previewer = "builtin" }) end, {})
+			vim.api.nvim_create_user_command("Achanged", function() fzf.fzf_exec([[a p4 diff --summary | sed s/^/\\//]], { actions = fzf.config.globals.actions.files, previewer = "builtin" }) end, {})
+			vim.api.nvim_create_user_command("Aopened",  function() fzf.fzf_exec([[a p4 opened | sed -n "s/\/\(\/[^\/]\+\/[^\/]\+\/\)[^\/]\+\/\([^#]\+\).*/\1\2/p"]], { actions = fzf.config.globals.actions.files, previewer = "builtin" }) end, {})
 			vim.keymap.set("n", "<leader>gs", "<cmd>Achanged<cr>")
 			vim.keymap.set("n", "<leader>go", "<cmd>Aopened<cr>")
-			vim.api.nvim_create_user_command("Agid",  function() fzf.fzf_exec("a grok -em 99", { previewer = "builtin" }) end, { nargs = 1 })
-			vim.api.nvim_create_user_command("AgidP", function() fzf.fzf_exec("a grok -em 99 -f "..(vim.api.nvim_buf_get_name(0):match("^/.-/.-/") or "/"), { previewer = "builtin" }) end, { nargs = 1 })
+			vim.api.nvim_create_user_command("Agrok",  function(p) fzf.fzf_exec("a grok -em 99 "..p.args.." | grep '^/src/.*'", { actions = fzf.config.globals.actions.files, previewer = "builtin" }) end, { nargs = 1 })
+			vim.api.nvim_create_user_command("AgrokP", function(p) fzf.fzf_exec("a grok -em 99 -f "..(vim.api.nvim_buf_get_name(0):match("^/.-/.-/") or "/").." "..p.args.." | grep '^/src/.*'", { actions = fzf.config.globals.actions.files, previewer = "builtin" }) end, { nargs = 1 })
 			vim.api.nvim_create_user_command("Amkid", "belowright split | terminal echo 'Generating ID file...' && a ws mkid", {})
-			vim.api.nvim_create_user_command("Agid",  function() fzf.fzf_exec("a ws gid -cq", { previewer = "builtin" }) end, { nargs = 1 })
-			vim.api.nvim_create_user_command("AgidP", function() fzf.fzf_exec("a ws gid -cqp "..(vim.api.nvim_buf_get_name(0):match("^/.-/(.-)/") or "/"), { previewer = "builtin" }) end, { nargs = 1 })
-			vim.keymap.set("n", "<leader>r", "<cmd>AgidP    "..vim.fn.expand("<cword>").."<cr>")
-			vim.keymap.set("n", "<leader>R", "<cmd>Agid     "..vim.fn.expand("<cword>").."<cr>")
-			vim.keymap.set("n", "<leader>d", "<cmd>AgidP -D "..vim.fn.expand("<cword>").."<cr>")
-			vim.keymap.set("n", "<leader>D", "<cmd>Agid  -D "..vim.fn.expand("<cword>").."<cr>")
+			vim.api.nvim_create_user_command("Agid",  function(p) fzf.fzf_exec("a ws gid -cq "..p.args, { actions = fzf.config.globals.actions.files, previewer = "builtin" }) end, { nargs = 1 })
+			vim.api.nvim_create_user_command("AgidP", function(p) fzf.fzf_exec("a ws gid -cqp "..(vim.api.nvim_buf_get_name(0):match("^/.-/(.-)/") or "/").." "..p.args, { actions = fzf.config.globals.actions.files, previewer = "builtin" }) end, { nargs = 1 })
+			vim.keymap.set("n", "<leader>r", ":exec 'AgidP    '.expand('<cword>')<cr>", { silent = true })
+			vim.keymap.set("n", "<leader>R", ":exec 'Agid     '.expand('<cword>')<cr>", { silent = true })
+			vim.keymap.set("n", "<leader>d", ":exec 'AgidP -D '.expand('<cword>')<cr>", { silent = true })
+			vim.keymap.set("n", "<leader>D", ":exec 'Agid  -D '.expand('<cword>')<cr>", { silent = true })
 		end
 	end
 }

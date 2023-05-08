@@ -20,9 +20,14 @@ require("lazy").setup("plugins", {
 			source = "?", start = "?", task = "?", lazy = "?"
 		}
 	},
-	performance = { rtp = { disabled_plugins = {
-		"2html_plugin", "tohtml", "getscript", "getscriptPlugin", "logipat",
-		"matchit", "rrhelper", "spellfile_plugin", "tutor", "syntax",
-		"synmenu", "optwin", "compiler", "bugreport", "ftplugin"
-	} } }
+	performance = {
+		rtp = {
+			reset = false,
+			disabled_plugins = {
+				"2html_plugin", "tohtml", "getscript", "getscriptPlugin", "logipat",
+				"matchit", "rrhelper", "spellfile_plugin", "tutor", "syntax",
+				"synmenu", "optwin", "compiler", "bugreport", "ftplugin"
+			}
+		}
+	}
 })
