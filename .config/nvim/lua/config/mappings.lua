@@ -24,7 +24,7 @@ km("n", "<leader>Q", "<cmd>qa<cr>", { nowait = true })
 -- Split lines at cursor, opposite of <s-j>
 km("n", "<c-j>", "m`i<cr><esc>``")
 -- Terminal shortcuts
-km("n", "<leader><return>", "<cmd>exec 'terminal' | startinsert<cr>")
+km("n", "<leader><return>", "<cmd>belowright split | exec 'terminal' | startinsert<cr>")
 km("t", "<esc>", "(&filetype == 'fzf') ? '<esc>' : '<c-\\><c-n>'", { expr = true })
 -- Disable cmdline tab completion
 km("c", "<tab>", "<tab>")
@@ -70,9 +70,9 @@ km("n", "yoi", "<cmd>set ignorecase! ignorecase?<cr>")
 km("n", "yol", "<cmd>set list! list?<cr>")
 km("n", "yoz", "<cmd>set spell! spell?<cr>")
 -- Git
-vim.api.nvim_create_user_command("Gcommit", "exec 'terminal git commit <args>' | startinsert", { nargs = "*" })
-vim.api.nvim_create_user_command("Gpull", "terminal echo 'Pulling...' && git pull <args>", { nargs = "*" })
-vim.api.nvim_create_user_command("Gpush", "terminal echo 'Pushing...' && git push <args>", { nargs = "*" })
+vim.api.nvim_create_user_command("Gcommit", "belowright split | exec 'terminal git commit <args>' | startinsert", { nargs = "*" })
+vim.api.nvim_create_user_command("Gpull", "belowright split | terminal echo 'Pulling...' && git pull <args>", { nargs = "*" })
+vim.api.nvim_create_user_command("Gpush", "belowright split | terminal echo 'Pushing...' && git push <args>", { nargs = "*" })
 km("n", "<leader>gc", "<cmd>Gcommit<cr>")
 km("n", "<leader>gp", "<cmd>Gpull<cr>")
 km("n", "<leader>gP", "<cmd>Gpush<cr>")
