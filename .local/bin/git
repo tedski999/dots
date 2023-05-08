@@ -1,7 +1,8 @@
 #!/bin/bash
 
-if [[ -n "$GIT_DIR" ]] || [[ "$@" == *"--git-dir"* ]] || /usr/bin/git --git-dir="$HOME/.local/dots" --work-tree="$HOME" check-ignore --quiet "$(pwd)"; then
-	/usr/bin/git "$@"
-else
-	dots "$@"
+if [[ -z "$GIT_DIR" ]] && [[ "$@" != *"--git-dir"* ]]; then
+	dots check-ignore "$(pwd)" 1>/dev/null 2>&1
+	[ $? -eq 1 ] && exec dots "$@"
 fi
+
+command -p git "$@"
