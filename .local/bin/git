@@ -1,0 +1,7 @@
+#!/bin/bash
+
+if [[ -n "$GIT_DIR" ]] || [[ "$@" == *"--git-dir"* ]] || /usr/bin/git --git-dir="$HOME/.local/dots" --work-tree="$HOME" check-ignore --quiet "$(pwd)"; then
+	/usr/bin/git "$@"
+else
+	dots "$@"
+fi
