@@ -26,9 +26,6 @@ km("n", "<c-j>", "m`i<cr><esc>``")
 -- Terminal shortcuts
 km("n", "<leader><return>", "<cmd>belowright split | exec 'terminal' | startinsert<cr>")
 km("t", "<esc>", "(&filetype == 'fzf') ? '<esc>' : '<c-\\><c-n>'", { expr = true })
--- Disable cmdline tab completion
-km("c", "<tab>", "<tab>")
-km("c", "<s-tab>", "<s-tab>")
 -- Open config
 km("n", "<leader>;", "<cmd>edit "..vim.fn.stdpath("config").."<cr>")
 km("n", "<leader>:", "<cmd>edit "..vim.fn.stdpath("data").."<cr>")
