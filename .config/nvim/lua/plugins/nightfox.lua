@@ -26,7 +26,7 @@ local function config()
 		},
 		specs = {
 			all = {
-				-- TODO(aesthetics): syntax highlighting colors
+				-- TODO(2, aesthetics): syntax highlighting colors
 				syntax = { },
 				diag = { info = "green", error = "red", warn = "#ffaa00" },
 				diag_bg = { error = "none", warn = "none", info = "none", hint = "none" },
@@ -42,6 +42,7 @@ local function config()
 				NormalFloat = { bg = "palette.bg1" },
 				ScrollView = { bg = "palette.bg2" },
 				CursorWord = { style = "bold" },
+				CursorLineNr = { fg = "palette.fg1" },
 				Whitespace = { fg = "palette.sel1" },
 				ExtraWhitespace = { bg = "red", fg = "red" },
 				Todo = { bg = "none", fg = "palette.blue" },

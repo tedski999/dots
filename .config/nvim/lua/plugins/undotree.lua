@@ -1,4 +1,4 @@
--- TODO(undo): issue #129, closing with :q causes bork
+-- TODO(3, undo): issue #129, closing with :q causes bork
 return {
 	"mbbill/undotree",
 	keys = { { "<leader>u", "<cmd>UndotreeToggle<cr>" } },
