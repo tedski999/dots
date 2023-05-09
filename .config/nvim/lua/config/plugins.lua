@@ -14,10 +14,10 @@ require("lazy").setup("plugins", {
 	lockfile = vim.fn.stdpath("data").."/lazy/lock.json",
 	ui = {
 		border = vim.g.border_chars,
-		icons = { -- TODO(aesthetic): lazy icons
-			cmd = "?", config = "?", event = "?", ft = "?",
-			init = "?", keys = "?", plugin = "?", runtime = "?",
-			source = "?", start = "?", task = "?", lazy = "?"
+		icons = {
+			cmd = "cmd:", config = "cfg:", event = "evt:", ft = "ft:",
+			init = "init:", keys = "key:", plugin = "plug:", runtime = "run:",
+			source = "src:", start = "", task = "tsk:", lazy = "lzy:"
 		}
 	},
 	performance = {
@@ -26,7 +26,7 @@ require("lazy").setup("plugins", {
 			disabled_plugins = {
 				"2html_plugin", "tohtml", "getscript", "getscriptPlugin", "logipat",
 				"matchit", "rrhelper", "spellfile_plugin", "tutor", "syntax",
-				"synmenu", "optwin", "compiler", "bugreport", "ftplugin"
+				"synmenu", "optwin", "compiler", "bugreport", "ftplugin", "netrwPlugin"
 			}
 		}
 	}

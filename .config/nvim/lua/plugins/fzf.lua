@@ -35,6 +35,7 @@ local function find_projects()
 	end
 	require("fzf-lua").fzf_exec(projects, { actions = {
 		["default"] = function(projects) vim.cmd("source "..vim.fn.fnameescape(projects_dir..projects[1])) end,
+		["ctrl-e"] = function(projects) vim.cmd("edit "..projects_dir..projects[1].." | setf vim") end,
 		["ctrl-x"] = function(projects) for i = 1, #projects do vim.fn.delete(vim.fn.fnameescape(projects_dir..projects[o])) end end
 	}})
 end
@@ -57,7 +58,7 @@ local function find_hunks(files)
 			table.insert(hunks, file..":"..lnum)
 		end
 	end
-	-- TODO(git): ctrl-s stage/unstage, ctrl-x reset
+	-- TODO(3, git): ctrl-s stage/unstage, ctrl-x reset
 	-- this would likely require generating diffs and using "git apply --cached"
 	fzf.fzf_exec(hunks, { actions = fzf.config.globals.actions.files, previewer = "builtin" })
 end
@@ -68,6 +69,11 @@ local function yank_selection(selected)
 	end
 end
 
+local function get_dir()
+	local file = vim.api.nvim_buf_get_name(0) or ""
+	return (file ~= "" and file or "./"):match(".*/"):gsub("oil://", "")
+end
+
 return {
 	"ibhagwan/fzf-lua",
 	cmd = { "FzfLua", "Achanged", "Aopened", "Agrok", "AgrokP", "Amkid", "Agid", "AgidP" },
@@ -75,9 +81,9 @@ return {
 		{ "z=", "<cmd>FzfLua spell_suggest<cr>" },
 		{ "<leader>b", "<cmd>FzfLua buffers<cr>" },
 		{ "<leader>l", "<cmd>FzfLua blines<cr>" },
-		{ "<leader>f", "<cmd>FzfLua files cwd=%:p:h<cr>" },
+		{ "<leader>f", function() vim.cmd("FzfLua files cwd="..get_dir()) end },
 		{ "<leader>F", "<cmd>FzfLua files<cr>" },
-		{ "<leader>s", "<cmd>FzfLua grep_project cwd=%:p:h<cr>" },
+		{ "<leader>s", function() vim.cmd("FzfLua grep_project cwd="..get_dir()) end },
 		{ "<leader>S", "<cmd>FzfLua grep_project<cr>" },
 		{ "<leader>h", "<cmd>FzfLua help_tags prompt=>\\ <cr>" },
 		{ "<leader>H", "<cmd>FzfLua man_pages prompt=>\\ <cr>" },
@@ -90,7 +96,7 @@ return {
 		{ "<leader>gL", "<cmd>FzfLua git_commits<cr>" },
 		{ "<leader>gb", "<cmd>FzfLua git_branches<cr>" },
 		{ "<leader>d", "<cmd>FzfLua lsp_definitions<cr>" },
-		-- TODO(fzf): previewer currently broken
+		-- TODO(3, fzf): previewer currently broken
 		-- { "<leader>r", "<cmd>FzfLua lsp_finder<cr>" },
 		{ "<leader>r", "<cmd>FzfLua lsp_references<cr>" },
 		{ "<leader>c", "<cmd>FzfLua quickfix<cr>" },
@@ -105,10 +111,7 @@ return {
 		fzf = require("fzf-lua")
 		fzf.setup({
 			winopts = {
-				height = 0.9,
-				width = 0.9,
-				row = 0.3,
-				col = 0.5,
+				height = 0.9, width = 0.9, row = 0.3, col = 0.5,
 				border = vim.g.border_chars,
 				hl = { normal = "", border = "FloatBorder" }
 			},
