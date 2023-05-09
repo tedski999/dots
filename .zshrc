@@ -1,3 +1,5 @@
+#!/bin/zsh
+
 PS1=$'\n%F{red}%n@%m%f %F{blue}%~%f %F{red}%(?..%?)%f\n>%f '
 HISTSIZE="10000"
 SAVEHIST="10000"
@@ -17,8 +19,6 @@ alias r="ranger"
 alias p="python3"
 alias c="cargo"
 alias g="git"
-alias fd="fdfind"
-alias bat="batcat"
 alias grep="grep --color=auto"
 alias diff="diff --color=auto"
 alias ip="ip --color=auto"
