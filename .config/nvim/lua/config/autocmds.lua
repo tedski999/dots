@@ -47,6 +47,18 @@ vim.api.nvim_create_autocmd("BufWinEnter", { callback = function()
 	end
 end })
 
+vim.api.nvim_create_autocmd({ "WinLeave", "FocusLost" }, { callback = function()
+	vim.opt.guicursor = "a:noCursor"
+	vim.opt.cursorline = false
+	vim.opt.cursorcolumn = false
+end })
+
+vim.api.nvim_create_autocmd({ "VimEnter", "WinEnter", "FocusGained" }, { callback = function()
+	vim.opt.guicursor = "n-v-c-sm:block,i-ci-ve:ver25,r-cr-o:hor20,a:blinkwait400-blinkoff400-blinkon400"
+	vim.opt.cursorline = true
+	vim.opt.cursorcolumn = true
+end })
+
 if vim.g.arista then
 	vim.cmd([[
 		autocmd BufNewFile,BufRead *.tac setlocal indentexpr=TaccIndentOverrides()

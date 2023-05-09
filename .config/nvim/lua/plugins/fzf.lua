@@ -48,10 +48,10 @@ end
 
 local function find_hunks(files)
 	local hunks, cur, file = {}, vim.api.nvim_buf_get_name(0) or "", nil
-	local cmd = { "git", "diff", "-U0", unpack(files or { cur ~= "" and cur or "."}) }
+	local cmd = { "git", "diff", "-U0", unpack(files or { cur ~= "" and cur or "." }) }
 	for line in vim.fn.system(cmd):gmatch("[^\n]+") do
 		file = line:match("^%+%+%+ b/(.-)$") or file
-		lnum, count = line:match("^@@ %-[%d,]+ %+(%d+),(%d+) @@")
+		lnum, count = line:match("^@@ %-[%d,]+ %+(%d+),(%d+) @@") or line:match("^@@ %-[%d,]+ %+(%d+) @@"), 0
 		if file and lnum and count then
 			lnum = lnum + math.floor(count / 2)
 			table.insert(hunks, file..":"..lnum)

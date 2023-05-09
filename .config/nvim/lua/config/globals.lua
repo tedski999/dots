@@ -5,12 +5,16 @@ vim.g.border_chars = { "┌", "─", "┐", "│", "┘", "─", "└", "│" }
 
 vim.g.netrw_disthistmax = 0
 
+vim.g.myfiletypefile = vim.fn.stdpath("config").."/ftplugin/ftplugin.vim"
+vim.g.mysyntaxfile = vim.fn.stdpath("config").."/syntax/syntax.vim"
+
 vim.lsp.protocol.CompletionItemKind = {
-	'⎸""', "⎸.f", "⎸fn", "⎸()", "⎸.x",
-	"⎸xy", "⎸{}", "⎸{}", "⎸[]", "⎸.p",
-	"⎸$$", "⎸00", "⎸∀e", "⎸;;", "⎸~~",
-	"⎸rg", "⎸/.", "⎸&x", "⎸//", "⎸∃e",
-	"⎸#x", "⎸{}", "⎸ev", "⎸++", "⎸<>"
+
+	'""', ".f", "fn", "()", ".x",
+	"xy", "{}", "{}", "[]", ".p",
+	"$$", "00", "∀e", ";;", "~~",
+	"rg", "/.", "&x", "//", "∃e",
+	"#x", "{}", "ev", "++", "<>"
 }
 
 vim.g.altfile_map = {

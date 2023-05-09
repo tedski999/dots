@@ -3,6 +3,7 @@ return {
 	lazy = false,
 	config = function()
 		local lsp = require("lspconfig")
+		require('lspconfig.ui.windows').default_options.border = vim.g.border_chars
 
 		lsp.util.on_setup = lsp.util.add_hook_before(lsp.util.on_setup, function(cfg)
 			cfg.capabilities = require("cmp_nvim_lsp").default_capabilities()

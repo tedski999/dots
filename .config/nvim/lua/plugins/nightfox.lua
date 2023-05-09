@@ -7,21 +7,9 @@ local function config()
 			dim_inactive = true,
 			module_default = false,
 			modules = { ["dap-ui"] = true, ["mini"] = true, ["signify"] = true }
-
 		},
 		palettes = {
 			all = {
-				-- TODO(aesthetics): colors
-				-- black
-				-- red
-				-- green
-				-- yellow
-				-- blue
-				-- magenta
-				-- cyan
-				-- white
-				-- orange
-				-- pink
 				comment = "#666666",
 				bg0 = "#000000",
 				bg1 = "#111111",
@@ -39,16 +27,11 @@ local function config()
 		specs = {
 			all = {
 				-- TODO(aesthetics): syntax highlighting colors
-				syntax = {
-				},
-				diag = {
-				},
-				diag_bg = {
-				},
-				diff = {
-				},
-				git = {
-				}
+				syntax = { },
+				diag = { info = "green", error = "red", warn = "#ffaa00" },
+				diag_bg = { error = "none", warn = "none", info = "none", hint = "none" },
+				diff = { add = "green", removed = "red", changed = "#ffaa00" },
+				git = { add = "green", removed = "red", changed = "#ffaa00" }
 			}
 		},
 		groups = {
@@ -58,11 +41,18 @@ local function config()
 				IncSearch = { fg = "black", bg = "white" },
 				NormalFloat = { bg = "palette.bg1" },
 				ScrollView = { bg = "palette.bg2" },
-				CursorLineNr = { bg = "palette.bg2" },
 				CursorWord = { style = "bold" },
 				Whitespace = { fg = "palette.sel1" },
 				ExtraWhitespace = { bg = "red", fg = "red" },
-				Todo = { bg = "NONE", fg = "palette.blue" },
+				Todo = { bg = "none", fg = "palette.blue" },
+				WinSeparator = { bg = "palette.bg0", fg = "palette.bg0" },
+				PmenuKind = { bg = "palette.sel0", fg = "palette.blue" },
+				PmenuKindSel = { bg = "palette.sel1", fg = "palette.blue" },
+				PmenuExtra = { bg = "palette.sel0", fg = "palette.fg2" },
+				PmenuExtraSel = { bg = "palette.sel1", fg = "palette.fg2" },
+				TabLine     = { bg = "palette.bg1", fg = "palette.fg1" },
+				TabLineSel  = { bg = "palette.bg2", fg = "palette.fg2" },
+				TabLineFill = { bg = "palette.bg0", fg = "palette.fg2" },
 			}
 		}
 	})
