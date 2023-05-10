@@ -51,5 +51,4 @@ o.wildignorecase = true                          -- Don't care about wildmenu fi
 if vim.g.arista then
 	o.shiftwidth = 3
 	o.expandtab = true
-	o.colorcolumn = vim.fn.join(vim.fn.range(86,255), ",")
 end

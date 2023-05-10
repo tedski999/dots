@@ -14,6 +14,7 @@
   "nvim-surround": { "branch": "main", "commit": "e6047128e57c1aff1566fb9f627521d2887fc77a" },
   "oil.nvim": { "branch": "master", "commit": "d0efcc0c10cde11fd650a4ca399539e6f8f9f956" },
   "satellite.nvim": { "branch": "main", "commit": "223fd56405993175f60dbc0ee6bdda0582b78b19" },
+  "smartcolumn.nvim": { "branch": "main", "commit": "0c572e3eae48874f25b74394a486f38cadb5c958" },
   "undotree": { "branch": "master", "commit": "485f01efde4e22cb1ce547b9e8c9238f36566f21" },
   "vim-lion": { "branch": "master", "commit": "ce46593ecd60e6051fb6e4d3986d2fc9f5a618b1" },
   "vim-polyglot": { "branch": "master", "commit": "bc8a81d3592dab86334f27d1d43c080ebf680d42" },
