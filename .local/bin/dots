@@ -530,7 +530,7 @@ msung_all() {
 set -e
 
 hash sudo 2>/dev/null && sudo="sudo" || sudo=""
-[ -z "$SUDO_USER" ] || { echo "Run without sudo privileges."; exit 1; }
+[ "$(id --user)" -ne 0 ] || [ -z "$SUDO_USER" ] || { echo "Run without sudo privileges."; exit 1; }
 
 shift
 device="$1"
@@ -544,7 +544,7 @@ shift
 funcs=""
 for target in "$@"; do
 	func="${device}_${target}"
-	type "$func" >/dev/null || { echo "Unknown target for $device: $target"; exit 1; }
+	type "$func" >/dev/null 2>&1 || { echo "Unknown target for $device: $target"; exit 1; }
 	funcs="$funcs$func "
 done
 
