@@ -11,7 +11,7 @@ require("lazy").setup("plugins", {
 	defaults = { lazy = true },
 	install = { colorscheme = { "carbonfox" } },
 	change_detection = { enabled = false },
-	lockfile = vim.fn.stdpath("data").."/lazy/lock.json",
+	lockfile = vim.fn.stdpath("config").."/lock.json",
 	ui = {
 		border = vim.g.border_chars,
 		icons = {

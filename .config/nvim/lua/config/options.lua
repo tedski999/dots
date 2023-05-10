@@ -3,7 +3,7 @@ local o = vim.opt
 local thesaurus = vim.fn.stdpath("data").."/mthesaur.txt"
 if not vim.loop.fs_stat(thesaurus) then
 	vim.api.nvim_echo({ { "Downloading thesaurus..." } }, false, {})
-	vim.fn.system({ "wget", "https://www.gutenberg.org/files/3202/files/mthesaur.txt", "-O", thesaurus })
+	vim.fn.system({ "curl", "-L", "https://www.gutenberg.org/files/3202/files/mthesaur.txt", "-o", thesaurus })
 end
 
 o.title = true                                   -- Update window title

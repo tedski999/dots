@@ -43,14 +43,11 @@ function zle-line-init { echo -ne "\e[6 q" }
 autoload -Uz up-line-or-beginning-search down-line-or-beginning-search
 zle -N up-line-or-beginning-search
 zle -N down-line-or-beginning-search
-for k in "^p" "^[OA" "^[[A"; bindkey $k up-line-or-beginning-search
-for k in "^n" "^[OB" "^[[B"; bindkey $k down-line-or-beginning-search
+for k in "^p" "^[OA" "^[[A"; bindkey "$k" up-line-or-beginning-search
+for k in "^n" "^[OB" "^[[B"; bindkey "$k" down-line-or-beginning-search
 
 # Completion
-[[ -d $ZSH_DATA/plugins/rustup ]] && fpath=($fpath $ZSH_DATA/plugins/rustup)
-[[ -d $ZSH_DATA/plugins/arzsh-complete ]] && fpath=($fpath $ZSH_DATA/plugins/arzsh-complete) && export ARZSH_COMP_UNSAFE=1
-[[ -d $ZSH_DATA/plugins/zsh-completions ]] && fpath=($fpath $ZSH_DATA/plugins/zsh-completions/src)
-[[ -d $RUSTUP_HOME/toolchains/stable-x86_64-unknown-linux-gnu/share/zsh/site-functions ]] && fpath=($fpath $RUSTUP_HOME/toolchains/stable-x86_64-unknown-linux-gnu/share/zsh/site-functions)
+[[ -d "$ZSH_DATA/completions" ]] && fpath=($fpath "$ZSH_DATA/completions")
 autoload -Uz compinit
 _comp_options+=(globdots)
 compinit -d "$XDG_CACHE_HOME/zcompdump" $([[ -n "$XDG_CACHE_HOME/zcompdump"(#qN.mh+24) ]] && echo -C)
@@ -92,17 +89,11 @@ export FZF_DEFAULT_OPTS="--multi --bind=$FZF_BINDINGS --preview-window sharp --m
 export FZF_DEFAULT_COMMAND="rg --files --no-messages"
 export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
 export FZF_ALT_C_COMMAND="fdfind --type=d --color=never --hidden --strip-cwd-prefix"
-[[ -f /usr/share/doc/fzf/examples/key-bindings.zsh ]] \
-	&& source /usr/share/doc/fzf/examples/key-bindings.zsh \
-	|| source $ZSH_DATA/plugins/fzf/key-bindings.zsh
-[[ -f /usr/share/doc/fzf/examples/completion.zsh ]] \
-	&& source /usr/share/doc/fzf/examples/completion.zsh \
-	|| source $ZSH_DATA/plugins/fzf/completion.zsh
+[[ -f "$HOME/.local/opt/fzf/key-bindings.zsh" ]] && source "$HOME/.local/opt/fzf/key-bindings.zsh"
+[[ -f "$HOME/.local/opt/fzf/completion.zsh" ]] && source "$HOME/.local/opt/fzf/completion.zsh"
 
 # Syntax highlighting
-[[ -f /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ]] \
-	&& source /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh \
-	|| source $ZSH_DATA/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+[[ -f /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ]] && source /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 ZSH_HIGHLIGHT_STYLES[default]="fg=cyan"
 ZSH_HIGHLIGHT_STYLES[unknown-token]="fg=red"
 ZSH_HIGHLIGHT_STYLES[reserved-word]="fg=blue"
@@ -126,18 +117,21 @@ ZSH_HIGHLIGHT_STYLES[arg0]="fg=blue"
 # zoxide
 eval "$(zoxide init zsh)"
 
+# arzsh-complete
+export ARZSH_COMP_UNSAFE=1
+
 # Arista Shell
 ash() { eval 2>/dev/null mosh -a -o --experimental-remote-ip=remote us260 -- tmux new ${@:+-c -- a4c shell $@} }
-_ash() { compadd $(ssh us260 -- a4c ps -N) }
+_ash() { compadd "$(ssh us260 -- a4c ps -N)" }
 compdef _ash ash
 
 # Cheatsheets
-function cht { curl cht.sh/$1 }
+function cht { curl "cht.sh/$1" }
 _cht() { compadd $commands:t }
 compdef _cht cht
 
 # File sharing
-0x0() { curl -F'file=@'$1 https://0x0.st }
+0x0() { curl -F"file=@$1" https://0x0.st }
 
 # Generic unpacker
 un() {

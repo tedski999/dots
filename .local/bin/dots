@@ -1,125 +1,109 @@
-#!/bin/bash
+#!/bin/sh
+
+# apt update; apt install --yes curl; curl https://h8c.de/dots | sh -s init msung apts opts
 
 root="$HOME/.local/dots"
+sc='\033[0;32m'
+rc='\033[0m'
 
 [ "$1" != "init" ] && exec git --git-dir="$root" --work-tree="$HOME" "$@"
-
-#################
-# Bootstrapping #
-#################
-
-bootstrap() {
-	echo "Cloning dots into \$HOME..."
-
-	[ -e "$root" ] && { echo "Failed: $root already exists"; exit 1; }
-	git clone --bare https://github.com/tedski999/dots "$root"
-
-	if ! out=$(git --git-dir="$root" --work-tree="$HOME" checkout main 2>&1); then
-		echo "WARNING: The next operation WILL overwrite the following files:"
-		printf "$out" | tail --lines +2 | head --lines -2 | awk '{$1=$1};1'
-		read -p "Enter YES to confirm data loss: " res
-		[ "$res" = "YES" ] || [ "$res" = "yes" ] || { echo "Aborted."; exit; }
-		git --git-dir="$root" --work-tree="$HOME" checkout main --force
-	fi
-
-	echo "Dots successfully cloned into \$HOME."
-	[ -z "$3" ] && { echo "Run 'dots init <device> <target>' to continue setup."; exit 0; }
-	echo "Running 'dots init ${@:3}'..."
-}
 
 #########
 # Msung #
 #########
 
 msung_apts() {
-	echo "Installing msung system packages..."
+	echo "${sc}Installing msung system packages...${rc}"
 
-	sudo curl -fsSLo /usr/share/keyrings/brave-browser-archive-keyring.gpg https://brave-browser-apt-release.s3.brave.com/brave-browser-archive-keyring.gpg
-	echo "deb [signed-by=/usr/share/keyrings/brave-browser-archive-keyring.gpg arch=amd64] https://brave-browser-apt-release.s3.brave.com/ stable main" | sudo tee /etc/apt/sources.list.d/brave-browser-release.list
-	echo "deb http://download.opensuse.org/repositories/shells:/zsh-users:/zsh-completions/xUbuntu_22.04/ /" | sudo tee /etc/apt/sources.list.d/shells:zsh-users:zsh-completions.list
-	curl -fsSL https://download.opensuse.org/repositories/shells:zsh-users:zsh-completions/xUbuntu_22.04/Release.key | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/shells_zsh-users_zsh-completions.gpg > /dev/null
+	curl -fsSLo /usr/share/keyrings/brave-browser-archive-keyring.gpg https://brave-browser-apt-release.s3.brave.com/brave-browser-archive-keyring.gpg
+	echo "deb [signed-by=/usr/share/keyrings/brave-browser-archive-keyring.gpg arch=amd64] https://brave-browser-apt-release.s3.brave.com/ stable main" | tee /etc/apt/sources.list.d/brave-browser-release.list
 	sudo apt-get update --yes
 	sudo apt-get upgrade --yes
 	sudo apt-get install --yes \
 		exa btop ripgrep ranger npm python3 \
-		alacritty fonts-terminus brave-browser \
-		zsh zsh-syntax-highlighting zsh-completions \
-		software-properties-common
+		zsh zsh-syntax-highlighting \
+		# alacritty fonts-terminus brave-browser \
+		# software-properties-common
 
-	echo "Finished installing msung system packages."
+	echo "${sc}Finished installing msung system packages.${rc}"
 }
 
 msung_opts() {
-	echo "Installing msung opts packages..."
+	echo "${sc}Installing msung opts packages...${rc}"
 
 	# TODO: share shares
 
 	tmp="$(mktemp --directory)"
 	bin="$HOME/.local/bin"
 	opt="$HOME/.local/opt"
-	mkdir -p "$bin" "$opt"
+	cmp="$ZSH_DATA/completions"
+	mkdir -p "$bin" "$opt" "$cmp"
 
 	# nvim
-	rm -rf "$opt/nvim"
-	wget https://github.com/neovim/neovim/releases/download/v0.9.0/nvim.appimage -O "$tmp/nvim.appimage"
+	rm -rf "$opt/nvim" && mkdir -p "$opt/nvim"
+	curl -L https://github.com/neovim/neovim/releases/download/v0.9.0/nvim.appimage -o "$tmp/nvim.appimage"
 	chmod +x "$tmp/nvim.appimage"
-	pushd "$opt" && "$tmp/nvim.appimage" --appimage-extract; popd
-	mv "$opt/squashfs-root" "$opt/nvim"
-	ln -sf "$opt/nvim/AppRun" "$bin/nvim"
+	cd "$opt/nvim" && "$tmp/nvim.appimage" --appimage-extract; cd -
+	ln -sf "$opt/nvim/squashfs-root/AppRun" "$bin/nvim"
 	ln -sf "$bin/nvim" "$bin/vim"
 
+	# TODO: neovim/pynvim
+
+	# zsh-completions
+	rm -rf "$opt/zsh-completions" && mkdir -p "$opt/zsh-completions"
+	curl -L https://github.com/zsh-users/zsh-completions/archive/refs/tags/0.34.0.tar.gz | tar -xzf - -C "$opt/zsh-completions"
+	ln -sf "$opt/zsh-completions" "$cmp/"
+
+	# TODO: arzsh-complete
+
 	# fzf
-	rm -rf "$opt/fzf"
-	wget https://github.com/junegunn/fzf/releases/download/0.40.0/fzf-0.40.0-linux_amd64.tar.gz -O "$tmp/fzf.tar.gz"
-	mkdir -p "$opt/fzf"
-	tar -xvzf "$tmp/fzf.tar.gz" -C "$opt/fzf"
+	rm -rf "$opt/fzf" && mkdir -p "$opt/fzf"
+	curl -L https://github.com/junegunn/fzf/releases/download/0.40.0/fzf-0.40.0-linux_amd64.tar.gz | tar -xzf - -C "$opt/fzf"
+	curl -L https://raw.githubusercontent.com/junegunn/fzf/master/shell/completion.zsh -o "$opt/fzf/completion.zsh"
+	curl -L https://raw.githubusercontent.com/junegunn/fzf/master/shell/key-bindings.zsh -o "$opt/fzf/key-bindings.zsh"
 	ln -sf "$opt/fzf/fzf" "$bin/fzf"
 
 	# zoxide
-	rm -rf "$opt/zoxide"
-	wget https://github.com/ajeetdsouza/zoxide/releases/download/v0.9.1/zoxide-0.9.1-x86_64-unknown-linux-musl.tar.gz -O "$tmp/zoxide.tar.gz"
-	mkdir -p "$opt/zoxide"
-	tar -xvzf "$tmp/zoxide.tar.gz" -C "$opt/zoxide"
+	rm -rf "$opt/zoxide" && mkdir -p "$opt/zoxide"
+	curl -L https://github.com/ajeetdsouza/zoxide/releases/download/v0.9.1/zoxide-0.9.1-x86_64-unknown-linux-musl.tar.gz | tar -xzf - -C "$opt/zoxide"
 	ln -sf "$opt/zoxide/zoxide" "$bin/zoxide"
 
 	# bat
-	rm -rf "$opt/bat"
-	wget https://github.com/sharkdp/bat/releases/download/v0.23.0/bat-v0.23.0-x86_64-unknown-linux-musl.tar.gz -O "$tmp/bat.tar.gz"
-	mkdir -p "$opt/bat"
-	tar -xvzf "$tmp/bat.tar.gz" -C "$opt/bat"
+	rm -rf "$opt/bat" && mkdir -p "$opt/bat"
+	curl -L https://github.com/sharkdp/bat/releases/download/v0.23.0/bat-v0.23.0-x86_64-unknown-linux-musl.tar.gz | tar -xzf - -C "$opt/bat"
 	ln -sf "$opt/bat/bat-v0.23.0-x86_64-unknown-linux-musl/bat" "$bin/bat"
 
 	# fd
-	rm -rf "$opt/fd"
-	wget https://github.com/sharkdp/fd/releases/download/v8.7.0/fd-v8.7.0-x86_64-unknown-linux-musl.tar.gz -O "$tmp/fd.tar.gz"
-	mkdir -p "$opt/fd"
-	tar -xvzf "$tmp/fd.tar.gz" -C "$opt/fd"
+	rm -rf "$opt/fd" && mkdir -p "$opt/fd"
+	curl -L https://github.com/sharkdp/fd/releases/download/v8.7.0/fd-v8.7.0-x86_64-unknown-linux-musl.tar.gz | tar -xzf - -C "$opt/fd"
 	ln -sf "$opt/fd/fd-v8.7.0-x86_64-unknown-linux-musl/fd" "$bin/fd"
 
-	# mosh
-	# TODO: download 1.4.0 source
-	# TODO: patch with #1167 Improve cursor style handling
-	# TODO: build and install
+	# TODO: mosh
+	# download 1.4.0 source
+	# patch with #1167 Improve cursor style handling
+	# build and install
 
 	# rust
 	rm -rf "$XDG_DATA_HOME/cargo" "$XDG_DATA_HOME/rustup"
 	curl https://sh.rustup.rs -sSf | sh -s -- --component rust-analyzer --component rust-src --no-modify-path -y
 	. "$XDG_DATA_HOME/cargo/env"
-	mkdir -p $ZSH_DATA/plugins/rustup
-	rustup completions zsh > "$ZSH_DATA/plugins/rustup/_rustup"
+	ln -sf "$RUSTUP_HOME/toolchains/stable-x86_64-unknown-linux-gnu/share/zsh/site-functions/*" "$cmp/"
+	rustup completions zsh > "$cmp/_rustup"
 
-	echo "Finished installing msung opts packages."
+	echo "${sc}Finished installing msung opts packages.${rc}"
 }
 
+# TODO: better notifications and clipboard exts
 msung_exts() {
-	echo "Installing msung Gnome extensions..."
+	echo "${sc}Installing msung Gnome extensions...${rc}"
+
+	sudo apt-get install --yes git make node-typescript
 
 	tmp="$(mktemp --directory)"
 	ext="$XDG_DATA_HOME/gnome-shell/extensions"
 	mkdir -p "$ext"
 
 	# pop-shell@system76.com
-	sudo apt-get install --yes make node-typescript
 	git clone https://github.com/pop-os/shell "$tmp/pop"
 	make --directory "$tmp/pop" depcheck compile install
 
@@ -129,12 +113,10 @@ msung_exts() {
 	mv "$tmp/unite/unite@hardpixel.eu" "$ext/unite@hardpixel.eu"
 
 	# clipboard-indicator@tudmotu.com
-	# TODO: be better
 	rm -rf "$ext/clipboard-indicator@tudmotu.com"
 	git clone https://github.com/Tudmotu/gnome-shell-extension-clipboard-indicator "$ext/clipboard-indicator@tudmotu.com"
 
 	# expandable-notifications@kaan.g.inam.org
-	# TODO: be better
 	rm -rf "$ext/expandable-notifications@kaan.g.inam.org"
 	git clone https://github.com/kaanginam/expandable-notifications "$tmp/notifs"
 	mv "$tmp/notifs/expandable-notifications@kaan.g.inam.org" "$ext/expandable-notifications@kaan.g.inam.org"
@@ -149,26 +131,17 @@ msung_exts() {
 	git --git-dir "$ext/draw-on-your-screen2@zhrexl.github.com/.git" --work-tree "$ext/draw-on-your-screen2@zhrexl.github.com" reset --hard 2615c7a
 
 	# notification-timeout@chlumskyvaclav.gmail.com
-	# TODO: be better
 	rm -rf "$ext/notification-timeout@chlumskyvaclav.gmail.com"
 	git clone https://github.com/vchlum/notification-timeout.git "$ext/notification-timeout@chlumskyvaclav.gmail.com"
 
-	echo "Finished installing msung Gnome extensions."
-}
-
-msung_packages() {
-	echo "Installing all packages for msung..."
-	msung_apts
-	msung_opts
-	msung_exts
-	echo "Finished installing all packages for msung."
+	echo "${sc}Finished installing msung Gnome extensions.${rc}"
 }
 
 msung_config() {
-	echo "Configuring msung..."
+	echo "${sc}Configuring msung...${rc}"
 
 	# shell
-	sudo chsh "$USER" -s /usr/bin/zsh
+	sudo chsh "$USER" -s "$(which zsh)"
 
 	# gitignore
 	mkdir -p "$root/info"
@@ -511,7 +484,16 @@ toggle-application-view=@as []
 toggle-message-tray=['<Shift><Super>n']
 toggle-overview=['<Super>space']" | dconf load /
 
-	echo "Finished configuring msung."
+	echo "${sc}Finished configuring msung.${rc}"
+}
+
+msung_all() {
+	echo "${sc}Installing everything for msung...${rc}"
+	msung_apts
+	msung_opts
+	msung_exts
+	msung_config
+	echo "${sc}Finished installing everything for msung.${rc}"
 }
 
 ###########
@@ -532,37 +514,47 @@ toggle-overview=['<Super>space']" | dconf load /
 
 set -e
 
-[ "$USER" = "root" ] && { >&2 echo "Run as non-root user"; exit 1; }
+hash apt-get 2>/dev/null || { echo "apt-get not found, is this system supported?"; exit 1; }
 
-[ "$2" = "bootstrap" ] && bootstrap "$@" && shift
+[ -z "$SUDO_USER" ] || { echo "Run without sudo privileges."; exit 1; }
 
-# Device
-device="${2:-none}"
+shift
+device="$1"
 case "$device" in
 	"msung"|"septs"|"msungie") ;;
+	"") echo "Usage: dots init <device> [targets...]"; exit 1 ;;
 	*) echo "Unknown device: $device"; exit 1 ;;
 esac
 
-[ -z "$3" ] && { echo "No targets provided."; exit 1; }
-
-# Targets
+shift
 funcs=""
-for target in "${@:3}"; do
+for target in "$@"; do
 	func="${device}_${target}"
-	[ "$(type -t $func 2>&1)" = "function" ] \
-		&& funcs+="$func " \
-		|| { echo "Unknown target for $device: $target"; exit 1; }
+	type "$func" >/dev/null || { echo "Unknown target for $device: $target"; exit 1; }
+	funcs="$funcs$func "
 done
 
-# Setup
-[ -f "$HOME/.zshenv" ] || { echo "Missing .zshenv: Are dots installed?"; exit 1; }
+hash sudo || apt-get install --yes sudo
+
+[ -e "$root" ] || {
+	echo "${sc}$root missing, bootstrapping into $HOME...${rc}"
+	hash git || sudo apt-get install --yes git
+	git clone --bare https://github.com/tedski999/dots "$root"
+	if ! out=$(git --git-dir="$root" --work-tree="$HOME" checkout main 2>&1); then
+		echo "WARNING: The next operation WILL overwrite the following files:"
+		printf "%s" "$out" | tail --lines +2 | head --lines -2
+		printf "Enter YES to proceed with data loss: " && read -r res
+		[ "$res" = "YES" ] || [ "$res" = "yes" ] || { echo "Aborted."; exit; }
+		git --git-dir="$root" --work-tree="$HOME" checkout main --force
+	fi
+	echo "${sc}Dots successfully installed into $HOME${rc}"
+}
+
+[ -f "$HOME/.zshenv" ] || { echo "Missing .zshenv: Have dots been installed?"; exit 1; }
 . "$HOME/.zshenv"
-hash apt-get sudo git
 
-# Execution
-for func in "$funcs"; do
-	$func
+for func in $funcs; do
+	"$func"
 done
 
-echo
-echo "Done."
+echo "Dots init done."
