@@ -1,20 +1,10 @@
 return {
 	"stevearc/oil.nvim",
-	cmd = "Oil",
-	event = "DirChanged",
-	init = function()
-		vim.g.loaded_netrw = 1
-		vim.g.loaded_netrwPlugin = 1
-		vim.keymap.set("n", "-", "<cmd>Oil<cr>")
-		if vim.fn.argc() ~= 0 then
-			local stat = vim.loop.fs_stat(vim.fn.argv(0))
-			if stat and stat.type == "directory" then
-				require("oil")
-			end
-		end
-	end,
+	lazy = false,
 	config = function()
-		require("oil").setup({
+		local oil = require("oil")
+		vim.keymap.set("n", "-", oil.open)
+		oil.setup({
 			buf_options = { buflisted = false },
 			win_options = { wrap = false, conceallevel = 0 },
 			keymaps = {
