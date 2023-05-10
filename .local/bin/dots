@@ -92,6 +92,11 @@ msung_opts() {
 
 	# TODO: neovim/pynvim
 
+	# zsh-syntax-highlighting
+	rm -rf "$opt/zsh-syntax-highlighting" && mkdir -p "$opt/zsh-syntax-highlighting"
+	curl -L https://github.com/zsh-users/zsh-syntax-highlighting/archive/refs/heads/master.zip -o "$tmp/zsh-syntax-highlighting.zip"
+	unzip "$tmp/zsh-syntax-highlighting.zip" -d "$opt/zsh-syntax-highlighting"
+
 	# zsh-completions
 	rm -rf "$opt/zsh-completions" && mkdir -p "$opt/zsh-completions"
 	curl -L https://github.com/zsh-users/zsh-completions/archive/refs/tags/0.34.0.tar.gz | tar -xzf - -C "$opt/zsh-completions"

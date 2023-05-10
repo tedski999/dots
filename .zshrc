@@ -92,28 +92,6 @@ export FZF_ALT_C_COMMAND="fdfind --type=d --color=never --hidden --strip-cwd-pre
 [[ -f "$HOME/.local/opt/fzf/key-bindings.zsh" ]] && source "$HOME/.local/opt/fzf/key-bindings.zsh"
 [[ -f "$HOME/.local/opt/fzf/completion.zsh" ]] && source "$HOME/.local/opt/fzf/completion.zsh"
 
-# Syntax highlighting
-[[ -f /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ]] && source /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
-ZSH_HIGHLIGHT_STYLES[default]="fg=cyan"
-ZSH_HIGHLIGHT_STYLES[unknown-token]="fg=red"
-ZSH_HIGHLIGHT_STYLES[reserved-word]="fg=blue"
-ZSH_HIGHLIGHT_STYLES[path]="fg=cyan,underline"
-ZSH_HIGHLIGHT_STYLES[suffix-alias]="fg=blue,underline"
-ZSH_HIGHLIGHT_STYLES[precommand]="fg=blue,underline"
-ZSH_HIGHLIGHT_STYLES[commandseparator]="fg=magenta"
-ZSH_HIGHLIGHT_STYLES[globbing]="fg=magenta"
-ZSH_HIGHLIGHT_STYLES[history-expansion]="fg=magenta"
-ZSH_HIGHLIGHT_STYLES[single-hyphen-option]="fg=green"
-ZSH_HIGHLIGHT_STYLES[double-hyphen-option]="fg=green"
-ZSH_HIGHLIGHT_STYLES[rc-quote]="fg=cyan,bold"
-ZSH_HIGHLIGHT_STYLES[dollar-double-quoted-argument]="fg=cyan,bold"
-ZSH_HIGHLIGHT_STYLES[back-double-quoted-argument]="fg=cyan,bold"
-ZSH_HIGHLIGHT_STYLES[back-dollar-quoted-argument]="fg=cyan,bold"
-ZSH_HIGHLIGHT_STYLES[assign]="none"
-ZSH_HIGHLIGHT_STYLES[redirection]="fg=yellow,bold"
-ZSH_HIGHLIGHT_STYLES[named-fd]="none"
-ZSH_HIGHLIGHT_STYLES[arg0]="fg=blue"
-
 # zoxide
 eval "$(zoxide init zsh)"
 
@@ -151,4 +129,28 @@ un() {
 		"cannot open"*) echo "Could not read file: $infile"; return 1 ;;
 		*) echo "Unsupported file type: $filetype"; return 1 ;;
 	esac
+}
+
+# Syntax highlighting
+[[ -f "$HOME/.local/opt/zsh-syntax-highlighting/zsh-syntax-highlighting-master/zsh-syntax-highlighting.zsh" ]] && {
+	source "$HOME/.local/opt/zsh-syntax-highlighting/zsh-syntax-highlighting-master/zsh-syntax-highlighting.zsh"
+	ZSH_HIGHLIGHT_STYLES[default]="fg=cyan"
+	ZSH_HIGHLIGHT_STYLES[unknown-token]="fg=red"
+	ZSH_HIGHLIGHT_STYLES[reserved-word]="fg=blue"
+	ZSH_HIGHLIGHT_STYLES[path]="fg=cyan,underline"
+	ZSH_HIGHLIGHT_STYLES[suffix-alias]="fg=blue,underline"
+	ZSH_HIGHLIGHT_STYLES[precommand]="fg=blue,underline"
+	ZSH_HIGHLIGHT_STYLES[commandseparator]="fg=magenta"
+	ZSH_HIGHLIGHT_STYLES[globbing]="fg=magenta"
+	ZSH_HIGHLIGHT_STYLES[history-expansion]="fg=magenta"
+	ZSH_HIGHLIGHT_STYLES[single-hyphen-option]="fg=green"
+	ZSH_HIGHLIGHT_STYLES[double-hyphen-option]="fg=green"
+	ZSH_HIGHLIGHT_STYLES[rc-quote]="fg=cyan,bold"
+	ZSH_HIGHLIGHT_STYLES[dollar-double-quoted-argument]="fg=cyan,bold"
+	ZSH_HIGHLIGHT_STYLES[back-double-quoted-argument]="fg=cyan,bold"
+	ZSH_HIGHLIGHT_STYLES[back-dollar-quoted-argument]="fg=cyan,bold"
+	ZSH_HIGHLIGHT_STYLES[assign]="none"
+	ZSH_HIGHLIGHT_STYLES[redirection]="fg=yellow,bold"
+	ZSH_HIGHLIGHT_STYLES[named-fd]="none"
+	ZSH_HIGHLIGHT_STYLES[arg0]="fg=blue"
 }
