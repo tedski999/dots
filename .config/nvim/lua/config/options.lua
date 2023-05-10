@@ -1,11 +1,5 @@
 local o = vim.opt
 
-local thesaurus = vim.fn.stdpath("data").."/mthesaur.txt"
-if not vim.loop.fs_stat(thesaurus) then
-	vim.api.nvim_echo({ { "Downloading thesaurus..." } }, false, {})
-	vim.fn.system({ "curl", "-L", "https://www.gutenberg.org/files/3202/files/mthesaur.txt", "-o", thesaurus })
-end
-
 o.title = true                                   -- Update window title
 o.mouse = "a"                                    -- Enable mouse support
 o.updatetime = 100                               -- Faster refreshing
@@ -40,14 +34,13 @@ o.termguicolors = true                           -- Enable true colors
 o.ignorecase = true                              -- Ignore case when searching...
 o.smartcase = true                               -- ...except for searching with uppercase characters
 o.complete = ".,w,kspell"                        -- Complete menu contents
-o.completeopt = "menu,menuone,noinsert"          -- Complete menu functionality
+o.completeopt = "menu,menuone,noinsert,noselect" -- Complete menu functionality
 o.pumheight = 8                                  -- Limit complete menu height
 o.spell = true                                   -- Enable spelling by default
 o.spelloptions = "camel"                         -- Enable CamelCase word spelling
 o.spellsuggest = "best,20"                       -- Only show best spelling corrections
 o.spellcapcheck = ""                             -- Don't care about capitalisation
 o.dictionary = "/usr/share/dict/words"           -- Dictionary file
-o.thesaurus = thesaurus                          -- Thesaurus file
 o.shada = "!,'100,<50,s100,h,r/media"            -- Specify removable media for shada
 o.undolevels = 2048                              -- More undo space
 o.hidden = false                                 -- Don't let modified buffers hide
