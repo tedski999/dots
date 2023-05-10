@@ -58,11 +58,13 @@ gitignore() {
 msung_apts() {
 	echo "${sc}Installing msung system packages...${rc}"
 
-	curl -fsSLo /usr/share/keyrings/brave-browser-archive-keyring.gpg https://brave-browser-apt-release.s3.brave.com/brave-browser-archive-keyring.gpg
-	echo "deb [signed-by=/usr/share/keyrings/brave-browser-archive-keyring.gpg arch=amd64] https://brave-browser-apt-release.s3.brave.com/ stable main" | tee /etc/apt/sources.list.d/brave-browser-release.list
-	sudo apt-get update --yes
-	sudo apt-get upgrade --yes
-	sudo apt-get install --yes \
+	hash apt-get || { echo "Cannot install system packages: apt-get not found"; exit 1; }
+
+	$sudo curl -fsSLo /usr/share/keyrings/brave-browser-archive-keyring.gpg https://brave-browser-apt-release.s3.brave.com/brave-browser-archive-keyring.gpg
+	echo "deb [signed-by=/usr/share/keyrings/brave-browser-archive-keyring.gpg arch=amd64] https://brave-browser-apt-release.s3.brave.com/ stable main" | $sudo tee /etc/apt/sources.list.d/brave-browser-release.list
+	$sudo apt-get update --yes
+	$sudo apt-get upgrade --yes
+	$sudo apt-get install --yes \
 		exa btop ripgrep ranger npm python3 \
 		zsh zsh-syntax-highlighting \
 		# alacritty fonts-terminus brave-browser \
@@ -145,7 +147,10 @@ msung_opts() {
 msung_exts() {
 	echo "${sc}Installing msung Gnome extensions...${rc}"
 
-	sudo apt-get install --yes git make node-typescript
+	hash git make tsc || {
+		hash apt-get || { echo "Cannot install extensions: git make tsc not found"; exit 1; }
+		$sudo apt-get install --yes git make node-typescript
+	}
 
 	tmp="$(mktemp --directory)"
 	ext="$XDG_DATA_HOME/gnome-shell/extensions"
@@ -190,7 +195,7 @@ msung_config() {
 
 	gitignore
 
-	sudo chsh $USER -s "$(which zsh)"
+	$sudo chsh $USER -s "$(which zsh)"
 
 	echo "\
 [org/gnome/desktop/a11y/applications]
@@ -524,8 +529,7 @@ msung_all() {
 
 set -e
 
-hash apt-get 2>/dev/null || { echo "apt-get not found, is this system supported?"; exit 1; }
-
+hash sudo 2>/dev/null && sudo="sudo" || sudo=""
 [ -z "$SUDO_USER" ] || { echo "Run without sudo privileges."; exit 1; }
 
 shift
@@ -544,14 +548,19 @@ for target in "$@"; do
 	funcs="$funcs$func "
 done
 
-hash sudo || apt-get install --yes sudo
-
 [ -e "$root" ] || {
 	echo "${sc}$root missing, bootstrapping into $HOME...${rc}"
-	hash git || sudo apt-get install --yes git
+
+	hash git || {
+		hash apt-get || { echo "Cannot clone dots: git not found"; exit 1; }
+		$sudo apt-get install --yes git
+	}
+
 	mkdir -p "$HOME/.ssh"
 	ssh-keyscan github.com >> "$HOME/.ssh/known_hosts"
 	git clone --bare git@github.com:/tedski999/dots "$root" || git clone --bare https://github.com/tedski999/dots "$root"
+	gitignore
+
 	if ! out=$(git --git-dir="$root" --work-tree="$HOME" checkout main 2>&1); then
 		echo "WARNING: The next operation WILL overwrite the following files:"
 		printf "%s" "$out" | tail --lines +2 | head --lines -2
@@ -559,7 +568,7 @@ hash sudo || apt-get install --yes sudo
 		[ "$res" = "YES" ] || [ "$res" = "yes" ] || { echo "Aborted."; exit; }
 		git --git-dir="$root" --work-tree="$HOME" checkout main --force
 	fi
-	gitignore
+
 	echo "${sc}Dots successfully installed into $HOME${rc}"
 }
 
