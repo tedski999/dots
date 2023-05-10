@@ -8,6 +8,49 @@ rc='\033[0m'
 
 [ "$1" != "init" ] && exec git --git-dir="$root" --work-tree="$HOME" "$@"
 
+##########
+# Common #
+##########
+
+gitignore() {
+	mkdir -p "$root/info"
+	>"$root/info/exclude" echo "\
+/*
+!/.config
+!/.gnupg
+!/.local
+!/.ssh
+!/.zshenv
+!/.zshrc
+
+/.config/*
+!/.config/alacritty
+!/.config/bat
+!/.config/git
+!/.config/npm
+!/.config/nvim
+!/.config/tmux
+!/.config/wget
+!/.config/mimeapps.list
+!/.config/user-dirs.dirs
+!/.config/user-dirs.locale
+!/.config/ripgrep
+
+/.gnupg/*
+!/.gnupg/gpg-agent.conf
+!/.gnupg/sshcontrol
+
+/.local/*
+!/.local/bin
+/.local/bin/*
+!/.local/bin/cachecmd
+!/.local/bin/dots
+!/.local/bin/git
+
+/.ssh/*
+!/.ssh/config"
+}
+
 #########
 # Msung #
 #########
@@ -140,48 +183,10 @@ msung_exts() {
 msung_config() {
 	echo "${sc}Configuring msung...${rc}"
 
-	# shell
-	sudo chsh "$USER" -s "$(which zsh)"
+	gitignore
 
-	# gitignore
-	mkdir -p "$root/info"
-	>"$root/info/exclude" echo "\
-/*
-!/.config
-!/.gnupg
-!/.local
-!/.ssh
-!/.zshenv
-!/.zshrc
+	sudo chsh $USER -s "$(which zsh)"
 
-/.config/*
-!/.config/alacritty
-!/.config/bat
-!/.config/git
-!/.config/npm
-!/.config/nvim
-!/.config/tmux
-!/.config/wget
-!/.config/mimeapps.list
-!/.config/user-dirs.dirs
-!/.config/user-dirs.locale
-!/.config/ripgrep
-
-/.gnupg/*
-!/.gnupg/gpg-agent.conf
-!/.gnupg/sshcontrol
-
-/.local/*
-!/.local/bin
-/.local/bin/*
-!/.local/bin/cachecmd
-!/.local/bin/dots
-!/.local/bin/git
-
-/.ssh/*
-!/.ssh/config"
-
-	# dconf
 	echo "\
 [org/gnome/desktop/a11y/applications]
 screen-magnifier-enabled=false
@@ -539,7 +544,9 @@ hash sudo || apt-get install --yes sudo
 [ -e "$root" ] || {
 	echo "${sc}$root missing, bootstrapping into $HOME...${rc}"
 	hash git || sudo apt-get install --yes git
-	git clone --bare https://github.com/tedski999/dots "$root"
+	mkdir -p "$HOME/.ssh"
+	ssh-keyscan github.com >> "$HOME/.ssh/known_hosts"
+	git clone --bare git@github.com:/tedski999/dots "$root" || git clone --bare https://github.com/tedski999/dots "$root"
 	if ! out=$(git --git-dir="$root" --work-tree="$HOME" checkout main 2>&1); then
 		echo "WARNING: The next operation WILL overwrite the following files:"
 		printf "%s" "$out" | tail --lines +2 | head --lines -2
@@ -547,6 +554,7 @@ hash sudo || apt-get install --yes sudo
 		[ "$res" = "YES" ] || [ "$res" = "yes" ] || { echo "Aborted."; exit; }
 		git --git-dir="$root" --work-tree="$HOME" checkout main --force
 	fi
+	gitignore
 	echo "${sc}Dots successfully installed into $HOME${rc}"
 }
 
