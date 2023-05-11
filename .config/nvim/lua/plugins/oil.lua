@@ -13,7 +13,7 @@ return {
 				["<c-s>"] = "actions.select_split",
 				["<c-v>"] = "actions.select_vsplit",
 				["<c-t>"] = "actions.select_tab",
-				["<c-p>"] = "actions.preview",
+				["<c-k>"] = "actions.preview",
 				["<c-y>"] = "actions.copy_entry_path",
 				["<esc>"] = "actions.close",
 				["<c-c>"] = "actions.close",

@@ -1,8 +1,8 @@
 local km = vim.keymap.set
 
 local function prev_and_next_file(file)
-	if file == "" then return ".", "." end
-	local prev, dir = file, file:match(".*/")
+	file = vim.g.getfile(file):gsub("([^^])/$", "%1")
+	local prev, dir = file, vim.g.getparent(file)
 	local files = (vim.fn.glob(dir..".[^.]*").."\n"..vim.fn.glob(dir.."*")):gmatch("[^\n]+")
 	for next in files do
 		if next == file then return prev, files() or next
@@ -48,10 +48,10 @@ km("n", "]b", "<cmd>bnext<cr>")
 km("n", "[B", "<cmd>bfirst<cr>")
 km("n", "]B", "<cmd>blast<cr>")
 -- Files
-km("n", "[f", function() file, _ = prev_and_next_file(vim.api.nvim_buf_get_name(0)); vim.cmd("edit "..file) end)
-km("n", "]f", function() _, file = prev_and_next_file(vim.api.nvim_buf_get_name(0)); vim.cmd("edit "..file) end)
-km("n", "[F", function() local cur, old = vim.api.nvim_buf_get_name(0); while cur ~= old do old = cur; cur, _ = prev_and_next_file(cur) end vim.cmd("edit "..cur) end)
-km("n", "]F", function() local cur, old = vim.api.nvim_buf_get_name(0); while cur ~= old do old = cur; _, cur = prev_and_next_file(cur) end vim.cmd("edit "..cur) end)
+km("n", "[f", function() file, _ = prev_and_next_file(); vim.cmd("edit "..file) end)
+km("n", "]f", function() _, file = prev_and_next_file(); vim.cmd("edit "..file) end)
+km("n", "[F", function() local cur, old = vim.g.getfile(); while cur ~= old do old = cur; cur, _ = prev_and_next_file(cur) end vim.cmd("edit "..cur) end)
+km("n", "]F", function() local cur, old = vim.g.getfile(); while cur ~= old do old = cur; _, cur = prev_and_next_file(cur) end vim.cmd("edit "..cur) end)
 -- Quickfix
 km("n", "[q", "<cmd>cprevious<cr>")
 km("n", "]q", "<cmd>cnext<cr>")

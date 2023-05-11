@@ -3,7 +3,7 @@ return {
 	lazy = false,
 	cond = vim.g.arista,
 	opts = {
-		colorcolumn = "86",
+		colorcolumn = "85",
 		disabled_filetypes = { "help", "text", "markdown" }
 	}
 }

@@ -1,8 +1,8 @@
 
 local function find_altfiles()
 	local fzf = require("fzf-lua")
-	local dir = vim.api.nvim_buf_get_name(0):match(".*/") or ""
-	local file = vim.api.nvim_buf_get_name(0):sub(#dir+1)
+	local dir = vim.g.getdir()
+	local file = vim.g.getfile():sub(#dir+1)
 	local possible, existing = {}, {}
 	for ext, altexts in pairs(vim.g.altfile_map) do
 		if file:sub(-#ext) == ext then
@@ -48,7 +48,7 @@ local function save_project()
 end
 
 local function find_hunks(files)
-	local hunks, cur, file = {}, vim.api.nvim_buf_get_name(0) or "", nil
+	local hunks, cur, file = {}, vim.g.getfile(), nil
 	local cmd = { "git", "diff", "-U0", unpack(files or { cur ~= "" and cur or "." }) }
 	for line in vim.fn.system(cmd):gmatch("[^\n]+") do
 		file = line:match("^%+%+%+ b/(.-)$") or file
@@ -69,11 +69,6 @@ local function yank_selection(selected)
 	end
 end
 
-local function get_dir()
-	local file = vim.api.nvim_buf_get_name(0) or ""
-	return (file ~= "" and file or "./"):match(".*/"):gsub("oil://", "")
-end
-
 return {
 	"ibhagwan/fzf-lua",
 	cmd = { "FzfLua", "Achanged", "Aopened", "Agrok", "AgrokP", "Amkid", "Agid", "AgidP" },
@@ -81,9 +76,9 @@ return {
 		{ "z=", "<cmd>FzfLua spell_suggest<cr>" },
 		{ "<leader>b", "<cmd>FzfLua buffers<cr>" },
 		{ "<leader>l", "<cmd>FzfLua blines<cr>" },
-		{ "<leader>f", function() vim.cmd("FzfLua files cwd="..get_dir()) end },
+		{ "<leader>f", function() vim.cmd("FzfLua files cwd="..vim.g.getdir()) end },
 		{ "<leader>F", "<cmd>FzfLua files<cr>" },
-		{ "<leader>s", function() vim.cmd("FzfLua grep_project cwd="..get_dir()) end },
+		{ "<leader>s", function() vim.cmd("FzfLua grep_project cwd="..vim.g.getdir()) end },
 		{ "<leader>S", "<cmd>FzfLua grep_project<cr>" },
 		{ "<leader>h", "<cmd>FzfLua help_tags prompt=>\\ <cr>" },
 		{ "<leader>H", "<cmd>FzfLua man_pages prompt=>\\ <cr>" },
@@ -190,10 +185,10 @@ return {
 			vim.keymap.set("n", "<leader>gs", "<cmd>Achanged<cr>")
 			vim.keymap.set("n", "<leader>go", "<cmd>Aopened<cr>")
 			vim.api.nvim_create_user_command("Agrok",  function(p) fzf.fzf_exec("a grok -em 99 "..p.args.." | grep '^/src/.*'", { actions = fzf.config.globals.actions.files, previewer = "builtin" }) end, { nargs = 1 })
-			vim.api.nvim_create_user_command("AgrokP", function(p) fzf.fzf_exec("a grok -em 99 -f "..(vim.api.nvim_buf_get_name(0):match("^(/.-/.-)/") or "/src").." "..p.args.." | grep '^/src/.*'", { actions = fzf.config.globals.actions.files, previewer = "builtin" }) end, { nargs = 1 })
+			vim.api.nvim_create_user_command("AgrokP", function(p) fzf.fzf_exec("a grok -em 99 -f "..(vim.g.dir():match("^/src/.-/") or "/src").." "..p.args.." | grep '^/src/.*'", { actions = fzf.config.globals.actions.files, previewer = "builtin" }) end, { nargs = 1 }) -- TODO: getfile
 			vim.api.nvim_create_user_command("Amkid", "belowright split | terminal echo 'Generating ID file...' && a ws mkid", {})
 			vim.api.nvim_create_user_command("Agid",  function(p) fzf.fzf_exec("a ws gid -cq "..p.args, { actions = fzf.config.globals.actions.files, previewer = "builtin" }) end, { nargs = 1 })
-			vim.api.nvim_create_user_command("AgidP", function(p) fzf.fzf_exec("a ws gid -cqp "..(vim.api.nvim_buf_get_name(0):match("^/.-/(.-)/") or "/").." "..p.args, { actions = fzf.config.globals.actions.files, previewer = "builtin" }) end, { nargs = 1 })
+			vim.api.nvim_create_user_command("AgidP", function(p) fzf.fzf_exec("a ws gid -cqp "..(vim.g.getdir():match("^/src/(.-)/") or "/").." "..p.args, { actions = fzf.config.globals.actions.files, previewer = "builtin" }) end, { nargs = 1 }) -- TODO: getfile
 			vim.keymap.set("n", "<leader>r", ":exec 'AgidP    '.expand('<cword>')<cr>", { silent = true })
 			vim.keymap.set("n", "<leader>R", ":exec 'Agid     '.expand('<cword>')<cr>", { silent = true })
 			vim.keymap.set("n", "<leader>d", ":exec 'AgidP -D '.expand('<cword>')<cr>", { silent = true })

@@ -43,7 +43,6 @@ o.spellcapcheck = ""                             -- Don't care about capitalisat
 o.dictionary = "/usr/share/dict/words"           -- Dictionary file
 o.shada = "!,'100,<50,s100,h,r/media"            -- Specify removable media for shada
 o.undolevels = 2048                              -- More undo space
-o.hidden = false                                 -- Don't let modified buffers hide
 o.wildmode = "longest:full,full"                 -- Match common and show wildmenu
 o.wildoptions = "fuzzy,pum"                      -- Wildmenu fuzzy matching and ins-completion menu
 o.wildignorecase = true                          -- Don't care about wildmenu file capitalisation

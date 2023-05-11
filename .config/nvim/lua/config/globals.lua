@@ -9,7 +9,6 @@ vim.g.myfiletypefile = vim.fn.stdpath("config").."/ftplugin/ftplugin.vim"
 vim.g.mysyntaxfile = vim.fn.stdpath("config").."/syntax/syntax.vim"
 
 vim.lsp.protocol.CompletionItemKind = {
-
 	'""', ".f", "fn", "()", ".x",
 	"xy", "{}", "{}", "[]", ".p",
 	"$$", "00", "∀e", ";;", "~~",
@@ -25,6 +24,19 @@ vim.g.altfile_map = {
 	[".vert.glsl"] = { ".frag.glsl" },
 	[".frag.glsl"] = { ".vert.glsl" }
 }
+
+vim.g.getfile = function(path)
+	path = path or vim.api.nvim_buf_get_name(0) or ""
+	return (path ~= "" and path or vim.fn.getcwd():gsub("[^/]$", "%1/")):gsub("^.-://", "")
+end
+
+vim.g.getdir = function(path)
+	return vim.g.getfile(path):match(".*/")
+end
+
+vim.g.getparent = function(path)
+	return vim.g.getfile(path):match("(.*/)[^$]") or "/"
+end
 
 vim.g.arista =
 	vim.loop.fs_stat("/usr/share/vim/vimfiles/arista.vim") and
