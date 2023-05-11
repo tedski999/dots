@@ -1,9 +1,14 @@
+-- VCS number column indicators
 return {
 	"mhinz/vim-signify",
 	event = "VeryLazy",
 	keys = { { "<leader>gd", "<cmd>SignifyHunkDiff<cr>" } },
 	config = function()
 		vim.g.signify_number_highlight = 1
+		vim.keymap.set("n", "[d", "<plug>(signify-prev-hunk)")
+		vim.keymap.set("n", "]d", "<plug>(signify-next-hunk)")
+		vim.keymap.set("n", "[D", "9999<plug>(signify-prev-hunk)")
+		vim.keymap.set("n", "]D", "9999<plug>(signify-next-hunk)")
 		vim.cmd("SignifyEnableAll")
 		if vim.g.arista then
 			local vcs_cmds = vim.g.signify_vcs_cmds or {}

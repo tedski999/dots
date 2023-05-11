@@ -1,3 +1,4 @@
+-- Comment mappings
 return {
 	"numToStr/Comment.nvim",
 	opts = {},

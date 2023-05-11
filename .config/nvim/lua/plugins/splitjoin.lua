@@ -1,3 +1,5 @@
+-- Quickly join and split lines
+-- TODO(3): try AndrewRadev/splitjoin.vim
 return {
 	"echasnovski/mini.splitjoin",
 	version = "*",

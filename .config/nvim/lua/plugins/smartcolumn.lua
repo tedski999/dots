@@ -1,3 +1,4 @@
+-- Hide colorcolumn unless passed
 return {
 	"m4xshen/smartcolumn.nvim",
 	lazy = false,

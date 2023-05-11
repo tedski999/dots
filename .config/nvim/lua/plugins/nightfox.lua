@@ -1,3 +1,5 @@
+-- Colorscheme
+-- TODO(2, aesthetics): replace with my own
 
 local function config()
 	local f = require("nightfox")
@@ -51,9 +53,9 @@ local function config()
 				PmenuKindSel = { bg = "palette.sel1", fg = "palette.blue" },
 				PmenuExtra = { bg = "palette.sel0", fg = "palette.fg2" },
 				PmenuExtraSel = { bg = "palette.sel1", fg = "palette.fg2" },
-				TabLine     = { bg = "palette.bg1", fg = "palette.fg1" },
-				TabLineSel  = { bg = "palette.bg2", fg = "palette.fg2" },
-				TabLineFill = { bg = "palette.bg0", fg = "palette.fg2" },
+				TabLine     = { bg = "palette.bg1", fg = "palette.fg2", gui = "none" },
+				TabLineSel  = { bg = "palette.bg2", fg = "palette.fg1", gui = "none" },
+				TabLineFill = { bg = "palette.bg0", fg = "palette.fg2", gui = "none" },
 			}
 		}
 	})

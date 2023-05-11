@@ -1,3 +1,4 @@
+-- Visualise undo history
 -- TODO(3, undo): issue #129, closing with :q causes bork
 return {
 	"mbbill/undotree",

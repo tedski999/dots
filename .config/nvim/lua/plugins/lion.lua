@@ -1,3 +1,4 @@
+-- Align text
 return {
 	"tommcdo/vim-lion",
 	config = function() vim.g.lion_squeeze_spaces = 1 end,

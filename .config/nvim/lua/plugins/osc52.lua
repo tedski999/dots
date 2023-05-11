@@ -1,3 +1,4 @@
+-- Yank straight to system using OSC52
 return {
 	"ojroques/nvim-osc52",
 	event = "TextYankPost",

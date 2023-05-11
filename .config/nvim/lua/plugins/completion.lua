@@ -1,3 +1,4 @@
+-- Autocompletion
 
 local function normalise_string(str, max)
 	local str = (str or ""):match("[!-~].*[!-~]") or ""

@@ -1,8 +1,11 @@
 local km = vim.keymap.set
+local uc = vim.api.nvim_create_user_command
 
+-- Return the alphabetically previous and next files
+-- TODO(1): a little borked
 local function prev_and_next_file(file)
-	file = vim.g.getfile(file):gsub("([^^])/$", "%1")
-	local prev, dir = file, vim.g.getparent(file)
+	file = vim.g.getfile():gsub("/$", "")
+	local prev, dir = file, file:match(".*/") or "/"
 	local files = (vim.fn.glob(dir..".[^.]*").."\n"..vim.fn.glob(dir.."*")):gmatch("[^\n]+")
 	for next in files do
 		if next == file then return prev, files() or next
@@ -21,6 +24,7 @@ km("n", "<leader>w", "<cmd>w<cr>",  { nowait = true })
 km("n", "<leader>W", "<cmd>wq<cr>", { nowait = true })
 km("n", "<leader>q", "<cmd>q<cr>",  { nowait = true })
 km("n", "<leader>Q", "<cmd>qa<cr>", { nowait = true })
+uc("W", ":w !>/dev/null sudo tee %", {})
 -- Split lines at cursor, opposite of <s-j>
 km("n", "<c-j>", "m`i<cr><esc>``")
 -- Terminal shortcuts
@@ -53,10 +57,10 @@ km("n", "]f", function() _, file = prev_and_next_file(); vim.cmd("edit "..file) 
 km("n", "[F", function() local cur, old = vim.g.getfile(); while cur ~= old do old = cur; cur, _ = prev_and_next_file(cur) end vim.cmd("edit "..cur) end)
 km("n", "]F", function() local cur, old = vim.g.getfile(); while cur ~= old do old = cur; _, cur = prev_and_next_file(cur) end vim.cmd("edit "..cur) end)
 -- Quickfix
-km("n", "[q", "<cmd>cprevious<cr>")
-km("n", "]q", "<cmd>cnext<cr>")
-km("n", "[Q", "<cmd>cfirst<cr>")
-km("n", "]Q", "<cmd>clast<cr>")
+km("n", "[c", "<cmd>cprevious<cr>")
+km("n", "]c", "<cmd>cnext<cr>")
+km("n", "[C", "<cmd>cfirst<cr>")
+km("n", "]C", "<cmd>clast<cr>")
 -- Toggles
 km("n", "yo", "")
 km("n", "yot", "<cmd>set expandtab! expandtab?<cr>")
@@ -67,9 +71,9 @@ km("n", "yoi", "<cmd>set ignorecase! ignorecase?<cr>")
 km("n", "yol", "<cmd>set list! list?<cr>")
 km("n", "yoz", "<cmd>set spell! spell?<cr>")
 -- Git
-vim.api.nvim_create_user_command("Gcommit", "belowright split | exec 'terminal git commit <args>' | startinsert", { nargs = "*" })
-vim.api.nvim_create_user_command("Gpull", "belowright split | terminal echo 'Pulling...' && git pull <args>", { nargs = "*" })
-vim.api.nvim_create_user_command("Gpush", "belowright split | terminal echo 'Pushing...' && git push <args>", { nargs = "*" })
+uc("Gcommit", "belowright split | exec 'terminal git commit <args>' | startinsert", { nargs = "*" })
+uc("Gpull", "belowright split | terminal echo 'Pulling...' && git pull <args>", { nargs = "*" })
+uc("Gpush", "belowright split | terminal echo 'Pushing...' && git push <args>", { nargs = "*" })
 km("n", "<leader>gc", "<cmd>Gcommit<cr>")
 km("n", "<leader>gp", "<cmd>Gpull<cr>")
 km("n", "<leader>gP", "<cmd>Gpush<cr>")

@@ -1,6 +1,8 @@
+-- Preconfigured native LSP configs
 return {
 	"neovim/nvim-lspconfig",
 	lazy = false,
+	enabled = false,
 	config = function()
 		local lsp = require("lspconfig")
 		require('lspconfig.ui.windows').default_options.border = vim.g.border_chars

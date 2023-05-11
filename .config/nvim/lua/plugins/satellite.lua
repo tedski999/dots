@@ -1,4 +1,4 @@
--- TODO(3, next): checkout nvim-scrollbar
+-- Scrollbar
 return {
 	"lewis6991/satellite.nvim",
 	event = "VeryLazy",
@@ -8,7 +8,7 @@ return {
 			search = { enable = true },
 			diagnostic = { enable = true },
 			gitsigns = { enable = false },
-			marks = { enable = true }
+			marks = { enable = false }
 		}
 	}
 }

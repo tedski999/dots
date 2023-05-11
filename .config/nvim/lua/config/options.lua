@@ -30,11 +30,12 @@ o.foldmethod = "indent"                          -- Fold based on indent
 o.foldlevelstart = 20                            -- ...and start with everything open
 o.wrap = false                                   -- Don't wrap
 o.lazyredraw = true                              -- Redraw only after commands have completed
-o.termguicolors = true                           -- Enable true colors
+o.termguicolors = true                           -- Enable true colors and gui cursor
+vim.opt.guicursor = "n-v-c-sm:block,i-ci-ve:ver25,r-cr-o:hor20,a:blinkwait400-blinkoff400-blinkon400"
 o.ignorecase = true                              -- Ignore case when searching...
 o.smartcase = true                               -- ...except for searching with uppercase characters
 o.complete = ".,w,kspell"                        -- Complete menu contents
-o.completeopt = "menu,menuone,noinsert,noselect" -- Complete menu functionality
+o.completeopt = "menu,menuone,noinsert"          -- Complete menu functionality
 o.pumheight = 8                                  -- Limit complete menu height
 o.spell = true                                   -- Enable spelling by default
 o.spelloptions = "camel"                         -- Enable CamelCase word spelling
@@ -43,10 +44,12 @@ o.spellcapcheck = ""                             -- Don't care about capitalisat
 o.dictionary = "/usr/share/dict/words"           -- Dictionary file
 o.shada = "!,'100,<50,s100,h,r/media"            -- Specify removable media for shada
 o.undolevels = 2048                              -- More undo space
+o.hidden = false                                 -- Don't let modified buffers hide
 o.wildmode = "longest:full,full"                 -- Match common and show wildmenu
 o.wildoptions = "fuzzy,pum"                      -- Wildmenu fuzzy matching and ins-completion menu
 o.wildignorecase = true                          -- Don't care about wildmenu file capitalisation
 
+-- Arista is a bit weird like that
 if vim.g.arista then
 	o.shiftwidth = 3
 	o.expandtab = true

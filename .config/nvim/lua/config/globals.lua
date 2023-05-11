@@ -1,13 +1,8 @@
 vim.g.mapleader = " "
 
+-- Consistent aesthetics
 vim.g.border_type = "sharp"
 vim.g.border_chars = { "┌", "─", "┐", "│", "┘", "─", "└", "│" }
-
-vim.g.netrw_disthistmax = 0
-
-vim.g.myfiletypefile = vim.fn.stdpath("config").."/ftplugin/ftplugin.vim"
-vim.g.mysyntaxfile = vim.fn.stdpath("config").."/syntax/syntax.vim"
-
 vim.lsp.protocol.CompletionItemKind = {
 	'""', ".f", "fn", "()", ".x",
 	"xy", "{}", "{}", "[]", ".p",
@@ -16,6 +11,11 @@ vim.lsp.protocol.CompletionItemKind = {
 	"#x", "{}", "ev", "++", "<>"
 }
 
+-- Provide method to apply ftplugin and syntax settings to all filetypes
+vim.g.myfiletypefile = vim.fn.stdpath("config").."/ftplugin/ftplugin.vim"
+vim.g.mysyntaxfile = vim.fn.stdpath("config").."/syntax/syntax.vim"
+
+-- Quickly switch between alternative files by extensions
 vim.g.altfile_map = {
 	[".c"] = { ".h", ".hpp" },
 	[".h"] = { ".c", ".cpp" },
@@ -25,29 +25,22 @@ vim.g.altfile_map = {
 	[".frag.glsl"] = { ".vert.glsl" }
 }
 
+-- -- Get full path of path or current buffer
 vim.g.getfile = function(path)
-	path = path or vim.api.nvim_buf_get_name(0) or ""
-	return (path ~= "" and path or vim.fn.getcwd():gsub("[^/]$", "%1/")):gsub("^.-://", "")
+	return vim.fn.fnamemodify(path or vim.api.nvim_buf_get_name(0), ":p")
 end
 
-vim.g.getdir = function(path)
-	return vim.g.getfile(path):match(".*/")
-end
-
-vim.g.getparent = function(path)
-	return vim.g.getfile(path):match("(.*/)[^$]") or "/"
-end
-
-vim.g.arista =
-	vim.loop.fs_stat("/usr/share/vim/vimfiles/arista.vim") and
-	vim.fn.getcwd():find("^/src") ~= nil
-
+-- Is this an Arista environment?
+vim.g.arista = vim.loop.fs_stat("/usr/share/vim/vimfiles/arista.vim") and vim.fn.getcwd():find("^/src") ~= nil
 if vim.g.arista then
 	vim.api.nvim_echo({ { "Note: Arista-specifics have been enabled for this Neovim instance", "MoreMsg" } }, false, {})
 
+	-- Always rooted at /src
 	vim.fn.chdir("/src")
-	vim.g.a4_auto_edit = 0
+
+	-- Source arista.vim but override A4edit and A4revert
 	vim.cmd([[
+		g:a4_auto_edit = 0
 		source /usr/share/vim/vimfiles/arista.vim
 		function! A4edit()
 			if strlen(glob(expand('%')))
@@ -66,6 +59,7 @@ if vim.g.arista then
 	vim.api.nvim_create_user_command("Aedit", "A4edit", {})
 	vim.api.nvim_create_user_command("Arevert", "A4revert", {})
 
+	-- Add .tac and .tin to altfiles
 	local altfile_map = vim.g.altfile_map or {}
 	altfile_map[".tac"] = { ".tin", ".cpp", ".c" }
 	altfile_map[".tin"] = { ".tac", ".hpp", ".h" }
