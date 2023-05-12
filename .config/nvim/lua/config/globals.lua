@@ -40,7 +40,7 @@ if vim.g.arista then
 
 	-- Source arista.vim but override A4edit and A4revert
 	vim.cmd([[
-		g:a4_auto_edit = 0
+		let g:a4_auto_edit = 0
 		source /usr/share/vim/vimfiles/arista.vim
 		function! A4edit()
 			if strlen(glob(expand('%')))

@@ -30,8 +30,10 @@ vim.api.nvim_create_autocmd("CursorMoved", { callback = function()
 end })
 vim.api.nvim_create_autocmd("TextYankPost", { callback = function()
 	vim.highlight.on_yank({ higroup = "Visual", timeout = 200 })
-	vim.fn.setpos(".", vim.v.event.operator == "y" and vim.g.cursor_pos)
-	if vim.g.winview then vim.fn.winrestview(vim.g.winview) end
+	if vim.v.event.operator == "y" and vim.g.winview then
+		vim.fn.setpos(".", vim.g.cursor_pos)
+		vim.fn.winrestview(vim.g.winview)
+	end
 end })
 
 -- Remember last cursor position
