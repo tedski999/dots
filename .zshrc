@@ -15,7 +15,6 @@ setopt glob_complete complete_in_word
 # Aliases
 alias sudo="sudo --preserve-env env PATH=$PATH "
 alias v="nvim"
-alias r="ranger"
 alias p="python3"
 alias c="cargo"
 alias g="git"
@@ -68,8 +67,10 @@ autoload -U select-word-style
 select-word-style bash
 
 # GPG+SSH
-export SSH_AUTH_SOCK="$(gpgconf --list-dirs agent-ssh-socket)"
-(gpgconf --launch gpg-agent &)
+hash gpgconf 2>/dev/null && {
+	export SSH_AUTH_SOCK="$(gpgconf --list-dirs agent-ssh-socket)"
+	(gpgconf --launch gpg-agent &)
+}
 
 # Pager
 eval "$(dircolors -b)"
@@ -92,11 +93,11 @@ export FZF_ALT_C_COMMAND="fdfind --type=d --color=never --hidden --strip-cwd-pre
 [[ -f "$HOME/.local/opt/fzf/key-bindings.zsh" ]] && source "$HOME/.local/opt/fzf/key-bindings.zsh"
 [[ -f "$HOME/.local/opt/fzf/completion.zsh" ]] && source "$HOME/.local/opt/fzf/completion.zsh"
 
-# zoxide
-eval "$(zoxide init zsh)"
+# zsh-completions
+[[ -f "$HOME/.local/opt/zsh-completions/zsh-completions-0.34.0/zsh-completions.plugin.zsh" ]] && source "$HOME/.local/opt/zsh-completions/zsh-completions-0.34.0/zsh-completions.plugin.zsh"
 
 # arzsh-complete
-export ARZSH_COMP_UNSAFE=1
+[[ -f "$HOME/.local/opt/arzsh-complete/arzsh-complete.plugin.zsh" ]] && source "$HOME/.local/opt/arzsh-complete/arzsh-complete.plugin.zsh" && export ARZSH_COMP_UNSAFE=1
 
 # Arista Shell
 ash() { eval 2>/dev/null mosh -a -o --experimental-remote-ip=remote us260 -- tmux new ${@:+-c -- a4c shell $@} }
