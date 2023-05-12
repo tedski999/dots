@@ -16,7 +16,7 @@
 	a = add
 	c = commit
 	cm = commit --message
-	ph = push
+	ps = push
 	pl = pull
 	d = diff
 	ds = diff --staged
