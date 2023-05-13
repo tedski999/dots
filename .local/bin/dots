@@ -94,15 +94,6 @@ msung_mosh() {
 	:
 }
 
-#msung_hyprland() {
-#	rm -rf "$opt/hyprland" && mkdir -p "$opt/hyprland"
-#	curl -L https://github.com/hyprwm/Hyprland/releases/download/v0.25.0/v0.25.0.tar.gz | tar -xzf - -C "$opt/hyprland"
-#	$sudo ln -sf "$opt/hyprland/hyprland/Hyprland" "/usr/bin/Hyprland"
-#	$sudo ln -sf "$opt/hyprland/hyprland/hyprctl" "/usr/bin/hyprctl"
-#	$sudo ln -sf "$opt/hyprland/hyprland/libwlroots.so.12032" "/usr/lib/libwlroots.so.12032"
-#	$sudo ln -sf "$opt/hyprland/hyprland/examples/hyprland.desktop" "/usr/share/wayland-sessions/"
-#}
-
 msung_tui() {
 	echo "${sc}Installing msung tui packages...${rc}"
 	for package in zsh nvim rust fzf rg bat fd exa mosh; do
@@ -111,16 +102,304 @@ msung_tui() {
 	echo "${sc}Finished installing msung tui packages.${rc}"
 }
 
+msung_popshell() {
+	$sudo apt-get install --yes git make node-typescript
+	git clone https://github.com/pop-os/shell "$tmp/pop"
+	make --directory "$tmp/pop" depcheck compile install
+}
+
+msung_unite() {
+	$sudo apt-get install --yes git
+	rm -rf "$ext/unite@hardpixel.eu"
+	git clone https://github.com/hardpixel/unite-shell "$tmp/unite"
+	mv "$tmp/unite/unite@hardpixel.eu" "$ext/unite@hardpixel.eu"
+}
+
+msung_nooverview() {
+	$sudo apt-get install --yes git
+	rm -rf "$ext/no-overview@fthx"
+	git clone https://github.com/fthx/no-overview.git "$ext/no-overview@fthx"
+}
+
+msung_drawonyouscreen2() {
+	$sudo apt-get install --yes git
+	rm -rf "$ext/draw-on-your-screen2@zhrexl.github.com"
+	git clone https://github.com/zhrexl/DrawOnYourScreen2.git "$ext/draw-on-your-screen2@zhrexl.github.com"
+	git --git-dir "$ext/draw-on-your-screen2@zhrexl.github.com/.git" --work-tree "$ext/draw-on-your-screen2@zhrexl.github.com" reset --hard 2615c7a
+}
+
 msung_gui() {
 	echo "${sc}Installing msung gui packages...${rc}"
 
-	# TODO: waybar and mako-notifier are redundant if going with sway
-	# should look into river or maybe even possibly hyprland
-	$sudo apt-get install --yes software-properties-common
-	$sudo add-apt-repository --yes ppa:agornostal/ulauncher
-	$sudo apt-get install --yes \
-		sway waybar ulauncher mako-notifier clipman \
-		vieb alacritty fonts-terminus
+	$sudo apt-get install --yes fonts-terminus alacritty vieb
+
+	ext="$XDG_DATA_HOME/gnome-shell/extensions"
+	mkdir -p "$ext"
+	for package in popshell unite nooverview drawonyourscreen2; do
+		"msung_$package"
+	done
+
+	# TODO: mpv config
+	# TODO: clipboard manager
+
+	echo "\
+[org/gnome/desktop/a11y/applications]
+screen-magnifier-enabled=false
+[org/gnome/desktop/a11y/magnifier]
+cross-hairs-clip=false
+invert-lightness=false
+lens-mode=true
+mag-factor=1.0
+mouse-tracking='proportional'
+scroll-at-edges=true
+show-cross-hairs=false
+[org/gnome/desktop/background]
+color-shading-type='solid'
+picture-uri='none'
+picture-uri-dark='none'
+primary-color='#1c1c1c'
+secondary-color='#000000000000'
+[org/gnome/desktop/input-sources]
+per-window=false
+sources=[('xkb', 'gb')]
+xkb-options=['caps:escape']
+[org/gnome/desktop/interface]
+clock-show-date=false
+clock-show-weekday=true
+color-scheme='prefer-dark'
+font-hinting='slight'
+gtk-theme='Yaru-blue-dark'
+icon-theme='Yaru-blue'
+[org/gnome/desktop/lockdown]
+disable-log-out=false
+disable-user-switching=true
+[org/gnome/desktop/peripherals/keyboard]
+delay=uint32 250
+[org/gnome/desktop/peripherals/touchpad]
+two-finger-scrolling-enabled=true
+[org/gnome/desktop/screensaver]
+color-shading-type='solid'
+picture-uri='none'
+primary-color='#1c1c1c'
+secondary-color='#000000000000'
+[org/gnome/desktop/session]
+idle-delay=uint32 600
+[org/gnome/desktop/wm/keybindings]
+activate-window-menu=@as []
+begin-move=@as []
+begin-resize=@as []
+close=['<Super>q']
+cycle-group=@as []
+cycle-group-backward=@as []
+cycle-panels=@as []
+cycle-panels-backward=@as []
+cycle-windows=@as []
+cycle-windows-backward=@as []
+maximize=@as []
+minimize=@as []
+move-to-monitor-down=@as []
+move-to-monitor-left=@as []
+move-to-monitor-right=@as []
+move-to-monitor-up=@as []
+move-to-workspace-1=['<Shift><Super>1']
+move-to-workspace-10=['<Shift><Super>0']
+move-to-workspace-11=@as []
+move-to-workspace-12=@as []
+move-to-workspace-2=['<Shift><Super>2']
+move-to-workspace-3=['<Shift><Super>3']
+move-to-workspace-4=['<Shift><Super>4']
+move-to-workspace-5=['<Shift><Super>5']
+move-to-workspace-6=['<Shift><Super>6']
+move-to-workspace-7=['<Shift><Super>7']
+move-to-workspace-8=['<Shift><Super>8']
+move-to-workspace-9=['<Shift><Super>9']
+move-to-workspace-last=@as []
+move-to-workspace-left=['<Primary><Shift><Super>h']
+move-to-workspace-right=['<Primary><Shift><Super>l']
+panel-run-dialog=@as []
+show-desktop=@as []
+switch-applications=@as []
+switch-applications-backward=@as []
+switch-group=@as []
+switch-group-backward=@as []
+switch-input-source=@as []
+switch-input-source-backward=@as []
+switch-panels=@as []
+switch-panels-backward=@as []
+switch-to-workspace-1=['<Super>1']
+switch-to-workspace-10=['<Super>0']
+switch-to-workspace-11=@as []
+switch-to-workspace-12=@as []
+switch-to-workspace-2=['<Super>2']
+switch-to-workspace-3=['<Super>3']
+switch-to-workspace-4=['<Super>4']
+switch-to-workspace-5=['<Super>5']
+switch-to-workspace-6=['<Super>6']
+switch-to-workspace-7=['<Super>7']
+switch-to-workspace-8=['<Super>8']
+switch-to-workspace-9=['<Super>9']
+switch-to-workspace-last=@as []
+switch-to-workspace-left=['<Primary><Super>h']
+switch-to-workspace-right=['<Primary><Super>l']
+switch-windows=['<Super>Tab']
+switch-windows-backward=['<Shift><Super>Tab']
+toggle-fullscreen=['<Super>m']
+toggle-maximized=@as []
+unmaximize=@as []
+[org/gnome/desktop/wm/preferences]
+action-middle-click-titlebar='none'
+action-right-click-titlebar='none'
+button-layout=':maximize,close'
+resize-with-right-button=true
+[org/gnome/mutter]
+attach-modal-dialogs=false
+center-new-windows=false
+overlay-key='Super_R'
+workspaces-only-on-primary=false
+[org/gnome/mutter/keybindings]
+toggle-tiled-left=@as []
+toggle-tiled-right=@as []
+switch-monitor=@as []
+[org/gnome/settings-daemon/plugins/media-keys]
+area-screenshot=['Print']
+area-screenshot-clip=@as []
+custom-keybindings=['/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/', '/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom1/', '/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom2/', '/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom3/']
+help=@as []
+home=@as []
+logout=['<Primary><Super>Escape']
+magnifier=['<Shift><Super>plus']
+magnifier-zoom-in=['<Super>equal']
+magnifier-zoom-out=['<Super>minus']
+rotate-video-lock-static=@as []
+screencast=['<Shift>Print']
+screenreader=@as []
+screensaver=['<Super>Escape']
+screenshot=@as []
+screenshot-clip=@as []
+terminal=['<Super>Return']
+window-screenshot=@as []
+window-screenshot-clip=@as []
+www=['<Super>w']
+[org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0]
+binding='<Shift><Super>Escape'
+command='systemctl suspend'
+name='Suspend'
+[org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom1]
+binding='<Super>d'
+command='discord'
+name='Discord'
+[org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom2]
+binding='<Super>s'
+command='steam'
+name='Steam'
+[org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom3]
+binding='<Primary><Shift><Super>Escape'
+command='gnome-session-quit --power-off'
+name='Power Off'
+[org/gnome/settings-daemon/plugins/power]
+power-button-action='suspend'
+sleep-inactive-ac-timeout=1800
+sleep-inactive-ac-type='suspend'
+sleep-inactive-battery-timeout=1800
+[org/gnome/shell]
+app-picker-view=uint32 1
+disable-user-extensions=false
+disabled-extensions=['ubuntu-dock@ubuntu.com', 'ubuntu-appindicators@ubuntu.com', 'ding@rastersoft.com']
+enabled-extensions=['pop-shell@system76.com', 'unite@hardpixel.eu', 'no-overview@fthx', 'draw-on-your-screen2@zhrexl.github.com']
+favorite-apps=@as []
+had-bluetooth-devices-setup=true
+welcome-dialog-last-shown-version='42.5'
+[org/gnome/shell/app-switcher]
+current-workspace-only=false
+[org/gnome/shell/extensions/draw-on-your-screen]
+drawing-on-desktop=false
+erase-drawings=['<Control><Super>p']
+indicator-disabled=false
+osd-disabled=false
+toggle-drawing=['<Super>p']
+toggle-modal=['<Shift><Super>p']
+[org/gnome/shell/extensions/pop-shell]
+activate-launcher=@as []
+active-hint-border-radius=uint32 1
+active-hint=true
+focus-down=['<Super>j']
+focus-left=['<Super>h']
+focus-right=['<Super>l']
+focus-up=['<Super>k']
+gap-inner=uint32 1
+gap-outer=uint32 1
+hint-color-rgba='rgba(255,255,255,0.25)'
+management-orientation=@as []
+mouse-cursor-follows-active-window=false
+pop-monitor-down=@as []
+pop-monitor-left=@as []
+pop-monitor-right=@as []
+pop-monitor-up=@as []
+pop-workspace-down=@as []
+pop-workspace-left=@as []
+pop-workspace-right=@as []
+pop-workspace-up=@as []
+show-skip-taskbar=false
+show-title=false
+smart-gaps=false
+snap-to-grid=false
+stacking-with-mouse=false
+tile-accept=['r', 'Return', 'Escape']
+tile-by-default=true
+tile-enter=['<Super>r']
+tile-move-down=@as []
+tile-move-down-global=['<Shift><Super>j']
+tile-move-left=@as []
+tile-move-left-global=['<Shift><Super>h']
+tile-move-right=@as []
+tile-move-right-global=['<Shift><Super>l']
+tile-move-up=@as []
+tile-move-up-global=['<Shift><Super>k']
+tile-reject=@as []
+tile-resize-down=['j']
+tile-resize-left=['h']
+tile-resize-right=['l']
+tile-resize-up=['k']
+tile-swap-down=@as []
+tile-swap-left=@as []
+tile-swap-right=@as []
+tile-swap-up=@as []
+toggle-floating=['<Super>f']
+toggle-stacking-global=@as []
+[org/gnome/shell/extensions/unite]
+app-menu-ellipsize-mode='end'
+app-menu-max-width=0
+desktop-name-text=''
+extend-left-box=true
+greyscale-tray-icons=false
+hide-activities-button='always'
+hide-app-menu-icon=false
+hide-dropdown-arrows=true
+hide-window-titlebars='always'
+reduce-panel-spacing=true
+show-desktop-name=true
+show-legacy-tray=true
+show-window-buttons='never'
+show-window-title='always'
+window-buttons-placement='auto'
+[org/gnome/shell/keybindings]
+focus-active-notification=['<Super>n']
+open-application-menu=@as []
+screenshot=@as []
+screenshot-window=@as []
+show-screen-recording-ui=@as []
+switch-to-application-1=@as []
+switch-to-application-2=@as []
+switch-to-application-3=@as []
+switch-to-application-4=@as []
+switch-to-application-5=@as []
+switch-to-application-6=@as []
+switch-to-application-7=@as []
+switch-to-application-8=@as []
+switch-to-application-9=@as []
+toggle-application-view=@as []
+toggle-message-tray=['<Shift><Super>n']
+toggle-overview=['<Super>space']" | dconf load /
 
 	echo "${sc}Finished installing msung gui packages.${rc}"
 }
@@ -196,8 +475,10 @@ mkdir -p "$root/info"
 !/.config/alacritty
 !/.config/bat
 !/.config/git
+!/.config/mpv
 !/.config/npm
 !/.config/nvim
+!/.config/sxiv
 !/.config/tmux
 !/.config/wget
 !/.config/mimeapps.list
