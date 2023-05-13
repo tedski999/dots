@@ -49,7 +49,6 @@ msung_rust() {
 	. "$CARGO_HOME/env"
 	rustup completions zsh > "$RUSTUP_HOME/_rustup"
 	ln -sf "$RUSTUP_HOME/_rustup" "$cmp/_rustup"
-	# TODO: not working
 	ln -sf "$RUSTUP_HOME/toolchains/stable-x86_64-unknown-linux-gnu/share/zsh/site-functions/_cargo" "$cmp/_cargo"
 	ln -sf "$RUSTUP_HOME/toolchains/stable-x86_64-unknown-linux-gnu/share/man/man1/"* "$man/man1/"
 }
@@ -77,7 +76,6 @@ msung_bat() {
 	curl -L https://github.com/sharkdp/bat/releases/download/v0.23.0/bat-v0.23.0-x86_64-unknown-linux-musl.tar.gz | tar -xzf - -C "$opt/bat"
 	ln -sf "$opt/bat/bat-v0.23.0-x86_64-unknown-linux-musl/bat" "$bin/bat"
 	ln -sf "$opt/bat/bat-v0.23.0-x86_64-unknown-linux-musl/bat.1" "$man/man1/bat.1"
-	# TODO: not working
 	ln -sf "$opt/bat/bat-v0.23.0-x86_64-unknown-linux-musl/autocomplete/bat.zsh" "$cmp/_bat"
 }
 
@@ -112,6 +110,7 @@ msung_tui() {
 	for package in zsh nvim rust fzf rg bat fd exa mosh; do
 		"msung_$package"
 	done
+	rm -f "$XDG_CACHE_HOME/zcompdump"
 	echo "${sc}Finished installing msung tui packages.${rc}"
 }
 
