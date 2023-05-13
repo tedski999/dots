@@ -98,11 +98,18 @@ msung_exa() {
 }
 
 msung_mosh() {
-	# TODO: mosh
-	# download 1.4.0 source
-	# patch with #1167 Improve cursor style handling
-	# build and install
-	:
+	hash apt-get || return
+	rm -rf "$opt/mosh" && mkdir -p "$opt/mosh"
+	$sudo apt-get install --yes patch build-essential protobuf-compiler libprotobuf-dev pkg-config libutempter-dev zlib1g-dev libncurses5-dev libssl-dev
+	curl -L https://github.com/mobile-shell/mosh/archive/refs/tags/mosh-1.4.0.tar.gz | tar -xzf - -C "$opt/mosh"
+	curl -L https://github.com/mobile-shell/mosh/pull/1167.diff | patch -p1 -d "$opt/mosh/mosh-mosh-1.4.0"
+	cd "$opt/mosh/mosh-mosh-1.4.0" && ./autogen.sh && ./configure && make; cd -
+	ln -sf "$opt/mosh/mosh-mosh-1.4.0/scripts/mosh" "$bin/mosh"
+	ln -sf "$opt/mosh/mosh-mosh-1.4.0/src/frontend/mosh-client" "$bin/mosh-client"
+	ln -sf "$opt/mosh/mosh-mosh-1.4.0/src/frontend/mosh-server" "$bin/mosh-server"
+	ln -sf "$opt/mosh/mosh-mosh-1.4.0/man/mosh.1" "$man/man1/mosh.1"
+	ln -sf "$opt/mosh/mosh-mosh-1.4.0/man/mosh-client.1" "$man/man1/mosh-client.1"
+	ln -sf "$opt/mosh/mosh-mosh-1.4.0/man/mosh-server.1" "$man/man1/mosh-server.1"
 }
 
 msung_tui() {
