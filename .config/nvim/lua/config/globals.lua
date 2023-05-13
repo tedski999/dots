@@ -30,6 +30,10 @@ vim.g.getfile = function(path)
 	return vim.fn.fnamemodify(path or vim.api.nvim_buf_get_name(0), ":p")
 end
 
+-- Disable some providers
+vim.g.loaded_ruby_provider = 0
+vim.g.loaded_perl_provider = 0
+
 -- Is this an Arista environment?
 vim.g.arista = vim.loop.fs_stat("/usr/share/vim/vimfiles/arista.vim") and vim.fn.getcwd():find("^/src") ~= nil
 if vim.g.arista then
