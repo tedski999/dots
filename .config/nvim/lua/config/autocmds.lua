@@ -54,6 +54,9 @@ vim.api.nvim_create_autocmd({ "VimEnter", "WinEnter", "FocusGained" }, { callbac
 	vim.opt.cursorline, vim.opt.cursorcolumn = true, true
 end })
 
+-- Keep universal formatoptions
+vim.api.nvim_create_autocmd("Filetype", { callback = function() vim.o.formatoptions = "rqlj" end })
+
 -- Don't indent Tac namespaces
 if vim.g.arista then
 	vim.cmd([[
