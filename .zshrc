@@ -24,6 +24,7 @@ alias ip="ip --color=auto"
 alias ls="exa -hs=name --group-directories-first"
 alias la="ls -la"
 alias d="dirs -v"
+alias man='man -M "$XDG_DATA_HOME/man:$(manpath -g)"'
 for i ({1..9}) alias "$i"="cd +$i"
 for i ({3..9}) alias "${(l:i::.:)}"="${(l:i-1::.:)};.."
 
