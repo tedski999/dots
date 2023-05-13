@@ -2,9 +2,8 @@ local km = vim.keymap.set
 local uc = vim.api.nvim_create_user_command
 
 -- Return the alphabetically previous and next files
--- TODO(1): a little borked
 local function prev_and_next_file(file)
-	file = vim.g.getfile():gsub("/$", "")
+	file = (file or vim.g.getfile()):gsub("/$", "")
 	local prev, dir = file, file:match(".*/") or "/"
 	local files = (vim.fn.glob(dir..".[^.]*").."\n"..vim.fn.glob(dir.."*")):gmatch("[^\n]+")
 	for next in files do
@@ -52,8 +51,8 @@ km("n", "]b", "<cmd>bnext<cr>")
 km("n", "[B", "<cmd>bfirst<cr>")
 km("n", "]B", "<cmd>blast<cr>")
 -- Files
-km("n", "[f", function() file, _ = prev_and_next_file(); vim.cmd("edit "..file) end)
-km("n", "]f", function() _, file = prev_and_next_file(); vim.cmd("edit "..file) end)
+km("n", "[f", function() vim.cmd("edit "..select(1, prev_and_next_file())) end)
+km("n", "]f", function() vim.cmd("edit "..select(2, prev_and_next_file())) end)
 km("n", "[F", function() local cur, old = vim.g.getfile(); while cur ~= old do old = cur; cur, _ = prev_and_next_file(cur) end vim.cmd("edit "..cur) end)
 km("n", "]F", function() local cur, old = vim.g.getfile(); while cur ~= old do old = cur; _, cur = prev_and_next_file(cur) end vim.cmd("edit "..cur) end)
 -- Quickfix
