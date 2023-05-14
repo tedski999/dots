@@ -143,8 +143,8 @@ return {
 				}
 			},
 			global_file_icons = false,
-			global_git_icons = false,
-			global_color_icons = false,
+			global_git_icons = true,
+			global_color_icons = true,
 			previewers = { man = { cmd = "man %s | col -bx" } },
 			files = { prompt = "> ", copen = "FzfLua quickfix", show_cwd_header = false },
 			grep = { prompt = "> ", copen = "FzfLua quickfix", show_cwd_header = false, no_header = true },
