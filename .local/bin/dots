@@ -13,12 +13,10 @@ rc='\033[0m'
 #########
 
 msung_zsh() {
-	# TODO: install zsh from source
-	# rm -rf "$opt/zsh" && mkdir -p "$opt/zsh"
-	# curl -L https://www.zsh.org/pub/zsh-5.9.tar.xz | tar -xJf - -C "$opt/zsh"
-	# cd "$opt/zsh/zsh-5.9" && ./configure --disable-dynamic && sed -i "s/link=no/link=static/g" "$opt/zsh/zsh-5.9/config.modules" && make; cd -
-	# ln -sf "$opt/zsh/zsh-5.9/Src/zsh" "$bin/zsh"
-	hash zsh || $sudo apt-get install --yes zsh
+	rm -rf "$opt/zsh" && mkdir -p "$opt/zsh"
+	sh -c "$(curl --retry 5 --retry-all-errors -fsSL https://raw.githubusercontent.com/romkatv/zsh-bin/master/install)" -- -d "$opt/zsh" -e no
+	ln -sf "$opt/zsh/bin/zsh" "$bin/zsh"
+	ln -sf "$opt/zsh/share/man/man1/"* "$man/man1/"
 
 	rm -rf "$opt/zsh-syntax-highlighting" && mkdir -p "$opt/zsh-syntax-highlighting"
 	curl --retry 5 --retry-all-errors -fsSL https://github.com/zsh-users/zsh-syntax-highlighting/archive/refs/heads/master.zip -o "$tmp/zsh-syntax-highlighting.zip"
