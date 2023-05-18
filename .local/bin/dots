@@ -21,12 +21,12 @@ msung_zsh() {
 	hash zsh || $sudo apt-get install --yes zsh
 
 	rm -rf "$opt/zsh-syntax-highlighting" && mkdir -p "$opt/zsh-syntax-highlighting"
-	curl -L https://github.com/zsh-users/zsh-syntax-highlighting/archive/refs/heads/master.zip -o "$tmp/zsh-syntax-highlighting.zip"
+	curl --retry 5 --retry-all-errors -fsSL https://github.com/zsh-users/zsh-syntax-highlighting/archive/refs/heads/master.zip -o "$tmp/zsh-syntax-highlighting.zip"
 	unzip "$tmp/zsh-syntax-highlighting.zip" -d "$opt/zsh-syntax-highlighting"
 
 	rm -rf "$opt/zsh-completions" && mkdir -p "$opt/zsh-completions"
-	curl -L https://github.com/zsh-users/zsh-completions/archive/refs/tags/0.34.0.tar.gz | tar -xzf - -C "$opt/zsh-completions"
-	ln -s "$opt/zsh-completions/zsh-completions-0.34.0/src/"* "$cmp/"
+	curl --retry 5 --retry-all-errors -fsSL https://github.com/zsh-users/zsh-completions/archive/refs/tags/0.34.0.tar.gz | tar -xzf - -C "$opt/zsh-completions"
+	ln -sf "$opt/zsh-completions/zsh-completions-0.34.0/src/"* "$cmp/"
 
 	rm -rf "$opt/arzsh-complete" && mkdir -p "$opt/arzsh-complete"
 	git clone https://gitlab.aristanetworks.com/kev/arzsh-complete.git "$opt/arzsh-complete" && ln -sf "$opt/arzsh-complete/"* "$cmp/" || :
@@ -34,7 +34,7 @@ msung_zsh() {
 
 msung_nvim() {
 	rm -rf "$opt/nvim" && mkdir -p "$opt/nvim"
-	curl -L https://github.com/neovim/neovim/releases/download/v0.9.0/nvim.appimage -o "$tmp/nvim.appimage"
+	curl --retry 5 --retry-all-errors -fsSL https://github.com/neovim/neovim/releases/download/v0.9.0/nvim.appimage -o "$tmp/nvim.appimage"
 	hash python3 pip3 && pip3 install pynvim
 	hash node npm && npm install -g neovim
 	chmod +x "$tmp/nvim.appimage"
@@ -46,7 +46,7 @@ msung_nvim() {
 
 msung_rust() {
 	rm -rf "$RUSTUP_HOME" "$CARGO_HOME"
-	curl https://sh.rustup.rs -sSf | sh -s -- --component rust-analyzer --component rust-src --no-modify-path -y
+	curl --retry 5 --retry-all-errors -fsSL https://sh.rustup.rs | sh -s -- --component rust-analyzer --component rust-src --no-modify-path -y
 	. "$CARGO_HOME/env"
 	rustup completions zsh > "$RUSTUP_HOME/_rustup"
 	ln -sf "$RUSTUP_HOME/_rustup" "$cmp/_rustup"
@@ -56,17 +56,17 @@ msung_rust() {
 
 msung_fzf() {
 	rm -rf "$opt/fzf" && mkdir -p "$opt/fzf"
-	curl -L https://github.com/junegunn/fzf/releases/download/0.40.0/fzf-0.40.0-linux_amd64.tar.gz | tar -xzf - -C "$opt/fzf"
-	curl -L https://raw.githubusercontent.com/junegunn/fzf/master/shell/completion.zsh -o "$opt/fzf/completion.zsh"
-	curl -L https://raw.githubusercontent.com/junegunn/fzf/master/shell/key-bindings.zsh -o "$opt/fzf/key-bindings.zsh"
-	curl -L https://raw.githubusercontent.com/junegunn/fzf/master/man/man1/fzf.1 -o "$opt/fzf/fzf.1"
+	curl --retry 5 --retry-all-errors -fsSL https://github.com/junegunn/fzf/releases/download/0.40.0/fzf-0.40.0-linux_amd64.tar.gz | tar -xzf - -C "$opt/fzf"
+	curl --retry 5 --retry-all-errors -fsSL https://raw.githubusercontent.com/junegunn/fzf/master/shell/completion.zsh -o "$opt/fzf/completion.zsh"
+	curl --retry 5 --retry-all-errors -fsSL https://raw.githubusercontent.com/junegunn/fzf/master/shell/key-bindings.zsh -o "$opt/fzf/key-bindings.zsh"
+	curl --retry 5 --retry-all-errors -fsSL https://raw.githubusercontent.com/junegunn/fzf/master/man/man1/fzf.1 -o "$opt/fzf/fzf.1"
 	ln -sf "$opt/fzf/fzf" "$bin/fzf"
 	ln -sf "$opt/fzf/fzf.1" "$man/man1/fzf.1"
 }
 
 msung_rg() {
 	rm -rf "$opt/rg" && mkdir -p "$opt/rg"
-	curl -L https://github.com/BurntSushi/ripgrep/releases/download/13.0.0/ripgrep-13.0.0-x86_64-unknown-linux-musl.tar.gz | tar -xzf - -C "$opt/rg"
+	curl --retry 5 --retry-all-errors -fsSL https://github.com/BurntSushi/ripgrep/releases/download/13.0.0/ripgrep-13.0.0-x86_64-unknown-linux-musl.tar.gz | tar -xzf - -C "$opt/rg"
 	ln -sf "$opt/rg/ripgrep-13.0.0-x86_64-unknown-linux-musl/rg" "$bin/rg"
 	ln -sf "$opt/rg/ripgrep-13.0.0-x86_64-unknown-linux-musl/doc/rg.1" "$man/man1/rg.1"
 	ln -sf "$opt/rg/ripgrep-13.0.0-x86_64-unknown-linux-musl/complete/_rg" "$cmp/_rg"
@@ -74,7 +74,7 @@ msung_rg() {
 
 msung_bat() {
 	rm -rf "$opt/bat" && mkdir -p "$opt/bat"
-	curl -L https://github.com/sharkdp/bat/releases/download/v0.23.0/bat-v0.23.0-x86_64-unknown-linux-musl.tar.gz | tar -xzf - -C "$opt/bat"
+	curl --retry 5 --retry-all-errors -fsSL https://github.com/sharkdp/bat/releases/download/v0.23.0/bat-v0.23.0-x86_64-unknown-linux-musl.tar.gz | tar -xzf - -C "$opt/bat"
 	ln -sf "$opt/bat/bat-v0.23.0-x86_64-unknown-linux-musl/bat" "$bin/bat"
 	ln -sf "$opt/bat/bat-v0.23.0-x86_64-unknown-linux-musl/bat.1" "$man/man1/bat.1"
 	ln -sf "$opt/bat/bat-v0.23.0-x86_64-unknown-linux-musl/autocomplete/bat.zsh" "$cmp/_bat"
@@ -82,7 +82,7 @@ msung_bat() {
 
 msung_fd() {
 	rm -rf "$opt/fd" && mkdir -p "$opt/fd"
-	curl -L https://github.com/sharkdp/fd/releases/download/v8.7.0/fd-v8.7.0-x86_64-unknown-linux-musl.tar.gz | tar -xzf - -C "$opt/fd"
+	curl --retry 5 --retry-all-errors -fsSL https://github.com/sharkdp/fd/releases/download/v8.7.0/fd-v8.7.0-x86_64-unknown-linux-musl.tar.gz | tar -xzf - -C "$opt/fd"
 	ln -sf "$opt/fd/fd-v8.7.0-x86_64-unknown-linux-musl/fd" "$bin/fd"
 	ln -sf "$opt/fd/fd-v8.7.0-x86_64-unknown-linux-musl/fd.1" "$man/man1/fd.1"
 	ln -sf "$opt/fd/fd-v8.7.0-x86_64-unknown-linux-musl/autocomplete/_fd" "$cmp/_fd"
@@ -90,7 +90,7 @@ msung_fd() {
 
 msung_exa() {
 	rm -rf "$opt/exa" && mkdir -p "$opt/exa"
-	curl -L https://github.com/ogham/exa/releases/download/v0.10.1/exa-linux-x86_64-musl-v0.10.1.zip -o "$tmp/exa.zip"
+	curl --retry 5 --retry-all-errors -fsSL https://github.com/ogham/exa/releases/download/v0.10.1/exa-linux-x86_64-musl-v0.10.1.zip -o "$tmp/exa.zip"
 	unzip "$tmp/exa.zip" -d "$opt/exa"
 	ln -sf "$opt/exa/bin/exa" "$bin/exa"
 	ln -sf "$opt/exa/man/exa.1" "$man/man1/exa.1"
@@ -100,7 +100,7 @@ msung_exa() {
 
 msung_btop() {
 	rm -rf "$opt/btop" && mkdir -p "$opt/btop"
-	curl -L https://github.com/aristocratos/btop/releases/download/v1.2.13/btop-x86_64-linux-musl.tbz | tar -xjf - -C  "$opt/btop"
+	curl --retry 5 --retry-all-errors -fsSL https://github.com/aristocratos/btop/releases/download/v1.2.13/btop-x86_64-linux-musl.tbz | tar -xjf - -C  "$opt/btop"
 	ln -sf "$opt/btop/btop/bin/btop" "$bin/btop"
 }
 
@@ -109,8 +109,8 @@ msung_mosh() {
 	rm -rf "$opt/mosh" && mkdir -p "$opt/mosh"
 	$sudo apt-get install --yes libprotobuf23 libutempter0 zlib1g libncurses5 libssl3
 	$sudo apt-get install --yes --mark-auto patch autoconf build-essential protobuf-compiler pkg-config libprotobuf-dev libutempter-dev zlib1g-dev libncurses5-dev libssl-dev
-	curl -L https://github.com/mobile-shell/mosh/archive/refs/tags/mosh-1.4.0.tar.gz | tar -xzf - -C "$opt/mosh"
-	curl -L https://github.com/mobile-shell/mosh/pull/1167.diff | patch -p1 -d "$opt/mosh/mosh-mosh-1.4.0"
+	curl --retry 5 --retry-all-errors -fsSL https://github.com/mobile-shell/mosh/archive/refs/tags/mosh-1.4.0.tar.gz | tar -xzf - -C "$opt/mosh"
+	curl --retry 5 --retry-all-errors -fsSL https://github.com/mobile-shell/mosh/pull/1167.diff | patch -p1 -d "$opt/mosh/mosh-mosh-1.4.0"
 	cd "$opt/mosh/mosh-mosh-1.4.0" && ./autogen.sh && ./configure && make; cd -
 	ln -sf "$opt/mosh/mosh-mosh-1.4.0/scripts/mosh" "$bin/mosh"
 	ln -sf "$opt/mosh/mosh-mosh-1.4.0/src/frontend/mosh-client" "$bin/mosh-client"
