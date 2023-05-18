@@ -52,5 +52,6 @@ o.wildignorecase = true                          -- Don't care about wildmenu fi
 -- Arista is a bit weird like that
 if vim.g.arista then
 	o.shiftwidth = 3
+	o.tabstop = 3
 	o.expandtab = true
 end

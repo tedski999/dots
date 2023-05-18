@@ -56,15 +56,3 @@ end })
 
 -- Keep universal formatoptions
 vim.api.nvim_create_autocmd("Filetype", { callback = function() vim.o.formatoptions = "rqlj" end })
-
--- Don't indent Tac namespaces
-if vim.g.arista then
-	vim.cmd([[
-		autocmd BufNewFile,BufRead *.tac setlocal indentexpr=TaccIndentOverrides()
-		function! TaccIndentOverrides()
-			let prevLine = getline(SkipTaccBlanksAndComments(v:lnum - 1))
-			if prevLine =~# 'Tac::Namespace\s*{\s*$' | return 0 | endif
-			return GetTaccIndent()
-		endfunction
-	]])
-end
