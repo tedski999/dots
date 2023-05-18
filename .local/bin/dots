@@ -107,7 +107,8 @@ msung_btop() {
 msung_mosh() {
 	hash apt-get || return
 	rm -rf "$opt/mosh" && mkdir -p "$opt/mosh"
-	$sudo apt-get install --yes patch build-essential protobuf-compiler libprotobuf-dev pkg-config libutempter-dev zlib1g-dev libncurses5-dev libssl-dev
+	$sudo apt-get install --yes libprotobuf23 libutempter0 zlib1g libncurses5 libssl3
+	$sudo apt-get install --yes --mark-auto patch autoconf build-essential protobuf-compiler pkg-config libprotobuf-dev libutempter-dev zlib1g-dev libncurses5-dev libssl-dev
 	curl -L https://github.com/mobile-shell/mosh/archive/refs/tags/mosh-1.4.0.tar.gz | tar -xzf - -C "$opt/mosh"
 	curl -L https://github.com/mobile-shell/mosh/pull/1167.diff | patch -p1 -d "$opt/mosh/mosh-mosh-1.4.0"
 	cd "$opt/mosh/mosh-mosh-1.4.0" && ./autogen.sh && ./configure && make; cd -
@@ -476,7 +477,7 @@ for target in "$@"; do
 	funcs="$funcs$func "
 done
 
-hash curl tar unzip || { $sudo apt-get update --yes && $sudo apt-get install --yes curl tar unzip; }
+hash curl tar unzip bzip2 || { $sudo apt-get update --yes && $sudo apt-get install --yes curl tar unzip bzip2; }
 
 [ -e "$root" ] || {
 	echo "${sc}$root missing, bootstrapping into $HOME...${rc}"
