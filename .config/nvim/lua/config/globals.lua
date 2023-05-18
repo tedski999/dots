@@ -60,8 +60,8 @@ if vim.g.arista then
 			endif
 		endfunction
 	]])
-	vim.api.nvim_create_user_command("Aedit", "A4edit", {})
-	vim.api.nvim_create_user_command("Arevert", "A4revert", {})
+	vim.api.nvim_create_user_command("Aedit", "call A4edit()", {})
+	vim.api.nvim_create_user_command("Arevert", "call A4revert()", {})
 
 	-- Add .tac and .tin to altfiles
 	local altfile_map = vim.g.altfile_map or {}
