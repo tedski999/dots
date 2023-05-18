@@ -26,9 +26,10 @@ msung_zsh() {
 
 	rm -rf "$opt/zsh-completions" && mkdir -p "$opt/zsh-completions"
 	curl -L https://github.com/zsh-users/zsh-completions/archive/refs/tags/0.34.0.tar.gz | tar -xzf - -C "$opt/zsh-completions"
+	ln -s "$opt/zsh-completions/zsh-completions-0.34.0/src/"* "$cmp/"
 
 	rm -rf "$opt/arzsh-complete" && mkdir -p "$opt/arzsh-complete"
-	git clone https://gitlab.aristanetworks.com/kev/arzsh-complete.git "$opt/arzsh-complete" || :
+	git clone https://gitlab.aristanetworks.com/kev/arzsh-complete.git "$opt/arzsh-complete" && ln -sf "$opt/arzsh-complete/"* "$cmp/" || :
 }
 
 msung_nvim() {
