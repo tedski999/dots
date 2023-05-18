@@ -94,10 +94,8 @@ export FZF_ALT_C_COMMAND="fdfind --type=d --color=never --hidden --strip-cwd-pre
 [[ -f "$HOME/.local/opt/fzf/key-bindings.zsh" ]] && source "$HOME/.local/opt/fzf/key-bindings.zsh"
 [[ -f "$HOME/.local/opt/fzf/completion.zsh" ]] && source "$HOME/.local/opt/fzf/completion.zsh"
 
-# arzsh-complete
-[[ -f "$HOME/.local/opt/arzsh-complete/arzsh-complete.plugin.zsh" ]] && source "$HOME/.local/opt/arzsh-complete/arzsh-complete.plugin.zsh" && export ARZSH_COMP_UNSAFE=1
-
 # Arista Shell
+export ARZSH_COMP_UNSAFE=1
 ash() { eval 2>/dev/null mosh -a -o --experimental-remote-ip=remote us260 -- tmux new ${@:+-c -- a4c shell $@} }
 _ash() { compadd "$(ssh us260 -- a4c ps -N)" }
 compdef _ash ash
