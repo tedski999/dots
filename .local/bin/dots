@@ -26,6 +26,9 @@ msung_zsh() {
 	curl --retry 5 --retry-all-errors -fsSL https://github.com/zsh-users/zsh-completions/archive/refs/tags/0.34.0.tar.gz | tar -xzf - -C "$opt/zsh-completions"
 	ln -sf "$opt/zsh-completions/zsh-completions-0.34.0/src/"* "$cmp/"
 
+	rm -rf "$opt/zsh-autosuggestions" && mkdir -p "$opt/zsh-autosuggestions"
+	curl --retry 5 --retry-all-errors -fsSL https://github.com/zsh-users/zsh-autosuggestions/archive/refs/tags/v0.7.0.tar.gz | tar -xzf - -C "$opt/zsh-autosuggestions"
+
 	rm -rf "$opt/arzsh-complete" && mkdir -p "$opt/arzsh-complete"
 	git clone https://gitlab.aristanetworks.com/kev/arzsh-complete.git "$opt/arzsh-complete" && ln -sf "$opt/arzsh-complete/"* "$cmp/" || :
 }

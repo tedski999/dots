@@ -128,6 +128,12 @@ un() {
 	esac
 }
 
+# Autosuggestions
+[[ -f "$HOME/.local/opt/zsh-autosuggestions/zsh-autosuggestions-0.7.0/zsh-autosuggestions.zsh" ]] && {
+	source "$HOME/.local/opt/zsh-autosuggestions/zsh-autosuggestions-0.7.0/zsh-autosuggestions.zsh"
+	ZSH_AUTOSUGGEST_STRATEGY=(match_prev_cmd history completion)
+}
+
 # Syntax highlighting
 [[ -f "$HOME/.local/opt/zsh-syntax-highlighting/zsh-syntax-highlighting-master/zsh-syntax-highlighting.zsh" ]] && {
 	source "$HOME/.local/opt/zsh-syntax-highlighting/zsh-syntax-highlighting-master/zsh-syntax-highlighting.zsh"
