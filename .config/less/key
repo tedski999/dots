@@ -1,0 +1,5 @@
+#command
+l  right-scroll
+h  left-scroll
+^l clear-search
+^L clear-search

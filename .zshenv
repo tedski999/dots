@@ -1,3 +1,4 @@
+export PATH="$HOME/.local/bin:$PATH"
 export XDG_DATA_HOME="$HOME/.local/share"
 export XDG_CONFIG_HOME="$HOME/.config"
 export XDG_STATE_HOME="$HOME/.local/state"
@@ -12,6 +13,7 @@ export BROWSER="brave-browser"
 export HISTFILE="$XDG_DATA_HOME/history"
 export ANDROID_HOME="$XDG_DATA_HOME/android"
 export CARGO_HOME="$HOME/.local/opt/cargo"
+export PATH="$CARGO_HOME/bin:$PATH"
 export CUDA_CACHE_PATH="$XDG_CACHE_HOME/nv"
 export DOCKER_CONFIG="$XDG_CONFIG_HOME/docker"
 export GOPATH="$XDG_DATA_HOME/go"
@@ -23,5 +25,3 @@ export WINEPREFIX="$XDG_DATA_HOME/wine"
 export ZSH_DATA="$XDG_DATA_HOME/zsh"
 export npm_config_userconfig="$XDG_CONFIG_HOME/npm/npmrc"
 export skip_global_compinit=1
-# PATH
-export PATH="$HOME/.local/bin:$CARGO_HOME/bin:$PATH"

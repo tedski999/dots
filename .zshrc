@@ -13,22 +13,29 @@ setopt numericglobsort prompt_subst
 setopt glob_complete complete_in_word
 
 # Aliases
-alias sudo="sudo --preserve-env env PATH=$PATH "
 alias v="nvim"
 alias p="python3"
 alias c="cargo"
 alias g="git"
-alias grep="grep --color=auto"
-alias diff="diff --color=auto"
-alias ip="ip --color=auto"
-alias ls="exa -hs=name --group-directories-first"
-alias la="ls -la"
+alias ll="ls -l"
+alias la="ll -a"
+alias lt="la -T"
 alias d="dirs -v"
-alias man='man -M "$XDG_DATA_HOME/man:$(manpath -g)"'
 for i ({1..9}) alias "$i"="cd +$i"
 for i ({3..9}) alias "${(l:i::.:)}"="${(l:i-1::.:)};.."
+alias man='man -M "$XDG_DATA_HOME/man:$(manpath -g)"'
+alias sudo="sudo --preserve-env env PATH=$PATH "
+hash ip 2>/dev/null && alias ip="ip --color"
+hash exa 2>/dev/null && alias ls="exa -hs=name --group-directories-first"
+hash bat 2>/dev/null && alias cat="bat" && alias less="bat"
+hash rg 2>/dev/null && alias grep="rg"
+hash delta 2>/dev/null && alias diff="delta"
 
+# Primary keybindings
 bindkey -e
+bindkey "^[[H"  beginning-of-line
+bindkey "^[[F"  end-of-line
+bindkey "^[[3~" delete-char
 
 # External editor
 autoload edit-command-line
@@ -47,8 +54,8 @@ for k in "^p" "^[OA" "^[[A"; bindkey "$k" up-line-or-beginning-search
 for k in "^n" "^[OB" "^[[B"; bindkey "$k" down-line-or-beginning-search
 
 # Completion
-[[ -d "$ZSH_DATA/completions" ]] && fpath=($fpath "$ZSH_DATA/completions")
 autoload -Uz compinit
+fpath=($fpath "$ZSH_DATA/completions")
 _comp_options+=(globdots)
 compinit -d "$XDG_CACHE_HOME/zcompdump" $([[ -n "$XDG_CACHE_HOME/zcompdump"(#qN.mh+24) ]] && echo -C)
 zstyle ":completion:*" menu select
@@ -67,15 +74,8 @@ bindkey "^[[Z" reverse-menu-complete
 autoload -U select-word-style
 select-word-style bash
 
-# GPG+SSH
-hash gpgconf 2>/dev/null && {
-	export SSH_AUTH_SOCK="$(gpgconf --list-dirs agent-ssh-socket)"
-	(gpgconf --launch gpg-agent &)
-}
-
 # Pager
 eval "$(dircolors -b)"
-export LESS="--ignore-case --status-column --LONG-PROMPT --RAW-CONTROL-CHARS"
 export LESS_TERMCAP_mb=$'\e[1;31m'
 export LESS_TERMCAP_md=$'\e[1;36m'
 export LESS_TERMCAP_me=$'\e[0m'
@@ -83,6 +83,21 @@ export LESS_TERMCAP_so=$'\e[01;33m'
 export LESS_TERMCAP_se=$'\e[0m'
 export LESS_TERMCAP_us=$'\e[1;32m'
 export LESS_TERMCAP_ue=$'\e[0m'
+export LESS="--ignore-case --LONG-PROMPT --RAW-CONTROL-CHARS --lesskey-src=$XDG_CONFIG_HOME/less/key"
+command less --help | grep -q -- --incsearch && export LESS="--incsearch $LESS"
+
+# GPG+SSH
+hash gpgconf 2>/dev/null && {
+	export SSH_AUTH_SOCK="$(gpgconf --list-dirs agent-ssh-socket)"
+	(gpgconf --launch gpg-agent &)
+}
+
+# Delta
+[[ -f "$HOME/.local/opt/delta/completion.zsh" ]] && {
+	source "$HOME/.local/opt/delta/completion.zsh"
+	export GIT_PAGER="delta"
+	export DELTA_FEATURES="+side-by-side"
+}
 
 # FZF
 export FZF_COLORS="fg+:bold,pointer:red,hl:red,hl+:red,gutter:-1,marker:red"

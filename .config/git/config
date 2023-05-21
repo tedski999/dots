@@ -10,6 +10,10 @@
 	gpgsign = true
 [pull]
 	rebase = false
+[merge]
+	conflictstyle = diff3
+[diff]
+	colorMoved = default
 [alias]
 	l = log
 	s = status
