@@ -54,4 +54,5 @@ if vim.g.arista then
 	o.shiftwidth = 3
 	o.tabstop = 3
 	o.expandtab = true
+	o.colorcolumn = "86"
 end
