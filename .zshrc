@@ -83,7 +83,7 @@ export LESS_TERMCAP_so=$'\e[01;33m'
 export LESS_TERMCAP_se=$'\e[0m'
 export LESS_TERMCAP_us=$'\e[1;32m'
 export LESS_TERMCAP_ue=$'\e[0m'
-export LESS="--ignore-case --LONG-PROMPT --RAW-CONTROL-CHARS --lesskey-src=$XDG_CONFIG_HOME/less/key"
+export LESS="--ignore-case --LONG-PROMPT --RAW-CONTROL-CHARS"
 command less --help | grep -q -- --incsearch && export LESS="--incsearch $LESS"
 
 # GPG+SSH
