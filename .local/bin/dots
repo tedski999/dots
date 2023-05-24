@@ -1,502 +1,214 @@
 #!/bin/sh
 
-# apt update; apt install --yes curl; curl https://h8c.de/dots | sh -s init msung tui
+# apt update; apt install --yes curl; curl "https://h8c.de/dots" | sh -s init tui
 
 root="$HOME/.local/dots"
-sc='\033[0;32m'
-rc='\033[0m'
 
 [ "$1" != "init" ] && exec git --git-dir="$root" --work-tree="$HOME" "$@"
 
-#########
-# Msung #
-#########
+# TODO: very unlikely this will work for all devices. maybe setup a build server?
+# septs would maintain builds of all software for all devices
+# then opt would download from "https://pkg.h8c.de/<pkg>/<arch>"
 
-msung_zsh() {
-	rm -rf "$opt/zsh" && mkdir -p "$opt/zsh"
-	sh -c "$(curl --retry 5 --retry-all-errors -fsSL https://raw.githubusercontent.com/romkatv/zsh-bin/master/install)" -- -d "$opt/zsh" -e no
-	ln -sf "$opt/zsh/bin/zsh" "$bin/zsh"
-	ln -sf "$opt/zsh/share/man/man1/"* "$man/man1/"
+# TODO: deleting targets (remove links, opt dir)
 
-	rm -rf "$opt/zsh-syntax-highlighting" && mkdir -p "$opt/zsh-syntax-highlighting"
-	curl --retry 5 --retry-all-errors -fsSL https://github.com/zsh-users/zsh-syntax-highlighting/archive/refs/heads/master.zip -o "$tmp/zsh-syntax-highlighting.zip"
-	unzip "$tmp/zsh-syntax-highlighting.zip" -d "$opt/zsh-syntax-highlighting"
-
-	rm -rf "$opt/zsh-completions" && mkdir -p "$opt/zsh-completions"
-	curl --retry 5 --retry-all-errors -fsSL https://github.com/zsh-users/zsh-completions/archive/refs/tags/0.34.0.tar.gz | tar -xzf - -C "$opt/zsh-completions"
-	ln -sf "$opt/zsh-completions/zsh-completions-0.34.0/src/"* "$cmp/"
-
-	rm -rf "$opt/zsh-autosuggestions" && mkdir -p "$opt/zsh-autosuggestions"
-	curl --retry 5 --retry-all-errors -fsSL https://github.com/zsh-users/zsh-autosuggestions/archive/refs/tags/v0.7.0.tar.gz | tar -xzf - -C "$opt/zsh-autosuggestions"
-
-	rm -rf "$opt/arzsh-complete" && mkdir -p "$opt/arzsh-complete"
-	git clone https://gitlab.aristanetworks.com/kev/arzsh-complete.git "$opt/arzsh-complete" && ln -sf "$opt/arzsh-complete/"* "$cmp/" || :
+zsh() {
+	opt zsh "https://raw.githubusercontent.com/romkatv/zsh-bin/master/install" &&
+		sh "$dl" -d "$out" -e no &&
+		ln -sf "$out/bin/zsh" "$bin/zsh" &&
+		ln -sf "$out/share/man/man1/"* "$man/man1/"
 }
 
-msung_nvim() {
-	rm -rf "$opt/nvim" && mkdir -p "$opt/nvim"
-	curl --retry 5 --retry-all-errors -fsSL https://github.com/neovim/neovim/releases/download/v0.9.0/nvim.appimage -o "$tmp/nvim.appimage"
-	hash python3 pip3 && pip3 install pynvim
-	hash node npm && npm install -g neovim
-	chmod +x "$tmp/nvim.appimage"
-	cd "$opt/nvim" && "$tmp/nvim.appimage" --appimage-extract; cd -
-	ln -sf "$opt/nvim/squashfs-root/AppRun" "$bin/nvim"
-	ln -sf "$bin/nvim" "$bin/vim"
-	ln -sf "$opt/nvim/squashfs-root/usr/man/man1/nvim.1" "$man/man1/nvim.1"
+zsh_syntax_highlighting() {
+	opt zsh-syntax-highlighting "https://github.com/zsh-users/zsh-syntax-highlighting/archive/refs/heads/master.zip"
 }
 
-msung_rust() {
-	rm -rf "$RUSTUP_HOME" "$CARGO_HOME"
-	curl --retry 5 --retry-all-errors -fsSL https://sh.rustup.rs | sh -s -- --component rust-analyzer --component rust-src --no-modify-path -y
-	. "$CARGO_HOME/env"
-	rustup completions zsh > "$RUSTUP_HOME/_rustup"
-	ln -sf "$RUSTUP_HOME/_rustup" "$cmp/_rustup"
-	ln -sf "$RUSTUP_HOME/toolchains/stable-x86_64-unknown-linux-gnu/share/zsh/site-functions/_cargo" "$cmp/_cargo"
-	ln -sf "$RUSTUP_HOME/toolchains/stable-x86_64-unknown-linux-gnu/share/man/man1/"* "$man/man1/"
+zsh_autosuggestions() {
+	opt zsh-autosuggestions "https://github.com/zsh-users/zsh-autosuggestions/archive/refs/tags/v0.7.0.tar.gz"
 }
 
-msung_fzf() {
-	rm -rf "$opt/fzf" && mkdir -p "$opt/fzf"
-	curl --retry 5 --retry-all-errors -fsSL https://github.com/junegunn/fzf/releases/download/0.40.0/fzf-0.40.0-linux_amd64.tar.gz | tar -xzf - -C "$opt/fzf"
-	curl --retry 5 --retry-all-errors -fsSL https://raw.githubusercontent.com/junegunn/fzf/master/shell/completion.zsh -o "$opt/fzf/completion.zsh"
-	curl --retry 5 --retry-all-errors -fsSL https://raw.githubusercontent.com/junegunn/fzf/master/shell/key-bindings.zsh -o "$opt/fzf/key-bindings.zsh"
-	curl --retry 5 --retry-all-errors -fsSL https://raw.githubusercontent.com/junegunn/fzf/master/man/man1/fzf.1 -o "$opt/fzf/fzf.1"
-	ln -sf "$opt/fzf/fzf" "$bin/fzf"
-	ln -sf "$opt/fzf/fzf.1" "$man/man1/fzf.1"
+zsh_completions() {
+	opt zsh-completions "https://github.com/zsh-users/zsh-completions/archive/refs/tags/0.34.0.tar.gz" &&
+		ln -sf "$out/zsh-completions-0.34.0/src/_"* "$cmp/"
 }
 
-msung_rg() {
-	rm -rf "$opt/rg" && mkdir -p "$opt/rg"
-	curl --retry 5 --retry-all-errors -fsSL https://github.com/BurntSushi/ripgrep/releases/download/13.0.0/ripgrep-13.0.0-x86_64-unknown-linux-musl.tar.gz | tar -xzf - -C "$opt/rg"
-	ln -sf "$opt/rg/ripgrep-13.0.0-x86_64-unknown-linux-musl/rg" "$bin/rg"
-	ln -sf "$opt/rg/ripgrep-13.0.0-x86_64-unknown-linux-musl/doc/rg.1" "$man/man1/rg.1"
-	ln -sf "$opt/rg/ripgrep-13.0.0-x86_64-unknown-linux-musl/complete/_rg" "$cmp/_rg"
+zsh_arzsh_complete() {
+	opt arzsh-complete "https://gitlab.aristanetworks.com/kev/arzsh-complete/-/archive/master/arzsh-complete-master.tar.gz" &&
+		ln -sf "$out/arzsh-complete-master/_"* "$cmp/"
 }
 
-msung_bat() {
-	rm -rf "$opt/bat" && mkdir -p "$opt/bat"
-	curl --retry 5 --retry-all-errors -fsSL https://github.com/sharkdp/bat/releases/download/v0.23.0/bat-v0.23.0-x86_64-unknown-linux-musl.tar.gz | tar -xzf - -C "$opt/bat"
-	ln -sf "$opt/bat/bat-v0.23.0-x86_64-unknown-linux-musl/bat" "$bin/bat"
-	ln -sf "$opt/bat/bat-v0.23.0-x86_64-unknown-linux-musl/bat.1" "$man/man1/bat.1"
-	ln -sf "$opt/bat/bat-v0.23.0-x86_64-unknown-linux-musl/autocomplete/bat.zsh" "$cmp/_bat"
+nvim() {
+	opt nvim "https://github.com/neovim/neovim/releases/download/v0.9.0/nvim.appimage" &&
+		ln -sf "$out/squashfs-root/AppRun" "$bin/nvim" &&
+		ln -sf "$out/squashfs-root/usr/man/man1/nvim.1" "$man/man1/nvim.1" &&
+		ln -sf "$bin/nvim" "$bin/vim" &&
+		hash python3 pip3 && pip3 install pynvim
 }
 
-msung_fd() {
-	rm -rf "$opt/fd" && mkdir -p "$opt/fd"
-	curl --retry 5 --retry-all-errors -fsSL https://github.com/sharkdp/fd/releases/download/v8.7.0/fd-v8.7.0-x86_64-unknown-linux-musl.tar.gz | tar -xzf - -C "$opt/fd"
-	ln -sf "$opt/fd/fd-v8.7.0-x86_64-unknown-linux-musl/fd" "$bin/fd"
-	ln -sf "$opt/fd/fd-v8.7.0-x86_64-unknown-linux-musl/fd.1" "$man/man1/fd.1"
-	ln -sf "$opt/fd/fd-v8.7.0-x86_64-unknown-linux-musl/autocomplete/_fd" "$cmp/_fd"
+fzf() {
+	url="https://github.com/junegunn/fzf/releases/download/0.40.0"
+	opt fzf "$url/fzf-0.40.0-linux_amd64.tar.gz" "$url/fzf-0.40.0-linux_arm64.tar.gz" &&
+		dl "https://raw.githubusercontent.com/junegunn/fzf/master/shell/completion.zsh" "$out/completion.zsh" &&
+		dl "https://raw.githubusercontent.com/junegunn/fzf/master/shell/key-bindings.zsh" "$out/key-bindings.zsh" &&
+		dl "https://raw.githubusercontent.com/junegunn/fzf/master/man/man1/fzf.1" "$out/fzf.1"
 }
 
-msung_exa() {
-	rm -rf "$opt/exa" && mkdir -p "$opt/exa"
-	curl --retry 5 --retry-all-errors -fsSL https://github.com/ogham/exa/releases/download/v0.10.1/exa-linux-x86_64-musl-v0.10.1.zip -o "$tmp/exa.zip"
-	unzip "$tmp/exa.zip" -d "$opt/exa"
-	ln -sf "$opt/exa/bin/exa" "$bin/exa"
-	ln -sf "$opt/exa/man/exa.1" "$man/man1/exa.1"
-	ln -sf "$opt/exa/man/exa_colors.5" "$man/man5/exa_colors.5"
-	ln -sf "$opt/exa/completions/exa.zsh" "$cmp/_exa"
+rg() {
+	url="https://github.com/BurntSushi/ripgrep/releases/download/13.0.0"
+	opt rg "$url/ripgrep-13.0.0-x86_64-unknown-linux-musl.tar.gz" "$url/ripgrep-13.0.0-arm-unknown-linux-gnueabihf.tar.gz" &&
+		ln -sf "$out/ripgrep-13.0.0-x86_64-unknown-linux-musl/rg" "$bin/rg" &&
+		ln -sf "$out/ripgrep-13.0.0-x86_64-unknown-linux-musl/doc/rg.1" "$man/man1/rg.1" &&
+		ln -sf "$out/ripgrep-13.0.0-x86_64-unknown-linux-musl/complete/_rg" "$cmp/_rg"
 }
 
-msung_btop() {
-	rm -rf "$opt/btop" && mkdir -p "$opt/btop"
-	curl --retry 5 --retry-all-errors -fsSL https://github.com/aristocratos/btop/releases/download/v1.2.13/btop-x86_64-linux-musl.tbz | tar -xjf - -C  "$opt/btop"
-	ln -sf "$opt/btop/btop/bin/btop" "$bin/btop"
+bat() {
+	url="https://github.com/sharkdp/bat/releases/download/v0.23.0"
+	opt bat "$url/bat-v0.23.0-x86_64-unknown-linux-musl.tar.gz" "$url/bat-v0.23.0-arm-unknown-linux-musleabihf.tar.gz" &&
+		ln -sf "$out/bat-v0.23.0-x86_64-unknown-linux-musl/bat" "$bin/bat" &&
+		ln -sf "$out/bat-v0.23.0-x86_64-unknown-linux-musl/bat.1" "$man/man1/bat.1" &&
+		ln -sf "$out/bat-v0.23.0-x86_64-unknown-linux-musl/autocomplete/bat.zsh" "$cmp/_bat"
 }
 
-msung_mosh() {
-	hash apt-get || return
-	rm -rf "$opt/mosh" && mkdir -p "$opt/mosh"
-	$sudo apt-get install --yes libprotobuf23 libutempter0 zlib1g libncurses5 libssl3
-	$sudo apt-get install --yes --mark-auto patch autoconf build-essential protobuf-compiler pkg-config libprotobuf-dev libutempter-dev zlib1g-dev libncurses5-dev libssl-dev
-	curl --retry 5 --retry-all-errors -fsSL https://github.com/mobile-shell/mosh/archive/refs/tags/mosh-1.4.0.tar.gz | tar -xzf - -C "$opt/mosh"
-	curl --retry 5 --retry-all-errors -fsSL https://github.com/mobile-shell/mosh/pull/1167.diff | patch -p1 -d "$opt/mosh/mosh-mosh-1.4.0"
-	cd "$opt/mosh/mosh-mosh-1.4.0" && ./autogen.sh && ./configure && make; cd -
-	ln -sf "$opt/mosh/mosh-mosh-1.4.0/scripts/mosh" "$bin/mosh"
-	ln -sf "$opt/mosh/mosh-mosh-1.4.0/src/frontend/mosh-client" "$bin/mosh-client"
-	ln -sf "$opt/mosh/mosh-mosh-1.4.0/src/frontend/mosh-server" "$bin/mosh-server"
-	ln -sf "$opt/mosh/mosh-mosh-1.4.0/man/mosh.1" "$man/man1/mosh.1"
-	ln -sf "$opt/mosh/mosh-mosh-1.4.0/man/mosh-client.1" "$man/man1/mosh-client.1"
-	ln -sf "$opt/mosh/mosh-mosh-1.4.0/man/mosh-server.1" "$man/man1/mosh-server.1"
+fd() {
+	url="https://github.com/sharkdp/fd/releases/download/v8.7.0"
+	opt fd "$url/fd-v8.7.0-x86_64-unknown-linux-musl.tar.gz" "$url/fd-v8.7.0-arm-unknown-linux-musleabihf.tar.gz" &&
+		ln -sf "$out/fd-v8.7.0-x86_64-unknown-linux-musl/fd" "$bin/fd" &&
+		ln -sf "$out/fd-v8.7.0-x86_64-unknown-linux-musl/fd.1" "$man/man1/fd.1" &&
+		ln -sf "$out/fd-v8.7.0-x86_64-unknown-linux-musl/autocomplete/_fd" "$cmp/_fd"
 }
 
-msung_tui() {
-	echo "${sc}Installing msung tui packages...${rc}"
-	for package in zsh nvim rust fzf rg bat fd exa btop mosh; do
-		"msung_$package"
-	done
-	rm -f "$XDG_CACHE_HOME/zcompdump"
-	echo "${sc}Finished installing msung tui packages.${rc}"
+exa() {
+	url="https://github.com/ogham/exa/releases/download/v0.10.1"
+	opt exa "$url/exa-linux-x86_64-musl-v0.10.1.zip" "$url/exa-linux-armv7-v0.10.1.zip" &&
+		ln -sf "$out/bin/exa" "$bin/exa" &&
+		ln -sf "$out/man/exa.1" "$man/man1/exa.1" &&
+		ln -sf "$out/man/exa_colors.5" "$man/man5/exa_colors.5" &&
+		ln -sf "$out/completions/exa.zsh" "$cmp/_exa"
 }
 
-msung_popshell() {
-	$sudo apt-get install --yes git make node-typescript
-	git clone https://github.com/pop-os/shell "$tmp/pop"
-	make --directory "$tmp/pop" depcheck compile install
+delta() {
+	url="https://github.com/dandavison/delta/releases/download/0.15.1"
+	opt delta "$url/delta-0.15.1-x86_64-unknown-linux-musl.tar.gz" "$url/delta-0.15.1-arm-unknown-linux-gnueabihf.tar.gz" &&
+		dl "https://raw.githubusercontent.com/dandavison/delta/master/etc/completion/completion.zsh" "$out/completion.zsh" &&
+		ln -sf "$out/delta-0.15.1-x86_64-unknown-linux-musl/delta" "$bin/delta"
 }
 
-msung_unite() {
-	$sudo apt-get install --yes git
-	rm -rf "$ext/unite@hardpixel.eu"
-	git clone https://github.com/hardpixel/unite-shell "$tmp/unite"
-	mv "$tmp/unite/unite@hardpixel.eu" "$ext/unite@hardpixel.eu"
+btop() {
+	url="https://github.com/aristocratos/btop/releases/download/v1.2.13"
+	opt btop "$url/btop-x86_64-linux-musl.tbz" "$url/btop-arm-linux-musleabi.tbz" &&
+		ln -sf "$out/btop/bin/btop" "$bin/btop"
 }
 
-msung_nooverview() {
-	$sudo apt-get install --yes git
-	rm -rf "$ext/no-overview@fthx"
-	git clone https://github.com/fthx/no-overview.git "$ext/no-overview@fthx"
+rust() {
+	opt cargo && opt rustup "https://sh.rustup.rs" &&
+		sh "$dl" --component rust-analyzer --component rust-src --no-modify-path -y &&
+		. "$CARGO_HOME/env" &&
+		rustup completions zsh > "$out/_rustup" &&
+		ln -sf "$out/_rustup" "$cmp/_rustup" &&
+		ln -sf "$out/toolchains/stable-x86_64-unknown-linux-gnu/share/zsh/site-functions/_cargo" "$cmp/_cargo" &&
+		ln -sf "$out/toolchains/stable-x86_64-unknown-linux-gnu/share/man/man1/"* "$man/man1/"
 }
 
-msung_drawonyouscreen2() {
-	$sudo apt-get install --yes git
-	rm -rf "$ext/draw-on-your-screen2@zhrexl.github.com"
-	git clone https://github.com/zhrexl/DrawOnYourScreen2.git "$ext/draw-on-your-screen2@zhrexl.github.com"
-	git --git-dir "$ext/draw-on-your-screen2@zhrexl.github.com/.git" --work-tree "$ext/draw-on-your-screen2@zhrexl.github.com" reset --hard 2615c7a
+mosh() {
+	req patch autoconf build-essential pkg-config libprotobuf-dev libutempter-dev zlib1g-dev libncurses5-dev libssl-dev || return 1
+	opt mosh "https://github.com/mobile-shell/mosh/archive/refs/tags/mosh-1.4.0.tar.gz" &&
+		dl "https://github.com/mobile-shell/mosh/pull/1167.diff" &&
+		patch -p1 -i "$dl" -d "$out/mosh-mosh-1.4.0" &&
+		(cd "$out/mosh-mosh-1.4.0" && ./autogen.sh && ./configure && make) &&
+		ln -sf "$out/mosh-mosh-1.4.0/scripts/mosh" "$bin/mosh" &&
+		ln -sf "$out/mosh-mosh-1.4.0/src/frontend/mosh-client" "$bin/mosh-client" &&
+		ln -sf "$out/mosh-mosh-1.4.0/src/frontend/mosh-server" "$bin/mosh-server" &&
+		ln -sf "$out/mosh-mosh-1.4.0/man/mosh.1" "$man/man1/mosh.1" &&
+		ln -sf "$out/mosh-mosh-1.4.0/man/mosh-client.1" "$man/man1/mosh-client.1" &&
+		ln -sf "$out/mosh-mosh-1.4.0/man/mosh-server.1" "$man/man1/mosh-server.1"
 }
 
-msung_gui() {
-	echo "${sc}Installing msung gui packages...${rc}"
+# TODO: gui targets
+# i3
+# rofi
+# bar
+# notifications
+# slock and autosuspend
+# like a whole lot more (keybindings, network manager, bluetooth manager, advanced volume control, file manager)
+# mpv and gromit config
 
-	$sudo apt-get install --yes fonts-terminus alacritty vieb
-
-	ext="$XDG_DATA_HOME/gnome-shell/extensions"
-	mkdir -p "$ext"
-	for package in popshell unite nooverview drawonyourscreen2; do
-		"msung_$package"
-	done
-
-	# TODO: awesome
-	# no window decorations
-	# rebind caplock and key repeating
-	# keyboard navigation and window creation
-	# rofi
-	# bar
-	# notifications
-	# slock and autosuspend
-	# like a whole lot more (keybindings, network manager, bluetooth manager, advanced volume control, file manager)
-	# TODO: mpv config
-	# TODO: gromit config
-
-	echo "\
-[org/gnome/desktop/a11y/applications]
-screen-magnifier-enabled=false
-[org/gnome/desktop/a11y/magnifier]
-cross-hairs-clip=false
-invert-lightness=false
-lens-mode=true
-mag-factor=1.0
-mouse-tracking='proportional'
-scroll-at-edges=true
-show-cross-hairs=false
-[org/gnome/desktop/background]
-color-shading-type='solid'
-picture-uri='none'
-picture-uri-dark='none'
-primary-color='#1c1c1c'
-secondary-color='#000000000000'
-[org/gnome/desktop/input-sources]
-per-window=false
-sources=[('xkb', 'gb')]
-xkb-options=['caps:escape']
-[org/gnome/desktop/interface]
-clock-show-date=false
-clock-show-weekday=true
-color-scheme='prefer-dark'
-font-hinting='slight'
-gtk-theme='Yaru-blue-dark'
-icon-theme='Yaru-blue'
-[org/gnome/desktop/lockdown]
-disable-log-out=false
-disable-user-switching=true
-[org/gnome/desktop/peripherals/keyboard]
-delay=uint32 250
-[org/gnome/desktop/peripherals/touchpad]
-two-finger-scrolling-enabled=true
-[org/gnome/desktop/screensaver]
-color-shading-type='solid'
-picture-uri='none'
-primary-color='#1c1c1c'
-secondary-color='#000000000000'
-[org/gnome/desktop/session]
-idle-delay=uint32 600
-[org/gnome/desktop/wm/keybindings]
-activate-window-menu=@as []
-begin-move=@as []
-begin-resize=@as []
-close=['<Super>q']
-cycle-group=@as []
-cycle-group-backward=@as []
-cycle-panels=@as []
-cycle-panels-backward=@as []
-cycle-windows=@as []
-cycle-windows-backward=@as []
-maximize=@as []
-minimize=@as []
-move-to-monitor-down=@as []
-move-to-monitor-left=@as []
-move-to-monitor-right=@as []
-move-to-monitor-up=@as []
-move-to-workspace-1=['<Shift><Super>1']
-move-to-workspace-10=['<Shift><Super>0']
-move-to-workspace-11=@as []
-move-to-workspace-12=@as []
-move-to-workspace-2=['<Shift><Super>2']
-move-to-workspace-3=['<Shift><Super>3']
-move-to-workspace-4=['<Shift><Super>4']
-move-to-workspace-5=['<Shift><Super>5']
-move-to-workspace-6=['<Shift><Super>6']
-move-to-workspace-7=['<Shift><Super>7']
-move-to-workspace-8=['<Shift><Super>8']
-move-to-workspace-9=['<Shift><Super>9']
-move-to-workspace-last=@as []
-move-to-workspace-left=['<Primary><Shift><Super>h']
-move-to-workspace-right=['<Primary><Shift><Super>l']
-panel-run-dialog=@as []
-show-desktop=@as []
-switch-applications=@as []
-switch-applications-backward=@as []
-switch-group=@as []
-switch-group-backward=@as []
-switch-input-source=@as []
-switch-input-source-backward=@as []
-switch-panels=@as []
-switch-panels-backward=@as []
-switch-to-workspace-1=['<Super>1']
-switch-to-workspace-10=['<Super>0']
-switch-to-workspace-11=@as []
-switch-to-workspace-12=@as []
-switch-to-workspace-2=['<Super>2']
-switch-to-workspace-3=['<Super>3']
-switch-to-workspace-4=['<Super>4']
-switch-to-workspace-5=['<Super>5']
-switch-to-workspace-6=['<Super>6']
-switch-to-workspace-7=['<Super>7']
-switch-to-workspace-8=['<Super>8']
-switch-to-workspace-9=['<Super>9']
-switch-to-workspace-last=@as []
-switch-to-workspace-left=['<Primary><Super>h']
-switch-to-workspace-right=['<Primary><Super>l']
-switch-windows=['<Super>Tab']
-switch-windows-backward=['<Shift><Super>Tab']
-toggle-fullscreen=['<Super>m']
-toggle-maximized=@as []
-unmaximize=@as []
-[org/gnome/desktop/wm/preferences]
-action-middle-click-titlebar='none'
-action-right-click-titlebar='none'
-button-layout=':maximize,close'
-resize-with-right-button=true
-[org/gnome/mutter]
-attach-modal-dialogs=false
-center-new-windows=false
-overlay-key='Super_R'
-workspaces-only-on-primary=false
-[org/gnome/mutter/keybindings]
-toggle-tiled-left=@as []
-toggle-tiled-right=@as []
-switch-monitor=@as []
-[org/gnome/settings-daemon/plugins/media-keys]
-area-screenshot=['Print']
-area-screenshot-clip=@as []
-custom-keybindings=['/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/', '/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom1/', '/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom2/', '/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom3/']
-help=@as []
-home=@as []
-logout=['<Primary><Super>Escape']
-magnifier=['<Shift><Super>plus']
-magnifier-zoom-in=['<Super>equal']
-magnifier-zoom-out=['<Super>minus']
-rotate-video-lock-static=@as []
-screencast=['<Shift>Print']
-screenreader=@as []
-screensaver=['<Super>Escape']
-screenshot=@as []
-screenshot-clip=@as []
-terminal=['<Super>Return']
-window-screenshot=@as []
-window-screenshot-clip=@as []
-www=['<Super>w']
-[org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0]
-binding='<Shift><Super>Escape'
-command='systemctl suspend'
-name='Suspend'
-[org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom1]
-binding='<Super>d'
-command='discord'
-name='Discord'
-[org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom2]
-binding='<Super>s'
-command='steam'
-name='Steam'
-[org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom3]
-binding='<Primary><Shift><Super>Escape'
-command='gnome-session-quit --power-off'
-name='Power Off'
-[org/gnome/settings-daemon/plugins/power]
-power-button-action='suspend'
-sleep-inactive-ac-timeout=1800
-sleep-inactive-ac-type='suspend'
-sleep-inactive-battery-timeout=1800
-[org/gnome/shell]
-app-picker-view=uint32 1
-disable-user-extensions=false
-disabled-extensions=['ubuntu-dock@ubuntu.com', 'ubuntu-appindicators@ubuntu.com', 'ding@rastersoft.com']
-enabled-extensions=['pop-shell@system76.com', 'unite@hardpixel.eu', 'no-overview@fthx', 'draw-on-your-screen2@zhrexl.github.com']
-favorite-apps=@as []
-had-bluetooth-devices-setup=true
-welcome-dialog-last-shown-version='42.5'
-[org/gnome/shell/app-switcher]
-current-workspace-only=false
-[org/gnome/shell/extensions/draw-on-your-screen]
-drawing-on-desktop=false
-erase-drawings=['<Control><Super>p']
-indicator-disabled=false
-osd-disabled=false
-toggle-drawing=['<Super>p']
-toggle-modal=['<Shift><Super>p']
-[org/gnome/shell/extensions/pop-shell]
-activate-launcher=@as []
-active-hint-border-radius=uint32 1
-active-hint=true
-focus-down=['<Super>j']
-focus-left=['<Super>h']
-focus-right=['<Super>l']
-focus-up=['<Super>k']
-gap-inner=uint32 1
-gap-outer=uint32 1
-hint-color-rgba='rgba(255,255,255,0.25)'
-management-orientation=@as []
-mouse-cursor-follows-active-window=false
-pop-monitor-down=@as []
-pop-monitor-left=@as []
-pop-monitor-right=@as []
-pop-monitor-up=@as []
-pop-workspace-down=@as []
-pop-workspace-left=@as []
-pop-workspace-right=@as []
-pop-workspace-up=@as []
-show-skip-taskbar=false
-show-title=false
-smart-gaps=false
-snap-to-grid=false
-stacking-with-mouse=false
-tile-accept=['r', 'Return', 'Escape']
-tile-by-default=true
-tile-enter=['<Super>r']
-tile-move-down=@as []
-tile-move-down-global=['<Shift><Super>j']
-tile-move-left=@as []
-tile-move-left-global=['<Shift><Super>h']
-tile-move-right=@as []
-tile-move-right-global=['<Shift><Super>l']
-tile-move-up=@as []
-tile-move-up-global=['<Shift><Super>k']
-tile-reject=@as []
-tile-resize-down=['j']
-tile-resize-left=['h']
-tile-resize-right=['l']
-tile-resize-up=['k']
-tile-swap-down=@as []
-tile-swap-left=@as []
-tile-swap-right=@as []
-tile-swap-up=@as []
-toggle-floating=['<Super>f']
-toggle-stacking-global=@as []
-[org/gnome/shell/extensions/unite]
-app-menu-ellipsize-mode='end'
-app-menu-max-width=0
-desktop-name-text=''
-extend-left-box=true
-greyscale-tray-icons=false
-hide-activities-button='always'
-hide-app-menu-icon=false
-hide-dropdown-arrows=true
-hide-window-titlebars='always'
-reduce-panel-spacing=true
-show-desktop-name=true
-show-legacy-tray=true
-show-window-buttons='never'
-show-window-title='always'
-window-buttons-placement='auto'
-[org/gnome/shell/keybindings]
-focus-active-notification=['<Super>n']
-open-application-menu=@as []
-screenshot=@as []
-screenshot-window=@as []
-show-screen-recording-ui=@as []
-switch-to-application-1=@as []
-switch-to-application-2=@as []
-switch-to-application-3=@as []
-switch-to-application-4=@as []
-switch-to-application-5=@as []
-switch-to-application-6=@as []
-switch-to-application-7=@as []
-switch-to-application-8=@as []
-switch-to-application-9=@as []
-toggle-application-view=@as []
-toggle-message-tray=['<Shift><Super>n']
-toggle-overview=['<Super>space']" | dconf load /
-
-	echo "${sc}Finished installing msung gui packages.${rc}"
+req() {
+	hash $@ 2>/dev/null || {
+		[ -n "$apt" ] \
+			&& $sudo $apt install --yes $@ \
+			|| { echo "Missing requirements: $@"; return 1; }
+	}
 }
 
-###########
-# Msungie #
-###########
+dl() {
+	dl="${2-$(mktemp)}" &&
+		req curl &&
+		echo "$1 > $dl" &&
+		curl --retry 5 --retry-all-errors --retry-delay 1 -fL "$1" -o "$dl"
+}
 
-# TODO: msungie init
+opt() {
+	out="$HOME/.local/opt/$1"
+	[ -n "$1" ] || return 1
+	rm -rf "$out" && mkdir -p "$out"
+	[ -n "$2" ] || return 0
+	# TODO: detect if arm architecture
+	[ -n "$3" ] && [ -n "$isArm" ] && url="$3" || url="$2"
+	dl "$url" || return 1
+	case "$url" in
+		*".tar.gz")   req tar gzip  && tar -xzf "$dl" -C "$out" ;;
+		*".tbz")      req tar bzip2 && tar -xjf "$dl" -C "$out" ;;
+		*".zip")      req unzip     && unzip "$dl" -d "$out" ;;
+		*".appimage") chmod +x "$dl" && (cd "$out" && "$dl" --appimage-extract) ;;
+	esac
+}
 
-#########
-# Septs #
-#########
+# Valid targets
+tui="zsh zsh_syntax_highlighting zsh_autosuggestions zsh_completions nvim fzf rg bat fd exa delta btop"
+gui=""
+all="$tui $gui zsh_arzsh_complete rust mosh"
 
-# TODO: septs init
-
-###############
-# Driver code #
-###############
-
-set -e
-
-hash sudo 2>/dev/null && sudo="sudo" || sudo=""
-[ "$(id --user)" -ne 0 ] || [ -z "$SUDO_USER" ] || { echo "Run without sudo privileges."; exit 1; }
-
+# Resolve command line arguments
 shift
-device="$1"
-case "$device" in
-	"msung"|"septs"|"msungie") ;;
-	"") echo "Usage: dots init <device> [targets...]"; exit 1 ;;
-	*) echo "Unknown device: $device"; exit 1 ;;
-esac
-
-shift
-funcs=""
+apt=""
+sudo=""
+targets=""
 for target in "$@"; do
-	func="${device}_${target}"
-	type "$func" >/dev/null 2>&1 || { echo "Unknown target for $device: $target"; exit 1; }
-	funcs="$funcs$func "
+	case "$target" in
+		"--apt")  hash apt-get && apt="apt-get" || exit 1 ;;
+		"--sudo") hash sudo    && sudo="sudo"   || exit 1 ;;
+		"tui") targets="$targets$tui " ;;
+		"gui") targets="$targets$gui " ;;
+		"all") targets="$targets$all " ;;
+		*) echo "$all" | grep -Fqw "$target" && targets="$targets$target " || { echo "Unknown target: $target"; exit 1; }
+	esac
 done
 
-hash curl tar unzip bzip2 || { $sudo apt-get update --yes && $sudo apt-get install --yes curl tar unzip bzip2; }
-
+# Bootstrap cloning git repository
 [ -e "$root" ] || {
-	echo "${sc}$root missing, bootstrapping into $HOME...${rc}"
-	hash git || $sudo apt-get install --yes git
+	echo "$root missing, bootstrapping into $HOME..."
+	req git || exit 1
 	mkdir -p "$HOME/.ssh" && ssh-keyscan github.com >> "$HOME/.ssh/known_hosts"
-	git clone --bare git@github.com:/tedski999/dots "$root" || git clone --bare https://github.com/tedski999/dots "$root"
-	if ! out=$(git --git-dir="$root" --work-tree="$HOME" checkout main 2>&1); then
+	git clone --bare "git@github.com:/tedski999/dots" "$root" || git clone --bare "https://github.com/tedski999/dots" "$root" || exit 1
+	if ! out="$(git --git-dir="$root" --work-tree="$HOME" checkout main 2>&1)"; then
 		echo "WARNING: The next operation WILL overwrite the following files:"
 		printf "%s" "$out" | tail --lines +2 | head --lines -2
 		printf "Enter YES to proceed with data loss: " && read -r res
-		[ "$res" = "YES" ] || [ "$res" = "yes" ] || { echo "Aborted."; exit; }
-		git --git-dir="$root" --work-tree="$HOME" checkout main --force
+		[ "$res" = "YES" ] || [ "$res" = "yes" ] || { echo "Aborted."; exit 0; }
+		git --git-dir="$root" --work-tree="$HOME" checkout main --force || exit 1
 	fi
-	echo "${sc}Dots successfully installed into $HOME${rc}"
+	echo "Dots successfully installed into $HOME"
 }
 
-. "$HOME/.zshenv" || { echo "Unable to init: Have dots been installed?"; exit 1; }
+# Important directories
+. "$HOME/.zshenv" || exit 1
+tmp="$(mktemp --directory || exit 1)"
+bin="$HOME/.local/bin"
+cmp="$ZSH_DATA/completions"
+man="$XDG_DATA_HOME/man"
+mkdir -p "$bin" "$cmp" "$man/man1" "$man/man5"
 
+# Write gitignore
 mkdir -p "$root/info"
 >"$root/info/exclude" echo "\
 /*
@@ -510,17 +222,19 @@ mkdir -p "$root/info"
 /.config/*
 !/.config/alacritty
 !/.config/bat
+!/.config/docker
 !/.config/git
+!/.config/less
 !/.config/mpv
 !/.config/npm
 !/.config/nvim
+!/.config/python
+!/.config/ripgrep
 !/.config/sxiv
 !/.config/tmux
-!/.config/wget
 !/.config/mimeapps.list
 !/.config/user-dirs.dirs
 !/.config/user-dirs.locale
-!/.config/ripgrep
 
 /.gnupg/*
 !/.gnupg/gpg-agent.conf
@@ -529,22 +243,25 @@ mkdir -p "$root/info"
 /.local/*
 !/.local/bin
 /.local/bin/*
-!/.local/bin/cachecmd
 !/.local/bin/dots
 !/.local/bin/git
 
 /.ssh/*
 !/.ssh/config"
 
-tmp="$(mktemp --directory)"
-bin="$HOME/.local/bin"
-man="$XDG_DATA_HOME/man"
-opt="$HOME/.local/opt"
-cmp="$ZSH_DATA/completions"
-mkdir -p "$bin" "$man/man1" "$man/man5" "$opt" "$cmp"
+# TODO: git hook to set .ssh and .gnupg permissions
 
-for func in $funcs; do
-	"$func"
+# Execute targets
+fail=""
+for target in $targets; do
+	echo ""
+	echo "==== Starting $target ===="
+	"$target" || fail="$fail\n  $target"
+	echo "==== Finished $target ===="
 done
 
-echo "Dots init done."
+# Print failures
+[ -z "$fail" ] || {
+	echo ""
+	echo "Failures occurred with targets: $fail"
+}
