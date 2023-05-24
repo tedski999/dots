@@ -1,6 +1,8 @@
 #!/bin/sh
 
-# apt update; apt install --yes curl; curl "https://h8c.de/dots" | sh -s init tui
+# apt update; apt install --yes curl; sh -c "$(curl https://h8c.de/dots)" -- init tui
+
+{
 
 root="$HOME/.local/dots"
 
@@ -123,94 +125,11 @@ mosh() {
 		ln -sf "$out/mosh-mosh-1.4.0/man/mosh-server.1" "$man/man1/mosh-server.1"
 }
 
-# TODO: gui targets
-# i3
-# rofi
-# bar
-# notifications
-# slock and autosuspend
-# like a whole lot more (keybindings, network manager, bluetooth manager, advanced volume control, file manager)
-# mpv and gromit config
-
-req() {
-	hash $@ 2>/dev/null || {
-		[ -n "$apt" ] \
-			&& $sudo $apt install --yes $@ \
-			|| { echo "Missing requirements: $@"; return 1; }
-	}
-}
-
-dl() {
-	dl="${2-$(mktemp)}" &&
-		req curl &&
-		echo "$1 > $dl" &&
-		curl --retry 5 --retry-all-errors --retry-delay 1 -fL "$1" -o "$dl"
-}
-
-opt() {
-	out="$HOME/.local/opt/$1"
-	[ -n "$1" ] || return 1
-	rm -rf "$out" && mkdir -p "$out"
-	[ -n "$2" ] || return 0
-	# TODO: detect if arm architecture
-	[ -n "$3" ] && [ -n "$isArm" ] && url="$3" || url="$2"
-	dl "$url" || return 1
-	case "$url" in
-		*".tar.gz")   req tar gzip  && tar -xzf "$dl" -C "$out" ;;
-		*".tbz")      req tar bzip2 && tar -xjf "$dl" -C "$out" ;;
-		*".zip")      req unzip     && unzip "$dl" -d "$out" ;;
-		*".appimage") chmod +x "$dl" && (cd "$out" && "$dl" --appimage-extract) ;;
-	esac
-}
-
-# Valid targets
-tui="zsh zsh_syntax_highlighting zsh_autosuggestions zsh_completions nvim fzf rg bat fd exa delta btop"
-gui=""
-all="$tui $gui zsh_arzsh_complete rust mosh"
-
-# Resolve command line arguments
-shift
-apt=""
-sudo=""
-targets=""
-for target in "$@"; do
-	case "$target" in
-		"--apt")  hash apt-get && apt="apt-get" || exit 1 ;;
-		"--sudo") hash sudo    && sudo="sudo"   || exit 1 ;;
-		"tui") targets="$targets$tui " ;;
-		"gui") targets="$targets$gui " ;;
-		"all") targets="$targets$all " ;;
-		*) echo "$all" | grep -Fqw "$target" && targets="$targets$target " || { echo "Unknown target: $target"; exit 1; }
-	esac
-done
-
-# Bootstrap cloning git repository
-[ -e "$root" ] || {
-	echo "$root missing, bootstrapping into $HOME..."
-	req git || exit 1
-	mkdir -p "$HOME/.ssh" && ssh-keyscan github.com >> "$HOME/.ssh/known_hosts"
-	git clone --bare "git@github.com:/tedski999/dots" "$root" || git clone --bare "https://github.com/tedski999/dots" "$root" || exit 1
-	if ! out="$(git --git-dir="$root" --work-tree="$HOME" checkout main 2>&1)"; then
-		echo "WARNING: The next operation WILL overwrite the following files:"
-		printf "%s" "$out" | tail --lines +2 | head --lines -2
-		printf "Enter YES to proceed with data loss: " && read -r res
-		[ "$res" = "YES" ] || [ "$res" = "yes" ] || { echo "Aborted."; exit 0; }
-		git --git-dir="$root" --work-tree="$HOME" checkout main --force || exit 1
-	fi
-	echo "Dots successfully installed into $HOME"
-}
-
-# Important directories
-. "$HOME/.zshenv" || exit 1
-tmp="$(mktemp --directory || exit 1)"
-bin="$HOME/.local/bin"
-cmp="$ZSH_DATA/completions"
-man="$XDG_DATA_HOME/man"
-mkdir -p "$bin" "$cmp" "$man/man1" "$man/man5"
-
-# Write gitignore
-mkdir -p "$root/info"
->"$root/info/exclude" echo "\
+postgit() {
+	echo "Applying post git checkout changes..." &&
+		chmod 644 "$HOME/.ssh/config" &&
+		mkdir -p "$root/info" &&
+		>"$root/info/exclude" echo "\
 /*
 !/.config
 !/.gnupg
@@ -224,7 +143,6 @@ mkdir -p "$root/info"
 !/.config/bat
 !/.config/docker
 !/.config/git
-!/.config/less
 !/.config/mpv
 !/.config/npm
 !/.config/nvim
@@ -248,8 +166,92 @@ mkdir -p "$root/info"
 
 /.ssh/*
 !/.ssh/config"
+}
 
-# TODO: git hook to set .ssh and .gnupg permissions
+# TODO: gui targets
+# i3
+# rofi
+# bar
+# notifications
+# slock and autosuspend
+# like a whole lot more (keybindings, network manager, bluetooth manager, advanced volume control, file manager)
+# mpv and gromit config
+
+req() {
+	hash $@ 2>/dev/null || {
+		[ -n "$apt" ] \
+			&& $sudo $apt install --yes $@ \
+			|| { echo "Missing requirements: $@"; return 1; }
+	}
+}
+
+dl() {
+	dl="${2-$(mktemp)}" &&
+		req curl &&
+		echo "$1 > $dl" &&
+		curl --retry 3 --retry-all-errors -fL "$1" -o "$dl"
+}
+
+opt() {
+	out="$HOME/.local/opt/$1"
+	[ -n "$1" ] || return 1
+	rm -rf "$out" && mkdir -p "$out"
+	[ -n "$2" ] || return 0
+	# TODO: detect if arm architecture
+	[ -n "$3" ] && [ -n "$isArm" ] && url="$3" || url="$2"
+	dl "$url" || return 1
+	case "$url" in
+		*".tar.gz")   req tar gzip  && tar -xzf "$dl" -C "$out" ;;
+		*".tbz")      req tar bzip2 && tar -xjf "$dl" -C "$out" ;;
+		*".zip")      req unzip     && unzip "$dl" -d "$out" ;;
+		*".appimage") chmod +x "$dl" && (cd "$out" && "$dl" --appimage-extract) ;;
+	esac
+}
+
+# Valid targets
+tui="zsh zsh_syntax_highlighting zsh_autosuggestions zsh_completions nvim fzf rg bat fd exa delta btop"
+gui=""
+all="$tui $gui zsh_arzsh_complete rust mosh postgit"
+
+# Resolve command line arguments
+shift
+apt=""
+sudo=""
+targets=""
+for target in "$@"; do
+	case "$target" in
+		"--apt")  hash apt-get && apt="apt-get" || exit 1 ;;
+		"--sudo") hash sudo    && sudo="sudo"   || exit 1 ;;
+		"tui") targets="$targets$tui " ;;
+		"gui") targets="$targets$gui " ;;
+		"all") targets="$targets$all " ;;
+		*) echo "$all" | grep -Fqw "$target" && targets="$targets$target " || { echo "Unknown target: $target"; exit 1; }
+	esac
+done
+
+# Bootstrap cloning git repository
+[ -e "$root" ] || {
+	echo "$root missing, bootstrapping into $HOME..."
+	req git || exit 1
+	git clone --bare "git@github.com:/tedski999/dots" "$root" || git clone --bare "https://github.com/tedski999/dots" "$root" || exit 1
+	if ! out="$(git --git-dir="$root" --work-tree="$HOME" checkout main 2>&1)"; then
+		echo "WARNING: The next operation WILL overwrite the following files:"
+		printf "%s" "$out" | tail --lines +2 | head --lines -2
+		printf "Enter YES to proceed with data loss: " && read -r res
+		[ "$res" = "YES" ] || [ "$res" = "yes" ] || { echo "Aborted."; exit 0; }
+		git --git-dir="$root" --work-tree="$HOME" checkout main --force || exit 1
+	fi
+	targets="postgit $targets"
+	echo "Dots successfully installed into $HOME"
+}
+
+# Important directories
+. "$HOME/.zshenv" || exit 1
+tmp="$(mktemp --directory || exit 1)"
+bin="$HOME/.local/bin"
+cmp="$ZSH_DATA/completions"
+man="$XDG_DATA_HOME/man"
+mkdir -p "$bin" "$cmp" "$man/man1" "$man/man5"
 
 # Execute targets
 fail=""
@@ -261,7 +263,6 @@ for target in $targets; do
 done
 
 # Print failures
-[ -z "$fail" ] || {
-	echo ""
-	echo "Failures occurred with targets: $fail"
+[ -z "$fail" ] || printf "\nFailures occurred with targets: %b\n" "$fail"
+
 }
