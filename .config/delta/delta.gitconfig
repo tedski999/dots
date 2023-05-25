@@ -1,9 +1,7 @@
 [core]
-	pager = delta
+	pager = ~/.local/bin/delta
 [interactive]
-	diffFilter = delta --color-only
-[add.interactive]
-	useBuiltin = false
+	diffFilter = ~/.local/bin/delta --color-only
 [delta]
 	features = navigate
 	relative-paths = true
@@ -12,7 +10,7 @@
 	line-numbers = true
 	line-numbers-left-format = ""
 	line-numbers-right-format = "{np:>4} "
-	navigate-regex = ^[+=!->]
+	navigate-regex = ^[-+=!>]
 	file-added-label = "+"
 	file-copied-label = "="
 	file-modified-label = "!"
@@ -20,6 +18,10 @@
 	file-renamed-label = ">"
 	file-style = brightyellow
 	file-decoration-style = omit
-	hunk-header-style = omit
+	hunk-label = "#"
+	hunk-header-style = "file line-number #000000" ; hack to hide text
+	hunk-header-file-style = blue
+	hunk-header-line-number-style = grey
+	hunk-header-decoration-style = omit
 	blame-palette = "#101010 #282828"
 	blame-separator-format = {n:^5}

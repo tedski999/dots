@@ -92,11 +92,7 @@ hash gpgconf 2>/dev/null && {
 }
 
 # Delta
-[[ -f "$HOME/.local/opt/delta/completion.zsh" ]] && {
-	source "$HOME/.local/opt/delta/completion.zsh"
-	export GIT_PAGER="delta"
-	export P4DIFF="delta"
-}
+[[ -f "$HOME/.local/opt/delta/completion.zsh" ]] && source "$HOME/.local/opt/delta/completion.zsh"
 
 # FZF
 export FZF_COLORS="fg+:bold,pointer:red,hl:red,hl+:red,gutter:-1,marker:red"
