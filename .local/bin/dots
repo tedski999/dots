@@ -137,6 +137,7 @@ postgit() {
 /.config/*
 !/.config/alacritty
 !/.config/bat
+!/.config/delta
 !/.config/docker
 !/.config/git
 !/.config/less

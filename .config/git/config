@@ -10,10 +10,14 @@
 	gpgsign = true
 [pull]
 	rebase = false
+[push]
+	default = current
 [merge]
 	conflictstyle = diff3
 [diff]
 	colorMoved = default
+[status]
+	short = true
 [alias]
 	l = log
 	s = status
@@ -25,3 +29,5 @@
 	d = diff
 	ds = diff --staged
 	rs = restore --staged
+[include]
+	path = ~/.config/delta/delta.gitconfig
