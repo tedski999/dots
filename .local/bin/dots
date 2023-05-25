@@ -139,6 +139,7 @@ postgit() {
 !/.config/bat
 !/.config/docker
 !/.config/git
+!/.config/less
 !/.config/mpv
 !/.config/npm
 !/.config/nvim

@@ -27,7 +27,7 @@ alias man='man -M "$XDG_DATA_HOME/man:$(manpath -g)"'
 alias sudo="sudo --preserve-env env PATH=$PATH "
 hash ip 2>/dev/null && alias ip="ip --color"
 hash exa 2>/dev/null && alias ls="exa -hs=name --group-directories-first"
-hash bat 2>/dev/null && alias cat="bat" && alias less="bat"
+hash bat 2>/dev/null && alias cat="bat --paging=never" && alias less="bat --paging=always"
 hash rg 2>/dev/null && alias grep="rg"
 hash delta 2>/dev/null && alias diff="delta"
 
@@ -75,15 +75,14 @@ autoload -U select-word-style
 select-word-style bash
 
 # Pager
-eval "$(dircolors -b)"
-export LESS_TERMCAP_mb=$'\e[1;31m'
-export LESS_TERMCAP_md=$'\e[1;36m'
-export LESS_TERMCAP_me=$'\e[0m'
-export LESS_TERMCAP_so=$'\e[01;33m'
-export LESS_TERMCAP_se=$'\e[0m'
-export LESS_TERMCAP_us=$'\e[1;32m'
-export LESS_TERMCAP_ue=$'\e[0m'
-export LESS="--ignore-case --LONG-PROMPT --RAW-CONTROL-CHARS"
+export LESS_TERMCAP_mb="$(tput setaf 2; tput blink)"
+export LESS_TERMCAP_md="$(tput setaf 0; tput bold)"
+export LESS_TERMCAP_me="$(tput sgr0)"
+export LESS_TERMCAP_so="$(tput setaf 3; tput smul; tput bold)"
+export LESS_TERMCAP_se="$(tput sgr0)"
+export LESS_TERMCAP_us="$(tput setaf 4; tput smul)"
+export LESS_TERMCAP_ue="$(tput sgr0)"
+export LESS="--ignore-case --tabs=4 --chop-long-lines --LONG-PROMPT --RAW-CONTROL-CHARS --lesskey-file=$XDG_CONFIG_HOME/less/key"
 command less --help | grep -q -- --incsearch && export LESS="--incsearch $LESS"
 
 # GPG+SSH

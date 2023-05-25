@@ -1,4 +1,4 @@
---number
---wrap=never
+--plain
+--wrap never
 --map-syntax "*.tin:C++"
---map-syntax='*.tac:C++'
+--map-syntax '*.tac:C++'
