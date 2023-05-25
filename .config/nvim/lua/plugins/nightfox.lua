@@ -42,6 +42,7 @@ local function config()
 				Search = { fg = "black", bg = "yellow" },
 				IncSearch = { fg = "black", bg = "white" },
 				NormalFloat = { bg = "palette.bg1" },
+				FloatBorder = { bg = "palette.bg1" },
 				ScrollView = { bg = "palette.bg2" },
 				CursorWord = { style = "bold" },
 				CursorLineNr = { fg = "palette.fg1" },

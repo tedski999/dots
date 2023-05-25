@@ -62,6 +62,7 @@ local function find_hunks(files)
 			table.insert(hunks, file..":"..lnum)
 		end
 	end
+	-- TODO(3, git): show diff in preview
 	-- TODO(3, git): ctrl-s stage/unstage, ctrl-x reset
 	-- this would likely require generating diffs and using "git apply --cached"
 	fzf.fzf_exec(hunks, { actions = fzf.config.globals.actions.files, previewer = "builtin" })
@@ -98,6 +99,8 @@ return {
 		{ "<leader>gl", "<cmd>FzfLua git_bcommits<cr>" },
 		{ "<leader>gL", "<cmd>FzfLua git_commits<cr>" },
 		{ "<leader>gb", "<cmd>FzfLua git_branches<cr>" },
+		{ "<leader>gh", find_hunks },
+		{ "<leader>gH", function() find_hunks({ "." }) end },
 		{ "<leader>d", "<cmd>FzfLua lsp_definitions<cr>" },
 		{ "<leader>D", "<cmd>FzfLua lsp_typedefs<cr>" },
 		-- TODO(3, fzf): previewer currently broken
@@ -108,8 +111,6 @@ return {
 		{ "<leader>a", find_altfiles },
 		{ "<leader>p", find_projects },
 		{ "<leader>P", save_project },
-		{ "<leader>gh", find_hunks },
-		{ "<leader>gH", function() find_hunks({ "." }) end },
 	},
 	config = function()
 		fzf = require("fzf-lua")
@@ -117,16 +118,24 @@ return {
 			winopts = {
 				height = 0.9, width = 0.9, row = 0.3, col = 0.5,
 				border = vim.g.border_chars,
-				hl = { normal = "", border = "FloatBorder" }
+				preview = { border = "sharp", winopts = { list = true } },
+				hl = { normal = "NormalFloat", border = "FloatBorder" }
 			},
 			keymap = {
 				builtin = {
 					["<c-_>"] = "toggle-preview",
 					["<c-o>"] = "toggle-preview-cw",
 					["<m-j>"] = "preview-page-reset",
+					-- TODO(2): half-page is borked
 					["<m-n>"] = "preview-page-down",
 					["<m-p>"] = "preview-page-up",
-				}
+				},
+				fzf = {
+					["ctrl-_"] = "toggle-preview",
+					["ctrl-o"] = "change-preview-window(down|left|up|right)",
+					["alt-n"]  = "preview-half-page-down",
+					["alt-p"]  = "preview-half-page-up",
+				},
 			},
 			actions = {
 				files = {
@@ -159,14 +168,15 @@ return {
 			quickfix_stack = { prompt = "> ", copen = "FzfLua quickfix", show_cwd_header = false, marker = "<" },
 			diagnostics = { prompt = "> ", copen = "FzfLua quickfix", show_cwd_header = false },
 			git = {
-				commits = { prompt = "> ", copen = "FzfLua quickfix", show_cwd_header = false },
-				bcommits = { prompt = "> ", copen = "FzfLua quickfix", show_cwd_header = false },
+				commits = { prompt = "> ", copen = "FzfLua quickfix", show_cwd_header = false, preview_pager = "delta --width=$FZF_PREVIEW_COLUMNS" },
+				bcommits = { prompt = "> ", copen = "FzfLua quickfix", show_cwd_header = false, preview_pager = "delta --width=$FZF_PREVIEW_COLUMNS" },
 				branches = { prompt = "> ", copen = "FzfLua quickfix", show_cwd_header = false },
 				stash = { prompt = "> ", copen = "FzfLua quickfix", show_cwd_header = false },
 				status = {
 					prompt = "> ",
 					copen = "FzfLua quickfix",
 					show_cwd_header = false,
+					preview_pager = "delta --width=$FZF_PREVIEW_COLUMNS",
 					actions = {
 						["right"] = false,
 						["left"] = false,
