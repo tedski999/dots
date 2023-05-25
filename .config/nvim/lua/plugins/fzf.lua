@@ -171,6 +171,7 @@ return {
 				commits = { prompt = "> ", copen = "FzfLua quickfix", show_cwd_header = false, preview_pager = "delta --width=$FZF_PREVIEW_COLUMNS" },
 				bcommits = { prompt = "> ", copen = "FzfLua quickfix", show_cwd_header = false, preview_pager = "delta --width=$FZF_PREVIEW_COLUMNS" },
 				branches = { prompt = "> ", copen = "FzfLua quickfix", show_cwd_header = false },
+				files = { prompt = "> ", copen = "FzfLua quickfix", show_cwd_header = false },
 				stash = { prompt = "> ", copen = "FzfLua quickfix", show_cwd_header = false },
 				status = {
 					prompt = "> ",

@@ -13,7 +13,7 @@ local function config()
 		palettes = {
 			all = {
 				comment = "#666666",
-				bg0 = "#000000",
+				bg0 = "#0c0c0c",
 				bg1 = "#121212",
 				bg2 = "#222222",
 				bg3 = "#222222",
