@@ -1,3 +1,5 @@
+# TODO: shell integration? tmux integration?
+
 live_config_reload: false
 
 scrolling:

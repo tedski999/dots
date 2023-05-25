@@ -8,11 +8,7 @@ root="$HOME/.local/dots"
 
 [ "$1" != "init" ] && exec git --git-dir="$root" --work-tree="$HOME" "$@"
 
-# TODO: very unlikely this will work for all devices. maybe setup a build server?
-# septs would maintain builds of all software for all devices
-# then opt would download from "https://pkg.h8c.de/<pkg>/<arch>"
-
-# TODO: deleting targets (remove links, opt dir)
+# TODO: migrate to nix package manager
 
 zsh() {
 	opt zsh "https://raw.githubusercontent.com/romkatv/zsh-bin/master/install" &&

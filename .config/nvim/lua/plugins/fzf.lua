@@ -1,5 +1,7 @@
 -- Fzf in Neovim
 
+-- TODO(3): previewer with last cursor position
+
 -- Switch to an alternative file based on extension
 local function find_altfiles()
 	local fzf = require("fzf-lua")

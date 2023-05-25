@@ -93,6 +93,7 @@ hash gpgconf 2>/dev/null && {
 }
 
 # Delta
+# TODO: delta config
 [[ -f "$HOME/.local/opt/delta/completion.zsh" ]] && {
 	source "$HOME/.local/opt/delta/completion.zsh"
 	export GIT_PAGER="delta"

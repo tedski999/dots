@@ -1,3 +1,4 @@
+-- TODO(2, next): lualine, winbar and tabby
 -- TODO(2, next): language-specifics: LSP, DAP, static analysis, Formatting, Linting
 vim.loader.enable()
 require("config.globals")
