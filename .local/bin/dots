@@ -142,6 +142,7 @@ postgit() {
 !/.config/git
 !/.config/less
 !/.config/mpv
+!/.config/neofetch
 !/.config/npm
 !/.config/nvim
 !/.config/python
