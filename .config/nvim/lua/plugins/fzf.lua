@@ -154,6 +154,7 @@ return {
 					["ctrl-y"] = yank_selection
 				}
 			},
+			fzf_opts = { ["--separator"] = [[""]] },
 			global_file_icons = false,
 			global_git_icons = true,
 			global_color_icons = true,
