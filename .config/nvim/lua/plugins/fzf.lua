@@ -87,14 +87,15 @@ return {
 		{ "<leader>F", "<cmd>FzfLua files<cr>" },
 		{ "<leader>s", "<cmd>FzfLua grep_project cwd=%:p:h<cr>" },
 		{ "<leader>S", "<cmd>FzfLua grep_project<cr>" },
-		{ "<leader>h", "<cmd>FzfLua help_tags prompt=>\\ <cr>" },
-		{ "<leader>H", "<cmd>FzfLua man_pages prompt=>\\ <cr>" },
+		{ "<leader>h", "<cmd>FzfLua help_tags<cr>" },
+		{ "<leader>H", "<cmd>FzfLua man_pages<cr>" },
 		{ "<leader>o", "<cmd>FzfLua oldfiles cwd_only=true<cr>" },
 		{ "<leader>O", "<cmd>FzfLua oldfiles<cr>" },
 		{ "<leader>m", "<cmd>FzfLua marks cwd_only=true<cr>" },
 		{ "<leader>M", "<cmd>FzfLua marks<cr>" },
 		{ "<leader>E", "<cmd>FzfLua diagnostics_document<cr>" },
 		{ "<leader>gs", "<cmd>FzfLua git_status<cr>" },
+		{ "<leader>go", "<cmd>FzfLua git_files<cr>" },
 		{ "<leader>gf", "<cmd>FzfLua git_files<cr>" },
 		{ "<leader>gl", "<cmd>FzfLua git_bcommits<cr>" },
 		{ "<leader>gL", "<cmd>FzfLua git_commits<cr>" },
@@ -116,26 +117,26 @@ return {
 		fzf = require("fzf-lua")
 		fzf.setup({
 			winopts = {
-				height = 0.9, width = 0.9, row = 0.3, col = 0.5,
-				border = vim.g.border_chars,
-				preview = { border = "sharp", winopts = { list = true } },
-				hl = { normal = "NormalFloat", border = "FloatBorder" }
+				height = 0.25, width = 1.0, row = 1.0, col = 0.5,
+				border = { " ", " ", " ", " ", " ", " ", " ", " " },
+				hl = { normal = "NormalFloat", border = "FloatBorder" },
+				preview = {
+					layout = "horizontal",
+					border = "noborder",
+					scrollbar = "border",
+					scrollchars = { "│", "" },
+					winopts = { list = true }
+				}
 			},
 			keymap = {
 				builtin = {
 					["<c-_>"] = "toggle-preview",
-					["<c-o>"] = "toggle-preview-cw",
+					["<c-o>"] = "toggle-fullscreen",
 					["<m-j>"] = "preview-page-reset",
 					-- TODO(2): half-page is borked
 					["<m-n>"] = "preview-page-down",
 					["<m-p>"] = "preview-page-up",
-				},
-				fzf = {
-					["ctrl-_"] = "toggle-preview",
-					["ctrl-o"] = "change-preview-window(down|left|up|right)",
-					["alt-n"]  = "preview-half-page-down",
-					["alt-p"]  = "preview-half-page-up",
-				},
+				}
 			},
 			actions = {
 				files = {
@@ -157,24 +158,23 @@ return {
 			global_git_icons = true,
 			global_color_icons = true,
 			previewers = { man = { cmd = "man %s | col -bx" } },
-			files = { prompt = "> ", copen = "FzfLua quickfix", show_cwd_header = false },
-			grep = { prompt = "> ", copen = "FzfLua quickfix", show_cwd_header = false, no_header = true },
-			oldfiles = { prompt = "> ", copen = "FzfLua quickfix", show_cwd_header = false, include_current_session = true },
-			buffers = { prompt = "> ", copen = "FzfLua quickfix", show_cwd_header = false },
-			tabs = { prompt = "> ", copen = "FzfLua quickfix", show_cwd_header = false },
-			lines = { prompt = "> ", copen = "FzfLua quickfix", show_cwd_header = false },
-			blines = { prompt = "> ", copen = "FzfLua quickfix", show_cwd_header = false },
-			quickfix = { prompt = "> ", copen = "FzfLua quickfix", show_cwd_header = false },
-			quickfix_stack = { prompt = "> ", copen = "FzfLua quickfix", show_cwd_header = false, marker = "<" },
-			diagnostics = { prompt = "> ", copen = "FzfLua quickfix", show_cwd_header = false },
+			files = { copen = "FzfLua quickfix", show_cwd_header = false },
+			grep = { copen = "FzfLua quickfix", show_cwd_header = false, no_header = true },
+			oldfiles = { copen = "FzfLua quickfix", show_cwd_header = false, include_current_session = true },
+			buffers = { copen = "FzfLua quickfix", show_cwd_header = false },
+			tabs = { copen = "FzfLua quickfix", show_cwd_header = false },
+			lines = { copen = "FzfLua quickfix", show_cwd_header = false },
+			blines = { copen = "FzfLua quickfix", show_cwd_header = false },
+			quickfix = { copen = "FzfLua quickfix", show_cwd_header = false },
+			quickfix_stack = { copen = "FzfLua quickfix", show_cwd_header = false, marker = "<" },
+			diagnostics = { copen = "FzfLua quickfix", show_cwd_header = false },
 			git = {
-				commits = { prompt = "> ", copen = "FzfLua quickfix", show_cwd_header = false, preview_pager = "delta --width=$FZF_PREVIEW_COLUMNS" },
-				bcommits = { prompt = "> ", copen = "FzfLua quickfix", show_cwd_header = false, preview_pager = "delta --width=$FZF_PREVIEW_COLUMNS" },
-				branches = { prompt = "> ", copen = "FzfLua quickfix", show_cwd_header = false },
-				files = { prompt = "> ", copen = "FzfLua quickfix", show_cwd_header = false },
-				stash = { prompt = "> ", copen = "FzfLua quickfix", show_cwd_header = false },
+				commits = { copen = "FzfLua quickfix", show_cwd_header = false, preview_pager = "delta --width=$FZF_PREVIEW_COLUMNS" },
+				bcommits = { copen = "FzfLua quickfix", show_cwd_header = false, preview_pager = "delta --width=$FZF_PREVIEW_COLUMNS" },
+				branches = { copen = "FzfLua quickfix", show_cwd_header = false },
+				files = { copen = "FzfLua quickfix", show_cwd_header = false },
+				stash = { copen = "FzfLua quickfix", show_cwd_header = false },
 				status = {
-					prompt = "> ",
 					copen = "FzfLua quickfix",
 					show_cwd_header = false,
 					preview_pager = "delta --width=$FZF_PREVIEW_COLUMNS",
@@ -193,10 +193,8 @@ return {
 				}
 			},
 			lsp = {
-				prompt_postfix = "> ",
-				file_icons = false,
-				code_actions = { prompt = "> ", copen = "FzfLua quickfix", show_cwd_header = false },
-				finder = { prompt = "> ", copen = "FzfLua quickfix", show_cwd_header = false, async = false, separator = " " }
+				code_actions = { copen = "FzfLua quickfix", show_cwd_header = false },
+				finder = { copen = "FzfLua quickfix", show_cwd_header = false, async = false, separator = " " }
 			}
 		})
 		if vim.g.arista then
