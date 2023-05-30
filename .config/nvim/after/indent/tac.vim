@@ -5,3 +5,4 @@ function TaccIndentOverrides()
 endfunction
 
 setlocal indentexpr=TaccIndentOverrides()
+setlocal commentstring=//\ %s
