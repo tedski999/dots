@@ -118,7 +118,7 @@ return {
 		fzf.setup({
 			winopts = {
 				height = 0.25, width = 1.0, row = 1.0, col = 0.5,
-				border = { " ", " ", " ", " ", " ", " ", " ", " " },
+				border = { "─", "─", "─", " ", "", "", "", " " },
 				hl = { normal = "NormalFloat", border = "FloatBorder" },
 				preview = {
 					layout = "horizontal",
