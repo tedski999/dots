@@ -56,3 +56,6 @@ end })
 
 -- Keep universal formatoptions
 vim.api.nvim_create_autocmd("Filetype", { callback = function() vim.o.formatoptions = "rqlj" end })
+
+-- Swap to manual folding
+vim.api.nvim_create_autocmd("BufWinEnter", { callback = function() vim.o.foldmethod = "manual" end })
