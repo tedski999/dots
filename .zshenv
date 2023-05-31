@@ -8,6 +8,7 @@ export EDITOR="nvim"
 export VISUAL="nvim"
 export MANPAGER="nvim +Man!"
 export MANWIDTH="80"
+export TERMINAL="alacritty"
 export BROWSER="brave-browser"
 # Clean $HOME
 export HISTFILE="$XDG_DATA_HOME/history"

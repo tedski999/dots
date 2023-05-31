@@ -27,12 +27,12 @@ zsh_autosuggestions() {
 
 zsh_completions() {
 	opt zsh-completions "https://github.com/zsh-users/zsh-completions/archive/refs/tags/0.34.0.tar.gz" &&
-		ln -sf "$out/zsh-completions-0.34.0/src/_"* "$cmp/"
+		ln -sf "$out/zsh-completions-0.34.0/src/"* "$cmp/"
 }
 
 zsh_arzsh_complete() {
 	opt arzsh-complete "https://gitlab.aristanetworks.com/kev/arzsh-complete/-/archive/master/arzsh-complete-master.tar.gz" &&
-		ln -sf "$out/arzsh-complete-master/_"* "$cmp/"
+		ln -sf "$out/arzsh-complete-master/"* "$cmp/"
 }
 
 nvim() {

@@ -27,7 +27,7 @@ uc("W", ":w !>/dev/null sudo tee %", {})
 -- Split lines at cursor, opposite of <s-j>
 km("n", "<c-j>", "m`i<cr><esc>``")
 -- Terminal shortcuts
-km("n", "<leader><return>", "<cmd>belowright split | exec 'terminal' | startinsert<cr>")
+km("n", "<leader><return>", "<cmd>belowright split | terminal<cr>")
 km("t", "<esc>", "(&filetype == 'fzf') ? '<esc>' : '<c-\\><c-n>'", { expr = true })
 -- Open config
 km("n", "<leader>;", "<cmd>edit "..vim.fn.stdpath("config").."<cr>")
