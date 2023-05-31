@@ -44,7 +44,7 @@ local function config()
 				NormalFloat = { bg = "palette.bg1" },
 				FloatBorder = { bg = "palette.bg1" },
 				ScrollView = { bg = "palette.bg2" },
-				CursorWord = { style = "bold" },
+				CursorWord = { bg = "none", fg = "none", style = "underline,bold" },
 				CursorLineNr = { fg = "palette.fg1" },
 				Whitespace = { fg = "palette.sel1" },
 				ExtraWhitespace = { bg = "red", fg = "red" },
