@@ -1,154 +1,81 @@
 #!/bin/sh
 
-# apt update; apt install --yes curl; sh -c "$(curl https://h8c.de/dots)" -- init tui
+# sh -c "$(curl https://h8c.de/dots)" -- init
 
-{
+# TODO: nixify patched mosh install
+# opt mosh "https://github.com/mobile-shell/mosh/archive/refs/tags/mosh-1.4.0.tar.gz"
+# dl "https://github.com/mobile-shell/mosh/pull/1167.diff"
+# patch -p1 -i "$dl" -d "$out/mosh-mosh-1.4.0"
+# cd "$out/mosh-mosh-1.4.0" && ./autogen.sh && ./configure && make
 
+# Where to find dots repo
 root="$HOME/.local/dots"
+git_ssh="git@github.com:/tedski999/dots"
+git_http="https://github.com/tedski999/dots"
 
+# Where to find nix
+nix="$HOME/.local/bin/nix"
+nix_url="https://hydra.nixos.org/job/nix/maintenance-2.17/buildStatic.x86_64-linux/latest/download-by-type/file/binary-dist"
+
+# Use dots as shortcut to git in home directory
 [ "$1" != "init" ] && exec git --git-dir="$root" --work-tree="$HOME" "$@"
 
-# TODO: migrate to nix package manager
-
-zsh() {
-	opt zsh "https://raw.githubusercontent.com/romkatv/zsh-bin/master/install" &&
-		sh "$dl" -d "$out" -e no &&
-		ln -sf "$out/bin/zsh" "$bin/zsh" &&
-		ln -sf "$out/share/man/man1/"* "$man/man1/"
+# Ensure nix is installed
+[ -x "$nix" ] || {
+	echo; echo "Nix missing, installing to $nix..."
+	hash curl || exit 1
+	mkdir -p "$(dirname $nix)" || exit 1
+	curl --location --retry 3 --retry-all-errors "$nix_url" > "$nix" || exit 1
+	chmod +x "$nix" || exit 1
+	echo "Nix successfully installed to $nix"
 }
 
-zsh_syntax_highlighting() {
-	opt zsh-syntax-highlighting "https://github.com/zsh-users/zsh-syntax-highlighting/archive/refs/heads/master.zip"
+# Ensure dots repo is installed
+[ -e "$root" ] || {
+	echo; echo "Dots repo missing, bootstrapping into $root..."
+	nixgit() { $nix --experimental-features "nix-command flakes" --use-xdg-base-directories run 'nixpkgs#git' -- $@; }
+	nixgit clone --bare "$git_ssh" "$root" || nixgit clone --bare "$git_http" "$root" || exit 1
+	if ! out="$(nixgit --git-dir="$root" --work-tree="$HOME" checkout main 2>&1)"; then
+		echo "WARNING: The next operation WILL overwrite the following files:"
+		printf "%s" "$out" | tail --lines +2 | head --lines -2
+		printf "Enter y to proceed with data loss: " && read -r res
+		[ "$res" = "y" ] && nixgit --git-dir="$root" --work-tree="$HOME" checkout main --force || exit 1
+	fi
+	echo "Dots successfully installed into $root"
 }
 
-zsh_autosuggestions() {
-	opt zsh-autosuggestions "https://github.com/zsh-users/zsh-autosuggestions/archive/refs/tags/v0.7.0.tar.gz"
-}
+# Fix permissions
+chmod 644 "$HOME/.ssh/config"
 
-zsh_completions() {
-	opt zsh-completions "https://github.com/zsh-users/zsh-completions/archive/refs/tags/0.34.0.tar.gz" &&
-		ln -sf "$out/zsh-completions-0.34.0/src/"* "$cmp/"
-}
-
-zsh_arzsh_complete() {
-	opt arzsh-complete "https://gitlab.aristanetworks.com/kev/arzsh-complete/-/archive/master/arzsh-complete-master.tar.gz" &&
-		ln -sf "$out/arzsh-complete-master/"* "$cmp/"
-}
-
-nvim() {
-	opt nvim "https://github.com/neovim/neovim/releases/download/v0.9.0/nvim.appimage" &&
-		ln -sf "$out/squashfs-root/AppRun" "$bin/nvim" &&
-		ln -sf "$out/squashfs-root/usr/man/man1/nvim.1" "$man/man1/nvim.1" &&
-		ln -sf "$bin/nvim" "$bin/vim" &&
-		hash python3 pip3 && pip3 install pynvim
-}
-
-fzf() {
-	url="https://github.com/junegunn/fzf/releases/download/0.40.0"
-	opt fzf "$url/fzf-0.40.0-linux_amd64.tar.gz" "$url/fzf-0.40.0-linux_arm64.tar.gz" &&
-		dl "https://raw.githubusercontent.com/junegunn/fzf/master/shell/completion.zsh" "$out/completion.zsh" &&
-		dl "https://raw.githubusercontent.com/junegunn/fzf/master/shell/key-bindings.zsh" "$out/key-bindings.zsh" &&
-		dl "https://raw.githubusercontent.com/junegunn/fzf/master/man/man1/fzf.1" "$out/fzf.1"
-}
-
-rg() {
-	url="https://github.com/BurntSushi/ripgrep/releases/download/13.0.0"
-	opt rg "$url/ripgrep-13.0.0-x86_64-unknown-linux-musl.tar.gz" "$url/ripgrep-13.0.0-arm-unknown-linux-gnueabihf.tar.gz" &&
-		ln -sf "$out/ripgrep-13.0.0-x86_64-unknown-linux-musl/rg" "$bin/rg" &&
-		ln -sf "$out/ripgrep-13.0.0-x86_64-unknown-linux-musl/doc/rg.1" "$man/man1/rg.1" &&
-		ln -sf "$out/ripgrep-13.0.0-x86_64-unknown-linux-musl/complete/_rg" "$cmp/_rg"
-}
-
-bat() {
-	url="https://github.com/sharkdp/bat/releases/download/v0.23.0"
-	opt bat "$url/bat-v0.23.0-x86_64-unknown-linux-musl.tar.gz" "$url/bat-v0.23.0-arm-unknown-linux-musleabihf.tar.gz" &&
-		ln -sf "$out/bat-v0.23.0-x86_64-unknown-linux-musl/bat" "$bin/bat" &&
-		ln -sf "$out/bat-v0.23.0-x86_64-unknown-linux-musl/bat.1" "$man/man1/bat.1" &&
-		ln -sf "$out/bat-v0.23.0-x86_64-unknown-linux-musl/autocomplete/bat.zsh" "$cmp/_bat"
-}
-
-fd() {
-	url="https://github.com/sharkdp/fd/releases/download/v8.7.0"
-	opt fd "$url/fd-v8.7.0-x86_64-unknown-linux-musl.tar.gz" "$url/fd-v8.7.0-arm-unknown-linux-musleabihf.tar.gz" &&
-		ln -sf "$out/fd-v8.7.0-x86_64-unknown-linux-musl/fd" "$bin/fd" &&
-		ln -sf "$out/fd-v8.7.0-x86_64-unknown-linux-musl/fd.1" "$man/man1/fd.1" &&
-		ln -sf "$out/fd-v8.7.0-x86_64-unknown-linux-musl/autocomplete/_fd" "$cmp/_fd"
-}
-
-exa() {
-	url="https://github.com/ogham/exa/releases/download/v0.10.1"
-	opt exa "$url/exa-linux-x86_64-musl-v0.10.1.zip" "$url/exa-linux-armv7-v0.10.1.zip" &&
-		ln -sf "$out/bin/exa" "$bin/exa" &&
-		ln -sf "$out/man/exa.1" "$man/man1/exa.1" &&
-		ln -sf "$out/man/exa_colors.5" "$man/man5/exa_colors.5" &&
-		ln -sf "$out/completions/exa.zsh" "$cmp/_exa"
-}
-
-delta() {
-	url="https://github.com/dandavison/delta/releases/download/0.15.1"
-	opt delta "$url/delta-0.15.1-x86_64-unknown-linux-musl.tar.gz" "$url/delta-0.15.1-arm-unknown-linux-gnueabihf.tar.gz" &&
-		dl "https://raw.githubusercontent.com/dandavison/delta/master/etc/completion/completion.zsh" "$out/completion.zsh" &&
-		ln -sf "$out/delta-0.15.1-x86_64-unknown-linux-musl/delta" "$bin/delta"
-}
-
-btop() {
-	url="https://github.com/aristocratos/btop/releases/download/v1.2.13"
-	opt btop "$url/btop-x86_64-linux-musl.tbz" "$url/btop-arm-linux-musleabi.tbz" &&
-		ln -sf "$out/btop/bin/btop" "$bin/btop"
-}
-
-rust() {
-	opt cargo && opt rustup "https://sh.rustup.rs" &&
-		sh "$dl" --component rust-analyzer --component rust-src --no-modify-path -y &&
-		. "$CARGO_HOME/env" &&
-		rustup completions zsh > "$out/_rustup" &&
-		ln -sf "$out/_rustup" "$cmp/_rustup" &&
-		ln -sf "$out/toolchains/stable-x86_64-unknown-linux-gnu/share/zsh/site-functions/_cargo" "$cmp/_cargo" &&
-		ln -sf "$out/toolchains/stable-x86_64-unknown-linux-gnu/share/man/man1/"* "$man/man1/"
-}
-
-mosh() {
-	req patch autoconf build-essential pkg-config libprotobuf-dev libutempter-dev zlib1g-dev libncurses5-dev libssl-dev || return 1
-	opt mosh "https://github.com/mobile-shell/mosh/archive/refs/tags/mosh-1.4.0.tar.gz" &&
-		dl "https://github.com/mobile-shell/mosh/pull/1167.diff" &&
-		patch -p1 -i "$dl" -d "$out/mosh-mosh-1.4.0" &&
-		(cd "$out/mosh-mosh-1.4.0" && ./autogen.sh && ./configure && make) &&
-		ln -sf "$out/mosh-mosh-1.4.0/scripts/mosh" "$bin/mosh" &&
-		ln -sf "$out/mosh-mosh-1.4.0/src/frontend/mosh-client" "$bin/mosh-client" &&
-		ln -sf "$out/mosh-mosh-1.4.0/src/frontend/mosh-server" "$bin/mosh-server" &&
-		ln -sf "$out/mosh-mosh-1.4.0/man/mosh.1" "$man/man1/mosh.1" &&
-		ln -sf "$out/mosh-mosh-1.4.0/man/mosh-client.1" "$man/man1/mosh-client.1" &&
-		ln -sf "$out/mosh-mosh-1.4.0/man/mosh-server.1" "$man/man1/mosh-server.1"
-}
-
-postgit() {
-	echo "Applying post git checkout changes..." &&
-		chmod 644 "$HOME/.ssh/config" &&
-		mkdir -p "$root/info" &&
-		>"$root/info/exclude" echo "\
-/*
+# Write dots gitignore
+mkdir -p "$root/info" &&
+>"$root/info/exclude" echo "/*
 !/.config
 !/.gnupg
 !/.local
 !/.ssh
-!/.zshenv
-!/.zshrc
+!/.bashrc
 
 /.config/*
 !/.config/alacritty
 !/.config/bat
 !/.config/delta
 !/.config/docker
+!/.config/dots
+!/.config/dunst
 !/.config/git
 !/.config/less
 !/.config/mpv
 !/.config/neofetch
+!/.config/nix
 !/.config/npm
 !/.config/nvim
 !/.config/python
 !/.config/ripgrep
+!/.config/rofi
 !/.config/sxiv
 !/.config/tmux
+!/.config/zsh
 !/.config/mimeapps.list
 !/.config/user-dirs.dirs
 !/.config/user-dirs.locale
@@ -165,103 +92,5 @@ postgit() {
 
 /.ssh/*
 !/.ssh/config"
-}
 
-# TODO: gui targets
-# i3
-# rofi
-# bar
-# notifications
-# slock and autosuspend
-# like a whole lot more (keybindings, network manager, bluetooth manager, advanced volume control, file manager)
-# mpv and gromit config
-
-req() {
-	hash $@ 2>/dev/null || {
-		[ -n "$apt" ] \
-			&& $sudo $apt install --yes $@ \
-			|| { echo "Missing requirements: $@"; return 1; }
-	}
-}
-
-dl() {
-	dl="${2-$(mktemp)}" &&
-		req curl &&
-		echo "$1 > $dl" &&
-		curl --retry 3 --retry-all-errors -fL "$1" -o "$dl"
-}
-
-opt() {
-	out="$HOME/.local/opt/$1"
-	[ -n "$1" ] || return 1
-	rm -rf "$out" && mkdir -p "$out"
-	[ -n "$2" ] || return 0
-	# TODO: detect if arm architecture
-	[ -n "$3" ] && [ -n "$isArm" ] && url="$3" || url="$2"
-	dl "$url" || return 1
-	case "$url" in
-		*".tar.gz")   req tar gzip  && tar -xzf "$dl" -C "$out" ;;
-		*".tbz")      req tar bzip2 && tar -xjf "$dl" -C "$out" ;;
-		*".zip")      req unzip     && unzip "$dl" -d "$out" ;;
-		*".appimage") chmod +x "$dl" && (cd "$out" && "$dl" --appimage-extract) ;;
-	esac
-}
-
-# Valid targets
-tui="zsh zsh_syntax_highlighting zsh_autosuggestions zsh_completions nvim fzf rg bat fd exa delta btop"
-gui=""
-all="$tui $gui zsh_arzsh_complete rust mosh postgit"
-
-# Resolve command line arguments
-shift
-apt=""
-sudo=""
-targets=""
-for target in "$@"; do
-	case "$target" in
-		"--apt")  hash apt-get && apt="apt-get" || exit 1 ;;
-		"--sudo") hash sudo    && sudo="sudo"   || exit 1 ;;
-		"tui") targets="$targets$tui " ;;
-		"gui") targets="$targets$gui " ;;
-		"all") targets="$targets$all " ;;
-		*) echo "$all" | grep -Fqw "$target" && targets="$targets$target " || { echo "Unknown target: $target"; exit 1; }
-	esac
-done
-
-# Bootstrap cloning git repository
-[ -e "$root" ] || {
-	echo "$root missing, bootstrapping into $HOME..."
-	req git || exit 1
-	git clone --bare "git@github.com:/tedski999/dots" "$root" || git clone --bare "https://github.com/tedski999/dots" "$root" || exit 1
-	if ! out="$(git --git-dir="$root" --work-tree="$HOME" checkout main 2>&1)"; then
-		echo "WARNING: The next operation WILL overwrite the following files:"
-		printf "%s" "$out" | tail --lines +2 | head --lines -2
-		printf "Enter YES to proceed with data loss: " && read -r res
-		[ "$res" = "YES" ] || [ "$res" = "yes" ] || { echo "Aborted."; exit 0; }
-		git --git-dir="$root" --work-tree="$HOME" checkout main --force || exit 1
-	fi
-	targets="postgit $targets"
-	echo "Dots successfully installed into $HOME"
-}
-
-# Important directories
-. "$HOME/.zshenv" || exit 1
-tmp="$(mktemp --directory || exit 1)"
-bin="$HOME/.local/bin"
-cmp="$ZSH_DATA/completions"
-man="$XDG_DATA_HOME/man"
-mkdir -p "$bin" "$cmp" "$man/man1" "$man/man5"
-
-# Execute targets
-fail=""
-for target in $targets; do
-	echo ""
-	echo "==== Starting $target ===="
-	"$target" || fail="$fail\n  $target"
-	echo "==== Finished $target ===="
-done
-
-# Print failures
-[ -z "$fail" ] || printf "\nFailures occurred with targets: %b\n" "$fail"
-
-}
+echo; echo "Initialisation done. Restart shell for configuration to take effect."
