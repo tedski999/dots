@@ -47,6 +47,8 @@ mkdir -p "$root/info" &&
 !/.gnupg
 !/.local
 !/.ssh
+!/.zshenv
+!/.zshrc
 
 /.config/*
 !/.config/alacritty
@@ -66,7 +68,6 @@ mkdir -p "$root/info" &&
 !/.config/rofi
 !/.config/sxiv
 !/.config/tmux
-!/.config/zsh
 !/.config/mimeapps.list
 !/.config/user-dirs.dirs
 !/.config/user-dirs.locale
@@ -86,7 +87,7 @@ mkdir -p "$root/info" &&
 
 # Install packages
 msg "=== Installing packages ==="
-nix profile list | grep --quiet ".config/nix" \
+nix profile list --json | grep --quiet ".config/nix" \
 	&& nix profile upgrade ".*" \
 	|| nix profile install path:$HOME/.config/nix
 

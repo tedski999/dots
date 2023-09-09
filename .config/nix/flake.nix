@@ -18,6 +18,7 @@
           alacritty #TODO: replace alacritty?
           # shell
           zsh
+          zsh-syntax-highlighting
           zsh-autosuggestions
           zsh-completions
           # cli tools
@@ -29,6 +30,7 @@
           eza
           delta
           btop
+          cht-sh
 
           #rust
         ];

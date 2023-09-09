@@ -49,8 +49,8 @@ function zle-line-init { echo -ne "\e[6 q" }
 autoload -Uz up-line-or-beginning-search down-line-or-beginning-search
 zle -N up-line-or-beginning-search
 zle -N down-line-or-beginning-search
-# for k in "^[p" "^[OA" "^[[A"; bindkey "$k" up-line-or-beginning-search
-# for k in "^[n" "^[OB" "^[[B"; bindkey "$k" down-line-or-beginning-search
+for k in "^[p" "^[OA" "^[[A"; bindkey "$k" up-line-or-beginning-search
+for k in "^[n" "^[OB" "^[[B"; bindkey "$k" down-line-or-beginning-search
 
 # Completion
 autoload -Uz compinit
