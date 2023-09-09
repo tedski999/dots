@@ -2,38 +2,29 @@
 
 # sh -c "$(curl https://h8c.de/dots)" -- init
 
-# TODO: nixify patched mosh install
-# opt mosh "https://github.com/mobile-shell/mosh/archive/refs/tags/mosh-1.4.0.tar.gz"
-# dl "https://github.com/mobile-shell/mosh/pull/1167.diff"
-# patch -p1 -i "$dl" -d "$out/mosh-mosh-1.4.0"
-# cd "$out/mosh-mosh-1.4.0" && ./autogen.sh && ./configure && make
-
 # Where to find dots repo
 root="$HOME/.local/dots"
 git_ssh="git@github.com:/tedski999/dots"
 git_http="https://github.com/tedski999/dots"
 
-# Where to find nix
-nix="$HOME/.local/bin/nix"
-nix_url="https://hydra.nixos.org/job/nix/maintenance-2.17/buildStatic.x86_64-linux/latest/download-by-type/file/binary-dist"
-
 # Use dots as shortcut to git in home directory
 [ "$1" != "init" ] && exec git --git-dir="$root" --work-tree="$HOME" "$@"
 
 # Ensure nix is installed
-[ -x "$nix" ] || {
-	echo; echo "Nix missing, installing to $nix..."
-	hash curl || exit 1
-	mkdir -p "$(dirname $nix)" || exit 1
-	curl --location --retry 3 --retry-all-errors "$nix_url" > "$nix" || exit 1
-	chmod +x "$nix" || exit 1
-	echo "Nix successfully installed to $nix"
+hash nix 2>/dev/null && [ -e /nix ] || {
+	echo; echo "Installing Nix to /nix..."
+	hash curl xz || exit 1
+	# TODO: test for sudo privs
+	sudo install -d -m 755 -o "$(id -u)" -g "$(id -g)" /nix || exit 1
+	NIX_CONFIG="use-xdg-base-directories = true" \
+		sh -c "$(curl -L https://nixos.org/nix/install)" -- --no-daemon --no-modify-profile || exit 1
+	echo "Nix successfully installed to /nix"
 }
 
 # Ensure dots repo is installed
 [ -e "$root" ] || {
 	echo; echo "Dots repo missing, bootstrapping into $root..."
-	nixgit() { $nix --experimental-features "nix-command flakes" --use-xdg-base-directories run 'nixpkgs#git' -- $@; }
+	nixgit() { nix --experimental-features "nix-command flakes" --use-xdg-base-directories run "nixpkgs#git" -- $@; }
 	nixgit clone --bare "$git_ssh" "$root" || nixgit clone --bare "$git_http" "$root" || exit 1
 	if ! out="$(nixgit --git-dir="$root" --work-tree="$HOME" checkout main 2>&1)"; then
 		echo "WARNING: The next operation WILL overwrite the following files:"
@@ -54,14 +45,12 @@ mkdir -p "$root/info" &&
 !/.gnupg
 !/.local
 !/.ssh
-!/.bashrc
 
 /.config/*
 !/.config/alacritty
 !/.config/bat
 !/.config/delta
 !/.config/docker
-!/.config/dots
 !/.config/dunst
 !/.config/git
 !/.config/less
@@ -93,4 +82,17 @@ mkdir -p "$root/info" &&
 /.ssh/*
 !/.ssh/config"
 
-echo; echo "Initialisation done. Restart shell for configuration to take effect."
+# Install packages
+nix profile remove ".*"
+nix profile install path:$HOME/.config/nix
+
+# TODO: will need to set shell to nix zsh somehow
+# $HOME/.local/state/nix/profile/bin/zsh
+
+# TODO: nixify patched mosh install
+# opt mosh "https://github.com/mobile-shell/mosh/archive/refs/tags/mosh-1.4.0.tar.gz"
+# dl "https://github.com/mobile-shell/mosh/pull/1167.diff"
+# patch -p1 -i "$dl" -d "$out/mosh-mosh-1.4.0"
+# cd "$out/mosh-mosh-1.4.0" && ./autogen.sh && ./configure && make
+
+echo; echo "Done."

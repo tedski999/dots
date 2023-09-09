@@ -32,7 +32,8 @@
 
           #rust
         ];
-        extraOutputsToInstall = [ "man" "doc" ];
+        # extraOutputsToInstall = [ "man" "doc" ];
+        # pathsToLink = [ "/share/man" "/share/doc" "/bin" ];
       };
     };
 }
