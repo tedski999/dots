@@ -10,22 +10,24 @@ git_http="https://github.com/tedski999/dots"
 # Use dots as shortcut to git in home directory
 [ "$1" != "init" ] && exec git --git-dir="$root" --work-tree="$HOME" "$@"
 
+msg() { printf "\n\033[1;33m$@\033[0m\n"; }
+
 # Ensure nix is installed
+# TODO: breaks if my profile is still around as the installer uses nix-env
 hash nix 2>/dev/null && [ -e /nix ] || {
-	echo; echo "Installing Nix to /nix..."
+	msg "=== Installing Nix ==="
 	hash curl xz || exit 1
 	# TODO: test for sudo privs
 	sudo install -d -m 755 -o "$(id -u)" -g "$(id -g)" /nix || exit 1
 	NIX_CONFIG="use-xdg-base-directories = true" \
 		sh -c "$(curl -L https://nixos.org/nix/install)" -- --no-daemon --no-modify-profile || exit 1
 	. $HOME/.local/state/nix/profile/etc/profile.d/nix.sh
-	echo "Nix successfully installed to /nix"
 }
 
 # Ensure dots repo is installed
 [ -e "$root" ] || {
-	echo; echo "Dots repo missing, bootstrapping into $root..."
-	nixgit() { nix --experimental-features "nix-command flakes" --use-xdg-base-directories run "nixpkgs#git" -- $@; }
+	msg "=== Bootstrapping dots ==="
+	nixgit() { nix --experimental-features "nix-command flakes" --use-xdg-base-directories --max-jobs auto run "nixpkgs#git" -- $@; }
 	nixgit clone --bare "$git_ssh" "$root" || nixgit clone --bare "$git_http" "$root" || exit 1
 	if ! out="$(nixgit --git-dir="$root" --work-tree="$HOME" checkout main 2>&1)"; then
 		echo "WARNING: The next operation WILL overwrite the following files:"
@@ -33,7 +35,6 @@ hash nix 2>/dev/null && [ -e /nix ] || {
 		printf "Enter y to proceed with data loss: " && read -r res
 		[ "$res" = "y" ] && nixgit --git-dir="$root" --work-tree="$HOME" checkout main --force || exit 1
 	fi
-	echo "Dots successfully installed into $root"
 }
 
 # Fix permissions
@@ -84,11 +85,10 @@ mkdir -p "$root/info" &&
 !/.ssh/config"
 
 # Install packages
-nix profile remove ".*"
-nix profile install path:$HOME/.config/nix
-
-# TODO: will need to set shell to nix zsh somehow
-# $HOME/.local/state/nix/profile/bin/zsh
+msg "=== Installing packages ==="
+nix profile list | grep --quiet ".config/nix" \
+	&& nix profile upgrade ".*" \
+	|| nix profile install path:$HOME/.config/nix
 
 # TODO: nixify patched mosh install
 # opt mosh "https://github.com/mobile-shell/mosh/archive/refs/tags/mosh-1.4.0.tar.gz"
@@ -96,4 +96,7 @@ nix profile install path:$HOME/.config/nix
 # patch -p1 -i "$dl" -d "$out/mosh-mosh-1.4.0"
 # cd "$out/mosh-mosh-1.4.0" && ./autogen.sh && ./configure && make
 
-echo; echo "Done."
+# TODO: will need to set shell to nix zsh somehow
+# $HOME/.local/state/nix/profile/bin/zsh
+
+msg "Done. Please restart your shell."
