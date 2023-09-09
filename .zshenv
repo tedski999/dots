@@ -10,6 +10,7 @@ export MANPAGER="nvim +Man!"
 export MANWIDTH="80"
 export TERMINAL="alacritty"
 export BROWSER="brave-browser"
+export LOCALE_ARCHIVE="/usr/lib/locale/locale-archive"
 # Clean $HOME
 export HISTFILE="$XDG_DATA_HOME/history"
 export ANDROID_HOME="$XDG_DATA_HOME/android"

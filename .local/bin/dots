@@ -1,48 +1,69 @@
 #!/bin/sh
 
-# sh -c "$(curl https://h8c.de/dots)" -- init
+# sh -c "$(curl https://h8c.de/dots)" -- init [root]
 
 # Where to find dots repo
-root="$HOME/.local/dots"
+dots="$HOME/.local/dots"
 git_ssh="git@github.com:/tedski999/dots"
 git_http="https://github.com/tedski999/dots"
 
 # Use dots as shortcut to git in home directory
-[ "$1" != "init" ] && exec git --git-dir="$root" --work-tree="$HOME" "$@"
+[ "$1" != "init" ] && exec git --git-dir="$dots" --work-tree="$HOME" "$@"
+
+# Parse arguments
+unset root
+[ "$#" -gt 1 ] && {
+	[ "$#" -eq 2 ] && [ "$2" = "root" ] || { echo "Usage: $0 init [root]"; exit 1; }
+	root="1"
+}
 
 msg() { printf "\n\033[1;33m$@\033[0m\n"; }
 
 # Ensure nix is installed
-# TODO: breaks if my profile is still around as the installer uses nix-env
-hash nix 2>/dev/null && [ -e /nix ] || {
+[ -d /nix ] || {
 	msg "=== Installing Nix ==="
 	hash curl xz || exit 1
-	# TODO: test for sudo privs
-	sudo install -d -m 755 -o "$(id -u)" -g "$(id -g)" /nix || exit 1
-	NIX_CONFIG="use-xdg-base-directories = true" \
-		sh -c "$(curl -L https://nixos.org/nix/install)" -- --no-daemon --no-modify-profile || exit 1
-	. $HOME/.local/state/nix/profile/etc/profile.d/nix.sh
+	rm -f "$HOME/.local/state/nix/profiles/profile" || exit 1
+	NIX_CONFIG="use-xdg-base-directories = true" sh -c "$(curl -L https://nixos.org/nix/install)" -- --no-daemon --no-modify-profile || exit 1
+}
+hash nix 2>/dev/null || {
+	. "$HOME/.local/state/nix/profile/etc/profile.d/nix.sh" || exit 1
 }
 
 # Ensure dots repo is installed
-[ -e "$root" ] || {
+[ -d "$dots" ] || {
 	msg "=== Bootstrapping dots ==="
 	nixgit() { nix --experimental-features "nix-command flakes" --use-xdg-base-directories --max-jobs auto run "nixpkgs#git" -- $@; }
-	nixgit clone --bare "$git_ssh" "$root" || nixgit clone --bare "$git_http" "$root" || exit 1
-	if ! out="$(nixgit --git-dir="$root" --work-tree="$HOME" checkout main 2>&1)"; then
+	nixgit clone --bare "$git_ssh" "$dots" || nixgit clone --bare "$git_http" "$dots" || exit 1
+	if ! out="$(nixgit --git-dir="$dots" --work-tree="$HOME" checkout main 2>&1)"; then
 		echo "WARNING: The next operation WILL overwrite the following files:"
 		printf "%s" "$out" | tail --lines +2 | head --lines -2
 		printf "Enter y to proceed with data loss: " && read -r res
-		[ "$res" = "y" ] && nixgit --git-dir="$root" --work-tree="$HOME" checkout main --force || exit 1
+		[ "$res" = "y" ] && nixgit --git-dir="$dots" --work-tree="$HOME" checkout main --force || exit 1
 	fi
 }
+
+# Install packages
+msg "=== Installing packages ==="
+nix profile list --json | grep --quiet --fixed-strings ".config/nix" \
+	&& nix profile upgrade ".*" \
+	|| nix profile install path:$HOME/.config/nix \
+	|| exit 1
+
+# TODO: nixify patched mosh install
+# opt mosh "https://github.com/mobile-shell/mosh/archive/refs/tags/mosh-1.4.0.tar.gz"
+# dl "https://github.com/mobile-shell/mosh/pull/1167.diff"
+# patch -p1 -i "$dl" -d "$out/mosh-mosh-1.4.0"
+# cd "$out/mosh-mosh-1.4.0" && ./autogen.sh && ./configure && make
+
+msg "=== Configuring home ==="
 
 # Fix permissions
 chmod 644 "$HOME/.ssh/config"
 
 # Write dots gitignore
-mkdir -p "$root/info" &&
->"$root/info/exclude" echo "/*
+mkdir -p "$dots/info" &&
+>"$dots/info/exclude" echo "/*
 !/.config
 !/.gnupg
 !/.local
@@ -85,19 +106,50 @@ mkdir -p "$root/info" &&
 /.ssh/*
 !/.ssh/config"
 
-# Install packages
-msg "=== Installing packages ==="
-nix profile list --json | grep --quiet ".config/nix" \
-	&& nix profile upgrade ".*" \
-	|| nix profile install path:$HOME/.config/nix
+[ -n "$root" ] && {
+	msg "=== Configuring system ==="
 
-# TODO: nixify patched mosh install
-# opt mosh "https://github.com/mobile-shell/mosh/archive/refs/tags/mosh-1.4.0.tar.gz"
-# dl "https://github.com/mobile-shell/mosh/pull/1167.diff"
-# patch -p1 -i "$dl" -d "$out/mosh-mosh-1.4.0"
-# cd "$out/mosh-mosh-1.4.0" && ./autogen.sh && ./configure && make
+	unset update_initramfs
 
-# TODO: will need to set shell to nix zsh somehow
-# $HOME/.local/state/nix/profile/bin/zsh
+	msg "Setting user shell to zsh..."
+	sudo chsh -s "$HOME/.local/state/nix/profile/bin/zsh" "$USER" || exit 1
 
-msg "Done. Please restart your shell."
+	[ -f /etc/login.defs ] && {
+		msg "Hushing logins..."
+		sudo sed -i 's/^HUSHLOGIN_FILE.*/HUSHLOGIN_FILE\t./' /etc/login.defs \
+			&& echo "$USER" | sudo tee /etc/hushlogins || exit 1
+	}
+
+	[ -d /etc/sudoers.d ] && {
+		msg "Disabling .sudo_as_admin_successful file..."
+		echo "Defaults !admin_flag" | sudo tee /etc/sudoers.d/disable_admin_file \
+			&& rm -f "$HOME/.sudo_as_admin_successful" || exit 1
+	}
+
+	[ -d /etc/systemd ] && {
+		msg "Enabling autologin on tty1..."
+		sudo mkdir -p /etc/systemd/system/getty@tty1.service.d \
+			&& printf "[Service]\nType=simple\nExecStart=\nExecStart=-/sbin/agetty --autologin "$USER" --noclear %%I 38400 linux\n" \
+			| sudo tee /etc/systemd/system/getty@tty1.service.d/autologin.conf || exit 1
+	}
+
+	[ -f /etc/default/grub ] && {
+		msg "Setting grub config..."
+		printf 'GRUB_DEFAULT=0\nGRUB_TIMEOUT_STYLE=hidden\nGRUB_TIMEOUT=0\nGRUB_CMDLINE_LINUX_DEFAULT="quiet splash"\nGRUB_CMDLINE_LINUX=""\n' \
+			| sudo tee /etc/default/grub && sudo update-grub || exit 1
+		update_initramfs=1
+	}
+
+	[ -f /lib/cryptsetup/functions ] && {
+		msg "Setting crypt prompt..."
+		sudo sed -i 's/Please unlock disk $CRYPTTAB_NAME: /Email: ski@h8c.de\nPassword: /' /lib/cryptsetup/functions || exit 1
+		update_initramfs=1
+	}
+
+	[ -n "$update_initramfs" ] && {
+		msg "Updating initramfs..."
+		sudo update-initramfs -u || exit 1
+	}
+}
+
+msg "Done. Restart your shell for changes to take effect."

@@ -43,7 +43,7 @@ bindkey "^V" edit-command-line
 
 # Beam cursor
 zle -N zle-line-init
-function zle-line-init { echo -ne "\e[6 q" }
+zle-line-init() { echo -ne "\e[6 q" }
 
 # History search
 autoload -Uz up-line-or-beginning-search down-line-or-beginning-search
@@ -120,8 +120,9 @@ hash gpgconf 2>/dev/null && {
 }
 
 # cht.sh
-function cht { cht.sh "$@?style=paraiso-dark" }
-compdef cht=cht.sh # TODO: completions
+cht() { cht.sh "$@?style=paraiso-dark" }
+_cht() { compadd $commands:t }
+compdef _cht cht
 
 # FZF
 export FZF_COLORS="fg+:bold,pointer:red,hl:red,hl+:red,gutter:-1,marker:red"
@@ -130,16 +131,13 @@ export FZF_DEFAULT_OPTS="--multi --bind=$FZF_BINDINGS --preview-window sharp --m
 export FZF_DEFAULT_COMMAND="rg --files --no-messages"
 export FZF_CTRL_T_COMMAND="fd --hidden --exclude '.git' --exclude 'node_modules'"
 export FZF_ALT_C_COMMAND="fd --hidden --exclude '.git' --exclude 'node_modules' --type d"
-# TODO: still needed?
 source "$XDG_STATE_HOME/nix/profile/share/fzf/key-bindings.zsh"
 source "$XDG_STATE_HOME/nix/profile/share/fzf/completion.zsh"
 
 # Autosuggestions
-# TODO: still needed?
 source "$XDG_STATE_HOME/nix/profile/share/zsh-autosuggestions/zsh-autosuggestions.zsh"
 
 # Syntax highlighting
-# TODO: still needed?
 source "$XDG_STATE_HOME/nix/profile/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
 ZSH_HIGHLIGHT_STYLES[default]="fg=cyan"
 ZSH_HIGHLIGHT_STYLES[unknown-token]="fg=red"
@@ -162,7 +160,7 @@ ZSH_HIGHLIGHT_STYLES[named-fd]="none"
 ZSH_HIGHLIGHT_STYLES[arg0]="fg=blue"
 
 # Start X
-[[ -o interactive && -o login ]] && {
+[[ -o interactive && -o login && -z "$DISPLAY" && "$(tty)" = "/dev/tty1" ]] && {
 	# TODO: xinit or startx
 }
 
