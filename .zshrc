@@ -182,8 +182,7 @@ ZSH_HIGHLIGHT_STYLES[arg0]="fg=blue"
 	# 	-notify 10 -notifier "notify-send -t 7000 -i lock 'Idle Warning' 'Locking screen in 10 seconds...'" \
 	# 	-corners "----" -cornersize 5 &
 
-	exec startx bspwm
-	# exec startx "$(which bspwm)"
+	exec sx bspwm
 }
 
 :
