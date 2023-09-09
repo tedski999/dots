@@ -23,10 +23,9 @@ alias lt="la -T"
 alias d="dirs -v"
 for i ({1..9}) alias "$i"="cd +$i"
 for i ({3..9}) alias "${(l:i::.:)}"="${(l:i-1::.:)};.."
-alias man='man -M "$XDG_DATA_HOME/man:$(manpath -g)"'
 alias sudo="sudo --preserve-env env PATH=$PATH "
 hash ip 2>/dev/null && alias ip="ip --color"
-hash exa 2>/dev/null && alias ls="exa -hs=name --group-directories-first"
+hash eza 2>/dev/null && alias ls="eza -hs=name --group-directories-first"
 hash bat 2>/dev/null && alias cat="bat --paging=never" && alias less="bat --paging=always"
 hash rg 2>/dev/null && alias grep="rg"
 hash delta 2>/dev/null && alias diff="delta"
@@ -50,8 +49,8 @@ function zle-line-init { echo -ne "\e[6 q" }
 autoload -Uz up-line-or-beginning-search down-line-or-beginning-search
 zle -N up-line-or-beginning-search
 zle -N down-line-or-beginning-search
-for k in "^p" "^[OA" "^[[A"; bindkey "$k" up-line-or-beginning-search
-for k in "^n" "^[OB" "^[[B"; bindkey "$k" down-line-or-beginning-search
+# for k in "^[p" "^[OA" "^[[A"; bindkey "$k" up-line-or-beginning-search
+# for k in "^[n" "^[OB" "^[[B"; bindkey "$k" down-line-or-beginning-search
 
 # Completion
 autoload -Uz compinit
@@ -85,35 +84,11 @@ export LESS_TERMCAP_ue="$(tput sgr0)"
 export LESS="--ignore-case --tabs=4 --chop-long-lines --LONG-PROMPT --RAW-CONTROL-CHARS --lesskey-file=$XDG_CONFIG_HOME/less/key"
 command less --help | grep -q -- --incsearch && export LESS="--incsearch $LESS"
 
-# GPG+SSH
-hash gpgconf 2>/dev/null && {
-	export SSH_AUTH_SOCK="$(gpgconf --list-dirs agent-ssh-socket)"
-	(gpgconf --launch gpg-agent &)
-}
-
-# Delta
-[[ -f "$HOME/.local/opt/delta/completion.zsh" ]] && source "$HOME/.local/opt/delta/completion.zsh"
-
-# FZF
-export FZF_COLORS="fg+:bold,pointer:red,hl:red,hl+:red,gutter:-1,marker:red"
-export FZF_BINDINGS="ctrl-n:down,ctrl-p:up,up:previous-history,down:next-history,ctrl-j:accept,ctrl-k:toggle,alt-a:toggle-all,ctrl-/:toggle-preview"
-export FZF_DEFAULT_OPTS="--multi --bind=$FZF_BINDINGS --preview-window sharp --marker=k --color=$FZF_COLORS --history $XDG_DATA_HOME/fzf_history"
-export FZF_DEFAULT_COMMAND="rg --files --no-messages"
-export FZF_CTRL_T_COMMAND="fd --hidden --exclude '.git' --exclude 'node_modules'"
-export FZF_ALT_C_COMMAND="fd --hidden --exclude '.git' --exclude 'node_modules' --type d"
-[[ -f "$HOME/.local/opt/fzf/key-bindings.zsh" ]] && source "$HOME/.local/opt/fzf/key-bindings.zsh"
-[[ -f "$HOME/.local/opt/fzf/completion.zsh" ]] && source "$HOME/.local/opt/fzf/completion.zsh"
-
 # Arista Shell
 export ARZSH_COMP_UNSAFE=1
 ash() { eval 2>/dev/null mosh -a -o --experimental-remote-ip=remote us260 -- tmux new ${@:+-c -- a4c shell $@} }
 _ash() { compadd "$(ssh us260 -- a4c ps -N)" }
 compdef _ash ash
-
-# Cheatsheets
-function cht { curl "cht.sh/$1" }
-_cht() { compadd $commands:t }
-compdef _cht cht
 
 # File sharing
 0x0() { curl -F"file=@$1" https://0x0.st }
@@ -138,31 +113,57 @@ un() {
 	esac
 }
 
-# Autosuggestions
-[[ -f "$HOME/.local/opt/zsh-autosuggestions/zsh-autosuggestions-0.7.0/zsh-autosuggestions.zsh" ]] && {
-	source "$HOME/.local/opt/zsh-autosuggestions/zsh-autosuggestions-0.7.0/zsh-autosuggestions.zsh"
+# GPG+SSH
+hash gpgconf 2>/dev/null && {
+	export SSH_AUTH_SOCK="$(gpgconf --list-dirs agent-ssh-socket)"
+	(gpgconf --launch gpg-agent &)
 }
 
+# cht.sh
+function cht { cht.sh "$@?style=paraiso-dark" }
+compdef cht=cht.sh # TODO: completions
+
+# FZF
+export FZF_COLORS="fg+:bold,pointer:red,hl:red,hl+:red,gutter:-1,marker:red"
+export FZF_BINDINGS="ctrl-n:down,ctrl-p:up,up:previous-history,down:next-history,ctrl-j:accept,ctrl-k:toggle,alt-a:toggle-all,ctrl-/:toggle-preview"
+export FZF_DEFAULT_OPTS="--multi --bind=$FZF_BINDINGS --preview-window sharp --marker=k --color=$FZF_COLORS --history $XDG_DATA_HOME/fzf_history"
+export FZF_DEFAULT_COMMAND="rg --files --no-messages"
+export FZF_CTRL_T_COMMAND="fd --hidden --exclude '.git' --exclude 'node_modules'"
+export FZF_ALT_C_COMMAND="fd --hidden --exclude '.git' --exclude 'node_modules' --type d"
+# TODO: still needed?
+source "$XDG_STATE_HOME/nix/profile/share/fzf/key-bindings.zsh"
+source "$XDG_STATE_HOME/nix/profile/share/fzf/completion.zsh"
+
+# Autosuggestions
+# TODO: still needed?
+source "$XDG_STATE_HOME/nix/profile/share/zsh-autosuggestions/zsh-autosuggestions.zsh"
+
 # Syntax highlighting
-[[ -f "$HOME/.local/opt/zsh-syntax-highlighting/zsh-syntax-highlighting-master/zsh-syntax-highlighting.zsh" ]] && {
-	source "$HOME/.local/opt/zsh-syntax-highlighting/zsh-syntax-highlighting-master/zsh-syntax-highlighting.zsh"
-	ZSH_HIGHLIGHT_STYLES[default]="fg=cyan"
-	ZSH_HIGHLIGHT_STYLES[unknown-token]="fg=red"
-	ZSH_HIGHLIGHT_STYLES[reserved-word]="fg=blue"
-	ZSH_HIGHLIGHT_STYLES[path]="fg=cyan,underline"
-	ZSH_HIGHLIGHT_STYLES[suffix-alias]="fg=blue,underline"
-	ZSH_HIGHLIGHT_STYLES[precommand]="fg=blue,underline"
-	ZSH_HIGHLIGHT_STYLES[commandseparator]="fg=magenta"
-	ZSH_HIGHLIGHT_STYLES[globbing]="fg=magenta"
-	ZSH_HIGHLIGHT_STYLES[history-expansion]="fg=magenta"
-	ZSH_HIGHLIGHT_STYLES[single-hyphen-option]="fg=green"
-	ZSH_HIGHLIGHT_STYLES[double-hyphen-option]="fg=green"
-	ZSH_HIGHLIGHT_STYLES[rc-quote]="fg=cyan,bold"
-	ZSH_HIGHLIGHT_STYLES[dollar-double-quoted-argument]="fg=cyan,bold"
-	ZSH_HIGHLIGHT_STYLES[back-double-quoted-argument]="fg=cyan,bold"
-	ZSH_HIGHLIGHT_STYLES[back-dollar-quoted-argument]="fg=cyan,bold"
-	ZSH_HIGHLIGHT_STYLES[assign]="none"
-	ZSH_HIGHLIGHT_STYLES[redirection]="fg=yellow,bold"
-	ZSH_HIGHLIGHT_STYLES[named-fd]="none"
-	ZSH_HIGHLIGHT_STYLES[arg0]="fg=blue"
+# TODO: still needed?
+source "$XDG_STATE_HOME/nix/profile/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
+ZSH_HIGHLIGHT_STYLES[default]="fg=cyan"
+ZSH_HIGHLIGHT_STYLES[unknown-token]="fg=red"
+ZSH_HIGHLIGHT_STYLES[reserved-word]="fg=blue"
+ZSH_HIGHLIGHT_STYLES[path]="fg=cyan,underline"
+ZSH_HIGHLIGHT_STYLES[suffix-alias]="fg=blue,underline"
+ZSH_HIGHLIGHT_STYLES[precommand]="fg=blue,underline"
+ZSH_HIGHLIGHT_STYLES[commandseparator]="fg=magenta"
+ZSH_HIGHLIGHT_STYLES[globbing]="fg=magenta"
+ZSH_HIGHLIGHT_STYLES[history-expansion]="fg=magenta"
+ZSH_HIGHLIGHT_STYLES[single-hyphen-option]="fg=green"
+ZSH_HIGHLIGHT_STYLES[double-hyphen-option]="fg=green"
+ZSH_HIGHLIGHT_STYLES[rc-quote]="fg=cyan,bold"
+ZSH_HIGHLIGHT_STYLES[dollar-double-quoted-argument]="fg=cyan,bold"
+ZSH_HIGHLIGHT_STYLES[back-double-quoted-argument]="fg=cyan,bold"
+ZSH_HIGHLIGHT_STYLES[back-dollar-quoted-argument]="fg=cyan,bold"
+ZSH_HIGHLIGHT_STYLES[assign]="none"
+ZSH_HIGHLIGHT_STYLES[redirection]="fg=yellow,bold"
+ZSH_HIGHLIGHT_STYLES[named-fd]="none"
+ZSH_HIGHLIGHT_STYLES[arg0]="fg=blue"
+
+# Start X
+[[ -o interactive && -o login ]] && {
+	# TODO: xinit or startx
 }
+
+:
