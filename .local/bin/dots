@@ -116,8 +116,7 @@ mkdir -p "$dots/info" &&
 
 	[ -f /etc/login.defs ] && {
 		msg "Hushing logins..."
-		sudo sed -i 's/^HUSHLOGIN_FILE.*/HUSHLOGIN_FILE\t./' /etc/login.defs \
-			&& echo "$USER" | sudo tee /etc/hushlogins || exit 1
+		sudo sed -i 's/^HUSHLOGIN_FILE.*/HUSHLOGIN_FILE\t./' /etc/login.defs || exit 1
 	}
 
 	[ -d /etc/sudoers.d ] && {
