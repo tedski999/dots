@@ -26,7 +26,7 @@
           fzf
           bat
           fd
-          exa
+          eza
           delta
           btop
 

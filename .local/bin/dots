@@ -18,6 +18,7 @@ hash nix 2>/dev/null && [ -e /nix ] || {
 	sudo install -d -m 755 -o "$(id -u)" -g "$(id -g)" /nix || exit 1
 	NIX_CONFIG="use-xdg-base-directories = true" \
 		sh -c "$(curl -L https://nixos.org/nix/install)" -- --no-daemon --no-modify-profile || exit 1
+	. $HOME/.local/state/nix/profile/etc/profile.d/nix.sh
 	echo "Nix successfully installed to /nix"
 }
 
