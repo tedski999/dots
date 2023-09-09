@@ -74,6 +74,7 @@ mkdir -p "$dots/info" &&
 /.config/*
 !/.config/alacritty
 !/.config/bat
+!/.config/bspwm
 !/.config/delta
 !/.config/docker
 !/.config/dunst
@@ -87,6 +88,7 @@ mkdir -p "$dots/info" &&
 !/.config/python
 !/.config/ripgrep
 !/.config/rofi
+!/.config/sxhkd
 !/.config/sxiv
 !/.config/tmux
 !/.config/mimeapps.list

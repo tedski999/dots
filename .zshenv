@@ -27,5 +27,6 @@ export WINEPREFIX="$XDG_DATA_HOME/wine"
 export ZSH_DATA="$XDG_DATA_HOME/zsh"
 export npm_config_userconfig="$XDG_CONFIG_HOME/npm/npmrc"
 export skip_global_compinit=1
+export XAUTHORITY="$XDG_RUNTIME_DIR/Xauthority"
 # Nix
 source "$XDG_STATE_HOME/nix/profile/etc/profile.d/nix.sh"
