@@ -1,9 +1,10 @@
-export PATH="$HOME/.local/bin:$PATH"
 export XDG_DATA_HOME="$HOME/.local/share"
 export XDG_CONFIG_HOME="$HOME/.config"
 export XDG_STATE_HOME="$HOME/.local/state"
 export XDG_CACHE_HOME="$HOME/.cache"
+source "$XDG_STATE_HOME/nix/profile/etc/profile.d/nix.sh"
 # Programs
+export PATH="$HOME/.local/bin:$PATH"
 export EDITOR="nvim"
 export VISUAL="nvim"
 export MANPAGER="nvim +Man!"
@@ -27,6 +28,3 @@ export WINEPREFIX="$XDG_DATA_HOME/wine"
 export ZSH_DATA="$XDG_DATA_HOME/zsh"
 export npm_config_userconfig="$XDG_CONFIG_HOME/npm/npmrc"
 export skip_global_compinit=1
-export XAUTHORITY="$XDG_RUNTIME_DIR/Xauthority"
-# Nix
-source "$XDG_STATE_HOME/nix/profile/etc/profile.d/nix.sh"
