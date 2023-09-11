@@ -81,11 +81,11 @@ mkdir -p "$dots/info" &&
 /.config/*
 !/.config/alacritty
 !/.config/bat
-!/.config/bspwm
 !/.config/delta
 !/.config/docker
 !/.config/dunst
 !/.config/git
+!/.config/hypr
 !/.config/less
 !/.config/mpv
 !/.config/neofetch
@@ -94,9 +94,6 @@ mkdir -p "$dots/info" &&
 !/.config/nvim
 !/.config/python
 !/.config/ripgrep
-!/.config/rofi
-!/.config/sxhkd
-!/.config/sxiv
 !/.config/tmux
 !/.config/mimeapps.list
 !/.config/user-dirs.dirs

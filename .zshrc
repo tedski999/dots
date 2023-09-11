@@ -160,9 +160,9 @@ ZSH_HIGHLIGHT_STYLES[redirection]="fg=yellow,bold"
 ZSH_HIGHLIGHT_STYLES[named-fd]="none"
 ZSH_HIGHLIGHT_STYLES[arg0]="fg=blue"
 
-# Start X
-[[ -o interactive && -o login && -z "$DISPLAY" && "$(tty)" = "/dev/tty1" ]] && {
-	# TODO
+# Start desktop environment
+[[ -o interactive && -o login && -z "$DISPLAY" && "$(tty)" = "/dev/tty1" ]] && hash Hyprland 2>dev/null && {
+	 nixGL Hyprland
 }
 
 :

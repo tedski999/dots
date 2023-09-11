@@ -1,3 +1,5 @@
+# TODO: separate into cli flake and optional de flake
+
 {
   outputs = { self, nixpkgs }:
     let
@@ -10,8 +12,11 @@
           paths = with pkgs; [
             # desktop environment
             hyprland
+            # TODO: nixgl
+            terminus_font_ttf
             # applications
-            alacritty #TODO: replace alacritty?
+            alacritty
+            brave
             # shell
             zsh
             zsh-syntax-highlighting
