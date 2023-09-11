@@ -58,6 +58,13 @@ nix profile list --json | grep --quiet --fixed-strings ".config/nix" \
 
 msg "=== Configuring home ==="
 
+# Fix any missing directories
+mkdir -p "$HOME/.local/bin" "$HOME/.local/state" "$HOME/.local/share"
+
+# Ensure fonts link exists
+mkdir -p "$HOME/.local/share/fonts"
+ln -s "$HOME/.local/state/nix/profile/share/fonts" "$HOME/.local/share/fonts/nix"
+
 # Fix permissions
 chmod 644 "$HOME/.ssh/config"
 
