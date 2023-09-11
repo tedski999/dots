@@ -63,7 +63,7 @@ mkdir -p "$HOME/.local/bin" "$HOME/.local/state" "$HOME/.local/share"
 
 # Ensure fonts link exists
 mkdir -p "$HOME/.local/share/fonts"
-ln -s "$HOME/.local/state/nix/profile/share/fonts" "$HOME/.local/share/fonts/nix"
+ln -snf "$HOME/.local/state/nix/profile/share/fonts" "$HOME/.local/share/fonts/nix"
 
 # Fix permissions
 chmod 644 "$HOME/.ssh/config"
