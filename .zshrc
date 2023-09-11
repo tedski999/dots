@@ -17,6 +17,7 @@ alias v="nvim"
 alias p="python3"
 alias c="cargo"
 alias g="git"
+alias di="dots init"
 alias ll="ls -l"
 alias la="ll -a"
 alias lt="la -T"
@@ -161,28 +162,7 @@ ZSH_HIGHLIGHT_STYLES[arg0]="fg=blue"
 
 # Start X
 [[ -o interactive && -o login && -z "$DISPLAY" && "$(tty)" = "/dev/tty1" ]] && {
-
-	# Setup X
-	# xset r rate 250 30
-	# setxkbmap ie -option caps:escape
-	# xsetroot -cursor_name left_ptr
-	# xinput --set-prop "DELL086F:00 06CB:7E92 Touchpad" "libinput Natural Scrolling Enabled" 1
-	# xinput --set-prop "DELL086F:00 06CB:7E92 Touchpad" "libinput Tapping Enabled" 1
-	# hsetroot -solid "#000000"
-
-	# Start some programs
-	# picom &
-	sxhkd &
-	# clipmenud &
-	# superhudd &
-	# powerd &
-	# backupd &
-	# xautolock \
-	# 	-detectsleep -time 10 -locker "powerctl lock" -killtime 20 -killer "powerctl suspend" \
-	# 	-notify 10 -notifier "notify-send -t 7000 -i lock 'Idle Warning' 'Locking screen in 10 seconds...'" \
-	# 	-corners "----" -cornersize 5 &
-
-	exec sx bspwm
+	# TODO
 }
 
 :

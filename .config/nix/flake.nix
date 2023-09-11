@@ -9,13 +9,7 @@
           name = "dots";
           paths = with pkgs; [
             # desktop environment
-            sx
-            bspwm
-            sxhkd
-            picom #TODO: better picom?
-            clipmenu
-            rofi
-            dmenu
+            hyprland
             # applications
             alacritty #TODO: replace alacritty?
             # shell

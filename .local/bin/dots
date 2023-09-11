@@ -103,7 +103,6 @@ mkdir -p "$dots/info" &&
 !/.local/bin
 /.local/bin/*
 !/.local/bin/dots
-!/.local/bin/git
 
 /.ssh/*
 !/.ssh/config"
