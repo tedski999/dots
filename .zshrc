@@ -24,7 +24,7 @@ alias lt="la -T"
 alias d="dirs -v"
 for i ({1..9}) alias "$i"="cd +$i"
 for i ({3..9}) alias "${(l:i::.:)}"="${(l:i-1::.:)};.."
-alias sudo="sudo --preserve-env env PATH=$PATH "
+alias sudo='sudo --preserve-env env PATH=$PATH:/sbin:/usr/sbin '
 hash ip 2>/dev/null && alias ip="ip --color"
 hash eza 2>/dev/null && alias ls="eza -hs=name --group-directories-first"
 hash bat 2>/dev/null && alias cat="bat --paging=never" && alias less="bat --paging=always"
