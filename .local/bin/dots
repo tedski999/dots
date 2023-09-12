@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# sh -c "$(curl https://h8c.de/dots)" -- init [root]
+# sh -c "$(curl https://h8c.de/dots)" -- init [gui]
 
 # Where to find dots repo
 dots="$HOME/.local/dots"
@@ -11,10 +11,10 @@ git_http="https://github.com/tedski999/dots"
 [ "$1" != "init" ] && exec git --git-dir="$dots" --work-tree="$HOME" "$@"
 
 # Parse arguments
-unset root
+unset gui
 [ "$#" -gt 1 ] && {
-	[ "$#" -eq 2 ] && [ "$2" = "root" ] || { echo "Usage: $0 init [root]"; exit 1; }
-	root="1"
+	[ "$#" -eq 2 ] && [ "$2" = "gui" ] || { echo "Usage: $0 init [gui]"; exit 1; }
+	gui="1"
 }
 
 msg() { printf "\n\033[1;33m$@\033[0m\n"; }
@@ -43,12 +43,17 @@ hash nix 2>/dev/null || {
 	fi
 }
 
-# Install packages
-msg "=== Installing packages ==="
-nix profile list --json | grep --quiet --fixed-strings ".config/nix" \
-	&& nix profile upgrade ".*" \
-	|| nix profile install path:$HOME/.config/nix \
-	|| exit 1
+# Install CLI or GUI packages and upgrade everything
+nix profile list --json | grep --quiet --fixed-strings ".config/nix/cli" || {
+	msg "=== Installing CLI packages ==="
+	nix profile install path:"$HOME/.config/nix/cli" || exit 1
+}
+nix profile list --json | grep --quiet --fixed-strings ".config/nix/gui" || [ -z "$gui" ] || {
+	msg "=== Installing GUI packages ==="
+	nix profile install path:"$HOME/.config/nix/gui" || exit 1
+}
+msg "=== Upgrading packages ==="
+nix profile upgrade ".*"
 
 # TODO: nixify patched mosh install
 # opt mosh "https://github.com/mobile-shell/mosh/archive/refs/tags/mosh-1.4.0.tar.gz"
@@ -57,19 +62,9 @@ nix profile list --json | grep --quiet --fixed-strings ".config/nix" \
 # cd "$out/mosh-mosh-1.4.0" && ./autogen.sh && ./configure && make
 
 msg "=== Configuring home ==="
-
-# Fix any missing directories
-mkdir -p "$HOME/.local/bin" "$HOME/.local/state" "$HOME/.local/share"
-
-# Ensure fonts link exists
-mkdir -p "$HOME/.local/share/fonts"
+mkdir -p "$HOME/.local/share/fonts" "$dots/info"
 ln -snf "$HOME/.local/state/nix/profile/share/fonts" "$HOME/.local/share/fonts/nix"
-
-# Fix permissions
 chmod 644 "$HOME/.ssh/config"
-
-# Write dots gitignore
-mkdir -p "$dots/info" &&
 >"$dots/info/exclude" echo "/*
 !/.config
 !/.gnupg
@@ -111,7 +106,7 @@ mkdir -p "$dots/info" &&
 /.ssh/*
 !/.ssh/config"
 
-[ -n "$root" ] && {
+[ -n "$gui" ] && {
 	msg "=== Configuring system ==="
 
 	unset update_initramfs

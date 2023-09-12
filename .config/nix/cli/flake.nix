@@ -1,5 +1,3 @@
-# TODO: separate into cli flake and optional de flake
-
 {
   outputs = { self, nixpkgs }:
     let
@@ -10,18 +8,13 @@
         default = pkgs.buildEnv {
           name = "dots";
           paths = with pkgs; [
-            # desktop environment
-            hyprland
-            # TODO: nixgl
-            terminus_font_ttf
-            # applications
-            alacritty
-            brave
+
             # shell
             zsh
             zsh-syntax-highlighting
             zsh-autosuggestions
             zsh-completions
+
             # cli tools
             git
             neovim
@@ -33,7 +26,7 @@
             delta
             btop
             cht-sh
-            #rust
+
           ];
           extraOutputsToInstall = [ "man" "doc" ];
         };
