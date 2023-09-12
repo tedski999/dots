@@ -50,7 +50,7 @@ nix profile list --json | grep --quiet --fixed-strings ".config/nix/cli" || {
 }
 nix profile list --json | grep --quiet --fixed-strings ".config/nix/gui" || [ -z "$gui" ] || {
 	msg "=== Installing GUI packages ==="
-	nix profile install path:"$HOME/.config/nix/gui" || exit 1
+	nix profile install --impure path:"$HOME/.config/nix/gui" || exit 1
 }
 msg "=== Upgrading packages ==="
 nix profile upgrade ".*"
