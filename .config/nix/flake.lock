@@ -1,5 +1,20 @@
 {
   "nodes": {
+    "enable_gui": {
+      "locked": {
+        "lastModified": 1657739266,
+        "narHash": "sha256-vLy8GQr0noEcoA+jX24FgUVBA/poV36zDWAUChN3hIY=",
+        "owner": "boolean-option",
+        "repo": "false",
+        "rev": "d06b4794a134686c70a1325df88a6e6768c6b212",
+        "type": "github"
+      },
+      "original": {
+        "owner": "boolean-option",
+        "repo": "false",
+        "type": "github"
+      }
+    },
     "flake-utils": {
       "locked": {
         "lastModified": 1659877975,
@@ -51,11 +66,11 @@
     },
     "nixpkgs_2": {
       "locked": {
-        "lastModified": 1694343207,
-        "narHash": "sha256-jWi7OwFxU5Owi4k2JmiL1sa/OuBCQtpaAesuj5LXC8w=",
+        "lastModified": 1694562957,
+        "narHash": "sha256-ZvDt5bxX6Ga+TQ6kvK5WEn7OQN87KAsMaRrFSdReIm8=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "78058d810644f5ed276804ce7ea9e82d92bee293",
+        "rev": "f4a33546bdb5f81bd6cceb1b3cb19667145fed83",
         "type": "github"
       },
       "original": {
@@ -65,6 +80,7 @@
     },
     "root": {
       "inputs": {
+        "enable_gui": "enable_gui",
         "nixgl": "nixgl",
         "nixpkgs": "nixpkgs_2"
       }
