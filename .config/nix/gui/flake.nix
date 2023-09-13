@@ -19,6 +19,8 @@
             # desktop environment
             hyprland
             pkgs.nixgl.auto.nixGLDefault
+            dbus
+            seatd
             terminus_font_ttf
 
             # applications

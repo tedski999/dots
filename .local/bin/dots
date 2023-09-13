@@ -53,7 +53,7 @@ nix profile list --json | grep --quiet --fixed-strings ".config/nix/gui" || [ -z
 	nix profile install --impure path:"$HOME/.config/nix/gui" || exit 1
 }
 msg "=== Upgrading packages ==="
-nix profile upgrade ".*"
+nix profile upgrade --impure ".*"
 
 # TODO: nixify patched mosh install
 # opt mosh "https://github.com/mobile-shell/mosh/archive/refs/tags/mosh-1.4.0.tar.gz"
@@ -76,7 +76,6 @@ chmod 644 "$HOME/.ssh/config"
 /.config/*
 !/.config/alacritty
 !/.config/bat
-!/.config/delta
 !/.config/docker
 !/.config/dunst
 !/.config/git

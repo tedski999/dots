@@ -1,3 +1,5 @@
+[core]
+	pager = delta
 [user]
 	email = ski@h8c.de
 	name = tedski999
@@ -29,5 +31,28 @@
 	d = diff
 	ds = diff --staged
 	rs = restore --staged
-[include]
-	path = ~/.config/delta/delta.gitconfig
+[interactive]
+	diffFilter = delta --color-only
+[delta]
+	features = navigate
+	relative-paths = true
+	width = variable
+	paging = always
+	line-numbers = true
+	line-numbers-left-format = ""
+	line-numbers-right-format = "{np:>4} "
+	navigate-regex = ^[-+=!>]
+	file-added-label = "+"
+	file-copied-label = "="
+	file-modified-label = "!"
+	file-removed-label = "-"
+	file-renamed-label = ">"
+	file-style = brightyellow
+	file-decoration-style = omit
+	hunk-label = "#"
+	hunk-header-style = "file line-number #000000" ; hack to hide text
+	hunk-header-file-style = blue
+	hunk-header-line-number-style = grey
+	hunk-header-decoration-style = omit
+	blame-palette = "#101010 #282828"
+	blame-separator-format = {n:^5}
