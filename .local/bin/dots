@@ -51,14 +51,14 @@ hash nix 2>/dev/null || {
 }
 
 # Install CLI or GUI packages or upgrade everything
-# TODO: does override-input change the lockfile? otherwise upgrade is going to be missing gui packages
 nix profile list --json | grep --quiet --fixed-strings ".config/nix" && {
 	msg "=== Upgrading packages ==="
 	nix profile upgrade --impure ".*" || exit 1
 } || {
 	msg "=== Installing packages ==="
 	[ -n "$gui" ] && enable_gui="github:boolean-option/true" || enable_gui="github:boolean-option/false"
-	nix profile install --impure --override-input enable_gui "$enable_gui" path:"$HOME/.config/nix" || exit 1
+	nix flake lock .config/nix --override-input enable_gui "$enable_gui" || exit 1
+	nix profile install --impure path:"$HOME/.config/nix" || exit 1
 }
 
 # Configure home stuff with expected state
@@ -174,3 +174,5 @@ nix profile list --json | grep --quiet --fixed-strings ".config/nix" && {
 msg "=== Initialisation and configuration complete ==="
 [ -n "$recommend_restart" ] && echo "You need to restart your shell for full changes to take effect"
 [ -n "$update_initramfs" ] && echo "Note that initramfs has been updated so you should try rebooting"
+
+:
