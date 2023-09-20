@@ -2,7 +2,7 @@
 
 # TODO: dynamically configured
 mon0="eDP-1"
-mon1="HDMI-A-1"
+mon1="HDMI-A-3"
 wlr-randr --output "$mon0" --on --pos 0,1080 --output "$mon1" --on --pos 0,0
 
 # Programs
@@ -85,12 +85,12 @@ riverctl set-repeat 30 250
 riverctl attach-mode bottom
 
 # Input
-input pointer-1739-32402-DELL086F:00_06CB:7E92_Touchpad click-method clickfinger
-input pointer-1739-32402-DELL086F:00_06CB:7E92_Touchpad disable-while-typing disabled
-input pointer-1739-32402-DELL086F:00_06CB:7E92_Touchpad natural-scroll enabled
-input pointer-1739-32402-DELL086F:00_06CB:7E92_Touchpad tap enabled
-input pointer-1739-32402-DELL086F:00_06CB:7E92_Touchpad tap-button-map left-right-middle
-input pointer-1739-32402-DELL086F:00_06CB:7E92_Touchpad scroll-method two-finger
+riverctl input pointer-1739-32402-DELL086F:00_06CB:7E92_Touchpad click-method clickfinger
+riverctl input pointer-1739-32402-DELL086F:00_06CB:7E92_Touchpad disable-while-typing disabled
+riverctl input pointer-1739-32402-DELL086F:00_06CB:7E92_Touchpad natural-scroll enabled
+riverctl input pointer-1739-32402-DELL086F:00_06CB:7E92_Touchpad tap enabled
+riverctl input pointer-1739-32402-DELL086F:00_06CB:7E92_Touchpad tap-button-map left-right-middle
+riverctl input pointer-1739-32402-DELL086F:00_06CB:7E92_Touchpad scroll-method two-finger
 
 # Start layout
 riverctl default-layout rivertile
