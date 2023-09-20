@@ -17,9 +17,6 @@ font:
   normal:
     family: Terminus (TTF)
 
-mouse:
-  hide_when_typing: true
-
 selection:
   save_to_clipboard: true
 

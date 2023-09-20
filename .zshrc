@@ -162,8 +162,7 @@ ZSH_HIGHLIGHT_STYLES[arg0]="fg=blue"
 
 # Start desktop environment
 [[ -o interactive && -o login && -z "$DISPLAY" && "$(tty)" = "/dev/tty1" ]] && hash Hyprland 2>/dev/null && {
-	# TODO: somewhat slow to start + lots of text outputted
-	exec nixGL Hyprland
+	exec nixGL river 2>/dev/null
 }
 
 :

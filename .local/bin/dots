@@ -69,6 +69,8 @@ nix profile list --json | grep --quiet --fixed-strings ".config/nix" && {
 	mkdir -p "$HOME/.local/share/fonts" "$dots/info" || exit 1
 	ln -snf "$HOME/.local/state/nix/profile/share/fonts" "$HOME/.local/share/fonts/nix" || exit 1
 	chmod 644 "$HOME/.ssh/config" || exit 1
+	chmod 600 "$HOME/.gnupg/"*
+	chmod 700 "$HOME/.gnupg"
 
 	msg "Writing .gitignore to dots exclude file..."
 	>"$dots/info/exclude" echo "/*
@@ -84,7 +86,10 @@ nix profile list --json | grep --quiet --fixed-strings ".config/nix" && {
 !/.config/bat
 !/.config/docker
 !/.config/dunst
+!/.config/fontconfig
 !/.config/git
+!/.config/gtk-3.0
+!/.config/gtk-4.0
 !/.config/hypr
 !/.config/less
 !/.config/mpv
@@ -94,6 +99,7 @@ nix profile list --json | grep --quiet --fixed-strings ".config/nix" && {
 !/.config/nvim
 !/.config/python
 !/.config/ripgrep
+!/.config/river
 !/.config/tmux
 !/.config/mimeapps.list
 !/.config/user-dirs.dirs
@@ -144,7 +150,7 @@ nix profile list --json | grep --quiet --fixed-strings ".config/nix" && {
 	[ -d /etc/systemd ] && {
 		msg "Enabling autologin on tty1..."
 		sudo mkdir -p /etc/systemd/system/getty@tty1.service.d \
-			&& printf "[Service]\nType=simple\nExecStart=\nExecStart=-/sbin/agetty --autologin "$USER" --noclear %%I 38400 linux\n" \
+			&& printf "[Service]\nType=simple\nExecStart=\nExecStart=-/sbin/agetty --skip-login --nonewline --noissue --autologin "$USER" --noclear %%I \$TERM\n" \
 			| sudo tee /etc/systemd/system/getty@tty1.service.d/autologin.conf || exit 1
 		systemctl is-active --quiet systemd-logind || {
 			msg "Starting logind service..."
@@ -161,7 +167,7 @@ nix profile list --json | grep --quiet --fixed-strings ".config/nix" && {
 
 	[ -f /lib/cryptsetup/functions ] && {
 		msg "Setting crypt prompt..."
-		sudo sed -i 's/Please unlock disk $CRYPTTAB_NAME: /Email: ski@h8c.de\nPassword: /' /lib/cryptsetup/functions || exit 1
+		sudo sed -i 's/Please unlock disk $CRYPTTAB_NAME: /\nEmail: ski@h8c.de\nPassword: /' /lib/cryptsetup/functions || exit 1
 		update_initramfs=1
 	}
 
@@ -174,5 +180,7 @@ nix profile list --json | grep --quiet --fixed-strings ".config/nix" && {
 msg "=== Initialisation and configuration complete ==="
 [ -n "$recommend_restart" ] && echo "You need to restart your shell for full changes to take effect"
 [ -n "$update_initramfs" ] && echo "Note that initramfs has been updated so you should try rebooting"
+
+# TODO: check user has seat permission with dbus-user-session and seatd
 
 :

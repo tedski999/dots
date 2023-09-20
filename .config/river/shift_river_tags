@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+
+tags="$1"
+move="$2"
+shift
+shift
+
+# Modify monitor list so current monitor is focused last
+mon="$(cat /tmp/monitor || echo $1)"
+mons="${@//$mon/} $mon"
+
+# # Compute new tags
+[ "$tags" = "-" ] && tags=$(( $(cat /tmp/tags || echo 1) >> 1 ))
+[ "$tags" = "+" ] && tags=$(( $(cat /tmp/tags || echo 1) << 1 ))
+[ "$tags" -lt 1 ] && tags=1
+[ "$tags" -gt 1024 ] && tags=1024
+echo "$tags" >/tmp/tags
+
+# # Move focused view?
+[ "$move" -eq 1 ] && riverctl set-view-tags "$tags"
+
+# # Change tags of every monitor
+for mon in $mons; do
+    riverctl focus-output "$mon"
+    riverctl set-focused-tags "$tags"
+done

@@ -2,11 +2,11 @@
   "nodes": {
     "enable_gui": {
       "locked": {
-        "lastModified": 1657739266,
-        "narHash": "sha256-vLy8GQr0noEcoA+jX24FgUVBA/poV36zDWAUChN3hIY=",
+        "lastModified": 1657739253,
+        "narHash": "sha256-L9eyTL7njtPBUYmZRYFKCzQFDgua9U9oE7UwCzjZfl8=",
         "owner": "boolean-option",
-        "repo": "false",
-        "rev": "d06b4794a134686c70a1325df88a6e6768c6b212",
+        "repo": "true",
+        "rev": "6ecb49143ca31b140a5273f1575746ba93c3f698",
         "type": "github"
       },
       "original": {
@@ -66,11 +66,11 @@
     },
     "nixpkgs_2": {
       "locked": {
-        "lastModified": 1694562957,
-        "narHash": "sha256-ZvDt5bxX6Ga+TQ6kvK5WEn7OQN87KAsMaRrFSdReIm8=",
+        "lastModified": 1694948089,
+        "narHash": "sha256-d2B282GmQ9o8klc22/Rbbbj6r99EnELQpOQjWMyv0rU=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "f4a33546bdb5f81bd6cceb1b3cb19667145fed83",
+        "rev": "5148520bfab61f99fd25fb9ff7bfbb50dad3c9db",
         "type": "github"
       },
       "original": {

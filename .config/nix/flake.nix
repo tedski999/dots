@@ -37,16 +37,58 @@
             delta
             btop
             cht-sh
-            # TODO: lots of common utils like mandb
+            gnupg
+            pinentry
+            man-db
+            lvm2
+            openssh
+            file
+            gnutar
+            zip
+            unzip
+            jq
+            wl-clipboard
+            python3
           ] ++ (if enable_gui.value then [
             # gui only packages
-            hyprland
+            river
             pkgs.nixgl.auto.nixGLDefault
-            dbus
-            seatd
+            # TODO: fix desktop portal and pipewire
+            xdg-desktop-portal
+            xdg-desktop-portal-wlr
+            pipewire
+            wireplumber
+            # pulseaudio
+            # pulsemixer
+            playerctl
+            wlr-randr
+            light
             terminus_font_ttf
+            noto-fonts
+            noto-fonts-cjk
+            noto-fonts-emoji
             alacritty
             brave
+            vieb
+            steam # TODO: try out steam-tui
+            discord # TODO: try out discordo
+            obs-studio
+            # TODO: installed natively for now
+            # fontconfig
+            # fontconfig-config
+            # TODO: insecure
+            # googleearth-pro
+            # TODO: configure systemd user
+            # bluez
+            # bluez-tools
+            # go-mtpfs
+            # fuse
+            # upower
+            # polkit
+            # TODO: apply theming
+            # paper-icon-theme
+            # materia-theme
+            # flat-remix-icon-theme
           ] else [
             # cli only packages
           ]);

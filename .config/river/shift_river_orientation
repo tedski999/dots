@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+case "$(cat /tmp/orientation || echo "left")" in
+	"left")  o="top"    ;;
+	"top")   o="right"  ;;
+	"right") o="bottom" ;;
+	*)       o="left"   ;;
+esac
+
+echo "$o" > /tmp/orientation
+
+riverctl send-layout-cmd rivertile "main-location $o"
