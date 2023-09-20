@@ -116,6 +116,8 @@ un() {
 
 # GPG+SSH
 hash gpgconf 2>/dev/null && {
+	export GPG_TTY="$(tty)"
+	export SSH_AGENT_PID=""
 	export SSH_AUTH_SOCK="$(gpgconf --list-dirs agent-ssh-socket)"
 	(gpgconf --launch gpg-agent &)
 }

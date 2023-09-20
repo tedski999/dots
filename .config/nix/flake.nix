@@ -38,7 +38,7 @@
             btop
             cht-sh
             gnupg
-            pinentry
+            pinentry-qt
             man-db
             lvm2
             openssh

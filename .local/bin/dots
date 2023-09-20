@@ -67,10 +67,9 @@ nix profile list --json | grep --quiet --fixed-strings ".config/nix" && {
 
 	msg "Setting up required directory structure..."
 	mkdir -p "$HOME/.local/share/fonts" "$dots/info" || exit 1
-	ln -snf "$HOME/.local/state/nix/profile/share/fonts" "$HOME/.local/share/fonts/nix" || exit 1
 	chmod 644 "$HOME/.ssh/config" || exit 1
-	chmod 600 "$HOME/.gnupg/"*
-	chmod 700 "$HOME/.gnupg"
+	find "$HOME/.gnupg/" -type f -exec chmod 600 {} \;
+	find "$HOME/.gnupg/" -type d -exec chmod 700 {} \;
 
 	msg "Writing .gitignore to dots exclude file..."
 	>"$dots/info/exclude" echo "/*
@@ -117,12 +116,9 @@ nix profile list --json | grep --quiet --fixed-strings ".config/nix" && {
 /.ssh/*
 !/.ssh/config" || exit 1
 
-	[ "$(dots remote get-url origin)" = "$git_http" ] && {
+	[ "$(dots remote get-url origin)" != "$git_ssh" ] && {
 		msg "Upgrading dots to authenticated repo..."
-		ssh-add -L && {
-			dots remote set-url origin "$git_ssh" \
-				&& dots fetch || exit 1
-		}
+		ssh-add -L && { dots remote set-url origin "$git_ssh" && dots fetch || exit 1; }
 	}
 }
 
