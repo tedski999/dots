@@ -1,13 +1,12 @@
 #!/bin/sh
 
-# TODO: dynamically configured
-mon0="eDP-1"
-mon1="HDMI-A-3"
-wlr-randr --output "$mon0" --on --pos 0,1080 --output "$mon1" --on --pos 0,0
+# Setup monitor specifics
+"$XDG_CONFIG_HOME/river/config_monitors"
 
 # Programs
 riverctl map normal Super Return spawn alacritty
 riverctl map normal Super W spawn brave
+riverctl map normal Super N spawn "$XDG_CONFIG_HOME/river/config_monitors"
 riverctl map normal Super+Shift E exit
 
 # Windows
@@ -28,12 +27,6 @@ riverctl map -repeat normal Super+Alt+Shift J resize vertical 100
 riverctl map -repeat normal Super+Alt+Shift K resize vertical -100
 riverctl map -repeat normal Super+Alt+Shift L resize horizontal 100
 
-# Monitors
-riverctl map -repeat normal Super+Control K spawn "riverctl focus-output $mon1; echo $mon1 >/tmp/monitor"
-riverctl map -repeat normal Super+Control J spawn "riverctl focus-output $mon0; echo $mon0 >/tmp/monitor"
-riverctl map -repeat normal Super+Control+Shift K spawn "riverctl send-to-output $mon1; riverctl focus-output $mon1; echo $mon1 >/tmp/monitor"
-riverctl map -repeat normal Super+Control+Shift J spawn "riverctl send-to-output $mon0; riverctl focus-output $mon0; echo $mon0 >/tmp/monitor"
-
 # Layout
 riverctl map -repeat normal Super H       send-layout-cmd rivertile "main-ratio -0.025"
 riverctl map -repeat normal Super L       send-layout-cmd rivertile "main-ratio +0.025"
@@ -45,16 +38,6 @@ riverctl map -repeat normal Super O       spawn "$XDG_CONFIG_HOME/river/shift_or
 riverctl map-pointer normal Super BTN_LEFT   move-view
 riverctl map-pointer normal Super BTN_RIGHT  resize-view
 riverctl map-pointer normal Super BTN_MIDDLE toggle-float
-
-# Tags
-riverctl map normal Super Comma        spawn "$XDG_CONFIG_HOME/river/shift_tags - 0 $mon0 $mon1"
-riverctl map normal Super Period       spawn "$XDG_CONFIG_HOME/river/shift_tags + 0 $mon0 $mon1"
-riverctl map normal Super+Shift Comma  spawn "$XDG_CONFIG_HOME/river/shift_tags - 1 $mon0 $mon1"
-riverctl map normal Super+Shift Period spawn "$XDG_CONFIG_HOME/river/shift_tags + 1 $mon0 $mon1"
-for i in $(seq 1 9); do
-    riverctl map normal Super $i       spawn "$XDG_CONFIG_HOME/river/shift_tags $i 0 $mon0 $mon1"
-    riverctl map normal Super+Shift $i spawn "$XDG_CONFIG_HOME/river/shift_tags $i 1 $mon0 $mon1"
-done
 
 # Function keys
 for mode in normal locked; do
