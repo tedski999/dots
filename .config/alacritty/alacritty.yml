@@ -9,7 +9,6 @@ scrolling:
 
 window:
   dynamic_padding: true
-  decorations: None
   opacity: 0.85
 
 font:
