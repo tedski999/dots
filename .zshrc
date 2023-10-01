@@ -22,13 +22,14 @@ alias ll="ls -l"
 alias la="ll -a"
 alias lt="la -T"
 alias d="dirs -v"
+alias sudo="sudo --preserve-env"
 for i ({1..9}) alias "$i"="cd +$i"
 for i ({3..9}) alias "${(l:i::.:)}"="${(l:i-1::.:)};.."
-alias sudo='sudo --preserve-env env PATH=$PATH:/sbin:/usr/sbin '
 hash ip 2>/dev/null && alias ip="ip --color"
-hash eza 2>/dev/null && alias ls="eza -hs=name --group-directories-first"
+hash exa 2>/dev/null && alias ls="exa -hs=name --group-directories-first"
 hash bat 2>/dev/null && alias cat="bat --paging=never" && alias less="bat --paging=always"
 hash rg 2>/dev/null && alias grep="rg"
+hash fdfind 2>/dev/null && alias fd="fdfind"
 hash delta 2>/dev/null && alias diff="delta"
 
 # Primary keybindings
@@ -134,14 +135,14 @@ export FZF_DEFAULT_OPTS="--multi --bind=$FZF_BINDINGS --preview-window sharp --m
 export FZF_DEFAULT_COMMAND="rg --files --no-messages"
 export FZF_CTRL_T_COMMAND="fd --hidden --exclude '.git' --exclude 'node_modules'"
 export FZF_ALT_C_COMMAND="fd --hidden --exclude '.git' --exclude 'node_modules' --type d"
-source "$XDG_STATE_HOME/nix/profile/share/fzf/key-bindings.zsh"
-source "$XDG_STATE_HOME/nix/profile/share/fzf/completion.zsh"
+source "/usr/share/doc/fzf/examples/key-bindings.zsh"
+source "/usr/share/doc/fzf/examples/completion.zsh"
 
 # Autosuggestions
-source "$XDG_STATE_HOME/nix/profile/share/zsh-autosuggestions/zsh-autosuggestions.zsh"
+source "/usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh"
 
 # Syntax highlighting
-source "$XDG_STATE_HOME/nix/profile/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
+source "/usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
 ZSH_HIGHLIGHT_STYLES[default]="fg=cyan"
 ZSH_HIGHLIGHT_STYLES[unknown-token]="fg=red"
 ZSH_HIGHLIGHT_STYLES[reserved-word]="fg=blue"
@@ -164,7 +165,9 @@ ZSH_HIGHLIGHT_STYLES[arg0]="fg=blue"
 
 # Start desktop environment
 [[ -o interactive && -o login && -z "$DISPLAY" && "$(tty)" = "/dev/tty1" ]] && hash sway 2>/dev/null && {
-	exec nixGL sway >/dev/null
+	# TODO: fix nvidia
+	# TODO: exec
+	sway
 }
 
 :
