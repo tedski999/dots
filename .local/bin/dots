@@ -1,6 +1,12 @@
 #!/bin/sh
 
-# sh -c "$(curl https://h8c.de/dots)" -- init gui sys
+# sh -c "$(curl https://h8c.de/dots)" -- init cli gui sys
+
+# TODO: config
+# TODO: vim
+# TODO: emacs
+# TODO: gtk+qt wayland backend
+# TODO: theming
 
 # Where to find dots repo
 dots="$HOME/.local/dots"
@@ -9,69 +15,88 @@ git_http="https://github.com/tedski999/dots"
 
 # Use dots as shortcut to git in home directory
 [ "$1" != "init" ] && exec git --git-dir="$dots" --work-tree="$HOME" "$@"
-shift
-
-# Common variables and functions
-unset recommend_restart update_initramfs
-msg() { printf "\n\033[1;33m$@\033[0m\n"; }
 
 # Parse command-line arguments
-unset gui sys
+shift
+unset cli gui sys
 while [ "$#" -gt 0 ]; do
 	case "$1" in
-		gui) gui=1; shift;; # Install GUI packages with Nix
+		cli) cli=1; shift;; # Install CLI packages with apt-get
+		gui) gui=1; shift;; # Install GUI packages with apt-get
 		sys) sys=1; shift;; # Configure system with root privileges
-		*) echo "Usage: $0 init [gui] [sys]"; exit 1;;
+		*) echo "Usage: $0 init [cli] [gui] [sys]"; exit 1;;
 	esac
 done
 
-# Ensure nix is installed
-[ -d /nix ] || {
-	msg "=== Installing Nix ==="
-	hash curl xz || exit 1
-	rm -f "$HOME/.local/state/nix/profiles/profile" || exit 1
-	NIX_CONFIG="use-xdg-base-directories = true" sh -c "$(curl -L https://nixos.org/nix/install)" -- --no-daemon --no-modify-profile || exit 1
-}
-hash nix 2>/dev/null || {
-	. "$HOME/.local/state/nix/profile/etc/profile.d/nix.sh" || exit 1
-	recommend_restart=1
-}
+# Test for privilages and apt-get
+[ "$(id -u)" = "0" ] && { echo "Please run as non-root."; exit 1; }
+[ -n "$cli$gui" ] && { hash apt-get || exit 1; }
+[ -n "$cli$gui$sys" ] && { sudo -v || exit 1; }
+
+# Common msg function
+msg() { printf "\n\033[1;33m$@\033[0m\n"; }
 
 # Ensure dots repo is installed
 [ -d "$dots" ] || {
 	msg "=== Bootstrapping dots ==="
-	nixgit() { nix --experimental-features "nix-command flakes" --use-xdg-base-directories --max-jobs auto run "nixpkgs#git" -- $@; }
-	nixgit clone --bare "$git_http" "$dots" || exit 1
-	if ! out="$(nixgit --git-dir="$dots" --work-tree="$HOME" checkout main 2>&1)"; then
+	hash git || { [ -n "$cli$gui" ] && sudo apt-get -y install git || exit 1; }
+	git clone --bare "$git_http" "$dots" || exit 1
+	if ! out="$(git --git-dir="$dots" --work-tree="$HOME" checkout main 2>&1)"; then
 		echo "WARNING: The next operation WILL overwrite the following files:"
 		printf "%s" "$out" | tail --lines +2 | head --lines -2
 		printf "Enter y to proceed with data loss: " && read -r res
-		[ "$res" = "y" ] && nixgit --git-dir="$dots" --work-tree="$HOME" checkout main --force || exit 1
+		[ "$res" = "y" ] && git --git-dir="$dots" --work-tree="$HOME" checkout main --force || exit 1
 	fi
 }
 
-# Install CLI or GUI packages or upgrade everything
-nix profile list --json | grep --quiet --fixed-strings ".config/nix" && {
-	msg "=== Upgrading packages ==="
-	nix profile upgrade --impure ".*" || exit 1
-} || {
-	msg "=== Installing packages ==="
-	[ -n "$gui" ] && enable_gui="github:boolean-option/true" || enable_gui="github:boolean-option/false"
-	nix flake lock .config/nix --override-input enable_gui "$enable_gui" || exit 1
-	nix profile install --impure path:"$HOME/.config/nix" || exit 1
+# Install requested packages
+tmp="$(mktemp --directory)" || exit 1
+
+[ -n "$cli" ] && {
+	msg "=== Installing CLI packages ==="
+
+	msg "Install apt packages..."
+	sudo apt-get -y install \
+		file curl wget tar gzip zip unzip git gnupg man-db \
+		zsh zsh-syntax-highlighting zsh-autosuggestions \
+		neovim git ripgrep fzf bat fd-find exa btop jq \
+		python3 python3-pip || exit 1
+
+	msg "Install delta .deb package..."
+	curl "https://github.com/dandavison/delta/releases/download/0.16.5/git-delta_0.16.5_amd64.deb" > "$tmp/delta.deb" && sudo dpkg --install "$tmp/delta.deb" || exit 1
+
+	msg "Install cht.sh script..."
+	curl "https://cht.sh/:cht.sh" > "$HOME/.local/bin/cht.sh" && chmod +x "$HOME/.local/bin/cht.sh" || exit 1
 }
 
+[ -n "$gui" ] && {
+	msg "=== Installing GUI packages ==="
+
+	msg "Install apt packages..."
+	sudo apt-get -y install \
+		sway xwayland swayidle swaylock \
+		xdg-desktop-portal xdg-desktop-portal-wlr pipewire wireplumber playerctl \
+		wlr-randr light \
+		alacritty obs-studio \
+		fonts-noto || exit 1
+
+	msg "Install vieb .deb..."
+	curl "https://github.com/Jelmerro/Vieb/releases/download/10.3.0/vieb_10.3.0_amd64.deb" > "$tmp/vieb.deb" && sudo dpkg --install "$tmp/vieb.deb" || exit 1
+}
+
+rm -r "$tmp" || exit 1
+
 # Configure home stuff with expected state
-[ -n "$HOME" ] && {
+[ -d "$HOME" ] && {
 	msg "=== Configuring home ==="
 
 	msg "Setting up required directory structure..."
-	mkdir -p "$HOME/.local/share/fonts" "$dots/info" || exit 1
 	chmod 644 "$HOME/.ssh/config" || exit 1
-	find "$HOME/.gnupg/" -type f -exec chmod 600 {} \;
-	find "$HOME/.gnupg/" -type d -exec chmod 700 {} \;
+	find "$HOME/.gnupg/" -type f -exec chmod 600 {} \; || exit 1
+	find "$HOME/.gnupg/" -type d -exec chmod 700 {} \; || exit 1
 
 	msg "Writing .gitignore to dots exclude file..."
+	mkdir -p "$dots/info" || exit 1
 	>"$dots/info/exclude" echo "/*
 !/.config
 !/.gnupg
@@ -79,57 +104,52 @@ nix profile list --json | grep --quiet --fixed-strings ".config/nix" && {
 !/.ssh
 !/.zshenv
 !/.zshrc
-
 /.config/*
 !/.config/alacritty
 !/.config/bat
-!/.config/docker
 !/.config/dunst
-!/.config/fontconfig
 !/.config/git
 !/.config/gtk-3.0
 !/.config/gtk-4.0
-!/.config/hypr
 !/.config/less
 !/.config/mpv
 !/.config/neofetch
-!/.config/nix
 !/.config/npm
 !/.config/nvim
 !/.config/python
 !/.config/ripgrep
-!/.config/river
+!/.config/sway
 !/.config/tmux
 !/.config/mimeapps.list
 !/.config/user-dirs.dirs
 !/.config/user-dirs.locale
-
 /.gnupg/*
 !/.gnupg/gpg-agent.conf
 !/.gnupg/sshcontrol
-
 /.local/*
 !/.local/bin
 /.local/bin/*
 !/.local/bin/dots
-
 /.ssh/*
 !/.ssh/config" || exit 1
 
-	[ "$(dots remote get-url origin)" != "$git_ssh" ] && {
+	[ "$(git --git-dir="$dots" --work-tree="$HOME" remote get-url origin)" != "$git_ssh" ] && {
 		msg "Upgrading dots to authenticated repo..."
-		ssh-add -L && { dots remote set-url origin "$git_ssh" && dots fetch || exit 1; }
+		ssh-add -L && {
+			git --git-dir="$dots" --work-tree="$HOME" remote set-url origin "$git_ssh" || exit 1
+			git --git-dir="$dots" --work-tree="$HOME" fetch || exit 1
+		}
 	}
 }
 
 # Configure root stuff if we're taking over this system completely
 [ -n "$sys" ] && {
 	msg "=== Configuring system ==="
+	unset update_initramfs
 
-	[ "$SHELL" != "$HOME/.local/state/nix/profile/bin/zsh" ] && {
-		msg "Setting user shell to Nix-managed zsh..."
-		sudo chsh -s "$HOME/.local/state/nix/profile/bin/zsh" "$USER" || exit 1
-		recommend_restart=1
+	[ "$SHELL" != "$(which zsh)" ] && {
+		msg "Setting login shell to zsh..."
+		sudo chsh "$USER" -s "$(which zsh)" || exit 1
 	}
 
 	[ -f /etc/login.defs ] && {
@@ -145,19 +165,13 @@ nix profile list --json | grep --quiet --fixed-strings ".config/nix" && {
 
 	[ -d /etc/systemd ] && {
 		msg "Enabling autologin on tty1..."
-		sudo mkdir -p /etc/systemd/system/getty@tty1.service.d \
-			&& printf "[Service]\nType=simple\nExecStart=\nExecStart=-/sbin/agetty --skip-login --nonewline --noissue --autologin "$USER" --noclear %%I \$TERM\n" \
-			| sudo tee /etc/systemd/system/getty@tty1.service.d/autologin.conf || exit 1
-		systemctl is-active --quiet systemd-logind || {
-			msg "Starting logind service..."
-			sudo systemctl start systemd-logind || exit 1
-		}
+		sudo mkdir -p /etc/systemd/system/getty@tty1.service.d || exit 1
+		printf "[Service]\nType=simple\nExecStart=\nExecStart=-/sbin/agetty --skip-login --nonewline --noissue --autologin "$USER" --noclear %%I \$TERM\n" | sudo tee /etc/systemd/system/getty@tty1.service.d/autologin.conf || exit 1
 	}
 
 	[ -f /etc/default/grub ] && {
 		msg "Setting grub config..."
-		printf 'GRUB_DEFAULT=0\nGRUB_TIMEOUT_STYLE=hidden\nGRUB_TIMEOUT=0\nGRUB_CMDLINE_LINUX_DEFAULT="quiet splash"\nGRUB_CMDLINE_LINUX=""\n' \
-			| sudo tee /etc/default/grub && sudo update-grub || exit 1
+		printf 'GRUB_DEFAULT=0\nGRUB_TIMEOUT_STYLE=hidden\nGRUB_TIMEOUT=0\nGRUB_CMDLINE_LINUX_DEFAULT="quiet splash"\nGRUB_CMDLINE_LINUX=""\n' | sudo tee /etc/default/grub && sudo update-grub || exit 1
 		update_initramfs=1
 	}
 
@@ -174,9 +188,3 @@ nix profile list --json | grep --quiet --fixed-strings ".config/nix" && {
 }
 
 msg "=== Initialisation and configuration complete ==="
-[ -n "$recommend_restart" ] && echo "You need to restart your shell for full changes to take effect"
-[ -n "$update_initramfs" ] && echo "Note that initramfs has been updated so you should try rebooting"
-
-# TODO: check user has seat permission with dbus-user-session and seatd
-
-:
