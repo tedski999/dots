@@ -1,4 +1,6 @@
 
+exec systemctl --user import-environment DISPLAY WAYLAND_DISPLAY SWAYSOCK XDG_CURRENT_DESKTOP
+
 # Appearance
 output * bg #101010 solid_color
 default_border pixel 2
@@ -9,7 +11,7 @@ font Terminus (TTF) 12
 # TODO: remove indicator training wheels when comfortable
 client.focused           #202020 #ffffff #000000 #ff0000 #ffffff
 client.focused_inactive  #202020 #202020 #ffffff #202020 #202020
-client.focused_tab_title #202020 #ffffff #000000 #202020 #ffffff
+client.focused_tab_title #202020 #ffffff #000000
 client.unfocused         #202020 #202020 #808080 #202020 #202020
 
 # Program shortcuts
@@ -96,8 +98,6 @@ bindsym Mod4+Shift+minus move scratchpad
 
 # Mouse
 floating_modifier Mod4 normal
-bindgesture swipe:right exec "n=$(( $( swaymsg -t get_workspaces | jq '.[] | select(.focused).num' ) - 1 )); n=$(( $n < 1 ? 1 : ($n < 10 ? $n : 10) )); swaymsg workspace $n"
-bindgesture swipe:left  exec "n=$(( $( swaymsg -t get_workspaces | jq '.[] | select(.focused).num' ) + 1 )); n=$(( $n < 1 ? 1 : ($n < 10 ? $n : 10) )); swaymsg workspace $n"
 mouse_warping output
 
 # Bar
@@ -155,4 +155,5 @@ bindsym Mod4+Shift+e exit
 #         resume 'swaymsg "output * power on"' \
 #     timeout 600 'swaylock -f -c 000000' \
 #     before-sleep 'swaylock -f -c 000000'
-# swaylock --indicator-radius 25 --indicator-thickness 8 --indicator-y-position 900 --color 000000 --bs-hl-color ffffff --inside-color 00000000 --inside-clear-color 00000000 --inside-wrong-color 00000000 --inside-ver-color 00000000 --key-hl-color ffffff --ring-color 00000000 --ring-clear-color 00000000 --ring-ver-color ff00ff --ring-wrong-color ff0000 --separator-color 00000000 --text-color 00000000 --text-clear-color 00000000 --text-ver-color 00000000 --text-wrong-color 00000000
+# swaylock --indicator-radius 25 --indicator-thickness 8 --indicator-y-position 900 --color 000000 --bs-hl-color ffffff --inside-color 00000000 --inside-clear-color 00000000 --inside-wrong-color 00000000 --inside-ver-color 00000000 --key-hl-color ffffff --ring-color 00000000 --ring-clear-color 00000000 --ring-ver-color 808080 --ring-wrong-color ff0000 --separator-color 00000000 --text-color 00000000 --text-clear-color 00000000 --text-ver-color 00000000 --text-wrong-color 00000000
+

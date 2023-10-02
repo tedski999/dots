@@ -8,6 +8,7 @@
 # TODO: gtk+qt wayland backend
 # TODO: theming
 # TODO: idle and lock
+# TODO: nvidia drivers
 
 # Where to find dots repo
 dots="$HOME/.local/dots"
@@ -78,8 +79,8 @@ tmp="$(mktemp --directory)" || exit 1
 	msg "=== Installing GUI packages ==="
 	sudo apt-get -y install \
 		sway xwayland swayidle swaylock \
-		xdg-desktop-portal-wlr pipewire wireplumber playerctl \
-		wlr-randr light \
+		pipewire wireplumber xdg-desktop-portal-wlr playerctl \
+		wl-clipboard wlr-randr light wofi \
 		alacritty firefox-esr obs-studio \
 		fonts-terminus fonts-noto || exit 1
 }

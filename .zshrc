@@ -22,7 +22,7 @@ alias ll="ls -l"
 alias la="ll -a"
 alias lt="la -T"
 alias d="dirs -v"
-alias sudo="sudo --preserve-env"
+alias sudo="sudo --preserve-env "
 for i ({1..9}) alias "$i"="cd +$i"
 for i ({3..9}) alias "${(l:i::.:)}"="${(l:i-1::.:)};.."
 hash ip 2>/dev/null && alias ip="ip --color"
@@ -164,10 +164,9 @@ ZSH_HIGHLIGHT_STYLES[named-fd]="none"
 ZSH_HIGHLIGHT_STYLES[arg0]="fg=blue"
 
 # Start desktop environment
-[[ -o interactive && -o login && -z "$DISPLAY" && "$(tty)" = "/dev/tty1" ]] && hash sway 2>/dev/null && {
-	# TODO: fix nvidia
+[[ -o interactive && -o login && -z "$WAYLAND_DISPLAY" && "$(tty)" = "/dev/tty1" ]] && hash sway 2>/dev/null && {
 	# TODO: exec
-	sway
+	XDG_CURRENT_DESKTOP=sway sway
 }
 
 :
