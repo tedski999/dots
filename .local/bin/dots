@@ -7,6 +7,7 @@
 # TODO: emacs
 # TODO: gtk+qt wayland backend
 # TODO: theming
+# TODO: idle and lock
 
 # Where to find dots repo
 dots="$HOME/.local/dots"
@@ -51,40 +52,37 @@ msg() { printf "\n\033[1;33m$@\033[0m\n"; }
 
 # Install requested packages
 tmp="$(mktemp --directory)" || exit 1
-
+[ -n "$cligui" ] && {
+	sudo apt-get -y update || exit 1
+	sudo apt-get -y upgrade || exit 1
+}
 [ -n "$cli" ] && {
 	msg "=== Installing CLI packages ==="
-
-	msg "Install apt packages..."
 	sudo apt-get -y install \
 		file curl wget tar gzip zip unzip git gnupg man-db \
 		zsh zsh-syntax-highlighting zsh-autosuggestions \
 		neovim git ripgrep fzf bat fd-find exa btop jq \
-		python3 python3-pip || exit 1
-
-	msg "Install delta .deb package..."
-	curl "https://github.com/dandavison/delta/releases/download/0.16.5/git-delta_0.16.5_amd64.deb" > "$tmp/delta.deb" && sudo dpkg --install "$tmp/delta.deb" || exit 1
-
-	msg "Install cht.sh script..."
-	curl "https://cht.sh/:cht.sh" > "$HOME/.local/bin/cht.sh" && chmod +x "$HOME/.local/bin/cht.sh" || exit 1
+		python3 python3-venv python3-pip || exit 1
+	[ "$(dpkg -s git-delta | grep "Version: ")" != "Version: 0.16.5" ] && {
+		msg "Installing delta .deb package..."
+		curl -L "https://github.com/dandavison/delta/releases/download/0.16.5/git-delta_0.16.5_amd64.deb" > "$tmp/delta.deb" || exit 1
+		sudo apt-get -y install "$tmp/delta.deb" || exit 1
+	}
+	[ -f "$HOME/.local/bin/cht.sh" ] || {
+		msg "Installing cht.sh script..."
+		curl -L "https://cht.sh/:cht.sh" > "$HOME/.local/bin/cht.sh" || exit 1
+		chmod +x "$HOME/.local/bin/cht.sh" || exit 1
+	}
 }
-
 [ -n "$gui" ] && {
 	msg "=== Installing GUI packages ==="
-
-	msg "Install apt packages..."
 	sudo apt-get -y install \
 		sway xwayland swayidle swaylock \
-		xdg-desktop-portal xdg-desktop-portal-wlr pipewire wireplumber playerctl \
+		xdg-desktop-portal-wlr pipewire wireplumber playerctl \
 		wlr-randr light \
-		alacritty obs-studio \
-		fonts-noto || exit 1
-
-	msg "Install vieb .deb..."
-	curl "https://github.com/Jelmerro/Vieb/releases/download/10.3.0/vieb_10.3.0_amd64.deb" > "$tmp/vieb.deb" && sudo dpkg --install "$tmp/vieb.deb" || exit 1
+		alacritty firefox-esr obs-studio \
+		fonts-terminus fonts-noto || exit 1
 }
-
-rm -r "$tmp" || exit 1
 
 # Configure home stuff with expected state
 [ -d "$HOME" ] && {
