@@ -1,4 +1,5 @@
 
+# Import envvars into dbus user session
 exec systemctl --user import-environment DISPLAY WAYLAND_DISPLAY SWAYSOCK XDG_CURRENT_DESKTOP
 
 # Appearance
@@ -146,14 +147,11 @@ workspace 9 output eDP-1
 workspace 10 output HDMI-A-1
 
 # TODO: move to power menu
-bindsym Mod5+Shift+c reload
+bindsym Mod4+Shift+c reload
 bindsym Mod4+Shift+e exit
 
-# TODO: fix permissions
-# exec swayidle -w \
-#     timeout 300 'swaymsg "output * power off"'\
-#         resume 'swaymsg "output * power on"' \
-#     timeout 600 'swaylock -f -c 000000' \
-#     before-sleep 'swaylock -f -c 000000'
-# swaylock --indicator-radius 25 --indicator-thickness 8 --indicator-y-position 900 --color 000000 --bs-hl-color ffffff --inside-color 00000000 --inside-clear-color 00000000 --inside-wrong-color 00000000 --inside-ver-color 00000000 --key-hl-color ffffff --ring-color 00000000 --ring-clear-color 00000000 --ring-ver-color 808080 --ring-wrong-color ff0000 --separator-color 00000000 --text-color 00000000 --text-clear-color 00000000 --text-ver-color 00000000 --text-wrong-color 00000000
-
+# Idle locking suspending
+exec swayidle -w \
+	timeout 240 'swaymsg "output * dpms off"' resume 'swaymsg "output * dpms on"' \
+	timeout 300 'systemctl suspend' resume 'swaymsg "output * dpms on"' \
+	before-sleep 'swaylock --daemonize --indicator-radius 25 --indicator-thickness 8 --indicator-y-position 900 --color 000000 --bs-hl-color ffffff --inside-color 00000000 --inside-clear-color 00000000 --inside-wrong-color 00000000 --inside-ver-color 00000000 --key-hl-color ffffff --ring-color 00000000 --ring-clear-color 00000000 --ring-ver-color 808080 --ring-wrong-color ff0000 --separator-color 00000000 --text-color 00000000 --text-clear-color 00000000 --text-ver-color 00000000 --text-wrong-color 00000000'
