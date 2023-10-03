@@ -82,6 +82,7 @@ tmp="$(mktemp --directory)" || exit 1
 		pipewire wireplumber xdg-desktop-portal-wlr playerctl \
 		wl-clipboard wlr-randr light wofi \
 		alacritty firefox-esr obs-studio \
+		materia-gtk-theme paper-icon-theme \
 		fonts-terminus fonts-noto || exit 1
 }
 

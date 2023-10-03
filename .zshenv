@@ -9,8 +9,8 @@ export VISUAL="nvim"
 export MANPAGER="nvim +Man!"
 export MANWIDTH="80"
 export TERMINAL="alacritty"
-export BROWSER="brave-browser"
-export LOCALE_ARCHIVE="/usr/lib/locale/locale-archive"
+export BROWSER="firefox"
+export MOZ_ENABLE_WAYLAND=1
 # Clean $HOME
 export HISTFILE="$XDG_DATA_HOME/history"
 export ANDROID_HOME="$XDG_DATA_HOME/android"
