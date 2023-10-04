@@ -77,7 +77,7 @@ msung_grub="\
 GRUB_DEFAULT=0
 GRUB_TIMEOUT_STYLE=hidden
 GRUB_TIMEOUT=0
-GRUB_CMDLINE_LINUX_DEFAULT=\"splash\"
+GRUB_CMDLINE_LINUX_DEFAULT=\"splash quiet\"
 GRUB_CMDLINE_LINUX=\"\""
 
 msung_prompt="$(echo "ClByb3BlcnR5IG9mIFRlZCBKb2huc29uCgpFbWFpbDogc2tpQGg4Yy5kZQpQYXNzd29yZDogCg==" | base64 --decode | sed 's:[\\/&]:\\&:g; $!s:$:\\:')"
@@ -98,7 +98,7 @@ esac
 
 # Upgrade system
 case "$2" in
-	"msung"|"septs") msg  "Updating..."; sudo apt-get -y update && sudo apt-get -y upgrade || exit 1;;
+	"msung"|"septs") msg "Updating packages..."; sudo apt-get -y update && sudo apt-get -y upgrade || exit 1;;
 esac
 
 # Prerequisites
@@ -108,7 +108,7 @@ case "$2" in
 esac
 
 # Pre-op health check
-# TODO: lvm, systemd
+# TODO: debian, systemd
 case "$2" in
 	"msung") ;;
 	"septs") ;;
@@ -117,7 +117,7 @@ esac
 
 # Dots repository
 [ -d "$dots" ] || {
-	msg "Bootstrapping..."
+	msg "Cloning dots repository..."
 	git clone --bare "$git_http" "$dots" || exit 1
 	if ! out="$(git --git-dir="$dots" --work-tree="$HOME" checkout main 2>&1)"; then
 		echo "WARNING: The next operation WILL overwrite the following files:"
@@ -127,7 +127,7 @@ esac
 	fi
 }
 [ "$(git --git-dir="$dots" --work-tree="$HOME" remote get-url origin)" != "$git_ssh" ] && {
-	msg "Upgrading remote to authenticated SSH..."
+	msg "Upgrading dots remote to authenticated SSH..."
 	ssh-add -L && {
 		git --git-dir="$dots" --work-tree="$HOME" remote set-url origin "$git_ssh" || exit 1
 		git --git-dir="$dots" --work-tree="$HOME" fetch || exit 1
@@ -212,7 +212,6 @@ case "$2" in
 			sudo chsh "$USER" -s "$(which zsh)" || exit 1
 		}
 		;;
-
 	"guest")
 		;;
 esac
