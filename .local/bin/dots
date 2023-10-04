@@ -179,8 +179,10 @@ case "$2" in
 			msg "Setting login shell to zsh..."
 			sudo chsh "$USER" -s "$(which zsh)" || exit 1
 		}
-		#msg "Hushing logins..."
-		#sudo sed -i 's/^HUSHLOGIN_FILE.*/HUSHLOGIN_FILE\t./' "/etc/login.defs" || exit 1
+		grep --quiet --perl-regexp "^HUSHLOGIN_FILE\t\.$" "/etc/login.defs" || {
+			msg "Hushing logins..."
+			sudo sed -i 's/^HUSHLOGIN_FILE.*/HUSHLOGIN_FILE\t./' "/etc/login.defs" || exit 1
+		}
 		[ -f "/etc/sudoers.d/disable_admin_file" ] || {
 			msg "Disabling .sudo_as_admin_successful file..."
 			echo "Defaults !admin_flag" | sudo tee "/etc/sudoers.d/disable_admin_file" || exit 1
