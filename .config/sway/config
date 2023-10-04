@@ -26,10 +26,10 @@ bindsym Mod4+h focus left
 bindsym Mod4+j focus down
 bindsym Mod4+k focus up
 bindsym Mod4+l focus right
-bindsym Mod4+Shift+h move left
-bindsym Mod4+Shift+j move down
-bindsym Mod4+Shift+k move up
-bindsym Mod4+Shift+l move right
+bindsym Mod4+Shift+h move left 50px
+bindsym Mod4+Shift+j move down 50px
+bindsym Mod4+Shift+k move up 50px
+bindsym Mod4+Shift+l move right 50px
 bindsym Mod4+Control+h resize shrink width 50px
 bindsym Mod4+Control+j resize grow height 50px
 bindsym Mod4+Control+k resize shrink height 50px

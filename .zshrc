@@ -123,7 +123,6 @@ hash gpgconf 2>/dev/null && {
 }
 
 # cht.sh
-# TODO: fix
 cht() { cht.sh "$@?style=paraiso-dark" | less }
 _cht() { compadd $commands:t }
 compdef _cht cht
@@ -165,11 +164,10 @@ ZSH_HIGHLIGHT_STYLES[arg0]="fg=blue"
 
 # Start desktop environment
 [[ -o interactive && -o login && -z "$WAYLAND_DISPLAY" && "$(tty)" = "/dev/tty1" ]] && hash sway 2>/dev/null && {
-	# TODO: nvidia drivers?
 	# TODO: some race condition on boot breaks some things, need to investigate
 	# - in some situations (no browser or obs opened) after no input for a couple seconds, input freezes system for a second and libinput complains about system being to slow
 	sleep 3 # temp fix for above
-	XDG_CURRENT_DESKTOP=sway exec sway
+	XDG_CURRENT_DESKTOP=sway exec sway --unsupported-gpu
 }
 
 :
