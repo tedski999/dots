@@ -124,7 +124,8 @@ hash gpgconf 2>/dev/null && {
 }
 
 # cht.sh
-cht() { cht.sh "$@?style=paraiso-dark" }
+# TODO: fix
+cht() { cht.sh "$@?style=paraiso-dark" | less }
 _cht() { compadd $commands:t }
 compdef _cht cht
 
