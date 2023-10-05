@@ -1,0 +1,20 @@
+#!/bin/sh
+
+# TODO: idle toggle
+# TODO: change performance?
+
+choice="$1"
+[ -z "$choice" ] && {
+	choices="lock suspend reload logout reboot shutdown"
+	choice="$(CH_PROMPT="⏼ Power Control" choose $choices)"
+}
+
+case "$choice" in
+	"lock") swaylock --daemonize;;
+	"suspend") pkill -USR1 swayidle;;
+	"reload") swaymsg reload;;
+	"logout") swaymsg exit;;
+	"reboot") systemctl reboot;;
+	"shutdown") systemctl poweroff;;
+	"*") return 1;;
+esac

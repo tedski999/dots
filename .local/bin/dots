@@ -19,6 +19,7 @@ gitignore="\
 !/.config/alacritty
 !/.config/bat
 !/.config/dunst
+!/.config/flameshot
 !/.config/git
 !/.config/gtk-3.0
 !/.config/gtk-4.0
@@ -30,6 +31,7 @@ gitignore="\
 !/.config/python
 !/.config/ripgrep
 !/.config/sway
+!/.config/swaylock
 !/.config/tmux
 !/.config/mimeapps.list
 !/.config/user-dirs.dirs
@@ -42,13 +44,17 @@ gitignore="\
 /.local/*
 !/.local/bin
 /.local/bin/*
+!/.local/bin/choose
+!/.local/bin/displayctl
 !/.local/bin/dots
+!/.local/bin/powerctl
 
 /.ssh/*
 !/.ssh/config"
 
 msung_pkgs="\
 file curl wget tar gzip zip unzip git gnupg man-db
+network-manager network-manager-openvpn openvpn
 zsh zsh-syntax-highlighting zsh-autosuggestions
 neovim git ripgrep fzf bat fd-find exa btop jq
 python3 python3-venv python3-pip
@@ -145,7 +151,8 @@ case "$2" in
 		dpkg-query --show --showformat='${Status}\n' $msung_pkgs git-delta 2>&1 | grep --quiet --invert-match "install ok installed" && {
 			msg "Installing packages..."
 			sudo apt-get -y install $msung_pkgs || exit 1
-			curl -L "https://github.com/dandavison/delta/releases/download/0.16.5/git-delta_0.16.5_amd64.deb" > "/tmp/delta.deb" && sudo apt-get -y install "/tmp/delta.deb" || exit 1
+			hash delta || { curl -L "https://github.com/dandavison/delta/releases/download/0.16.5/git-delta_0.16.5_amd64.deb" > "/tmp/delta.deb" && sudo apt-get -y install "/tmp/delta.deb"; } || exit 1
+			hash cliphist || { curl -L "https://github.com/sentriz/cliphist/releases/download/v0.4.0/v0.4.0-linux-amd64" > "$HOME/.local/bin/cliphist" && chmod +x "$HOME/.local/bin/cliphist"; } || exit 1
 		}
 		;;
 	"septs")

@@ -9,16 +9,43 @@ default_floating_border pixel 2
 gaps inner 2
 gaps outer 2
 font Terminus (TTF) 12
-# TODO: remove indicator training wheels when comfortable
 client.focused           #202020 #ffffff #000000 #ff0000 #ffffff
 client.focused_inactive  #202020 #202020 #ffffff #202020 #202020
 client.focused_tab_title #202020 #ffffff #000000
 client.unfocused         #202020 #202020 #808080 #202020 #202020
 
 # Program shortcuts
-bindsym Mod4+Space exec launcher
-bindsym Mod4+Return exec $TERMINAL
-bindsym Mod4+w exec $BROWSER
+bindsym Mod4+space                   exec wofi --show run,drun
+bindsym Mod4+Return                  exec $TERMINAL
+bindsym Mod4+t                       exec $TERMINAL
+bindsym Mod4+w                       exec $BROWSER
+bindsym Mod4+d                       exec $BROWSER --new-window "https://discord.com/app"
+bindsym Mod4+s                       exec flameshot gui --raw | wl-copy --type image/png
+bindsym Mod4+Shift+s                 exec flameshot gui --accept-on-select --raw | wl-copy --type image/png
+bindsym Mod4+Escape                  exec powerctl
+bindsym Mod4+Shift+Escape            exec powerctl lock
+bindsym Mod4+Control+Escape          exec powerctl suspend
+bindsym Mod4+Shift+Control+Escape    exec powerctl reload
+bindsym Mod4+backslash               exec displayctl
+bindsym Mod4+Shift+backslash         exec displayctl mono
+bindsym Mod4+Control+backslash       exec displayctl duel
+bindsym Mod4+Shift+Control+backslash exec displayctl mirror
+bindsym Mod4+b                       border pixel 2
+bindsym Mod4+shift+b                 border none
+# TODO: single quotes break display
+bindsym Mod4+v                       exec cliphist list | wofi --dmenu --pre-display-cmd "echo -n '%s' | cut -zf 2" | cliphist decode | wl-copy
+
+# Clipboard manager
+exec wl-paste --watch cliphist store
+
+# Idle locking + suspending
+exec swayidle -w \
+	timeout 300 'swaymsg "output * dpms off"' resume 'swaymsg "output * dpms on"' \
+	timeout 900 'systemctl suspend'           resume 'swaymsg "output * dpms on"' \
+	before-sleep 'swaylock --daemonize' after-resume 'swaymsg "output * dpms on"'
+
+# Output setup
+exec displayctl mono
 
 # Windows
 focus_wrapping no
@@ -34,15 +61,19 @@ bindsym Mod4+Control+h resize shrink width 50px
 bindsym Mod4+Control+j resize grow height 50px
 bindsym Mod4+Control+k resize shrink height 50px
 bindsym Mod4+Control+l resize grow width 50px
+# TODO?
+bindsym Mod4+Tab       focus next sibling
+bindsym Mod4+Shift+Tab focus prev sibling
 bindsym Mod4+f focus mode_toggle
-bindsym Mod4+Shift+f floating toggle
-bindsym Mod4+x floating true; sticky toggle
+bindsym Mod4+Shift+f border pixel 2; floating toggle
+bindsym Mod4+x sticky toggle
+# TODO?
+#bindsym Mod4+c inhibit_idle toggle
 bindsym Mod4+m fullscreen
 bindsym Mod4+q kill
 
 # Workspaces
-# TODO: get used to i3 multihead workspaces
-# - moving workspaces around and between outputs (auto renaming?)
+# TODO: moving workspaces around and between outputs (auto renaming?)
 bindsym Mod4+1 workspace number 1
 bindsym Mod4+2 workspace number 2
 bindsym Mod4+3 workspace number 3
@@ -79,9 +110,9 @@ bindsym Mod4+Shift+Comma    exec "n=$(( $( swaymsg -t get_workspaces | jq '.[] |
 bindsym Mod4+Shift+Period   exec "n=$(( $( swaymsg -t get_workspaces | jq '.[] | select(.focused).num' ) + 1 )); n=$(( $n < 1 ? 1 : ($n < 10 ? $n : 10) )); swaymsg move container workspace $n; swaymsg workspace $n"
 bindsym Mod4+Control+Comma  exec "n=$(( $( swaymsg -t get_workspaces | jq '.[] | select(.focused).num' ) - 1 )); n=$(( $n < 1 ? 1 : ($n < 10 ? $n : 10) )); swaymsg move container workspace $n"
 bindsym Mod4+Control+Period exec "n=$(( $( swaymsg -t get_workspaces | jq '.[] | select(.focused).num' ) + 1 )); n=$(( $n < 1 ? 1 : ($n < 10 ? $n : 10) )); swaymsg move container workspace $n"
-bindsym Mod4+z         exec "n=$(swaymsg -rt get_workspaces | jq '. as $w | first(range($w[] | select(.focused).num; 10) + 1 | select(all(. != $w[].num; .)))'); swaymsg workspace $n"
-bindsym Mod4+Shift+z   exec "n=$(swaymsg -rt get_workspaces | jq '. as $w | first(range($w[] | select(.focused).num; 10) + 1 | select(all(. != $w[].num; .)))'); swaymsg move container workspace $n; swaymsg workspace $n"
-bindsym Mod4+Control+z exec "n=$(swaymsg -rt get_workspaces | jq '. as $w | first(range($w[] | select(.focused).num; 10) + 1 | select(all(. != $w[].num; .)))'); swaymsg move container workspace $n"
+bindsym Mod4+z              exec "n=$(swaymsg -rt get_workspaces | jq '. as $w | first(range($w[] | select(.focused).num; 10) + 1 | select(all(. != $w[].num; .)))'); swaymsg workspace $n"
+bindsym Mod4+Shift+z        exec "n=$(swaymsg -rt get_workspaces | jq '. as $w | first(range($w[] | select(.focused).num; 10) + 1 | select(all(. != $w[].num; .)))'); swaymsg move container workspace $n; swaymsg workspace $n"
+bindsym Mod4+Control+z      exec "n=$(swaymsg -rt get_workspaces | jq '. as $w | first(range($w[] | select(.focused).num; 10) + 1 | select(all(. != $w[].num; .)))'); swaymsg move container workspace $n"
 
 # Layout
 default_orientation auto
@@ -102,7 +133,7 @@ floating_modifier Mod4 normal
 mouse_warping output
 
 # Bar
-# TODO: replace/incorporate with eww
+# TODO: replace/incorporate with "real" bar
 bar {
     mode hide
     position top
@@ -132,27 +163,3 @@ input type:touchpad {
     click_method clickfinger
     scroll_method two_finger
 }
-
-# TODO: move to display menu
-output eDP-1 pos 0 0
-workspace 1 output eDP-1
-workspace 2 output HDMI-A-1
-workspace 3 output eDP-1
-workspace 4 output HDMI-A-1
-workspace 5 output eDP-1
-workspace 6 output HDMI-A-1
-workspace 7 output eDP-1
-workspace 8 output HDMI-A-1
-workspace 9 output eDP-1
-workspace 10 output HDMI-A-1
-
-# TODO: move to power menu
-bindsym Mod4+Shift+c reload
-bindsym Mod4+Shift+e exit
-
-# Idle locking suspending
-exec swayidle -w \
-	timeout 300 'swaymsg "output * dpms off"' resume 'swaymsg "output * dpms on"' \
-	timeout 900 'systemctl suspend' resume 'swaymsg "output * dpms on"' \
-	before-sleep 'swaylock --daemonize --indicator-radius 25 --indicator-thickness 8 --indicator-y-position 900 --color 000000 --bs-hl-color 808080 --inside-color 00000000 --inside-clear-color 00000000 --inside-wrong-color 00000000 --inside-ver-color 00000000 --key-hl-color ffffff --ring-color 00000000 --ring-clear-color 00000000 --ring-ver-color 808080 --ring-wrong-color ff0000 --separator-color 00000000 --text-color 00000000 --text-clear-color 00000000 --text-ver-color 00000000 --text-wrong-color 00000000' \
-	after-resume 'swaymsg "output * dpms on"'

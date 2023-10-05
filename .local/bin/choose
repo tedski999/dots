@@ -1,0 +1,14 @@
+#!/bin/sh
+
+nlines="$CH_NLINES"
+prompt="$CH_PROMPT"
+custom="$CH_CUSTOM"
+
+[ -z "$nlines" ] && nlines=16
+
+while true; do
+	choice="$(printf "%s\n" $@ | wofi --dmenu --insensitive --lines "$nlines" --prompt "$prompt")"
+	[ -n "$custom" ] || [ -z "$choice" ] || { for option in $@; do [ "$choice" = "$option" ] && break; done; } && break
+done
+
+echo "$choice"
