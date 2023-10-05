@@ -156,10 +156,11 @@ esac
 # Packages
 case "$2" in
 	"msung")
-		dpkg-query --show --showformat='${Status}\n' $msung_pkgs git-delta 2>&1 | grep --quiet --invert-match "install ok installed" && {
+		dpkg-query --show --showformat='${Status}\n' $msung_pkgs git-delta discord 2>&1 | grep --quiet --invert-match "install ok installed" && {
 			msg "Installing packages..."
 			sudo apt-get -y install $msung_pkgs || exit 1
 			hash delta || { curl -L "https://github.com/dandavison/delta/releases/download/0.16.5/git-delta_0.16.5_amd64.deb" > "/tmp/delta.deb" && sudo apt-get -y install "/tmp/delta.deb"; } || exit 1
+			hash discord || { curl -L "https://discord.com/api/download?platform=linux&format=deb" >  "/tmp/discord.deb" && sudo apt-get -y install "/tmp/discord.deb"; } || exit 1
 			hash cliphist || { curl -L "https://github.com/sentriz/cliphist/releases/download/v0.4.0/v0.4.0-linux-amd64" > "$HOME/.local/bin/cliphist" && chmod +x "$HOME/.local/bin/cliphist"; } || exit 1
 		}
 		;;
