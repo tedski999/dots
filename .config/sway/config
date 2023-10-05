@@ -6,6 +6,8 @@ exec systemctl --user import-environment DISPLAY WAYLAND_DISPLAY SWAYSOCK XDG_CU
 output * bg #101010 solid_color
 default_border pixel 2
 default_floating_border pixel 2
+for_window [class=".*"]  border pixel 2
+for_window [app_id=".*"] border pixel 2
 gaps inner 2
 gaps outer 2
 font Terminus (TTF) 12
@@ -19,9 +21,9 @@ bindsym Mod4+space                   exec wofi --show run,drun
 bindsym Mod4+Return                  exec $TERMINAL
 bindsym Mod4+t                       exec $TERMINAL
 bindsym Mod4+w                       exec $BROWSER
-bindsym Mod4+d                       exec $BROWSER --new-window "https://discord.com/app"
-bindsym Mod4+s                       exec flameshot gui --raw | wl-copy --type image/png
-bindsym Mod4+Shift+s                 exec flameshot gui --accept-on-select --raw | wl-copy --type image/png
+bindsym Mod4+d                       exec discord
+bindsym Mod4+s                       exec flameshot gui --delay 50 --raw | wl-copy --type i
+bindsym Mod4+Shift+s                 exec flameshot gui --delay 50 --raw --accept-on-select | wl-copy --type image/png
 bindsym Mod4+Escape                  exec powerctl
 bindsym Mod4+Shift+Escape            exec powerctl lock
 bindsym Mod4+Control+Escape          exec powerctl suspend
