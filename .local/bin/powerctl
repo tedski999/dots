@@ -11,7 +11,7 @@ choice="$1"
 }
 
 case "$choice" in
-	"lock") swaylock --daemonize;;
+	"lock") loginctl lock-session;;
 	"suspend") systemctl suspend;;
 	"reload") swaymsg reload;;
 	"logout") swaymsg exit;;
