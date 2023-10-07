@@ -7,7 +7,7 @@
 choice="$1"
 [ -z "$choice" ] && {
 	choices="lock suspend reload logout reboot shutdown"
-	choice="$(CH_LINES=8 CH_WIDTH=100 CH_PROMPT="⏼ Power Control" choose $choices)"
+	choice="$(CH_LINES=8 CH_WIDTH=100 CH_PROMPT="Power Control" choose $choices)"
 }
 
 case "$choice" in

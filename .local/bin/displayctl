@@ -10,7 +10,7 @@ mon1="HDMI-A-1"
 choice="$1"
 [ -z "$choice" ] && {
 	choices="mono duel mirror"
-	choice="$(CH_LINES=5 CH_WIDTH=100 CH_PROMPT="🖵 Display Control" choose $choices)"
+	choice="$(CH_LINES=5 CH_WIDTH=100 CH_PROMPT="Display Control" choose $choices)"
 }
 
 case "$choice" in
