@@ -42,6 +42,7 @@ exec wl-paste --watch cliphist store
 
 # Idle locking + suspending
 exec swayidle -w \
+	idlehint 300 lock 'swaylock --daemonize' unlock 'pkill -USR1 swaylock' \
 	timeout 300 'swaymsg "output * dpms off"' resume 'swaymsg "output * dpms on"' \
 	timeout 900 'systemctl suspend'           resume 'swaymsg "output * dpms on"' \
 	before-sleep 'swaylock --daemonize' after-resume 'swaymsg "output * dpms on"'
