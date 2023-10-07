@@ -102,7 +102,8 @@ HandleLidSwitchExternalPower=ignore
 HandleLidSwitchDocked=ignore"
 
 msung_issue="Welcome to \l
-"
+ "
+
 msung_motd=" "
 
 msung_autologin="\
