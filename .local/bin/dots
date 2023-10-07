@@ -91,8 +91,8 @@ ExecStart=-/sbin/agetty --skip-login --nonewline --noissue --autologin \"$USER\"
 msung_grub="\
 GRUB_DEFAULT=0
 GRUB_TIMEOUT_STYLE=hidden
-GRUB_TIMEOUT=0
-GRUB_CMDLINE_LINUX_DEFAULT=\"splash quiet\"
+GRUB_TIMEOUT=1
+GRUB_CMDLINE_LINUX_DEFAULT=\"splash\"
 GRUB_CMDLINE_LINUX=\"\""
 
 msung_prompt="$(echo "ClByb3BlcnR5IG9mIFRlZCBKb2huc29uCgpFbWFpbDogc2tpQGg4Yy5kZQpQYXNzd29yZDogCg==" | base64 --decode | sed 's:[\\/&]:\\&:g; $!s:$:\\:')"
@@ -123,7 +123,7 @@ case "$2" in
 esac
 
 # Pre-op health check
-# TODO: debian, systemd
+# TODO: debian, systemd, sudo btrfs device stats ...
 case "$2" in
 	"msung") ;;
 	"septs") ;;
@@ -191,7 +191,7 @@ find "$HOME/.gnupg/" -type d -exec chmod 700 {} \; || exit 1
 # System configuration
 case "$2" in
 	"msung")
-		unset update_initramfs
+		#unset update_initramfs
 		[ "$SHELL" != "$(which zsh)" ] && {
 			msg "Setting login shell to zsh..."
 			sudo chsh "$USER" -s "$(which zsh)" || exit 1
@@ -212,27 +212,29 @@ case "$2" in
 		[ -f "/etc/sudoers.d/disable_admin_file" ] || {
 			msg "Disabling .sudo_as_admin_successful file..."
 			echo "Defaults !admin_flag" | sudo tee "/etc/sudoers.d/disable_admin_file" || exit 1
+			rm -f "$HOME/.sudo_as_admin_successful" || exit 1
 		}
-		[ -f "/etc/systemd/system/getty@tty1.service.d/autologin.conf" ] || {
-			msg "Enabling autologin on tty1..."
-			sudo mkdir -p "/etc/systemd/system/getty@tty1.service.d" || exit 1
-			printf "$msung_agetty_autologin" | sudo tee "/etc/systemd/system/getty@tty1.service.d/autologin.conf" || exit 1
-		}
+		#[ -f "/etc/systemd/system/getty@tty1.service.d/autologin.conf" ] || {
+		#	msg "Enabling autologin on tty1..."
+		#	sudo mkdir -p "/etc/systemd/system/getty@tty1.service.d" || exit 1
+		#	printf "$msung_agetty_autologin" | sudo tee "/etc/systemd/system/getty@tty1.service.d/autologin.conf" || exit 1
+		#}
 		[ "$(cat "/etc/default/grub")" != "$msung_grub" ] && {
 			msg "Setting grub config..."
 			printf "$msung_grub" | sudo tee "/etc/default/grub" || exit 1
 			sudo update-grub || exit 1
-			update_initramfs=1
-		}
-		grep --quiet --fixed-strings "Please unlock disk \$CRYPTTAB_NAME: " "/lib/cryptsetup/functions" && {
-			msg "Setting crypt prompt..."
-			sudo sed -i "s/Please unlock disk \$CRYPTTAB_NAME: /$msung_prompt/" "/lib/cryptsetup/functions" || exit 1
-			update_initramfs=1
-		}
-		[ -n "$update_initramfs" ] && {
-			msg "Updating initramfs..."
+		#	update_initramfs=1
 			sudo update-initramfs -u || exit 1
 		}
+		#grep --quiet --fixed-strings "Please unlock disk \$CRYPTTAB_NAME: " "/lib/cryptsetup/functions" && {
+		#	msg "Setting crypt prompt..."
+		#	sudo sed -i "s/Please unlock disk \$CRYPTTAB_NAME: /$msung_prompt/" "/lib/cryptsetup/functions" || exit 1
+		#	update_initramfs=1
+		#}
+		#[ -n "$update_initramfs" ] && {
+		#	msg "Updating initramfs..."
+		#	sudo update-initramfs -u || exit 1
+		#}
 		;;
 	"septs")
 		[ "$SHELL" != "$(which zsh)" ] && {
