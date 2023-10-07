@@ -29,7 +29,6 @@ hash ip 2>/dev/null && alias ip="ip --color"
 hash exa 2>/dev/null && alias ls="exa -hs=name --group-directories-first"
 hash bat 2>/dev/null && alias cat="bat --paging=never" && alias less="bat --paging=always"
 hash rg 2>/dev/null && alias grep="rg"
-hash fdfind 2>/dev/null && alias fd="fdfind"
 hash delta 2>/dev/null && alias diff="delta"
 
 # Primary keybindings
@@ -127,6 +126,9 @@ hash gpgconf 2>/dev/null && {
 cht() { cht.sh "$@?style=paraiso-dark" | less }
 _cht() { compadd $commands:t }
 compdef _cht cht
+
+# fd
+fd() { fdfind }
 
 # FZF
 export FZF_COLORS="fg+:bold,pointer:red,hl:red,hl+:red,gutter:-1,marker:red"
