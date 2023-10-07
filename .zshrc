@@ -58,6 +58,9 @@ autoload -Uz compinit
 fpath=($fpath "$ZSH_DATA/completions")
 _comp_options+=(globdots)
 compinit -d "$XDG_CACHE_HOME/zcompdump" $([[ -n "$XDG_CACHE_HOME/zcompdump"(#qN.mh+24) ]] && echo -C)
+autoload -U bashcompinit
+bashcompinit
+# TODO: improve ergonomics here
 zstyle ":completion:*" menu select
 zstyle ":completion:*" completer _complete _match _approximate
 zstyle ":completion:*" matcher-list "" "m:{[:lower:][:upper:]}={[:upper:][:lower:]}" "+l:|=* r:|=*"
