@@ -9,7 +9,7 @@ custom="$CH_CUSTOM"
 [ -z "$width" ] && width="50%"
 
 while true; do
-	choice="$(printf "%s\n" $@ | wofi --dmenu --insensitive --lines "$lines" --width "$width" --prompt "$prompt")"
+	choice="$(printf "%s\n" $@ | wofi --cache-file /dev/null --dmenu --insensitive --lines "$lines" --width "$width" --prompt "$prompt")"
 	[ -n "$custom" ] || [ -z "$choice" ] || { for option in $@; do [ "$choice" = "$option" ] && break; done; } && break
 done
 

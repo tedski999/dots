@@ -2,6 +2,8 @@
 
 # TODO: idle toggle
 
+[ "$(hostname)" = "msung" ] || exit 1
+
 choice="$1"
 [ -z "$choice" ] && {
 	choices="lock suspend reload logout reboot shutdown"
