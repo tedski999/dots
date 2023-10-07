@@ -166,8 +166,11 @@ ZSH_HIGHLIGHT_STYLES[arg0]="fg=blue"
 [[ -o interactive && -o login && -z "$WAYLAND_DISPLAY" && "$(tty)" = "/dev/tty1" ]] && hash sway 2>/dev/null && {
 	# TODO: some race condition on boot breaks some things, need to investigate
 	# - in some situations (no browser or obs opened) after no input for a couple seconds, input freezes system for a second and libinput complains about system being to slow
-	sleep 3 # temp fix for above
-	XDG_CURRENT_DESKTOP=sway exec sway --unsupported-gpu
+	sleep 1 # temp fix for above
+	XDG_CURRENT_DESKTOP=sway sway --unsupported-gpu
+	#XDG_CURRENT_DESKTOP=sway exec sway --unsupported-gpu
+	#XDG_CURRENT_DESKTOP=sway primusrun sway --unsupported-gpu
+	#XDG_CURRENT_DESKTOP=sway __NV_PRIME_RENDER_OFFLOAD=1 __GLX_VENDOR_LIBRARY_NAME=nvidia primusrun sway --unsupported-gpu
 }
 
 :

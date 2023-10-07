@@ -10,7 +10,6 @@ export MANPAGER="nvim +Man!"
 export MANWIDTH="80"
 export TERMINAL="alacritty"
 export BROWSER="firefox"
-export MOZ_ENABLE_WAYLAND=1
 # Clean $HOME
 export HISTFILE="$XDG_DATA_HOME/history"
 export ANDROID_HOME="$XDG_DATA_HOME/android"
@@ -27,3 +26,7 @@ export WINEPREFIX="$XDG_DATA_HOME/wine"
 export ZSH_DATA="$XDG_DATA_HOME/zsh"
 export npm_config_userconfig="$XDG_CONFIG_HOME/npm/npmrc"
 export skip_global_compinit=1
+# TODO: .cert
+# Settings
+export MOZ_ENABLE_WAYLAND=1
+export GAMEMODERUNEXEC="env __NV_PRIME_RENDER_OFFLOAD=1 __GLX_VENDOR_LIBRARY_NAME=nvidia __VK_LAYER_NV_optimus=NVIDIA_only"
