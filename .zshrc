@@ -122,10 +122,30 @@ hash gpgconf 2>/dev/null && {
 	(gpgconf --launch gpg-agent &)
 }
 
+# pipx
+eval "$(register-python-argcomplete pipx)"
+
 # cht.sh
 cht() { cht.sh "$@?style=paraiso-dark" | less }
 _cht() { compadd $commands:t }
 compdef _cht cht
+
+# trash-cli
+alias trash="XDG_DATA_HOME=/tmp trash"
+alias trash-put="XDG_DATA_HOME=/tmp trash-put"
+alias trash-list="XDG_DATA_HOME=/tmp trash-list"
+alias trash-restore="XDG_DATA_HOME=/tmp trash-restore"
+alias trash-empty="XDG_DATA_HOME=/tmp trash-empty"
+alias xx="trash-put"
+alias xxls="trash-list"
+alias xxun="trash-restore"
+alias xxxx="trash-empty"
+
+#alias lsdel="trash-list"
+#alias undel="trash-restore"
+#alias del="trash-put"
+#alias lsdel="trash-list"
+#alias undel="trash-restore"
 
 # fd
 fd() { fdfind }
