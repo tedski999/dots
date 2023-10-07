@@ -1,0 +1,9 @@
+term=alacritty
+insensitive=true
+always_parse_args=true
+key_forward=Tab,Control_L-n
+key_backward=ISO_Left_Tab,Control_L-p
+key_submit=Return,Control_L-j
+key_exit=Escape,Control_L-q
+key_pgup=Page_Up,Control_L-u
+key_pgdn=Page_Down,Control_L-d

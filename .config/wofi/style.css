@@ -1,0 +1,29 @@
+
+/* TODO: clear input field */
+/** { border: none; outline-style: none; }*/
+/*#input image.left { -gtk-icon-transform: scaleX(0); }*/
+
+#window {
+	font-family: "Terminus (TTF)";
+	font-size: 16;
+	background-color: black;
+	color: white;
+}
+
+#input {
+	border: none;
+
+	background-color: black;
+}
+
+#outer-box {
+	margin: 5px;
+}
+
+#entry:selected {
+	background-color: white;
+}
+
+#text:selected {
+	color: black;
+}

@@ -33,6 +33,7 @@ gitignore="\
 !/.config/sway
 !/.config/swaylock
 !/.config/tmux
+!/.config/wofi
 !/.config/mimeapps.list
 !/.config/user-dirs.dirs
 !/.config/user-dirs.locale
