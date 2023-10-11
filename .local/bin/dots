@@ -299,9 +299,9 @@ hash cht.sh 2>/dev/null || [ -d "$opt/cht.sh" ] || {
 #}
 hash fzf 2>/dev/null || [ -d "$opt/fzf" ] || {
 	msg "Installing fzf opt..."
-	mkdir -p "$opt/fzf" || exit 1
-	curl -L "https://github.com/junegunn/fzf/releases/download/0.40.0/fzf-0.40.0-linux_amd64.tar.gz" | tar -xzC "$opt/fzf" || exit 1
-	curl -L "https://github.com/junegunn/fzf/releases/download/0.40.0/fzf-0.40.0-linux_arm64.tar.gz" | tar -xzC "$opt/fzf" || exit 1
+	mkdir -p "$opt/fzf/x86_64" "$opt/fzf/arm" || exit 1
+	curl -L "https://github.com/junegunn/fzf/releases/download/0.40.0/fzf-0.40.0-linux_amd64.tar.gz" | tar -xzC "$opt/fzf/x86_64" || exit 1
+	curl -L "https://github.com/junegunn/fzf/releases/download/0.40.0/fzf-0.40.0-linux_arm64.tar.gz" | tar -xzC "$opt/fzf/arm" || exit 1
 	curl -L "https://raw.githubusercontent.com/junegunn/fzf/master/shell/completion.zsh" > "$opt/fzf/completion.zsh" || exit 1
 	curl -L "https://raw.githubusercontent.com/junegunn/fzf/master/shell/key-bindings.zsh" > "$opt/fzf/key-bindings.zsh" || exit 1
 }

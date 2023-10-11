@@ -156,9 +156,10 @@ hash fdfind 2>/dev/null && { fd() { fdfind } }
 #}
 
 # fzf
-[ "$(which fzf || echo "$BIN_DIR/fzf")" = "$BIN_DIR/fzf" ] && { case "$(uname -m)" in
-		"arm"*)    ln -sf "$OPT_DIR/fzf/fzf-0.40.0-linux_arm64/fzf" "$BIN_DIR/fzf";;
-		"x86_64"*) ln -sf "$OPT_DIR/fzf/fzf-0.40.0-linux_amd64/fzf" "$BIN_DIR/fzf";;
+[ "$(which fzf || echo "$BIN_DIR/fzf")" = "$BIN_DIR/fzf" ] && {
+	case "$(uname -m)" in
+		"arm"*)    ln -sf "$OPT_DIR/fzf/arm/fzf" "$BIN_DIR/fzf";;
+		"x86_64"*) ln -sf "$OPT_DIR/fzf/x86_64/fzf" "$BIN_DIR/fzf";;
 	esac
 }
 export FZF_COLORS="fg+:bold,pointer:red,hl:red,hl+:red,gutter:-1,marker:red"
