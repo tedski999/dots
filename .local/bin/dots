@@ -283,10 +283,12 @@ hash cht.sh 2>/dev/null || [ -d "$opt/cht.sh" ] || {
 }
 [ -d "/usr/share/zsh-syntax-highlighting" ] || [ -d "$opt/zsh-syntax-highlighting" ] || {
 	msg "Installing zsh-syntax-highlighting opt..."
+	mkdir -p "$opt" || exit 1
 	curl -L "https://github.com/zsh-users/zsh-syntax-highlighting/archive/refs/heads/master.tar.gz" | tar -xzC "$opt" || exit 1
 }
 [ -d "/usr/share/zsh-autosuggestions" ] || [ -d "$opt/zsh-autosuggestions" ] || {
 	msg "Installing zsh-autosuggestions opt..."
+	mkdir -p "$opt" || exit 1
 	curl -L "https://github.com/zsh-users/zsh-autosuggestions/archive/refs/tags/v0.7.0.tar.gz" | tar -xzC "$opt" || exit 1
 }
 
