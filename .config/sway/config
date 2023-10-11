@@ -1,6 +1,11 @@
 
-# Import envvars into dbus user session
-exec systemctl --user import-environment DISPLAY WAYLAND_DISPLAY SWAYSOCK XDG_CURRENT_DESKTOP
+# TODO: group focus lost when focusing to its new workspace
+
+# Common functions
+set $is_1mark_focused swaymsg -t get_tree | jq --exit-status ".. | select(.focused?) | .marks | index(\\"_1\\")"
+set $get_prev_workspace $(( $( swaymsg -t get_workspaces | jq '.[] | select(.focused).num' ) - 1 )) && n=$(( $n < 1 ? 1 : ($n < 10 ? $n : 10) ))
+set $get_next_workspace $(( $( swaymsg -t get_workspaces | jq '.[] | select(.focused).num' ) + 1 )) && n=$(( $n < 1 ? 1 : ($n < 10 ? $n : 10) ))
+set $get_empty_workspace $(swaymsg -rt get_workspaces | jq '. as $w | first(range(0; 10) + 1 | select(all(. != $w[].num; .)))')
 
 # Appearance
 output * bg #101010 solid_color
@@ -16,141 +21,26 @@ client.focused_inactive  #202020 #202020 #ffffff #202020 #202020
 client.focused_tab_title #202020 #ffffff #000000
 client.unfocused         #202020 #202020 #808080 #202020 #202020
 
-# Program shortcuts
-bindsym Mod4+space                   exec wofi --prompt "" --show "run,drun"
-bindsym Mod4+Return                  exec $TERMINAL
-bindsym Mod4+t                       exec $TERMINAL
-bindsym Mod4+w                       exec $BROWSER
-bindsym Mod4+d                       exec discord
-bindsym Mod4+s                       exec flameshot gui --delay 50 --raw | wl-copy --type i
-bindsym Mod4+Shift+s                 exec flameshot gui --delay 50 --raw --accept-on-select | wl-copy --type image/png
-bindsym Mod4+Escape                  exec powerctl
-bindsym Mod4+Shift+Escape            exec powerctl lock
-bindsym Mod4+Control+Escape          exec powerctl suspend
-bindsym Mod4+Shift+Control+Escape    exec powerctl reload
-bindsym Mod4+backslash               exec displayctl
-bindsym Mod4+Shift+backslash         exec displayctl mono
-bindsym Mod4+Control+backslash       exec displayctl duel
-bindsym Mod4+Shift+Control+backslash exec displayctl mirror
-bindsym Mod4+b                       border pixel 2
-bindsym Mod4+shift+b                 border none
-# TODO: single quotes break display
-bindsym Mod4+v                       exec cliphist list | wofi --dmenu --pre-display-cmd "echo -n '%s' | cut -zf 2" | cliphist decode | wl-copy
-
+# Startup scripts and daemons
+# Import envvars into dbus user session
+exec_always systemctl --user import-environment DISPLAY WAYLAND_DISPLAY SWAYSOCK XDG_CURRENT_DESKTOP
+# Notifications
+exec_always pidof mako || mako
 # Clipboard manager
-exec wl-paste --watch cliphist store
-
+exec_always pidof wl-paste || wl-paste --watch cliphist store
 # Idle locking + suspending
-exec swayidle -w \
-	idlehint 300 lock 'swaylock --daemonize' unlock 'pkill -USR1 swaylock' \
-	timeout 300 'swaymsg "output * dpms off"'  resume 'swaymsg "output * dpms on"' \
-	timeout 305 'loginctl lock-session"'       resume 'swaymsg "output * dpms on"' \
-	timeout 900 'systemctl suspend'            resume 'swaymsg "output * dpms on"' \
-	before-sleep 'loginctl lock-session' after-resume 'swaymsg "output * dpms on"'
-
+exec_always powerctl uncaffinate
 # Output setup
 exec displayctl mono
-
-# Windows
-focus_wrapping no
-bindsym Mod4+h focus left
-bindsym Mod4+j focus down
-bindsym Mod4+k focus up
-bindsym Mod4+l focus right
-bindsym Mod4+Shift+h move left 50px
-bindsym Mod4+Shift+j move down 50px
-bindsym Mod4+Shift+k move up 50px
-bindsym Mod4+Shift+l move right 50px
-bindsym Mod4+Control+h resize shrink width 50px
-bindsym Mod4+Control+j resize grow height 50px
-bindsym Mod4+Control+k resize shrink height 50px
-bindsym Mod4+Control+l resize grow width 50px
-# TODO?
-bindsym Mod4+Tab       focus next sibling
-bindsym Mod4+Shift+Tab focus prev sibling
-bindsym Mod4+f focus mode_toggle
-bindsym Mod4+Shift+f border pixel 2; floating toggle
-bindsym Mod4+x sticky toggle
-# TODO?
-#bindsym Mod4+c inhibit_idle toggle
-bindsym Mod4+m fullscreen
-bindsym Mod4+q kill
-
-# Workspaces
-# TODO: moving workspaces around and between outputs (auto renaming?)
-bindsym Mod4+1 workspace number 1
-bindsym Mod4+2 workspace number 2
-bindsym Mod4+3 workspace number 3
-bindsym Mod4+4 workspace number 4
-bindsym Mod4+5 workspace number 5
-bindsym Mod4+6 workspace number 6
-bindsym Mod4+7 workspace number 7
-bindsym Mod4+8 workspace number 8
-bindsym Mod4+9 workspace number 9
-bindsym Mod4+0 workspace number 10
-bindsym Mod4+Shift+1 move container workspace number 1; workspace 1
-bindsym Mod4+Shift+2 move container workspace number 2; workspace 2
-bindsym Mod4+Shift+3 move container workspace number 3; workspace 3
-bindsym Mod4+Shift+4 move container workspace number 4; workspace 4
-bindsym Mod4+Shift+5 move container workspace number 5; workspace 5
-bindsym Mod4+Shift+6 move container workspace number 6; workspace 6
-bindsym Mod4+Shift+7 move container workspace number 7; workspace 7
-bindsym Mod4+Shift+8 move container workspace number 8; workspace 8
-bindsym Mod4+Shift+9 move container workspace number 9; workspace 9
-bindsym Mod4+Shift+0 move container workspace number 10; workspace 10
-bindsym Mod4+Control+1 move container workspace number 1
-bindsym Mod4+Control+2 move container workspace number 2
-bindsym Mod4+Control+3 move container workspace number 3
-bindsym Mod4+Control+4 move container workspace number 4
-bindsym Mod4+Control+5 move container workspace number 5
-bindsym Mod4+Control+6 move container workspace number 6
-bindsym Mod4+Control+7 move container workspace number 7
-bindsym Mod4+Control+8 move container workspace number 8
-bindsym Mod4+Control+9 move container workspace number 9
-bindsym Mod4+Control+0 move container workspace number 10
-bindsym Mod4+Comma          exec "n=$(( $( swaymsg -t get_workspaces | jq '.[] | select(.focused).num' ) - 1 )); n=$(( $n < 1 ? 1 : ($n < 10 ? $n : 10) )); swaymsg workspace $n"
-bindsym Mod4+Period         exec "n=$(( $( swaymsg -t get_workspaces | jq '.[] | select(.focused).num' ) + 1 )); n=$(( $n < 1 ? 1 : ($n < 10 ? $n : 10) )); swaymsg workspace $n"
-bindsym Mod4+Shift+Comma    exec "n=$(( $( swaymsg -t get_workspaces | jq '.[] | select(.focused).num' ) - 1 )); n=$(( $n < 1 ? 1 : ($n < 10 ? $n : 10) )); swaymsg move container workspace $n; swaymsg workspace $n"
-bindsym Mod4+Shift+Period   exec "n=$(( $( swaymsg -t get_workspaces | jq '.[] | select(.focused).num' ) + 1 )); n=$(( $n < 1 ? 1 : ($n < 10 ? $n : 10) )); swaymsg move container workspace $n; swaymsg workspace $n"
-bindsym Mod4+Control+Comma  exec "n=$(( $( swaymsg -t get_workspaces | jq '.[] | select(.focused).num' ) - 1 )); n=$(( $n < 1 ? 1 : ($n < 10 ? $n : 10) )); swaymsg move container workspace $n"
-bindsym Mod4+Control+Period exec "n=$(( $( swaymsg -t get_workspaces | jq '.[] | select(.focused).num' ) + 1 )); n=$(( $n < 1 ? 1 : ($n < 10 ? $n : 10) )); swaymsg move container workspace $n"
-bindsym Mod4+z              exec "n=$(swaymsg -rt get_workspaces | jq '. as $w | first(range($w[] | select(.focused).num; 10) + 1 | select(all(. != $w[].num; .)))'); swaymsg workspace $n"
-bindsym Mod4+Shift+z        exec "n=$(swaymsg -rt get_workspaces | jq '. as $w | first(range($w[] | select(.focused).num; 10) + 1 | select(all(. != $w[].num; .)))'); swaymsg move container workspace $n; swaymsg workspace $n"
-bindsym Mod4+Control+z      exec "n=$(swaymsg -rt get_workspaces | jq '. as $w | first(range($w[] | select(.focused).num; 10) + 1 | select(all(. != $w[].num; .)))'); swaymsg move container workspace $n"
-
-# Layout
-default_orientation auto
-bindsym Mod4+g       focus parent
-bindsym Mod4+Shift+g focus child
-bindsym Mod4+p       split vertical
-bindsym Mod4+Shift+p split none
-bindsym Mod4+o       layout toggle splitv splith
-bindsym Mod4+Shift+o layout toggle split tabbed
-
-# Scratchpads
-bindsym Mod4+minus scratchpad show
-bindsym Mod4+Shift+minus move scratchpad
-# bindsym Mod4+c [instance="TODO"] scratchpad show
-
-# Mouse
-floating_modifier Mod4 normal
-mouse_warping output
-
-# Bar
-# TODO: replace/incorporate with "real" bar
+# Bars
+# TODO: multimonitor bars
 bar {
-    mode hide
-    position top
-    font Terminus (TTF) 12
-    status_command 'while printf "%s %s%% \n" "$(date +"%m/%d %H:%M")" "$(cat /sys/class/power_supply/BAT0/capacity)"; do sleep 1; done'
-    colors {
-        background #101010
-        statusline #808080
-        focused_workspace  #101010 #ffffff #000000
-        active_workspace   #101010 #ffffff #000000
-        inactive_workspace #101010 #101010 #808080
-        urgent_workspace   #101010 #808080 #ffffff
-    }
+	swaybar_command waybar
+	mode hide
+}
+bar bottom {
+	swaybar_command /bin/true
+	mode hide
 }
 
 # Input devices
@@ -167,3 +57,149 @@ input type:touchpad {
     click_method clickfinger
     scroll_method two_finger
 }
+
+# Mouse
+floating_modifier Mod4 normal
+mouse_warping output
+
+# Program shortcuts
+bindsym Mod4+space                   exec wofi --prompt "" --show "run,drun"
+bindsym Mod4+Return                  exec $TERMINAL
+bindsym Mod4+t                       exec $TERMINAL
+bindsym Mod4+w                       exec $BROWSER
+bindsym Mod4+d                       exec discord
+bindsym Mod4+s                       exec flameshot gui --delay 50 --raw | wl-copy --type i
+bindsym Mod4+Shift+s                 exec flameshot gui --delay 50 --raw --accept-on-select | wl-copy --type image/png
+bindsym Mod4+Escape                  exec powerctl
+bindsym --locked Mod4+Shift+Escape   exec powerctl lock
+bindsym --locked Mod4+Control+Escape exec powerctl suspend
+bindsym Mod4+Control+Shift+Escape    exec powerctl reload
+bindsym Mod4+backslash               exec displayctl
+bindsym Mod4+Shift+backslash         exec displayctl mono
+bindsym Mod4+Control+backslash       exec displayctl duel
+bindsym Mod4+n                       exec networkctl
+bindsym Mod4+Shift+n                 exec networkctl wifi
+bindsym Mod4+Control+n               exec networkctl bluetooth
+bindsym Mod4+b                       border pixel 2
+bindsym Mod4+shift+b                 border none
+bindsym Mod4+v                       exec cliphist list | wofi --dmenu --prompt "Clipboard" | cliphist decode | wl-copy
+bindsym Mod4+grave                   exec makoctl dismiss
+bindsym Mod4+Shift+grave             exec makoctl restore
+bindsym Mod4+Control+grave           exec makoctl menu wofi --dmenu --prompt "Action"
+
+# Windows
+focus_wrapping no
+bindsym Mod4+h focus left
+bindsym Mod4+j focus down
+bindsym Mod4+k focus up
+bindsym Mod4+l focus right
+bindsym Mod4+Shift+h move left 50px
+bindsym Mod4+Shift+j move down 50px
+bindsym Mod4+Shift+k move up 50px
+bindsym Mod4+Shift+l move right 50px
+bindsym Mod4+Control+h resize shrink width 50px
+bindsym Mod4+Control+j resize grow height 50px
+bindsym Mod4+Control+k resize shrink height 50px
+bindsym Mod4+Control+l resize grow width 50px
+bindsym Mod4+Tab       exec $is_1mark_focused && swaymsg "[con_mark=_2] focus; [con_mark=_1] mark --add _2; mark --add _1" || swaymsg "[con_mark=_1] focus"
+bindsym Mod4+Shift+Tab exec $is_1mark_focused || swaymsg "[con_mark=_1] mark --add _2; mark --add _1"
+bindsym Mod4+f focus mode_toggle
+bindsym Mod4+Shift+f border pixel 2, floating toggle
+bindsym Mod4+x sticky toggle
+bindsym Mod4+m fullscreen
+bindsym Mod4+q kill
+
+# Workspaces
+bindsym Mod4+1 workspace number 1
+bindsym Mod4+2 workspace number 2
+bindsym Mod4+3 workspace number 3
+bindsym Mod4+4 workspace number 4
+bindsym Mod4+5 workspace number 5
+bindsym Mod4+6 workspace number 6
+bindsym Mod4+7 workspace number 7
+bindsym Mod4+8 workspace number 8
+bindsym Mod4+9 workspace number 9
+bindsym Mod4+0 workspace number 10
+bindsym Mod4+Shift+1 move container workspace number 1, workspace number 1
+bindsym Mod4+Shift+2 move container workspace number 2, workspace number 2
+bindsym Mod4+Shift+3 move container workspace number 3, workspace number 3
+bindsym Mod4+Shift+4 move container workspace number 4, workspace number 4
+bindsym Mod4+Shift+5 move container workspace number 5, workspace number 5
+bindsym Mod4+Shift+6 move container workspace number 6, workspace number 6
+bindsym Mod4+Shift+7 move container workspace number 7, workspace number 7
+bindsym Mod4+Shift+8 move container workspace number 8, workspace number 8
+bindsym Mod4+Shift+9 move container workspace number 9, workspace number 9
+bindsym Mod4+Shift+0 move container workspace number 10, workspace number 10
+bindsym Mod4+Control+1 move container workspace number 1
+bindsym Mod4+Control+2 move container workspace number 2
+bindsym Mod4+Control+3 move container workspace number 3
+bindsym Mod4+Control+4 move container workspace number 4
+bindsym Mod4+Control+5 move container workspace number 5
+bindsym Mod4+Control+6 move container workspace number 6
+bindsym Mod4+Control+7 move container workspace number 7
+bindsym Mod4+Control+8 move container workspace number 8
+bindsym Mod4+Control+9 move container workspace number 9
+bindsym Mod4+Control+0 move container workspace number 10
+# TODO: moving workspaces around and between outputs (auto renaming?)
+#bindsym Mod4+Control+Shift+h move workspace left
+#bindsym Mod4+Control+Shift+j move workspace output down
+#bindsym Mod4+Control+Shift+k move workspace output up
+#bindsym Mod4+Control+Shift+l move workspace right
+bindsym Mod4+Comma                exec n=$get_prev_workspace && swaymsg workspace number $n
+bindsym Mod4+Period               exec n=$get_next_workspace && swaymsg workspace number $n
+bindsym Mod4+Shift+Comma          exec n=$get_prev_workspace && swaymsg move container workspace $n && swaymsg workspace number $n
+bindsym Mod4+Shift+Period         exec n=$get_next_workspace && swaymsg move container workspace $n && swaymsg workspace number $n
+bindsym Mod4+Control+Comma        exec n=$get_prev_workspace && n=$(( $n < 1 ? 1 : ($n < 10 ? $n : 10) )) && swaymsg move container workspace number $n
+bindsym Mod4+Control+Period       exec n=$get_next_workspace && swaymsg move container workspace number $n
+# TODO: rename workspace x to x+1 (need bounds checking)
+bindsym Mod4+Control+Shift+Comma  exec echo "shift all workspaces left"
+bindsym Mod4+Control+Shift+Period exec echo "shift all workspaces right"
+bindsym Mod4+z                    exec n=$get_empty_workspace && swaymsg workspace number $n
+bindsym Mod4+Shift+z              exec n=$get_empty_workspace && swaymsg move container workspace $n && swaymsg workspace number $n
+bindsym Mod4+Control+z            exec n=$get_empty_workspace && swaymsg move container workspace number $n
+bindsym Mod4+Control+Shift+z      exec "i=1; for n in $(swaymsg -rt get_workspaces | jq -r '.[].num'); do swaymsg rename workspace $n to $i; i=$(($i + 1)); done"
+
+# Layout
+default_orientation auto
+bindsym Mod4+g       focus parent
+bindsym Mod4+Shift+g focus child
+bindsym Mod4+p       split vertical
+bindsym Mod4+Shift+p split none
+bindsym Mod4+o       layout toggle splitv splith
+bindsym Mod4+Shift+o layout toggle split tabbed
+
+# Scratchpads
+bindsym Mod4+minus scratchpad show
+bindsym Mod4+Shift+minus move scratchpad
+
+# Media
+bindsym --locked XF86AudioPlay         exec playerctl play-pause
+bindsym --locked Shift+XF86AudioPlay   exec playerctl pause
+bindsym --locked Control+XF86AudioPlay exec playerctl stop
+bindsym --locked XF86AudioPrev         exec playerctl position 1-
+bindsym --locked Shift+XF86AudioPrev   exec playerctl position 10-
+bindsym --locked Control+XF86AudioPrev exec playerctl previous
+bindsym --locked XF86AudioNext         exec playerctl position 1+
+bindsym --locked Shift+XF86AudioNext   exec playerctl position 10+
+bindsym --locked Control+XF86AudioNext exec playerctl next
+
+# Volume
+set $send_volume_notif wpctl get-volume @DEFAULT_SINK@ | (read _ v m && v=$(printf "%.0f" $(echo "100*$v" | bc)) && notify-send --category osd --hint "int:value:$v" "Volume: $v% $m")
+bindsym --locked XF86AudioMute                      exec wpctl set-mute   @DEFAULT_SINK@ toggle && $send_volume_notif
+bindsym --locked Shift+XF86AudioMute                exec                                           $send_volume_notif
+bindsym --locked Control+XF86AudioMute              exec wpctl set-mute   @DEFAULT_SINK@ 1      && $send_volume_notif
+bindsym --locked XF86AudioLowerVolume               exec wpctl set-volume @DEFAULT_SINK@ 1%-    && $send_volume_notif
+bindsym --locked Shift+XF86AudioLowerVolume         exec wpctl set-volume @DEFAULT_SINK@ 10%-   && $send_volume_notif
+bindsym --locked Control+XF86AudioLowerVolume       exec wpctl set-volume @DEFAULT_SINK@ 0%     && $send_volume_notif
+bindsym --locked XF86AudioRaiseVolume               exec wpctl set-volume @DEFAULT_SINK@ 1%+    && $send_volume_notif
+bindsym --locked Shift+XF86AudioRaiseVolume         exec wpctl set-volume @DEFAULT_SINK@ 10%+   && $send_volume_notif
+bindsym --locked Control+XF86AudioRaiseVolume       exec wpctl set-volume @DEFAULT_SINK@ 100%   && $send_volume_notif
+
+# Backlight
+set $send_brightness_notif b=$(printf "%.0f" "$(light -G)") && notify-send --category osd --hint "int:value:$b" "Brightness: $b%"
+bindsym --locked XF86MonBrightnessDown               exec light -U 1   && $send_brightness_notif
+bindsym --locked Shift+XF86MonBrightnessDown         exec light -U 10  && $send_brightness_notif
+bindsym --locked Control+XF86MonBrightnessDown       exec light -S 0   && $send_brightness_notif
+bindsym --locked XF86MonBrightnessUp                 exec light -A 1   && $send_brightness_notif
+bindsym --locked Shift+XF86MonBrightnessUp           exec light -A 10  && $send_brightness_notif
+bindsym --locked Control+XF86MonBrightnessUp         exec light -S 100 && $send_brightness_notif
