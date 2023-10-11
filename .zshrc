@@ -4,6 +4,8 @@ PS1=$'\n%F{red}%n@%m%f %F{blue}%~%f %F{red}%(?..%?)%f\n>%f '
 HISTSIZE="100000"
 SAVEHIST="100000"
 TIMEFMT=$'\nreal\t%E\nuser\t%U\nsys\t%S\ncpu\t%P'
+
+BIN_DIR="$HOME/.local/bin"
 OPT_DIR="$HOME/.local/opt"
 
 # Options
@@ -146,8 +148,19 @@ rm() { 2>&1 echo "rm disabled, use del"; return 1; }
 
 # fd
 hash fdfind 2>/dev/null && { fd() { fdfind } }
+#[ "$(which fd || echo "$BIN_DIR/fd")" = "$BIN_DIR/fd" ] && {
+#	case "$(uname -m)" in
+#		"arm"*)    ln -sf "$OPT_DIR/fd/fd-0.40.0-linux_arm64/fd" "$BIN_DIR/fd";;
+#		"x86_64"*) ln -sf "$OPT_DIR/fd/fd-0.40.0-linux_amd64/fd" "$BIN_DIR/fd";;
+#	esac
+#}
 
-# FZF
+# fzf
+[ "$(which fzf || echo "$BIN_DIR/fzf")" = "$BIN_DIR/fzf" ] && { case "$(uname -m)" in
+		"arm"*)    ln -sf "$OPT_DIR/fzf/fzf-0.40.0-linux_arm64/fzf" "$BIN_DIR/fzf";;
+		"x86_64"*) ln -sf "$OPT_DIR/fzf/fzf-0.40.0-linux_amd64/fzf" "$BIN_DIR/fzf";;
+	esac
+}
 export FZF_COLORS="fg+:bold,pointer:red,hl:red,hl+:red,gutter:-1,marker:red"
 export FZF_BINDINGS="ctrl-n:down,ctrl-p:up,up:previous-history,down:next-history,ctrl-j:accept,ctrl-k:toggle,alt-a:toggle-all,ctrl-/:toggle-preview"
 export FZF_DEFAULT_OPTS="--multi --bind=$FZF_BINDINGS --preview-window sharp --marker=k --color=$FZF_COLORS --history $XDG_DATA_HOME/fzf_history"

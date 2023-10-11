@@ -271,7 +271,6 @@ esac
 rm -r "$tmp"
 
 # Opt software
-# TODO: install both x86 and arm binaries, then set sym link in zshrc to correct version
 bin="$HOME/.local/bin"
 opt="$HOME/.local/opt"
 hash cht.sh 2>/dev/null || [ -d "$opt/cht.sh" ] || {
@@ -279,7 +278,7 @@ hash cht.sh 2>/dev/null || [ -d "$opt/cht.sh" ] || {
 	mkdir -p "$opt/cht.sh" || exit 1
 	curl "https://cht.sh/:cht.sh" > "$opt/cht.sh/cht.sh" || exit 1
 	chmod +x "$opt/cht.sh/cht.sh" || exit 1
-	ln -fs "$opt/cht.sh/cht.sh" "$bin/cht.sh" || exit 1
+	ln -sf "$opt/cht.sh/cht.sh" "$bin/cht.sh" || exit 1
 }
 [ -d "/usr/share/zsh-syntax-highlighting" ] || [ -d "$opt/zsh-syntax-highlighting-master" ] || {
 	msg "Installing zsh-syntax-highlighting opt..."
@@ -290,6 +289,21 @@ hash cht.sh 2>/dev/null || [ -d "$opt/cht.sh" ] || {
 	msg "Installing zsh-autosuggestions opt..."
 	mkdir -p "$opt" || exit 1
 	curl -L "https://github.com/zsh-users/zsh-autosuggestions/archive/refs/heads/master.tar.gz" | tar -xzC "$opt" || exit 1
+}
+#hash fd 2>/dev/null || [ -d "$opt/fd" ] || {
+#	msg "Installing fd opt..."
+#	mkdir -p "$opt/fd" || exit 1
+	#curl -L "https://github.com/sharkdp/fd/releases/download/v8.7.0/fd-v8.7.0-x86_64-unknown-linux-musl.tar.gz" | tar -xzC "$opt/fd" || exit 1
+	#curl -L "https://github.com/sharkdp/fd/releases/download/v8.7.0/fd-v8.7.0-arm-unknown-linux-musl.tar.gz" | tar -xzC "$opt/fd" || exit 1
+	# TODO: link autocomplete
+#}
+hash fzf 2>/dev/null || [ -d "$opt/fzf" ] || {
+	msg "Installing fzf opt..."
+	mkdir -p "$opt/fzf" || exit 1
+	curl -L "https://github.com/junegunn/fzf/releases/download/0.40.0/fzf-0.40.0-linux_amd64.tar.gz" | tar -xzC "$opt/fzf" || exit 1
+	curl -L "https://github.com/junegunn/fzf/releases/download/0.40.0/fzf-0.40.0-linux_arm64.tar.gz" | tar -xzC "$opt/fzf" || exit 1
+	curl -L "https://raw.githubusercontent.com/junegunn/fzf/master/shell/completion.zsh" > "$opt/fzf/completion.zsh" || exit 1
+	curl -L "https://raw.githubusercontent.com/junegunn/fzf/master/shell/key-bindings.zsh" > "$opt/fzf/key-bindings.zsh" || exit 1
 }
 
 # Home configuration
