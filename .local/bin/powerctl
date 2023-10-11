@@ -1,13 +1,12 @@
 #!/bin/sh
 
-# TODO: idle toggle
-
 [ "$(hostname)" = "msung" ] || exit 1
 
 choice="$1"
 [ -z "$choice" ] && {
-	choices="lock suspend reload logout reboot shutdown"
-	choice="$(CH_LINES=8 CH_WIDTH=100 CH_PROMPT="Power Control" choose $choices)"
+	caffinate="$(pidof -q swayidle && echo "caffinate" || echo "uncaffinate")"
+	choices="lock suspend $caffinate reload logout reboot shutdown"
+	choice="$(CH_LINES=9 CH_WIDTH=100 CH_PROMPT="Power Control" choose $choices)"
 }
 
 case "$choice" in
@@ -17,5 +16,12 @@ case "$choice" in
 	"logout") swaymsg exit;;
 	"reboot") systemctl reboot;;
 	"shutdown") systemctl poweroff;;
-	"*") return 1;;
+	"caffinate") pkill swayidle;;
+	"uncaffinate") pidof swayidle || swayidle -w \
+		idlehint 300 lock 'swaylock --daemonize' unlock 'pkill -USR1 swaylock' \
+		timeout 300 'swaymsg "output * dpms off"'  resume 'swaymsg "output * dpms on"' \
+		timeout 305 'loginctl lock-session'        resume 'swaymsg "output * dpms on"' \
+		timeout 900 'systemctl suspend'            resume 'swaymsg "output * dpms on"' \
+		before-sleep 'loginctl lock-session' after-resume 'swaymsg "output * dpms on"' &;;
+	*) return 1;;
 esac
