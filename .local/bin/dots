@@ -84,8 +84,8 @@ fonts-terminus fonts-noto"
 msung_pipx="\
 trash-cli shtab"
 
-# TODO
-# non-free contrib
+# TODO: gaming but less faurked
+# ensure non-free and contrib
 # dpkg --add-architecture i386
 #linux-headers-amd64  nvidia-driver nvidia-driver-libs:i386 firmware-misc-nonfree steam-installer
 # MAYBE: lsof mesa-vulkan-drivers libglx-mesa0:i386 mesa-vulkan-drivers:i386 libgl1-mesa-dri:i386
@@ -100,7 +100,7 @@ trash-cli shtab"
 septs_pkgs="\
 file curl wget tar gzip zip unzip git gnupg man-db
 zsh zsh-syntax-highlighting zsh-autosuggestions
-neovim git ripgrep fzf bat fd-find exa btop jq
+neovim git ripgrep fzf bat fd-find exa btop jq bc
 python3 python3-venv python3-pip pipx"
 
 septs_pipx="\
@@ -159,24 +159,43 @@ case "$p" in
 	"msung"|"septs") hash sudo apt-get && sudo -v || exit 1 ;;
 esac
 
-# Upgrade system
-case "$p" in
-	"msung"|"septs") msg "Updating packages..."; sudo apt-get -y update && sudo apt-get -y upgrade || exit 1;;
-esac
-
-# Prerequisites
-case "$p" in
-	"msung"|"septs") hash git || { msg "Installing prerequisites..."; sudo apt-get -y install git || exit 1; };;
-	"guest") hash git || exit 1;;
-esac
-
 # Pre-op health check
-# TODO: debian, systemd, sudo btrfs device stats ...
+# TODO: check debian, systemd, sudo btrfs device stats ...
 case "$p" in
 	"msung") ;;
 	"septs") ;;
 	"guest") ;;
 esac
+
+# Set package sources
+case "$p" in
+	"msung")
+		[ "$(cat "/etc/apt/sources.list")" != "$msung_apt_sources" ] && {
+			msg "Setting apt sources..."
+			echo "$msung_apt_sources" | sudo tee "/etc/apt/sources.list" || exit 1
+		}
+		;;
+	"septs") # TODO: set raspberry pi package sources
+		:
+		;;
+esac
+
+# Upgrade system
+case "$p" in
+	"msung"|"septs")
+		[ -z "$(find -H /var/lib/apt/lists -maxdepth 0 -mtime -1)" ] && {
+			msg "Updating packages..."
+			sudo apt-get -y update && sudo apt-get -y upgrade || exit 1
+		}
+esac
+
+# Ensure git is installed
+hash git 2>/dev/null || {
+	case "$p" in
+		"msung"|"septs") msg "Installing git..."; sudo apt-get -y install git || exit 1;;
+		"guest") echo "Cannot find git, is it installed?"; exit 1;;
+	esac
+}
 
 # Dots repository
 [ -d "$dots" ] || {
@@ -203,29 +222,53 @@ esac
 }
 
 # Packages
+tmp="$(mktemp --directory)"
 case "$p" in
 	"msung")
-		dpkg-query --show --showformat='${Status}\n' $septs_pkgs git-delta 2>&1 | grep --quiet --invert-match "install ok installed" && {
+		dpkg-query --show --showformat='${Status}\n' $msung_pkgs 2>&1 | grep --quiet --invert-match "install ok installed" && {
 			msg "Installing packages..."
 			sudo apt-get -y install $msung_pkgs || exit 1
-			hash delta || { curl -L "https://github.com/dandavison/delta/releases/download/0.16.5/git-delta_0.16.5_amd64.deb" > "/tmp/delta.deb" && sudo apt-get -y install "/tmp/delta.deb"; } || exit 1
-			hash discord || { curl -L "https://discord.com/api/download?platform=linux&format=deb" >  "/tmp/discord.deb" && sudo apt-get -y install "/tmp/discord.deb"; } || exit 1
-			hash cliphist || { curl -L "https://github.com/sentriz/cliphist/releases/download/v0.4.0/v0.4.0-linux-amd64" > "$HOME/.local/bin/cliphist" && chmod +x "$HOME/.local/bin/cliphist"; } || exit 1
+		}
+		hash delta || {
+			msg "Installing delta .deb..."
+			curl -L "https://github.com/dandavison/delta/releases/download/0.16.5/git-delta_0.16.5_amd64.deb" > "$tmp/delta.deb" || exit 1
+			sudo apt-get -y install "$tmp/delta.deb" || exit 1
+		}
+		hash discord || {
+			msg "Installing Discord .deb..."
+			curl -L "https://discord.com/api/download?platform=linux&format=deb" > "$tmp/discord.deb" || exit 1
+			sudo apt-get -y install "$tmp/discord.deb" || exit 1
+		}
+		hash google-earth-pro || {
+			msg "Installing Google Earth Pro .deb..."
+			curl -L "https://dl.google.com/dl/earth/client/current/google-earth-pro-stable_current_amd64.deb" > "$tmp/google-earth-pro.deb" || exit 1
+			sudo apt-get -y install "$tmp/google-earth-pro.deb" || exit 1
+		}
+		hash cliphist || {
+			msg "Installing cliphist binary..."
+			curl -L "https://github.com/sentriz/cliphist/releases/download/v0.4.0/v0.4.0-linux-amd64" > "$HOME/.local/bin/cliphist" || exit 1
+			chmod +x "$HOME/.local/bin/cliphist" || exit 1
 		}
 		echo "$msung_pipx" | while IFS= read -r reqs; do pipx_install $reqs; done
 		;;
 	"septs")
-		dpkg-query --show --showformat='${Status}\n' $septs_pkgs git-delta 2>&1 | grep --quiet --invert-match "install ok installed" && {
+		dpkg-query --show --showformat='${Status}\n' $septs_pkgs 2>&1 | grep --quiet --invert-match "install ok installed" && {
 			msg "Installing packages..."
 			sudo apt-get -y install $septs_pkgs || exit 1
-			curl -L "https://github.com/dandavison/delta/releases/download/0.16.5/git-delta_0.16.5_arm64.deb" > "/tmp/delta.deb" && sudo apt-get -y install "/tmp/delta.deb" || exit 1
+		}
+		hash delta || {
+			msg "Installing delta .deb..."
+			curl -L "https://github.com/dandavison/delta/releases/download/0.16.5/git-delta_0.16.5_arm64.deb" > "$tmp/delta.deb" || exit 1
+			sudo apt-get -y install "$tmp/delta.deb" || exit 1
 		}
 		echo "$septs_pipx" | while IFS= read -r reqs; do pipx_install $reqs; done
 		;;
 	"guest")
+		# TODO: attempt to install required binaries to .local/bin
 		hash $guest_bins || exit 1
 		;;
 esac
+rm -r "$tmp"
 
 # Home configuration
 mkdir -p "$HOME/.local/share" "$HOME/.local/state" || exit 1
@@ -300,7 +343,7 @@ case "$p" in
 esac
 
 # Post-op health check
-# TODO: desktop daemons
+# TODO: check desktop daemons
 case "$p" in
 	"msung") ;;
 	"septs") ;;
