@@ -4,6 +4,7 @@ PS1=$'\n%F{red}%n@%m%f %F{blue}%~%f %F{red}%(?..%?)%f\n>%f '
 HISTSIZE="100000"
 SAVEHIST="100000"
 TIMEFMT=$'\nreal\t%E\nuser\t%U\nsys\t%S\ncpu\t%P'
+OPT_DIR="$HOME/.local/opt"
 
 # Options
 setopt autocd interactive_comments notify
@@ -13,7 +14,7 @@ setopt numericglobsort prompt_subst
 setopt glob_complete complete_in_word
 
 # Aliases
-alias v="nvim"
+alias v="vim"
 alias p="python3"
 alias c="cargo"
 alias g="git"
@@ -25,6 +26,7 @@ alias di="dots init"
 alias sudo="sudo --preserve-env"
 for i ({1..9}) alias "$i"="cd +$i"
 for i ({3..9}) alias "${(l:i::.:)}"="${(l:i-1::.:)};.."
+hash nvim 2>/dev/null && alias v="nvim"
 hash ip 2>/dev/null && alias ip="ip --color"
 hash exa 2>/dev/null && alias ls="exa -hs=name --group-directories-first"
 hash bat 2>/dev/null && alias cat="bat --paging=never" && alias less="bat --paging=always"
@@ -152,14 +154,14 @@ export FZF_DEFAULT_OPTS="--multi --bind=$FZF_BINDINGS --preview-window sharp --m
 export FZF_DEFAULT_COMMAND="rg --files --no-messages"
 export FZF_CTRL_T_COMMAND="fd --hidden --exclude '.git' --exclude 'node_modules'"
 export FZF_ALT_C_COMMAND="fd --hidden --exclude '.git' --exclude 'node_modules' --type d"
-source "/usr/share/doc/fzf/examples/key-bindings.zsh"
-source "/usr/share/doc/fzf/examples/completion.zsh"
+source "/usr/share/doc/fzf/examples/key-bindings.zsh" 2>/dev/null || source "$OPT_DIR/fzf/key-bindings.zsh"
+source "/usr/share/doc/fzf/examples/completion.zsh" 2>/dev/null || source "$OPT_DIR/fzf/completion.zsh"
 
 # Autosuggestions
-source "/usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh"
+source "/usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh" 2>/dev/null || source "$OPT_DIR/zsh-autosuggestions/zsh-autosuggestions.zsh"
 
 # Syntax highlighting
-source "/usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" && {
+source "/usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" 2>/dev/null || source "$OPT_DIR/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" && {
 	ZSH_HIGHLIGHT_STYLES[default]="fg=cyan"
 	ZSH_HIGHLIGHT_STYLES[unknown-token]="fg=red"
 	ZSH_HIGHLIGHT_STYLES[reserved-word]="fg=blue"

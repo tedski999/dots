@@ -270,16 +270,31 @@ case "$p" in
 esac
 rm -r "$tmp"
 
+# Opt software
+# TODO: install both x86 and arm binaries, then set sym link in zshrc to correct version
+bin="$HOME/.local/bin"
+opt="$HOME/.local/opt"
+hash cht.sh 2>/dev/null || [ -d "$opt/cht.sh" ] || {
+	msg "Installing cht.sh opt..."
+	mkdir -p "$opt/cht.sh" || exit 1
+	curl "https://cht.sh/:cht.sh" > "$opt/cht.sh/cht.sh" || exit 1
+	chmod +x "$opt/cht.sh/cht.sh" || exit 1
+	ln -fs "$opt/cht.sh/cht.sh" "$bin/cht.sh" || exit 1
+}
+[ -d "/usr/share/zsh-syntax-highlighting" ] || [ -d "$opt/zsh-syntax-highlighting" ] || {
+	msg "Installing zsh-syntax-highlighting opt..."
+	curl -L "https://github.com/zsh-users/zsh-syntax-highlighting/archive/refs/heads/master.tar.gz" | tar -xzC "$opt" || exit 1
+}
+[ -d "/usr/share/zsh-autosuggestions" ] || [ -d "$opt/zsh-autosuggestions" ] || {
+	msg "Installing zsh-autosuggestions opt..."
+	curl -L "https://github.com/zsh-users/zsh-autosuggestions/archive/refs/tags/v0.7.0.tar.gz" | tar -xzC "$opt" || exit 1
+}
+
 # Home configuration
 mkdir -p "$HOME/.local/share" "$HOME/.local/state" || exit 1
 chmod 644 "$HOME/.ssh/config" || exit 1
 find "$HOME/.gnupg/" -type f -exec chmod 600 {} \; || exit 1
 find "$HOME/.gnupg/" -type d -exec chmod 700 {} \; || exit 1
-[ -x "$HOME/.local/bin/cht.sh" ] || {
-	msg "Installing cht.sh script..."
-	curl "https://cht.sh/:cht.sh" > "$HOME/.local/bin/cht.sh" || exit 1
-	chmod +x "$HOME/.local/bin/cht.sh" || exit 1
-}
 
 # System configuration
 case "$p" in
