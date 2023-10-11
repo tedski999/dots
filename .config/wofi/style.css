@@ -5,14 +5,13 @@
 
 #window {
 	font-family: "Terminus (TTF)";
-	font-size: 16;
+	font-size: 16px;
 	background-color: black;
 	color: white;
 }
 
 #input {
 	border: none;
-
 	background-color: black;
 }
 

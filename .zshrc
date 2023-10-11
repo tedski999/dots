@@ -1,8 +1,8 @@
 #!/bin/zsh
 
 PS1=$'\n%F{red}%n@%m%f %F{blue}%~%f %F{red}%(?..%?)%f\n>%f '
-HISTSIZE="10000"
-SAVEHIST="10000"
+HISTSIZE="100000"
+SAVEHIST="100000"
 TIMEFMT=$'\nreal\t%E\nuser\t%U\nsys\t%S\ncpu\t%P'
 
 # Options
@@ -22,7 +22,7 @@ alias la="ll -a"
 alias lt="la -T"
 alias d="dirs -v"
 alias di="dots init"
-alias sudo="sudo --preserve-env "
+alias sudo="sudo --preserve-env"
 for i ({1..9}) alias "$i"="cd +$i"
 for i ({3..9}) alias "${(l:i::.:)}"="${(l:i-1::.:)};.."
 hash ip 2>/dev/null && alias ip="ip --color"
@@ -60,7 +60,7 @@ _comp_options+=(globdots)
 compinit -d "$XDG_CACHE_HOME/zcompdump" $([[ -n "$XDG_CACHE_HOME/zcompdump"(#qN.mh+24) ]] && echo -C)
 autoload -U bashcompinit
 bashcompinit
-# TODO: improve ergonomics here
+# TODO: improve zsh completion ergonomics
 zstyle ":completion:*" menu select
 zstyle ":completion:*" completer _complete _match _approximate
 zstyle ":completion:*" matcher-list "" "m:{[:lower:][:upper:]}={[:upper:][:lower:]}" "+l:|=* r:|=*"
@@ -126,7 +126,9 @@ hash gpgconf 2>/dev/null && {
 }
 
 # pipx
-eval "$(register-python-argcomplete pipx)"
+hash register-python-argcomplete 2>/dev/null && {
+	eval "$(register-python-argcomplete pipx)"
+}
 
 # cht.sh
 cht() { cht.sh "$@?style=paraiso-dark" | less }
@@ -134,24 +136,14 @@ _cht() { compadd $commands:t }
 compdef _cht cht
 
 # trash-cli
-alias trash="XDG_DATA_HOME=/tmp trash"
-alias trash-put="XDG_DATA_HOME=/tmp trash-put"
-alias trash-list="XDG_DATA_HOME=/tmp trash-list"
-alias trash-restore="XDG_DATA_HOME=/tmp trash-restore"
-alias trash-empty="XDG_DATA_HOME=/tmp trash-empty"
-alias xx="trash-put"
-alias xxls="trash-list"
-alias xxun="trash-restore"
-alias xxxx="trash-empty"
-
-#alias lsdel="trash-list"
-#alias undel="trash-restore"
-#alias del="trash-put"
-#alias lsdel="trash-list"
-#alias undel="trash-restore"
+alias del="trash-put"
+alias lsdel="trash-list"
+alias undel="trash-restore"
+alias deldel="trash-empty"
+rm() { 2>&1 echo "rm disabled, use del"; return 1; }
 
 # fd
-fd() { fdfind }
+hash fdfind 2>/dev/null && { fd() { fdfind } }
 
 # FZF
 export FZF_COLORS="fg+:bold,pointer:red,hl:red,hl+:red,gutter:-1,marker:red"
@@ -167,26 +159,27 @@ source "/usr/share/doc/fzf/examples/completion.zsh"
 source "/usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh"
 
 # Syntax highlighting
-source "/usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
-ZSH_HIGHLIGHT_STYLES[default]="fg=cyan"
-ZSH_HIGHLIGHT_STYLES[unknown-token]="fg=red"
-ZSH_HIGHLIGHT_STYLES[reserved-word]="fg=blue"
-ZSH_HIGHLIGHT_STYLES[path]="fg=cyan,underline"
-ZSH_HIGHLIGHT_STYLES[suffix-alias]="fg=blue,underline"
-ZSH_HIGHLIGHT_STYLES[precommand]="fg=blue,underline"
-ZSH_HIGHLIGHT_STYLES[commandseparator]="fg=magenta"
-ZSH_HIGHLIGHT_STYLES[globbing]="fg=magenta"
-ZSH_HIGHLIGHT_STYLES[history-expansion]="fg=magenta"
-ZSH_HIGHLIGHT_STYLES[single-hyphen-option]="fg=green"
-ZSH_HIGHLIGHT_STYLES[double-hyphen-option]="fg=green"
-ZSH_HIGHLIGHT_STYLES[rc-quote]="fg=cyan,bold"
-ZSH_HIGHLIGHT_STYLES[dollar-double-quoted-argument]="fg=cyan,bold"
-ZSH_HIGHLIGHT_STYLES[back-double-quoted-argument]="fg=cyan,bold"
-ZSH_HIGHLIGHT_STYLES[back-dollar-quoted-argument]="fg=cyan,bold"
-ZSH_HIGHLIGHT_STYLES[assign]="none"
-ZSH_HIGHLIGHT_STYLES[redirection]="fg=yellow,bold"
-ZSH_HIGHLIGHT_STYLES[named-fd]="none"
-ZSH_HIGHLIGHT_STYLES[arg0]="fg=blue"
+source "/usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" && {
+	ZSH_HIGHLIGHT_STYLES[default]="fg=cyan"
+	ZSH_HIGHLIGHT_STYLES[unknown-token]="fg=red"
+	ZSH_HIGHLIGHT_STYLES[reserved-word]="fg=blue"
+	ZSH_HIGHLIGHT_STYLES[path]="fg=cyan,underline"
+	ZSH_HIGHLIGHT_STYLES[suffix-alias]="fg=blue,underline"
+	ZSH_HIGHLIGHT_STYLES[precommand]="fg=blue,underline"
+	ZSH_HIGHLIGHT_STYLES[commandseparator]="fg=magenta"
+	ZSH_HIGHLIGHT_STYLES[globbing]="fg=magenta"
+	ZSH_HIGHLIGHT_STYLES[history-expansion]="fg=magenta"
+	ZSH_HIGHLIGHT_STYLES[single-hyphen-option]="fg=green"
+	ZSH_HIGHLIGHT_STYLES[double-hyphen-option]="fg=green"
+	ZSH_HIGHLIGHT_STYLES[rc-quote]="fg=cyan,bold"
+	ZSH_HIGHLIGHT_STYLES[dollar-double-quoted-argument]="fg=cyan,bold"
+	ZSH_HIGHLIGHT_STYLES[back-double-quoted-argument]="fg=cyan,bold"
+	ZSH_HIGHLIGHT_STYLES[back-dollar-quoted-argument]="fg=cyan,bold"
+	ZSH_HIGHLIGHT_STYLES[assign]="none"
+	ZSH_HIGHLIGHT_STYLES[redirection]="fg=yellow,bold"
+	ZSH_HIGHLIGHT_STYLES[named-fd]="none"
+	ZSH_HIGHLIGHT_STYLES[arg0]="fg=blue"
+}
 
 # Start desktop environment
 [[ -o interactive && -o login && -z "$WAYLAND_DISPLAY" && "$(tty)" = "/dev/tty1" ]] && hash sway 2>/dev/null && {

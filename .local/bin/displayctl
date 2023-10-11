@@ -43,7 +43,7 @@ case "$choice" in
 		swaymsg workspace 10 output "$mon1"
 		;;
 	"mirror")
-		# TODO
+		# TODO: display mirroring
 		;;
 	"*")
 		return 1
