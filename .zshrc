@@ -5,9 +5,6 @@ HISTSIZE="100000"
 SAVEHIST="100000"
 TIMEFMT=$'\nreal\t%E\nuser\t%U\nsys\t%S\ncpu\t%P'
 
-BIN_DIR="$HOME/.local/bin"
-OPT_DIR="$HOME/.local/opt"
-
 # Options
 setopt autocd interactive_comments notify
 setopt auto_pushd pushd_ignore_dups pushd_silent
@@ -121,6 +118,28 @@ un() {
 	esac
 }
 
+# Cross-platform opt binary linking
+BIN_DIR="$HOME/.local/bin"
+OPT_DIR="$HOME/.local/opt"
+case "$(uname -m)" in
+	"arm"*)
+		[ -d "$OPT_DIR/fzf" ]   && ln -sf "$OPT_DIR/fzf/arm/fzf" "$BIN_DIR/fzf"
+		[ -d "$OPT_DIR/rg" ]    && ln -sf "$OPT_DIR/rg/arm/ripgrep-13.0.0-arm-unknown-linux-gnueabihf/rg" "$BIN_DIR/rg"
+		[ -d "$OPT_DIR/fd" ]    && ln -sf "$OPT_DIR/fd/arm/fd-v8.7.0-aarch64-unknown-linux-gnu/fd" "$BIN_DIR/fd"
+		[ -d "$OPT_DIR/bat" ]   && ln -sf "$OPT_DIR/fzf/arm/bat-v0.24.0-aarch64-unknown-linux-gnu/bat" "$BIN_DIR/bat"
+		[ -d "$OPT_DIR/exa" ]   && ln -sf "$OPT_DIR/fzf/arm/bin/exa" "$BIN_DIR/exa"
+		[ -d "$OPT_DIR/delta" ] && ln -sf "$OPT_DIR/fzf/arm/delta-0.16.5-aarch64-unknown-linux-gnu/delta" "$BIN_DIR/delta"
+		;;
+	"x86_64"*)
+		[ -d "$OPT_DIR/fzf" ]   && ln -sf "$OPT_DIR/fzf/x86_64/fzf" "$BIN_DIR/fzf"
+		[ -d "$OPT_DIR/rg" ]    && ln -sf "$OPT_DIR/rg/x86_64/ripgrep-13.0.0-x86_64-unknown-linux-musl/rg" "$BIN_DIR/rg"
+		[ -d "$OPT_DIR/fd" ]    && ln -sf "$OPT_DIR/fd/x86_64/fd-v8.7.0-x86_64-unknown-linux-musl/fd" "$BIN_DIR/fd"
+		[ -d "$OPT_DIR/bat" ]   && ln -sf "$OPT_DIR/bat/x86_64/bat-v0.24.0-x86_64-unknown-linux-musl/bat" "$BIN_DIR/bat"
+		[ -d "$OPT_DIR/exa" ]   && ln -sf "$OPT_DIR/exa/x86_64/bin/exa" "$BIN_DIR/exa"
+		[ -d "$OPT_DIR/delta" ] && ln -sf "$OPT_DIR/delta/x86_64/delta-0.16.5-x86_64-unknown-linux-musl/delta" "$BIN_DIR/delta"
+		;;
+esac
+
 # GPG+SSH
 hash gpgconf 2>/dev/null && {
 	export GPG_TTY="$(tty)"
@@ -147,21 +166,9 @@ alias deldel="trash-empty"
 rm() { 2>&1 echo "rm disabled, use del"; return 1; }
 
 # fd
-hash fdfind 2>/dev/null && { fd() { fdfind } }
-#[ "$(which fd || echo "$BIN_DIR/fd")" = "$BIN_DIR/fd" ] && {
-#	case "$(uname -m)" in
-#		"arm"*)    ln -sf "$OPT_DIR/fd/fd-0.40.0-linux_arm64/fd" "$BIN_DIR/fd";;
-#		"x86_64"*) ln -sf "$OPT_DIR/fd/fd-0.40.0-linux_amd64/fd" "$BIN_DIR/fd";;
-#	esac
-#}
+hash fdfind 2>/dev/null && { fd() { fdfind $@ } }
 
 # fzf
-[ "$(which fzf || echo "$BIN_DIR/fzf")" = "$BIN_DIR/fzf" ] && {
-	case "$(uname -m)" in
-		"arm"*)    ln -sf "$OPT_DIR/fzf/arm/fzf" "$BIN_DIR/fzf";;
-		"x86_64"*) ln -sf "$OPT_DIR/fzf/x86_64/fzf" "$BIN_DIR/fzf";;
-	esac
-}
 export FZF_COLORS="fg+:bold,pointer:red,hl:red,hl+:red,gutter:-1,marker:red"
 export FZF_BINDINGS="ctrl-n:down,ctrl-p:up,up:previous-history,down:next-history,ctrl-j:accept,ctrl-k:toggle,alt-a:toggle-all,ctrl-/:toggle-preview"
 export FZF_DEFAULT_OPTS="--multi --bind=$FZF_BINDINGS --preview-window sharp --marker=k --color=$FZF_COLORS --history $XDG_DATA_HOME/fzf_history"
