@@ -1,0 +1,14 @@
+#!/bin/sh
+
+export PATH=$(echo "$PATH" | tr ":" "\n" | grep -v "$(dirname -- "$0")" | tr "\n" ":")
+
+hash cliphist 2>/dev/null && exec cliphist $@
+
+case "$(uname --machine)" in
+	"x86_64"*) opt="$HOME/.local/opt/cliphist/x86_64"; src="https://github.com/sentriz/cliphist/releases/download/v0.4.0/v0.4.0-linux-amd64";;
+	"arm"*)    opt="$HOME/.local/opt/cliphist/arm64";  src="https://github.com/sentriz/cliphist/releases/download/v0.4.0/v0.4.0-linux-arm";;
+esac
+
+[ -d "$opt" ] || { mkdir -p "$opt" && curl -fsSL "$src" > "$opt/cliphist" && chmod +x "$opt/cliphist";  } || { rm -r "$opt"; exit 1; }
+
+exec "$opt/cliphist" $@

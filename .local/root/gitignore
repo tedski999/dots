@@ -38,11 +38,20 @@
 /.local/*
 !/.local/bin
 /.local/bin/*
+!/.local/bin/bat
 !/.local/bin/choose
+!/.local/bin/cht.sh
+!/.local/bin/cliphist
+!/.local/bin/delta
 !/.local/bin/displayctl
 !/.local/bin/dots
+!/.local/bin/exa
+!/.local/bin/fd
+!/.local/bin/fzf
 !/.local/bin/networkctl
 !/.local/bin/powerctl
+!/.local/bin/rg
+!/.local/bin/zsh
 !/.local/root
 
 /.ssh/*

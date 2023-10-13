@@ -1,0 +1,14 @@
+#!/bin/sh
+
+export PATH=$(echo "$PATH" | tr ":" "\n" | grep -v "$(dirname -- "$0")" | tr "\n" ":")
+
+hash fzf 2>/dev/null && exec fzf $@
+
+case "$(uname --machine)" in
+	"x86_64"*) opt="$HOME/.local/opt/fzf/x86_64"; src="https://github.com/junegunn/fzf/releases/download/0.42.0/fzf-0.42.0-linux_amd64.tar.gz";;
+	"arm"*)    opt="$HOME/.local/opt/fzf/arm64";  src="https://github.com/junegunn/fzf/releases/download/0.42.0/fzf-0.42.0-linux_arm64.tar.gz";;
+esac
+
+[ -d "$opt" ] || { mkdir -p "$opt" && curl -fsSL "$src" | tar -xzC "$opt"; } || { rm -r "$opt"; exit 1; }
+
+exec "$opt/fzf" $@

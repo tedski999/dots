@@ -1,0 +1,14 @@
+#!/bin/sh
+
+export PATH=$(echo "$PATH" | tr ":" "\n" | grep -v "$(dirname -- "$0")" | tr "\n" ":")
+
+hash exa 2>/dev/null && exec exa $@
+
+case "$(uname --machine)" in
+	"x86_64"*) opt="$HOME/.local/opt/exa/x86_64"; src="https://github.com/ogham/exa/releases/download/v0.10.1/exa-linux-x86_64-musl-v0.10.1.zip";;
+	"arm"*)    opt="$HOME/.local/opt/exa/arm64";  src="https://github.com/ogham/exa/releases/download/v0.10.1/exa-linux-armv7-v0.10.1.zip";;
+esac
+
+[ -d "$opt" ] || { mkdir -p "$opt" && curl -fsSL "$src" > "$opt/exa.zip" && unzip "$opt/exa.zip" -d "$opt" } || { rm -r "$opt"; exit 1; }
+
+exec "$opt/exa" $@

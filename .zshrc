@@ -23,14 +23,15 @@ alias lt="la -T"
 alias d="dirs -v"
 alias di="dots init"
 alias sudo="sudo --preserve-env "
+alias ip="ip --color"
+alias ls="exa -hs=name --group-directories-first"
+alias cat="bat --paging=never"
+alias less="bat --paging=always"
+alias grep="rg"
+alias diff="delta"
+hash nvim 2>/dev/null && alias v="nvim"
 for i ({1..9}) alias "$i"="cd +$i"
 for i ({3..9}) alias "${(l:i::.:)}"="${(l:i-1::.:)};.."
-hash nvim 2>/dev/null && alias v="nvim"
-hash ip 2>/dev/null && alias ip="ip --color"
-hash exa 2>/dev/null && alias ls="exa -hs=name --group-directories-first"
-hash bat 2>/dev/null && alias cat="bat --paging=never" && alias less="bat --paging=always"
-hash rg 2>/dev/null && alias grep="rg"
-hash delta 2>/dev/null && alias diff="delta"
 
 # Primary keybindings
 bindkey -e
@@ -126,28 +127,6 @@ newsnapshot() {
 	# TODO: easily boot into (latest? any?) snapshot with grub boot entry
 }
 
-# Cross-platform opt binary linking
-BIN_DIR="$HOME/.local/bin"
-OPT_DIR="$HOME/.local/opt"
-case "$(uname -m)" in
-	"arm"*)
-		[ -d "$OPT_DIR/fzf" ]   && ln -sf "$OPT_DIR/fzf/arm/fzf" "$BIN_DIR/fzf"
-		[ -d "$OPT_DIR/rg" ]    && ln -sf "$OPT_DIR/rg/arm/ripgrep-13.0.0-arm-unknown-linux-gnueabihf/rg" "$BIN_DIR/rg"
-		[ -d "$OPT_DIR/fd" ]    && ln -sf "$OPT_DIR/fd/arm/fd-v8.7.0-aarch64-unknown-linux-gnu/fd" "$BIN_DIR/fd"
-		[ -d "$OPT_DIR/bat" ]   && ln -sf "$OPT_DIR/fzf/arm/bat-v0.24.0-aarch64-unknown-linux-gnu/bat" "$BIN_DIR/bat"
-		[ -d "$OPT_DIR/exa" ]   && ln -sf "$OPT_DIR/fzf/arm/bin/exa" "$BIN_DIR/exa"
-		[ -d "$OPT_DIR/delta" ] && ln -sf "$OPT_DIR/fzf/arm/delta-0.16.5-aarch64-unknown-linux-gnu/delta" "$BIN_DIR/delta"
-		;;
-	"x86_64"*)
-		[ -d "$OPT_DIR/fzf" ]   && ln -sf "$OPT_DIR/fzf/x86_64/fzf" "$BIN_DIR/fzf"
-		[ -d "$OPT_DIR/rg" ]    && ln -sf "$OPT_DIR/rg/x86_64/ripgrep-13.0.0-x86_64-unknown-linux-musl/rg" "$BIN_DIR/rg"
-		[ -d "$OPT_DIR/fd" ]    && ln -sf "$OPT_DIR/fd/x86_64/fd-v8.7.0-x86_64-unknown-linux-musl/fd" "$BIN_DIR/fd"
-		[ -d "$OPT_DIR/bat" ]   && ln -sf "$OPT_DIR/bat/x86_64/bat-v0.24.0-x86_64-unknown-linux-musl/bat" "$BIN_DIR/bat"
-		[ -d "$OPT_DIR/exa" ]   && ln -sf "$OPT_DIR/exa/x86_64/bin/exa" "$BIN_DIR/exa"
-		[ -d "$OPT_DIR/delta" ] && ln -sf "$OPT_DIR/delta/x86_64/delta-0.16.5-x86_64-unknown-linux-musl/delta" "$BIN_DIR/delta"
-		;;
-esac
-
 # GPG+SSH
 hash gpgconf 2>/dev/null && {
 	export GPG_TTY="$(tty)"
@@ -167,14 +146,18 @@ _cht() { compadd $commands:t }
 compdef _cht cht
 
 # trash-cli
-alias del="trash-put"
-alias lsdel="trash-list"
-alias undel="trash-restore"
-alias deldel="trash-empty"
-rm() { 2>&1 echo "rm disabled, use del"; return 1; }
+hash trash-put 2>/dev/null && {
+	alias del="trash-put"
+	alias lsdel="trash-list"
+	alias undel="trash-restore"
+	alias deldel="trash-empty"
+	rm() { 2>&1 echo "rm disabled, use del"; return 1; }
+} || echo "Warning: trash-cli not found, del aliases have been disabled" >&2
 
 # fd
 hash fdfind 2>/dev/null && { fd() { fdfind $@ } }
+
+# TODO: fix opt dir resources
 
 # fzf
 export FZF_COLORS="fg+:bold,pointer:red,hl:red,hl+:red,gutter:-1,marker:red"
@@ -183,14 +166,14 @@ export FZF_DEFAULT_OPTS="--multi --bind=$FZF_BINDINGS --preview-window sharp --m
 export FZF_DEFAULT_COMMAND="rg --files --no-messages"
 export FZF_CTRL_T_COMMAND="fd --hidden --exclude '.git' --exclude 'node_modules'"
 export FZF_ALT_C_COMMAND="fd --hidden --exclude '.git' --exclude 'node_modules' --type d"
-source "/usr/share/doc/fzf/examples/key-bindings.zsh" 2>/dev/null || source "$OPT_DIR/fzf/key-bindings.zsh"
-source "/usr/share/doc/fzf/examples/completion.zsh" 2>/dev/null || source "$OPT_DIR/fzf/completion.zsh"
+source "/usr/share/doc/fzf/examples/key-bindings.zsh" 2>/dev/null || source "$HOME/.local/opt/fzf/key-bindings.zsh"
+source "/usr/share/doc/fzf/examples/completion.zsh" 2>/dev/null || source "$HOME/.local/opt/fzf/completion.zsh"
 
 # Autosuggestions
-source "/usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh" 2>/dev/null || source "$OPT_DIR/zsh-autosuggestions/zsh-autosuggestions-master/zsh-autosuggestions.zsh"
+source "/usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh" 2>/dev/null || source "$HOME/.local/opt/zsh-autosuggestions/zsh-autosuggestions-master/zsh-autosuggestions.zsh"
 
 # Syntax highlighting
-source "/usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" 2>/dev/null || source "$OPT_DIR/zsh-syntax-highlighting/zsh-syntax-highlighting-master/zsh-syntax-highlighting.zsh" && {
+source "/usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" 2>/dev/null || source "$HOME/.local/opt/zsh-syntax-highlighting/zsh-syntax-highlighting-master/zsh-syntax-highlighting.zsh" && {
 	ZSH_HIGHLIGHT_STYLES[default]="fg=cyan"
 	ZSH_HIGHLIGHT_STYLES[unknown-token]="fg=red"
 	ZSH_HIGHLIGHT_STYLES[reserved-word]="fg=blue"
