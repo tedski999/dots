@@ -22,7 +22,7 @@ alias la="ll -a"
 alias lt="la -T"
 alias d="dirs -v"
 alias di="dots init"
-alias sudo="sudo --preserve-env"
+alias sudo="sudo --preserve-env "
 for i ({1..9}) alias "$i"="cd +$i"
 for i ({3..9}) alias "${(l:i::.:)}"="${(l:i-1::.:)};.."
 hash nvim 2>/dev/null && alias v="nvim"
@@ -179,10 +179,10 @@ source "/usr/share/doc/fzf/examples/key-bindings.zsh" 2>/dev/null || source "$OP
 source "/usr/share/doc/fzf/examples/completion.zsh" 2>/dev/null || source "$OPT_DIR/fzf/completion.zsh"
 
 # Autosuggestions
-source "/usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh" 2>/dev/null || source "$OPT_DIR/zsh-autosuggestions-master/zsh-autosuggestions.zsh"
+source "/usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh" 2>/dev/null || source "$OPT_DIR/zsh-autosuggestions/zsh-autosuggestions-master/zsh-autosuggestions.zsh"
 
 # Syntax highlighting
-source "/usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" 2>/dev/null || source "$OPT_DIR/zsh-syntax-highlighting-master/zsh-syntax-highlighting.zsh" && {
+source "/usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" 2>/dev/null || source "$OPT_DIR/zsh-syntax-highlighting/zsh-syntax-highlighting-master/zsh-syntax-highlighting.zsh" && {
 	ZSH_HIGHLIGHT_STYLES[default]="fg=cyan"
 	ZSH_HIGHLIGHT_STYLES[unknown-token]="fg=red"
 	ZSH_HIGHLIGHT_STYLES[reserved-word]="fg=blue"
