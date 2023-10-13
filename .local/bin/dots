@@ -105,8 +105,8 @@ opt_guest_bat() {
 }
 opt_guest_exa() {
 	mkdir -p "$1/x86_64" "$1/arm" &&
-		curl -L "https://github.com/ogham/exa/releases/download/v0.10.1/exa-linux-x86_64-musl-v0.10.1.zip" | unzip - -d "$1/x86_64" &&
-		curl -L "https://github.com/ogham/exa/releases/download/v0.10.1/exa-linux-armv7-v0.10.1.zip" | unzip - -d "$1/arm"
+		curl -L "https://github.com/ogham/exa/releases/download/v0.10.1/exa-linux-x86_64-musl-v0.10.1.zip" > "$1/x86_64.zip" && unzip "$1/x86_64.zip" -d "$1/x86_64" &&
+		curl -L "https://github.com/ogham/exa/releases/download/v0.10.1/exa-linux-armv7-v0.10.1.zip" > "$1/x86_64.zip" && unzip "$1/x86_64.zip" -d "$1/arm"
 }
 opt_guest_delta() {
 	mkdir -p "$1/x86_64" "$1/arm" &&
