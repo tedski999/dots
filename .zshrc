@@ -118,6 +118,14 @@ un() {
 	esac
 }
 
+# Btrfs snapshot shortcut
+# TODO: take snapshot every boot, take snapshot every 5 minutes?
+newsnapshot() {
+	dir="/media/btrfs/@rootfs-$(date --utc '+%Y-%m-%dZ%H:%M:%S')"
+	sudo btrfs subvolume snapshot / "$dir"
+	# TODO: easily boot into (latest? any?) snapshot with grub boot entry
+}
+
 # Cross-platform opt binary linking
 BIN_DIR="$HOME/.local/bin"
 OPT_DIR="$HOME/.local/opt"
