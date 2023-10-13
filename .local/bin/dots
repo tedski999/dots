@@ -83,35 +83,35 @@ opt_guest_zshautosuggestions() {
 }
 opt_guest_fzf() {
 	mkdir -p "$1/x86_64" "$1/arm" &&
-		curl -L "https://github.com/junegunn/fzf/releases/download/0.40.0/fzf-0.40.0-linux_amd64.tar.gz" | tar -xzC "$1/x86_64" &&
-		curl -L "https://github.com/junegunn/fzf/releases/download/0.40.0/fzf-0.40.0-linux_arm64.tar.gz" | tar -xzC "$1/arm" &&
+		curl -L "https://github.com/junegunn/fzf/releases/download/0.42.0/fzf-0.42.0-linux_amd64.tar.gz" | tar -xzC "$1/x86_64" &&
+		curl -L "https://github.com/junegunn/fzf/releases/download/0.42.0/fzf-0.42.0-linux_arm64.tar.gz" | tar -xzC "$1/arm" &&
 		curl -L "https://raw.githubusercontent.com/junegunn/fzf/master/shell/completion.zsh" > "$1/completion.zsh" &&
 		curl -L "https://raw.githubusercontent.com/junegunn/fzf/master/shell/key-bindings.zsh" > "$1/key-bindings.zsh"
 }
 opt_guest_rg() {
 	mkdir -p "$1/x86_64" "$1/arm" &&
 		curl -L "https://github.com/BurntSushi/ripgrep/releases/download/13.0.0/ripgrep-13.0.0-x86_64-unknown-linux-musl.tar.gz" | tar -xzC "$1/x86_64" &&
-		curl -L "https://github.com/BurntSushi/ripgrep/releases/download/13.0.0/ripgrep-13.0.0-arm-unknown-linux-musl.tar.gz" | tar -xzC "$1/arm"
+		curl -L "https://github.com/BurntSushi/ripgrep/releases/download/13.0.0/ripgrep-13.0.0-arm-unknown-linux-gnueabihf.tar.gz" | tar -xzC "$1/arm"
 }
 opt_guest_fd() {
 	mkdir -p "$1/x86_64" "$1/arm" &&
 		curl -L "https://github.com/sharkdp/fd/releases/download/v8.7.0/fd-v8.7.0-x86_64-unknown-linux-musl.tar.gz" | tar -xzC "$1/x86_64" &&
-		curl -L "https://github.com/sharkdp/fd/releases/download/v8.7.0/fd-v8.7.0-arm-unknown-linux-musl.tar.gz" | tar -xzC "$1/arm"
+		curl -L "https://github.com/sharkdp/fd/releases/download/v8.7.0/fd-v8.7.0-aarch64-unknown-linux-gnu.tar.gz" | tar -xzC "$1/arm"
 }
 opt_guest_bat() {
 	mkdir -p "$1/x86_64" "$1/arm" &&
-		curl -L "https://github.com/sharkdp/bat/releases/download/v0.23.0/bat-v0.23.0-x86_64-unknown-linux-musl.tar.gz" | tar -xzC "$1/x86_64" &&
-		curl -L "https://github.com/sharkdp/bat/releases/download/v0.23.0/bat-v0.23.0-arm-unknown-linux-musl.tar.gz" | tar -xzC "$1/arm"
+		curl -L "https://github.com/sharkdp/bat/releases/download/v0.24.0/bat-v0.24.0-x86_64-unknown-linux-musl.tar.gz" | tar -xzC "$1/x86_64" &&
+		curl -L "https://github.com/sharkdp/bat/releases/download/v0.24.0/bat-v0.24.0-aarch64-unknown-linux-gnu.tar.gz" | tar -xzC "$1/arm"
 }
 opt_guest_exa() {
 	mkdir -p "$1/x86_64" "$1/arm" &&
 		curl -L "https://github.com/ogham/exa/releases/download/v0.10.1/exa-linux-x86_64-musl-v0.10.1.zip" | unzip - -d "$1/x86_64" &&
-		curl -L "https://github.com/ogham/exa/releases/download/v0.10.1/exa-linux-arm-musl-v0.10.1.zip" | unzip - -d "$1/arm"
+		curl -L "https://github.com/ogham/exa/releases/download/v0.10.1/exa-linux-armv7-v0.10.1.zip" | unzip - -d "$1/arm"
 }
 opt_guest_delta() {
 	mkdir -p "$1/x86_64" "$1/arm" &&
-		curl -L "https://github.com/dandavison/delta/releases/download/0.15.1/delta-0.15.1-x86_64-unknown-linux-musl.tar.gz" | tar -xzC "$1/x86_64" &&
-		curl -L "https://github.com/dandavison/delta/releases/download/0.15.1/delta-0.15.1-arm-unknown-linux-musl.tar.gz" | tar -xzC "$1/arm"
+		curl -L "https://github.com/dandavison/delta/releases/download/0.16.5/delta-0.16.5-x86_64-unknown-linux-musl.tar.gz" | tar -xzC "$1/x86_64" &&
+		curl -L "https://github.com/dandavison/delta/releases/download/0.16.5/delta-0.16.5-aarch64-unknown-linux-gnu.tar.gz" | tar -xzC "$1/arm"
 }
 
 msg() { printf "\n\033[1;33m$@\033[0m\n"; }
@@ -202,6 +202,7 @@ missing_debs="$(echo "$debs" | while read pkg src; do dpkg-query --show --showfo
 	msg "Installing deb packages..."
 	tmp="$(mktemp --suffix=.deb)" || exit 1
 	echo "$missing_debs" || while read pkg src; do
+		echo "Installing $pkg..."
 		curl -L "$src" > "$tmp/$pkg.deb" || exit 1
 		sudo apt-get -y install "$tmp/$pkg.deb" || exit 1
 	done
@@ -212,6 +213,7 @@ missing_opts="$(echo "$opts" | while read pkg fn; do [ -d "$optdir/$pkg" ] || ec
 [ -n "$missing_opts" ] && {
 	msg "Installing opt packages..."
 	echo "$missing_opts" | while read pkg fn; do
+		echo "Installing $pkg..."
 		dir="$optdir/$pkg"
 		mkdir -p "$dir" || exit 1
 		$fn "$dir" || { rm -r "$dir"; exit 1; }
