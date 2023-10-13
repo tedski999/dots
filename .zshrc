@@ -166,8 +166,8 @@ export FZF_DEFAULT_OPTS="--multi --bind=$FZF_BINDINGS --preview-window sharp --m
 export FZF_DEFAULT_COMMAND="rg --files --no-messages"
 export FZF_CTRL_T_COMMAND="fd --hidden --exclude '.git' --exclude 'node_modules'"
 export FZF_ALT_C_COMMAND="fd --hidden --exclude '.git' --exclude 'node_modules' --type d"
-source "/usr/share/doc/fzf/examples/key-bindings.zsh" 2>/dev/null || source "$HOME/.local/opt/fzf/key-bindings.zsh"
-source "/usr/share/doc/fzf/examples/completion.zsh" 2>/dev/null || source "$HOME/.local/opt/fzf/completion.zsh"
+source "/usr/share/doc/fzf/examples/key-bindings.zsh" 2>/dev/null || source "$HOME/.local/opt/fzf-scripts/key-bindings.zsh"
+source "/usr/share/doc/fzf/examples/completion.zsh" 2>/dev/null || source "$HOME/.local/opt/fzf-scripts/completion.zsh"
 
 # Autosuggestions
 source "/usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh" 2>/dev/null || source "$HOME/.local/opt/zsh-autosuggestions/zsh-autosuggestions-master/zsh-autosuggestions.zsh"
