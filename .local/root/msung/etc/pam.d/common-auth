@@ -14,7 +14,7 @@
 # pam-auth-update(8) for details.
 
 # here are the per-package modules (the "Primary" block)
-# TODO: optional fail delay
+auth	optional					pam_faildelay.so delay=500000
 auth	[success=1 default=ignore]	pam_unix.so nullok nodelay
 # here's the fallback if no module succeeds
 auth	requisite			pam_deny.so
