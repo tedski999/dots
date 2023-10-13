@@ -4,10 +4,9 @@ export PATH=$(echo "$PATH" | tr ":" "\n" | grep -v "$(dirname -- "$0")" | tr "\n
 
 hash rg 2>/dev/null && exec rg $@
 
-# TODO: replace *
 case "$(uname --machine)" in
-	"x86_64"*) opt="$HOME/.local/opt/rg/x86_64"; bin="$opt/ripgrep-13.0.0-x86_64-unknown-linux-musl/rg"; src="https://github.com/BurntSushi/ripgrep/releases/download/13.0.0/ripgrep-13.0.0-x86_64-unknown-linux-musl.tar.gz";;
-	"arm"*)    opt="$HOME/.local/opt/rg/arm64";  bin="$opt/*/rg"; src="https://github.com/BurntSushi/ripgrep/releases/download/13.0.0/ripgrep-13.0.0-arm-unknown-linux-gnueabihf.tar.gz";;
+	"x86_64"*) opt="$HOME/.local/opt/rg/x86_64"; bin="$opt/ripgrep-13.0.0-x86_64-unknown-linux-musl/rg";   src="https://github.com/BurntSushi/ripgrep/releases/download/13.0.0/ripgrep-13.0.0-x86_64-unknown-linux-musl.tar.gz";;
+	"arm"*)    opt="$HOME/.local/opt/rg/arm64";  bin="$opt/ripgrep-13.0.0-arm-unknown-linux-gnueabihf/rg"; src="https://github.com/BurntSushi/ripgrep/releases/download/13.0.0/ripgrep-13.0.0-arm-unknown-linux-gnueabihf.tar.gz";;
 esac
 
 [ -d "$opt" ] || { mkdir -p "$opt" && curl -fL "$src" | tar -xzC "$opt"; } || { rm -r "$opt"; exit 1; }
