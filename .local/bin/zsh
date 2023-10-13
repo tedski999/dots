@@ -6,12 +6,12 @@
 
 export PATH=$(echo "$PATH" | tr ":" "\n" | grep -v "$(dirname -- "$0")" | tr "\n" ":")
 
-hash zsh && exec zsh $@
+hash zsh 2>/dev/null && exec zsh $@
 
 # TODO: replace *
 case "$(uname --machine)" in
-	"x86_64"*) opt="$HOME/.local/opt/zsh/x86_64"; bin="$opt/*/bin/zsh";;
-	"arm"*)    opt="$HOME/.local/opt/zsh/arm64";  bin="$opt/*/bin/zsh";;
+	"x86_64"*) opt="$HOME/.local/opt/zsh/x86_64"; bin="$opt/bin/zsh";;
+	"arm"*)    opt="$HOME/.local/opt/zsh/arm64";  bin="$opt/bin/zsh";;
 esac
 
 [ -d "$opt" ] || sh -c "$(curl -fL https://raw.githubusercontent.com/romkatv/zsh-bin/master/install)" -- -d "$opt" -e no || { rm -r "$opt"; exit 1; }

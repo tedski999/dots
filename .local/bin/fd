@@ -6,7 +6,7 @@ hash fd 2>/dev/null && exec fd $@
 
 # TODO: replace *
 case "$(uname --machine)" in
-	"x86_64"*) opt="$HOME/.local/opt/fd/x86_64"; bin="$opt/*/fd"; src="https://github.com/sharkdp/fd/releases/download/v8.7.0/fd-v8.7.0-x86_64-unknown-linux-musl.tar.gz";;
+	"x86_64"*) opt="$HOME/.local/opt/fd/x86_64"; bin="$opt/fd-v8.7.0-x86_64-unknown-linux-musl/fd"; src="https://github.com/sharkdp/fd/releases/download/v8.7.0/fd-v8.7.0-x86_64-unknown-linux-musl.tar.gz";;
 	"arm"*)    opt="$HOME/.local/opt/fd/arm64";  bin="$opt/*/fd"; src="https://github.com/sharkdp/fd/releases/download/v8.7.0/fd-v8.7.0-aarch64-unknown-linux-gnu.tar.gz";;
 esac
 
