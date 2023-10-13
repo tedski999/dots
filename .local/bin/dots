@@ -6,143 +6,115 @@ dots="$HOME/.local/dots"
 git_ssh="git@github.com:/tedski999/dots"
 git_http="https://github.com/tedski999/dots"
 
-gitignore="\
-/*
-!/.config
-!/.gnupg
-!/.local
-!/.ssh
-!/.zshenv
-!/.zshrc
+# TODO: opt completions and manpages
+bindir="$HOME/.local/bin"
+optdir="$HOME/.local/opt"
+cmpdir=""
+mandir=""
 
-/.config/*
-!/.config/alacritty
-!/.config/bat
-!/.config/dunst
-!/.config/flameshot
-!/.config/git
-!/.config/gtk-3.0
-!/.config/gtk-4.0
-!/.config/less
-!/.config/mako
-!/.config/mpv
-!/.config/neofetch
-!/.config/npm
-!/.config/nvim
-!/.config/python
-!/.config/ripgrep
-!/.config/sway
-!/.config/swaylock
-!/.config/tmux
-!/.config/waybar
-!/.config/wofi
-!/.config/mimeapps.list
-!/.config/user-dirs.dirs
-!/.config/user-dirs.locale
-
-/.gnupg/*
-!/.gnupg/gpg-agent.conf
-!/.gnupg/sshcontrol
-
-/.local/*
-!/.local/bin
-/.local/bin/*
-!/.local/bin/choose
-!/.local/bin/displayctl
-!/.local/bin/dots
-!/.local/bin/networkctl
-!/.local/bin/powerctl
-
-/.ssh/*
-!/.ssh/config"
-
-msung_apt_sources="\
-deb http://deb.debian.org/debian/ bookworm main contrib non-free non-free-firmware
-deb-src http://deb.debian.org/debian/ bookworm main contrib non-free non-free-firmware
-
-deb http://security.debian.org/debian-security bookworm-security main contrib non-free non-free-firmware
-deb-src http://security.debian.org/debian-security bookworm-security main contrib non-free non-free-firmware
-
-deb http://deb.debian.org/debian/ bookworm-updates main contrib non-free non-free-firmware
-deb-src http://deb.debian.org/debian/ bookworm-updates main contrib non-free non-free-firmware"
-
-msung_pkgs="\
+msung_apts="\
 file curl wget tar gzip zip unzip git gnupg man-db
 zsh zsh-syntax-highlighting zsh-autosuggestions
-neovim git ripgrep fzf bat fd-find exa btop jq bc
-python3 python3-venv python3-pip pipx
+neovim git ripgrep fzf bat fd-find exa btop jq bc trash-cli
+python3 python3-venv pipx
 sway xwayland swayidle swaylock
+nvidia-driver nvidia-driver-libs:i386 linux-headers-amd64 linux-image-amd64 firmware-misc-nonfree
+mesa-vulkan-drivers libglx-mesa0:i386 mesa-vulkan-drivers:i386 libgl1-mesa-dri:i386
 pipewire-audio xdg-desktop-portal-wlr playerctl
 network-manager network-manager-openvpn openvpn
 bluetooth bluez-firmware
 wl-clipboard wlr-randr light thermald acpi
 libnotify-bin mako-notifier wofi flameshot
-alacritty firefox-esr obs-studio
+alacritty firefox-esr obs-studio steam-installer gamemode
 materia-gtk-theme paper-icon-theme
 fonts-terminus fonts-noto"
+msung_debs="\
+git-delta https://github.com/dandavison/delta/releases/download/0.16.5/git-delta_0.16.5_amd64.deb
+discord https://discord.com/api/download?platform=linux&format=deb
+google-earth-pro-stable https://dl.google.com/dl/earth/client/current/google-earth-pro-stable_current_amd64.deb"
+msung_opts="\
+cht.sh opt_chtsh
+cliphist opt_msung_cliphist"
 
-msung_pipx="\
-trash-cli shtab"
-
-# TODO: gaming but less faurked
-# ensure non-free and contrib
-# dpkg --add-architecture i386
-#linux-headers-amd64  nvidia-driver nvidia-driver-libs:i386 firmware-misc-nonfree steam-installer
-# MAYBE: lsof mesa-vulkan-drivers libglx-mesa0:i386 mesa-vulkan-drivers:i386 libgl1-mesa-dri:i386
-# MAYBE?: vulkan-utils:i386 gamemode
-# __NV_PRIME_RENDER_OFFLOAD=1 __GLX_VENDOR_LIBRARY_NAME=nvidia %command%
-# gamemoderun %command%
-
-# bumblebee-nvidia primus-nvidia primus-vk-nvidia
-# primus-libs:i386 libprimus-vk1:i386 nvidia-primus-vk-wrapper:i386 nvidia-driver-libs-i386
-# relogin for bumblebee group to take effect
-
-septs_pkgs="\
+septs_apts="\
 file curl wget tar gzip zip unzip git gnupg man-db
 zsh zsh-syntax-highlighting zsh-autosuggestions
-neovim git ripgrep fzf bat fd-find exa btop jq bc
-python3 python3-venv python3-pip pipx"
+neovim git ripgrep fzf bat fd-find exa btop jq bc trash-cli
+python3 python3-venv pipx"
+septs_debs="\
+git-delta https://github.com/dandavison/delta/releases/download/0.16.5/git-delta_0.16.5_arm64.deb"
+septs_opts="\
+cht.sh opt_chtsh"
 
-septs_pipx="\
-trash-cli shtab"
+guest_opts="\
+cht.sh opt_chtsh
+zsh opt_guest_zsh
+zsh-syntax-highlighting opt_guest_zshsyntaxhighlighting
+zsh-autosuggestions opt_guest_zshautosuggestions
+fzf opt_guest_fzf
+rg opt_guest_rg
+fd opt_guest_fd
+bat opt_guest_bat
+exa opt_guest_exa
+delta opt_guest_delta"
 
-guest_bins="git vi"
+opt_chtsh() {
+	curl "https://cht.sh/:cht.sh" > "$1/cht.sh" &&
+		chmod +x "$1/cht.sh" &&
+		ln -sf "$1/cht.sh" "$bindir/cht.sh"
+}
 
-msung_logind="\
-[Login]
-HandlePowerKey=suspend
-HandlePowerKeyLongPress=poweroff
-HandleLidSwitch=ignore
-HandleLidSwitchExternalPower=ignore
-HandleLidSwitchDocked=ignore"
-
-msung_issue="Welcome to \l
- "
-
-msung_motd=" "
-
-msung_autologin="\
-[Service]
-Type=simple
-ExecStart=
-ExecStart=-/sbin/agetty --delay 3 --noissue --init-string \"\\\nProperty of Ted Johnson <ted@h8c.de>\" --skip-login --login-options '-p -- "$USER"' - \$TERM"
-
-msung_grub="\
-GRUB_DEFAULT=0
-GRUB_TIMEOUT=1
-GRUB_TIMEOUT_STYLE=hidden
-GRUB_RECORDFAIL_TIMEOUT=1
-GRUB_CMDLINE_LINUX_DEFAULT=\"splash\"
-GRUB_CMDLINE_LINUX=\"\""
+opt_msung_cliphist() {
+	curl -L "https://github.com/sentriz/cliphist/releases/download/v0.4.0/v0.4.0-linux-amd64" > "$1/cliphist" &&
+		chmod +x "$1/cliphist" &&
+		ln -sf "$1/cliphist" "$bindir/cliphist"
+}
+opt_guest_zsh() {
+	: # TODO: opt zsh
+	#sh -c "$(curl -L "https://raw.githubusercontent.com/romkatv/zsh-bin/master/install)" --  -d "$1" -e no &&
+#                ln -sf "$out/bin/zsh" "$bin/zsh" &&
+#                ln -sf "$out/share/man/man1/"* "$man/man1/"
+}
+opt_guest_zshsyntaxhighlighting() {
+	curl -L "https://github.com/zsh-users/zsh-syntax-highlighting/archive/refs/heads/master.tar.gz" | tar -xzC "$1"
+}
+opt_guest_zshautosuggestions() {
+	curl -L "https://github.com/zsh-users/zsh-autosuggestions/archive/refs/heads/master.tar.gz" | tar -xzC "$1"
+}
+opt_guest_fzf() {
+	mkdir -p "$1/x86_64" "$1/arm" &&
+		curl -L "https://github.com/junegunn/fzf/releases/download/0.40.0/fzf-0.40.0-linux_amd64.tar.gz" | tar -xzC "$1/x86_64" &&
+		curl -L "https://github.com/junegunn/fzf/releases/download/0.40.0/fzf-0.40.0-linux_arm64.tar.gz" | tar -xzC "$1/arm" &&
+		curl -L "https://raw.githubusercontent.com/junegunn/fzf/master/shell/completion.zsh" > "$1/completion.zsh" &&
+		curl -L "https://raw.githubusercontent.com/junegunn/fzf/master/shell/key-bindings.zsh" > "$1/key-bindings.zsh"
+}
+opt_guest_rg() {
+	mkdir -p "$1/x86_64" "$1/arm" &&
+		curl -L "https://github.com/BurntSushi/ripgrep/releases/download/13.0.0/ripgrep-13.0.0-x86_64-unknown-linux-musl.tar.gz" | tar -xzC "$1/x86_64" &&
+		curl -L "https://github.com/BurntSushi/ripgrep/releases/download/13.0.0/ripgrep-13.0.0-arm-unknown-linux-musl.tar.gz" | tar -xzC "$1/arm"
+}
+opt_guest_fd() {
+	mkdir -p "$1/x86_64" "$1/arm" &&
+		curl -L "https://github.com/sharkdp/fd/releases/download/v8.7.0/fd-v8.7.0-x86_64-unknown-linux-musl.tar.gz" | tar -xzC "$1/x86_64" &&
+		curl -L "https://github.com/sharkdp/fd/releases/download/v8.7.0/fd-v8.7.0-arm-unknown-linux-musl.tar.gz" | tar -xzC "$1/arm"
+}
+opt_guest_bat() {
+	mkdir -p "$1/x86_64" "$1/arm" &&
+		curl -L "https://github.com/sharkdp/bat/releases/download/v0.23.0/bat-v0.23.0-x86_64-unknown-linux-musl.tar.gz" | tar -xzC "$1/x86_64" &&
+		curl -L "https://github.com/sharkdp/bat/releases/download/v0.23.0/bat-v0.23.0-arm-unknown-linux-musl.tar.gz" | tar -xzC "$1/arm"
+}
+opt_guest_exa() {
+	mkdir -p "$1/x86_64" "$1/arm" &&
+		curl -L "https://github.com/ogham/exa/releases/download/v0.10.1/exa-linux-x86_64-musl-v0.10.1.zip" | unzip - -d "$1/x86_64" &&
+		curl -L "https://github.com/ogham/exa/releases/download/v0.10.1/exa-linux-arm-musl-v0.10.1.zip" | unzip - -d "$1/arm"
+}
+opt_guest_delta() {
+	mkdir -p "$1/x86_64" "$1/arm" &&
+		curl -L "https://github.com/dandavison/delta/releases/download/0.15.1/delta-0.15.1-x86_64-unknown-linux-musl.tar.gz" | tar -xzC "$1/x86_64" &&
+		curl -L "https://github.com/dandavison/delta/releases/download/0.15.1/delta-0.15.1-arm-unknown-linux-musl.tar.gz" | tar -xzC "$1/arm"
+}
 
 msg() { printf "\n\033[1;33m$@\033[0m\n"; }
-
-pipx_install() {
-	pipx list --short | cut -d " " -f 1 | grep --quiet --fixed-string "$1" || {
-		msg "Installing $1..."
-		pipx install "$1" && pipx inject $@ || exit 1
-	}
-}
 
 # Parse arguments
 shift
@@ -155,49 +127,9 @@ msg "Using $p profile"
 
 # Check permissions
 [ "$(id -u)" = "0" ] && { echo "Please run as non-root."; exit 1; }
-case "$p" in
-	"msung"|"septs") hash sudo apt-get && sudo -v || exit 1 ;;
-esac
+case "$p" in "msung"|"septs") hash sudo apt-get || exit 1; esac
 
-# Pre-op health check
-# TODO: check debian, systemd, sudo btrfs device stats ...
-case "$p" in
-	"msung") ;;
-	"septs") ;;
-	"guest") ;;
-esac
-
-# Set package sources
-case "$p" in
-	"msung")
-		[ "$(cat "/etc/apt/sources.list")" != "$msung_apt_sources" ] && {
-			msg "Setting apt sources..."
-			echo "$msung_apt_sources" | sudo tee "/etc/apt/sources.list" || exit 1
-		}
-		;;
-	"septs") # TODO: set raspberry pi package sources
-		:
-		;;
-esac
-
-# Upgrade system
-case "$p" in
-	"msung"|"septs")
-		[ -z "$(find -H /var/lib/apt/lists -maxdepth 0 -mtime -1)" ] && {
-			msg "Updating packages..."
-			sudo apt-get -y update && sudo apt-get -y upgrade || exit 1
-		}
-esac
-
-# Ensure git is installed
-hash git 2>/dev/null || {
-	case "$p" in
-		"msung"|"septs") msg "Installing git..."; sudo apt-get -y install git || exit 1;;
-		"guest") echo "Cannot find git, is it installed?"; exit 1;;
-	esac
-}
-
-# Dots repository
+# Install dots repository
 [ -d "$dots" ] || {
 	msg "Cloning dots repository..."
 	git clone --bare "$git_http" "$dots" || exit 1
@@ -207,6 +139,8 @@ hash git 2>/dev/null || {
 		printf "Enter y to proceed with data loss: " && read -r res
 		[ "$res" = "y" ] && git --git-dir="$dots" --work-tree="$HOME" checkout main --force || exit 1
 	fi
+	mkdir -p "$dots/info" "$HOME/.local/share" || exit 1
+	ln -sf "$HOME/.local/root/gitignore" "$dots/info/exclude" || exit 1
 }
 [ "$(git --git-dir="$dots" --work-tree="$HOME" remote get-url origin)" != "$git_ssh" ] && {
 	msg "Upgrading dots remote to authenticated SSH..."
@@ -215,170 +149,94 @@ hash git 2>/dev/null || {
 		git --git-dir="$dots" --work-tree="$HOME" fetch || exit 1
 	}
 }
-[ "$(cat "$dots/info/exclude")" != "$gitignore" ] && {
-	msg "Writing dots exclude file..."
-	mkdir -p "$dots/info" || exit 1
-	echo "$gitignore" > "$dots/info/exclude" || exit 1
-}
 
-# Packages
-tmp="$(mktemp --directory)"
-case "$p" in
-	"msung")
-		dpkg-query --show --showformat='${Status}\n' $msung_pkgs 2>&1 | grep --quiet --invert-match "install ok installed" && {
-			msg "Installing packages..."
-			sudo apt-get -y install $msung_pkgs || exit 1
-		}
-		hash delta || {
-			msg "Installing delta .deb..."
-			curl -L "https://github.com/dandavison/delta/releases/download/0.16.5/git-delta_0.16.5_amd64.deb" > "$tmp/delta.deb" || exit 1
-			sudo apt-get -y install "$tmp/delta.deb" || exit 1
-		}
-		hash discord || {
-			msg "Installing Discord .deb..."
-			curl -L "https://discord.com/api/download?platform=linux&format=deb" > "$tmp/discord.deb" || exit 1
-			sudo apt-get -y install "$tmp/discord.deb" || exit 1
-		}
-		hash google-earth-pro || {
-			msg "Installing Google Earth Pro .deb..."
-			curl -L "https://dl.google.com/dl/earth/client/current/google-earth-pro-stable_current_amd64.deb" > "$tmp/google-earth-pro.deb" || exit 1
-			sudo apt-get -y install "$tmp/google-earth-pro.deb" || exit 1
-		}
-		hash cliphist || {
-			msg "Installing cliphist binary..."
-			curl -L "https://github.com/sentriz/cliphist/releases/download/v0.4.0/v0.4.0-linux-amd64" > "$HOME/.local/bin/cliphist" || exit 1
-			chmod +x "$HOME/.local/bin/cliphist" || exit 1
-		}
-		echo "$msung_pipx" | while IFS= read -r reqs; do pipx_install $reqs; done
-		;;
-	"septs")
-		dpkg-query --show --showformat='${Status}\n' $septs_pkgs 2>&1 | grep --quiet --invert-match "install ok installed" && {
-			msg "Installing packages..."
-			sudo apt-get -y install $septs_pkgs || exit 1
-		}
-		hash delta || {
-			msg "Installing delta .deb..."
-			curl -L "https://github.com/dandavison/delta/releases/download/0.16.5/git-delta_0.16.5_arm64.deb" > "$tmp/delta.deb" || exit 1
-			sudo apt-get -y install "$tmp/delta.deb" || exit 1
-		}
-		echo "$septs_pipx" | while IFS= read -r reqs; do pipx_install $reqs; done
-		;;
-	"guest")
-		# TODO: attempt to install required binaries to .local/bin
-		hash $guest_bins || exit 1
-		;;
-esac
-rm -r "$tmp"
-
-# Opt software
-bin="$HOME/.local/bin"
-opt="$HOME/.local/opt"
-hash cht.sh 2>/dev/null || [ -d "$opt/cht.sh" ] || {
-	msg "Installing cht.sh opt..."
-	mkdir -p "$opt/cht.sh" || exit 1
-	curl "https://cht.sh/:cht.sh" > "$opt/cht.sh/cht.sh" || exit 1
-	chmod +x "$opt/cht.sh/cht.sh" || exit 1
-	ln -sf "$opt/cht.sh/cht.sh" "$bin/cht.sh" || exit 1
-}
-[ -d "/usr/share/zsh-syntax-highlighting" ] || [ -d "$opt/zsh-syntax-highlighting-master" ] || {
-	msg "Installing zsh-syntax-highlighting opt..."
-	mkdir -p "$opt" || exit 1
-	curl -L "https://github.com/zsh-users/zsh-syntax-highlighting/archive/refs/heads/master.tar.gz" | tar -xzC "$opt" || exit 1
-}
-[ -d "/usr/share/zsh-autosuggestions" ] || [ -d "$opt/zsh-autosuggestions-master" ] || {
-	msg "Installing zsh-autosuggestions opt..."
-	mkdir -p "$opt" || exit 1
-	curl -L "https://github.com/zsh-users/zsh-autosuggestions/archive/refs/heads/master.tar.gz" | tar -xzC "$opt" || exit 1
-}
-#hash fd 2>/dev/null || [ -d "$opt/fd" ] || {
-#	msg "Installing fd opt..."
-#	mkdir -p "$opt/fd" || exit 1
-	#curl -L "https://github.com/sharkdp/fd/releases/download/v8.7.0/fd-v8.7.0-x86_64-unknown-linux-musl.tar.gz" | tar -xzC "$opt/fd" || exit 1
-	#curl -L "https://github.com/sharkdp/fd/releases/download/v8.7.0/fd-v8.7.0-arm-unknown-linux-musl.tar.gz" | tar -xzC "$opt/fd" || exit 1
-	# TODO: link autocomplete
-#}
-hash fzf 2>/dev/null || [ -d "$opt/fzf" ] || {
-	msg "Installing fzf opt..."
-	mkdir -p "$opt/fzf/x86_64" "$opt/fzf/arm" || exit 1
-	curl -L "https://github.com/junegunn/fzf/releases/download/0.40.0/fzf-0.40.0-linux_amd64.tar.gz" | tar -xzC "$opt/fzf/x86_64" || exit 1
-	curl -L "https://github.com/junegunn/fzf/releases/download/0.40.0/fzf-0.40.0-linux_arm64.tar.gz" | tar -xzC "$opt/fzf/arm" || exit 1
-	curl -L "https://raw.githubusercontent.com/junegunn/fzf/master/shell/completion.zsh" > "$opt/fzf/completion.zsh" || exit 1
-	curl -L "https://raw.githubusercontent.com/junegunn/fzf/master/shell/key-bindings.zsh" > "$opt/fzf/key-bindings.zsh" || exit 1
-}
-
-# Home configuration
-mkdir -p "$HOME/.local/share" "$HOME/.local/state" || exit 1
+# Repair home permissions
 chmod 644 "$HOME/.ssh/config" || exit 1
 find "$HOME/.gnupg/" -type f -exec chmod 600 {} \; || exit 1
 find "$HOME/.gnupg/" -type d -exec chmod 700 {} \; || exit 1
 
-# System configuration
+# Install system configuration
+unset reconfig
 case "$p" in
-	"msung")
-		[ "$SHELL" != "$(which zsh)" ] && {
-			msg "Setting login shell to zsh..."
-			sudo chsh "$USER" -s "$(which zsh)" || exit 1
-		}
-		[ -f "/usr/local/share/zsh/site-functions/_trash" ] || {
-			msg "Installing trash-cli completions..."
-			for cmd in trash-empty trash-list trash-restore trash-put trash; do
-				$cmd --print-completion zsh | sudo tee "/usr/local/share/zsh/site-functions/_$cmd" >/dev/null
-			done
-		}
-		[ "$(cat "/etc/network/interfaces")" != "source /etc/network/interfaces.d/*" ] && {
-			msg "Handing over management of all network interfaces to Network Manager..."
-			echo "source /etc/network/interfaces.d/*" | sudo tee "/etc/network/interfaces" || exit 1
-			sudo systemctl restart NetworkManager
-		}
-		[ "$(cat "/etc/systemd/logind.conf")" != "$msung_logind" ] && {
-			msg "Setting logind options..."
-			echo "$msung_logind" | sudo tee "/etc/systemd/logind.conf" || exit 1
-		}
-		[ "$(cat "/etc/issue")" != "$msung_issue" ] && {
-			msg "Setting issue..."
-			echo "$msung_issue" | sudo tee "/etc/issue" || exit 1
-		}
-		[ "$(cat "/etc/motd")" != "$msung_motd" ] && {
-			msg "Setting motd..."
-			echo "$msung_motd" | sudo tee "/etc/motd" || exit 1
-			sudo rm -f "/etc/update-motd.d/"* || exit 1
-		}
-		[ -f "/etc/sudoers.d/disable_admin_file" ] || {
-			msg "Disabling .sudo_as_admin_successful file..."
-			echo "Defaults !admin_flag" | sudo tee "/etc/sudoers.d/disable_admin_file" || exit 1
-			rm -f "$HOME/.sudo_as_admin_successful" || exit 1
-		}
-		[ -f "/etc/sysctl.d/20-quiet-printk.conf" ] || {
-			msg "Setting sysctl verbosity..."
-			echo "kernel.printk = 3 3 3 3" | sudo tee "/etc/sysctl.d/20-quiet-printk.conf" || exit 1
-		}
-		[ -f "/etc/systemd/system/getty@tty1.service.d/autologin.conf" ] || {
-			msg "Enabling autologin on tty1..."
-			sudo mkdir -p "/etc/systemd/system/getty@tty1.service.d" || exit 1
-			printf "$msung_autologin" | sudo tee "/etc/systemd/system/getty@tty1.service.d/autologin.conf" || exit 1
-		}
-		[ "$(cat "/etc/default/grub")" != "$msung_grub" ] && {
-			msg "Setting grub config..."
-			printf "$msung_grub" | sudo tee "/etc/default/grub" || exit 1
-			sudo update-grub && sudo update-initramfs -u || exit 1
-		}
-		;;
-	"septs")
-		[ "$SHELL" != "$(which zsh)" ] && {
-			msg "Setting login shell to zsh..."
-			sudo chsh "$USER" -s "$(which zsh)" || exit 1
-		}
-		;;
-	"guest")
+	"msung"|"septs")
+		dir="$(pwd)" && cd "$HOME/.local/root/$p" || exit 1
+		for file in $(find * -type f); do
+			[ -L "/$file" ] || {
+				msg "Installing $HOME/.local/root/$p/$file into system..."
+				sudo mkdir -p "$(dirname "/$file")" || exit 1
+				sudo ln -sf "$HOME/.local/root/$p/$file" "/$file" || exit 1
+				sudo chown root: "/$file"
+				reconfig=1
+			}
+		done
+		cd "$dir" || exit 1
 		;;
 esac
 
-# Post-op health check
-# TODO: check desktop daemons
+# Upgrade system packages
 case "$p" in
-	"msung") ;;
-	"septs") ;;
-	"guest") ;;
+	"msung"|"septs")
+		[ -z "$(find -H /var/lib/apt/lists -maxdepth 0 -mtime -1)" ] || [ -n "$reconfig" ] && {
+			msg "Updating packages..."
+			sudo apt-get -y update || exit 1
+			sudo apt-get -y upgrade || exit 1
+		}
+esac
+
+# Select appropriate packages for profile
+case "$p" in
+	"msung") apts="$msung_apts"; debs="$msung_debs"; opts="$msung_opts";;
+	"septs") apts="$septs_apts"; debs="$septs_debs"; opts="$septs_opts";;
+	"guest") apts="";            debs="";            opts="$guest_opts";;
+esac
+
+# Install apt packages
+[ -n "$apts" ] && dpkg-query --show --showformat='${Status}\n' $apts 2>&1 | grep --quiet --fixed-string --regexp "no packages found matching" --regexp "not-installed" && {
+	msg "Installing apt packages..."
+	sudo apt-get -y install $apts || exit 1
+}
+
+# Install deb packages
+missing_debs="$(echo "$debs" | while read pkg src; do dpkg-query --show --showformat='${Status}\n' $pkg 2>&1 | grep --quiet -Fe "no packages found matching" -e "not-installed" && echo "$pkg $src"; done)"
+[ -n "$missing_debs" ] && {
+	msg "Installing deb packages..."
+	tmp="$(mktemp --suffix=.deb)" || exit 1
+	echo "$missing_debs" || while read pkg src; do
+		curl -L "$src" > "$tmp/$pkg.deb" || exit 1
+		sudo apt-get -y install "$tmp/$pkg.deb" || exit 1
+	done
+}
+
+# Install opt packages
+missing_opts="$(echo "$opts" | while read pkg fn; do [ -d "$optdir/$pkg" ] || echo "$pkg $fn"; done)"
+[ -n "$missing_opts" ] && {
+	msg "Installing opt packages..."
+	echo "$missing_opts" | while read pkg fn; do
+		dir="$optdir/$pkg"
+		mkdir -p "$dir" || exit 1
+		$fn "$dir" || { rm -r "$dir"; exit 1; }
+	done
+}
+
+# Set login shell
+case "$p" in
+	"msung"|"septs")
+		[ "$SHELL" != "$(which zsh)" ] && {
+			msg "Setting login shell to zsh..."
+			sudo chsh "$USER" -s "$(which zsh)" || exit 1
+		}
+		;;
+esac
+
+# Install boot configuration
+case "$p" in
+	"msung")
+		[ -n "$reconfig" ] && {
+			msg "Installing boot configuration..."
+			sudo update-grub || exit 1
+			sudo update-initramfs -u || exit 1
+		}
+		;;
 esac
 
 msg "Done."
