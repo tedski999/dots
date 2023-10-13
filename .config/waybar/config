@@ -1,4 +1,3 @@
-[
 {
 	"ipc": true,
 
@@ -9,7 +8,7 @@
 
 	"modules-left": ["sway/workspaces", "sway/mode", "sway/scratchpad", "sway/window"],
 	"modules-center": [],
-	"modules-right": ["mpris", "gamemode", "cpu", "memory", "disk", "temperature", "network", "pulseaudio", "battery", "clock"],
+	"modules-right": ["custom/media", "gamemode", "cpu", "memory", "disk", "temperature", "network", "pulseaudio", "battery", "clock"],
 
 	// TODO: config waybar
 	"sway/window": {
@@ -66,23 +65,4 @@
 			"on-scroll-down": "shift_down"
 		}
 	},
-},
-
-
-
-
-{
-	"id": "bottom",
-	"ipc": true,
-
-	"layer": "top",
-	"position": "bottom",
-	"height": 0,
-	"spacing": 0,
-
-	// TODO: "mpd" or define "custom/media" with playerctl?
-	"modules-left": [],
-	"modules-center": [],
-	"modules-right": [],
 }
-]

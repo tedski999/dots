@@ -38,10 +38,6 @@ bar {
 	swaybar_command waybar
 	mode hide
 }
-bar bottom {
-	swaybar_command /bin/true
-	mode hide
-}
 
 # Input devices
 input type:keyboard {
