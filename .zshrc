@@ -206,10 +206,22 @@ source "/usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" 2>/dev/n
 
 # Start desktop environment
 [[ -o interactive && -o login && -z "$WAYLAND_DISPLAY" && "$(tty)" = "/dev/tty1" ]] && hash sway 2>/dev/null && {
-	XDG_CURRENT_DESKTOP=sway sway
-	#XDG_CURRENT_DESKTOP=sway exec sway --unsupported-gpu
-	#XDG_CURRENT_DESKTOP=sway primusrun sway --unsupported-gpu
-	#XDG_CURRENT_DESKTOP=sway __NV_PRIME_RENDER_OFFLOAD=1 __GLX_VENDOR_LIBRARY_NAME=nvidia primusrun sway --unsupported-gpu
+#	export __NV_PRIME_RENDER_OFFLOAD=1
+#	export __GLX_VENDOR_LIBRARY_NAME=nvidia
+#	export __VK_LAYER_NV_optimus=NVIDIA_only
+#
+	export WLR_NO_HARDWARE_CURSORS=1
+#	export WLR_RENDERER=vulkan
+#	export XDG_SESSION_TYPE=wayland
+#	export QT_QPA_PLATFORM=wayland
+#	export QT_WAYLAND_DISABLE_WINDOWDECORATION=1
+#	export GBM_BACKEND=nvidia-drm
+#	export __GL_GSYNC_ALLOWED=0
+#	export __GL_GL_VRR_ALLOWED=0
+#	export XWAYLAND_NO_GLAMOR=1
+
+	export XDG_CURRENT_DESKTOP=sway
+	sway --unsupported-gpu
 }
 
 :
