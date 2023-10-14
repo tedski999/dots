@@ -26,6 +26,8 @@ client.unfocused         #202020 #202020 #808080 #202020 #202020
 exec_always systemctl --user import-environment DISPLAY WAYLAND_DISPLAY SWAYSOCK XDG_CURRENT_DESKTOP
 # Notifications
 exec_always pidof mako || mako
+# Battery warning notifications
+exec_always pidof -x batteryd || batteryd
 # Clipboard manager
 exec_always pidof wl-paste || wl-paste --watch cliphist store
 # Idle locking + suspending

@@ -39,6 +39,7 @@
 !/.local/bin
 /.local/bin/*
 !/.local/bin/bat
+!/.local/bin/batteryd
 !/.local/bin/choose
 !/.local/bin/cht.sh
 !/.local/bin/cliphist

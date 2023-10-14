@@ -1,0 +1,35 @@
+#!/bin/sh
+
+id="$(shuf -i 1-99999 -n 1)"
+old_charge=100
+
+while true; do
+	acpi | sed "s/.*: //" | {
+		IFS=", " read state charge time
+
+		[ "$state" = "Discharging" ] && {
+			charge="$(echo "$charge" | tr -d '%')"
+			time="About $time"
+
+			[ "$old_charge" -gt 2 ] && [ "$charge" -le 2 ] && {
+				for i in $(seq 5 -1 1); do
+					notify-send -i "battery-020" -u "critical" -r "$id" -t 0 "Battery empty!" "Suspending in $i..."
+					sleep 1
+				done
+				powerctl suspend
+			} || {
+				[ "$old_charge" -gt 10 ] && [ "$charge" -le 10 ] && {
+					notify-send -i "battery-020" -u "critical" -r "$id" -t 0 "Battery critical!" "$time"
+				} || {
+					[ "$old_charge" -gt 20 ] && [ "$charge" -le 20 ] && {
+						notify-send -i "battery-020" -u "normal" -r "$id" "Battery low!" "$time"
+					}
+				}
+			}
+
+			old_charge="$charge"
+		}
+
+		sleep 1
+	}
+done
