@@ -58,6 +58,7 @@ input type:touchpad {
 
 # Mouse
 floating_modifier Mod4 normal
+focus_follows_mouse no
 mouse_warping output
 
 # Program shortcuts
@@ -66,7 +67,7 @@ bindsym Mod4+Return                  exec $TERMINAL
 bindsym Mod4+t                       exec $TERMINAL
 bindsym Mod4+w                       exec $BROWSER
 bindsym Mod4+d                       exec discord
-bindsym Mod4+s                       exec flameshot gui --delay 50 --raw | wl-copy --type i
+bindsym Mod4+s                       exec flameshot gui --delay 50 --raw | wl-copy --type image/png
 bindsym Mod4+Shift+s                 exec flameshot gui --delay 50 --raw --accept-on-select | wl-copy --type image/png
 bindsym Mod4+Escape                  exec powerctl
 bindsym --locked Mod4+Shift+Escape   exec powerctl lock
@@ -201,3 +202,7 @@ bindsym --locked Control+XF86MonBrightnessDown       exec light -S 0   && $send_
 bindsym --locked XF86MonBrightnessUp                 exec light -A 1   && $send_brightness_notif
 bindsym --locked Shift+XF86MonBrightnessUp           exec light -A 10  && $send_brightness_notif
 bindsym --locked Control+XF86MonBrightnessUp         exec light -S 100 && $send_brightness_notif
+
+# Screenshots
+bindsym Print       exec flameshot gui --delay 50 --raw | wl-copy --type image/png
+bindsym Shift+Print exec flameshot gui --delay 50 --raw --accept-on-select | wl-copy --type image/png

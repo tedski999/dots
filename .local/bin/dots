@@ -21,7 +21,7 @@ network-manager network-manager-openvpn openvpn
 bluetooth bluez-firmware
 wl-clipboard wlr-randr light thermald acpi
 libnotify-bin mako-notifier wofi flameshot
-alacritty firefox-esr obs-studio steam-installer gamemode
+alacritty firefox-esr mpv obs-studio steam-installer gamemode
 materia-gtk-theme paper-icon-theme
 fonts-terminus fonts-noto"
 msung_debs="\

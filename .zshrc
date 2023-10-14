@@ -25,6 +25,7 @@ alias di="dots init"
 alias sudo="sudo --preserve-env "
 alias ip="ip --color"
 alias ls="exa -hs=name --group-directories-first"
+alias bat="batcat"
 alias cat="bat --paging=never"
 alias less="bat --paging=always"
 alias grep="rg"
@@ -135,11 +136,6 @@ hash gpgconf 2>/dev/null && {
 	(gpgconf --launch gpg-agent &)
 }
 
-# pipx
-hash register-python-argcomplete 2>/dev/null && {
-	eval "$(register-python-argcomplete pipx)"
-}
-
 # cht.sh
 cht() { cht.sh "$@?style=paraiso-dark" | less }
 _cht() { compadd $commands:t }
@@ -156,8 +152,6 @@ hash trash-put 2>/dev/null && {
 
 # fd
 hash fdfind 2>/dev/null && { fd() { fdfind $@ } }
-
-# TODO: fix opt dir resources
 
 # fzf
 export FZF_COLORS="fg+:bold,pointer:red,hl:red,hl+:red,gutter:-1,marker:red"

@@ -6,7 +6,7 @@
 # (Replaces the `FAIL_DELAY' setting from login.defs)
 # Note that other modules may require another minimal delay. (for example,
 # to disable any delay, you should add the nodelay option to pam_unix)
-auth       optional   pam_faildelay.so  delay=1000000
+auth       optional   pam_faildelay.so  delay=500000
 
 # Outputs an issue file prior to each login prompt (Replaces the
 # ISSUE_FILE option from login.defs). Uncomment for use
