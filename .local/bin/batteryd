@@ -1,5 +1,7 @@
 #!/bin/sh
 
+[ "$(hostname)" = "msung" ] || exit 1
+
 id="$(shuf -i 1-99999 -n 1)"
 old_charge=100
 
