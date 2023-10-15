@@ -92,10 +92,6 @@ case "$p" in
 				reconfig=1
 			}
 		done
-		[ -n "$reconfig" ] && {
-			msg "Installing boot configuration..."
-			sudo update-grub && sudo update-initramfs -u || exit 1
-		}
 		cd "$dir" || exit 1
 		;;
 esac
@@ -134,6 +130,24 @@ missing_debs="$(echo "$debs" | while read pkg src; do dpkg-query --show --showfo
 		sudo apt-get -y install "$tmp/$pkg.deb" || exit 1
 	done
 }
+
+# Post-install system configuration
+case "$p" in
+	"msung")
+		[ -n "$reconfig" ] && {
+			msg "Installing boot configuration..."
+			sudo update-grub && sudo update-initramfs -u || exit 1
+		}
+		sudo systemctl is-enabled snapshots.timer >/dev/null || {
+			msg "Enabling btrfs snapshot daemon..."
+			sudo systemctl enable snapshots.timer || exit 1
+		}
+		[ $SHELL != "$(which zsh)" ] || {
+			msg "Setting login shell to zsh..."
+			sudo chsh $USER -s "$(which zsh)"
+		}
+		;;
+esac
 
 msg "Done."
 [ -n "$reconfig" ] && echo "System configuration changed, you should reboot"

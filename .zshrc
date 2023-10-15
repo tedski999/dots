@@ -121,11 +121,10 @@ un() {
 }
 
 # Btrfs snapshot shortcut
-# TODO: take snapshot every boot, take snapshot every 5 minutes?
 newsnapshot() {
-	dir="/media/btrfs/@rootfs-$(date --utc '+%Y-%m-%dZ%H:%M:%S')"
-	sudo btrfs subvolume snapshot / "$dir"
-	# TODO: easily boot into (latest? any?) snapshot with grub boot entry
+	sudo systemctl start snapshots || return 1
+	sleep 1
+	sudo btrfs subvolume list / || return 1
 }
 
 # GPG+SSH
