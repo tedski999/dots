@@ -19,9 +19,9 @@ case "$choice" in
 	"caffinate") pkill swayidle;;
 	"uncaffinate") pidof swayidle || swayidle -w \
 		idlehint 300 lock 'swaylock --daemonize' unlock 'pkill -USR1 swaylock' \
-		timeout 300 'swaymsg "output * dpms off"'  resume 'swaymsg "output * dpms on"' \
-		timeout 305 'loginctl lock-session'        resume 'swaymsg "output * dpms on"' \
-		timeout 900 'systemctl suspend'            resume 'swaymsg "output * dpms on"' \
-		before-sleep 'loginctl lock-session' after-resume 'swaymsg "output * dpms on"' &;;
+		timeout 300 'powerctlfade &'               resume 'pkill powerctlfade' \
+		timeout 305 'loginctl lock-session'        resume 'pkill powerctlfade' \
+		timeout 900 'systemctl suspend'            resume 'pkill powerctlfade' \
+		before-sleep 'loginctl lock-session' after-resume 'pkill powerctlfade' &;;
 	*) return 1;;
 esac
