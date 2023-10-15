@@ -9,8 +9,8 @@ trap "light -I; kill $!" EXIT
 trap "light -I; exit 0" INT TERM
 
 # Fade brightness to 0
-for i in $(seq 100); do
-	light -T 0.95
+for i in $(seq 200); do
+	light -T 0.975
 	sleep 0.025
 done
 light -S 0

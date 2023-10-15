@@ -20,7 +20,7 @@ case "$choice" in
 	"uncaffinate") pidof swayidle || swayidle -w \
 		idlehint 300 lock 'swaylock --daemonize' unlock 'pkill -USR1 swaylock' \
 		timeout 300 'powerctlfade &'               resume 'pkill powerctlfade' \
-		timeout 305 'loginctl lock-session'        resume 'pkill powerctlfade' \
+		timeout 310 'loginctl lock-session'        resume 'pkill powerctlfade' \
 		timeout 900 'systemctl suspend'            resume 'pkill powerctlfade' \
 		before-sleep 'loginctl lock-session' after-resume 'pkill powerctlfade' &;;
 	*) return 1;;
