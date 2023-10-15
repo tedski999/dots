@@ -7,9 +7,9 @@ width=450
 height=150
 
 font=Terminus (TTF) 12
-background-color=#202020d0
-progress-color=#d0d0d080
-border-color=#ffffffff
+background-color=#202020
+progress-color=#d0d0d0
+border-color=#ffffff
 border-size=1
 
 # TODO: icons
@@ -20,12 +20,12 @@ on-button-left=exec makoctl menu wofi --dmenu --prompt "Action"
 on-button-right=dismiss
 
 [urgency=low]
-background-color=#181818d0
+background-color=#181818
 border-color=#808080
 
 [urgency=high]
 default-timeout=0
-background-color=#800000d0
+background-color=#800000
 border-color=#ff0000
 
 [actionable]
