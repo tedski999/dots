@@ -65,9 +65,78 @@ wifi_menu() {
 	done
 }
 
+bluetooth_rescan() {
+	notif_id="$(notify-send -pt 0 "Scanning for Bluetooth devices..." "Please be patient :)")"
+	bluetoothctl --timeout 5 scan on
+	makoctl dismiss -n "$notif_id"
+}
+
+bluetooth_conn_menu() {
+	action=""
+	while true; do
+		info="$(bluetoothctl info "$1")"
+		[ -z "$info" ] && {
+			notify-send "Unknown Bluetooth device $1" "Have your rescanned recently?"
+			return 1
+		}
+
+		state="New"; connect=""; pair="pair"; trust=""
+		name="$(echo "$info" | grep --fixed-strings "Name: " | cut -d " " -f 2-)"
+		echo "$info" | grep --fixed-strings "Paired: yes" && {
+			pair="forget"
+			echo "$info" | grep --fixed-strings "Trusted: yes" && trust="untrust" || trust="trust"
+			echo "$info" | grep --fixed-strings "Connected: yes" && {
+				state="Connected"
+				connect="disconnect"
+			} || {
+				state="Paired"
+				connect="connect"
+			}
+		}
+
+		# TODO: pairing -> connecting not quite working here
+		choice="$(CH_LINES=10 CH_WIDTH=500 CH_PROMPT="$1 - $state" choose $connect $pair $trust)"
+		case "$choice" in
+			"") [ -z "$action" ] && break || exit;;
+			"disconnect") bluetoothctl disconnect "$1" || notify-send "Failed to disconnect from $1" "";;
+			"forget") bluetoothctl remove "$1" || notify-send "Failed to forget $1" "";;
+			"trust") bluetoothctl trust "$1" || notify-send "Failed to trust $1" "";;
+			"untrust") bluetoothctl untrust "$1" || notify-send "Failed to untrust $1" "";;
+			"connect")
+				bluetoothctl connect "$1"
+				;;
+			"pair")
+				bluetoothctl pair "$1"
+				;;
+		esac
+	done
+}
+
 bluetooth_menu() {
-	# TODO: bluetooth
-	choice="$(CH_LINES=10 CH_WIDTH=300 CH_PROMPT="Bluetooth Control" choose scan "[list]")"
+	bluetoothctl show | grep --fixed-strings "Powered: no" && bluetoothctl power on
+	while true; do
+		devices="$(bluetoothctl devices | cut -d " " -f 2 | sort --unique)"
+		choices="$(for device in $devices; do
+			info="$(bluetoothctl info "$device")"
+			printf "$device"
+			name="$(echo "$info" | grep --fixed-strings "Name: " | cut -d " " -f 2-)"
+			[ -n "$name" ] && printf " $name"
+			echo "$info" | grep --fixed-strings "Paired: yes" && printf " p"
+			echo "$info" | grep --fixed-strings "Trusted: yes" && printf " t"
+			echo "$info" | grep --fixed-strings "Connected: yes" && printf " *"
+			echo ""
+		done)"
+
+		choice="$(CH_LINES=10 CH_WIDTH=500 CH_PROMPT="Bluetooth Control" choose rescan "$choices")"
+		case "$choice" in
+			"") break;;
+			"rescan") bluetooth_rescan;;
+			# TODO: advertise / discovery
+			#"advertise") ;;
+			#"discoverable") ;;
+			*) bluetooth_conn_menu "$(echo "$choice" | cut -d " " -f 1 | xargs)";;
+		esac
+	done
 }
 
 vpn_conn_menu() {
