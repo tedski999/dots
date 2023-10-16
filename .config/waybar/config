@@ -8,7 +8,7 @@
 
 	"modules-left": ["sway/workspaces", "sway/mode", "sway/scratchpad", "sway/window"],
 	"modules-center": [],
-	"modules-right": ["custom/media", "gamemode", "cpu", "memory", "disk", "temperature", "network", "pulseaudio", "battery", "clock"],
+	"modules-right": ["custom/media", "gamemode", "bluetooth", "cpu", "memory", "disk", "temperature", "network", "pulseaudio", "battery", "clock"],
 
 	// TODO: config waybar
 	"sway/window": {
@@ -65,4 +65,14 @@
 			"on-scroll-down": "shift_down"
 		}
 	},
+
+	"custom/media": {
+		"exec": "sleep 0.25 && ~/.config/waybar/modules/media",
+		"interval": 1,
+		"on-click": "playerctl status",
+		"on-click-middle": "playerctl stop",
+		"on-click-right": "playerctl play-pause",
+		"on-scroll-up": "playerctl position 5+",
+		"on-scroll-down": "playerctl position 5-"
+	}
 }
