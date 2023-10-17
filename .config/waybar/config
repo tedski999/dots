@@ -6,73 +6,109 @@
 	"height": 30,
 	"spacing": 0,
 
-	"modules-left": ["sway/workspaces", "sway/mode", "sway/scratchpad", "sway/window"],
+	"modules-left": ["sway/workspaces", "sway/scratchpad", "sway/window"],
 	"modules-center": [],
-	"modules-right": ["custom/media", "gamemode", "bluetooth", "cpu", "memory", "disk", "temperature", "network", "pulseaudio", "battery", "clock"],
+	"modules-right": ["custom/media", "gamemode", "bluetooth", "cpu", "memory", "disk", "temperature", "network", "wireplumber", "battery", "clock"],
 
-	// TODO: config waybar
 	"sway/window": {
-		"max-length": 50
+		"max-length": 200
 	},
 
-	"battery": {
-		"interval": 10,
-		"states": { "warning": 30, "critical": 15 },
-		"format": "{capacity}%"
+	"custom/media": {
+		"exec": "~/.config/waybar/modules/media",
+		"escape": true,
+		"return-type": "json",
+		"interval": 1,
+		"on-click": "playerctl play-pause",
+		"on-scroll-up": "playerctl position 5+",
+		"on-scroll-down": "playerctl position 5-"
 	},
 
-	//"clock": {
-	//	"format-alt": "{:%a, %d. %b  %H:%M}"
-	//}
+	"gamemode": {
+		"format": "{count}",
+		"format-alt": "{count}",
+		"tooltip-format": "Gaming™",
+		"use-icon": false,
+		"icon-spacing": 0,
+		"icon-size": 0
+	},
+
+	"bluetooth": {
+		"format": "",
+		"format-connected": "{num_connections}",
+		"tooltip-format": "{device_alias}",
+		"on-click": "networkctl bluetooth"
+	},
 
 	"cpu": {
 		"interval": 1,
 		"format": "{icon0}{icon1}{icon2}{icon3}{icon4}{icon5}{icon6}{icon7}",
 		"format-icons": [
-			"<span color='#69ff94'>▁</span>",
-			"<span color='#69ff94'>▂</span>",
-			"<span color='#69ff94'>▃</span>",
-			"<span color='#69ff94'>▄</span>",
-			"<span color='#ffffa5'>▅</span>",
-			"<span color='#ffffa5'>▆</span>",
-			"<span color='#ff9977'>▇</span>",
-			"<span color='#dd532e'>█</span>"
-		]
+			"<span color='#00ff00'>▁</span>",
+			"<span color='#00ff00'>▂</span>",
+			"<span color='#00ff00'>▃</span>",
+			"<span color='#00ff00'>▄</span>",
+			"<span color='#ff8000'>▅</span>",
+			"<span color='#ff8000'>▆</span>",
+			"<span color='#ff8000'>▇</span>",
+			"<span color='#ff0000'>█</span>"
+		],
+		"on-click": "alacritty --command btop"
+	},
+
+	"memory": {
+		"interval": 5,
+		"format": "{icon}",
+		"format-icons": [
+			"<span color='#00ff00'>▁</span>",
+			"<span color='#00ff00'>▂</span>",
+			"<span color='#00ff00'>▃</span>",
+			"<span color='#00ff00'>▄</span>",
+			"<span color='#ff8000'>▅</span>",
+			"<span color='#ff8000'>▆</span>",
+			"<span color='#ff8000'>▇</span>",
+			"<span color='#ff0000'>█</span>"
+		],
+		"on-click": "alacritty --command btop"
+	},
+
+	"disk": {
+		"format": "{free}",
+		"on-click": "alacritty --command btop"
+	},
+
+	"temperature": {
+		"interval": 5,
+		"on-click": "alacritty --command btop"
+	},
+
+	"network": {
+		"interval": 10,
+		"max-length": 10,
+		"format-wifi": "{essid}",
+		"format-disconnected": "offline",
+		"on-click": "networkctl",
+	},
+
+	"wireplumber": {
+		"on-click": "wpctl set-mute @DEFAULT_SINK@ toggle",
+		"on-scroll-up": "wpctl set-volume @DEFAULT_SINK@ 1%-",
+		"on-scroll-down": "wpctl set-volume @DEFAULT_SINK@ 1%+",
+	},
+
+	"battery": {
+		"interval": 10,
+		"states": { "warning": 30, "critical": 15 },
+		"format": "{capacity}%",
+		"on-click": "powerctl",
+		"on-scroll-up": "light -U 1",
+		"on-scroll-down": "light -A 1"
 	},
 
 	"clock": {
-		"format": "{:%b %d %H:%M}",
-		"tooltip-format": "{calendar}",
-		"calendar": {
-			"mode"          : "year",
-			"mode-mon-col"  : 3,
-			"weeks-pos"     : "right",
-			"on-scroll"     : 1,
-			"on-click-right": "mode",
-			"format": {
-				"months":     "<span color='#ffead3'><b>{}</b></span>",
-				"days":       "<span color='#ecc6d9'><b>{}</b></span>",
-				"weeks":      "<span color='#99ffdd'><b>W{}</b></span>",
-				"weekdays":   "<span color='#ffcc66'><b>{}</b></span>",
-				"today":      "<span color='#ff6699'><b><u>{}</u></b></span>"
-			}
-		},
-		"actions":  {
-			"on-click-right": "mode",
-			"on-click-forward": "tz_up",
-			"on-click-backward": "tz_down",
-			"on-scroll-up": "shift_up",
-			"on-scroll-down": "shift_down"
-		}
-	},
-
-	"custom/media": {
-		"exec": "sleep 0.25 && ~/.config/waybar/modules/media",
-		"interval": 1,
-		"on-click": "playerctl status",
-		"on-click-middle": "playerctl stop",
-		"on-click-right": "playerctl play-pause",
-		"on-scroll-up": "playerctl position 5+",
-		"on-scroll-down": "playerctl position 5-"
+		"tooltip-format": "= {:%a %b %d, %Y} =\n{calendar}",
+		"today-format":             "<span color='#ff0000'><b><u>{}</u></b></span>",
+		"format-calendar":          "<span color='#ffffff'>{}</span>",
+		"format-calendar-weekdays": "<span color='#ff8000'><b>{}</b></span>",
 	}
 }

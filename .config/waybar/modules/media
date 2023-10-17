@@ -1,3 +1,18 @@
 #!/bin/sh
 
-playerctl status
+max_len=25
+
+out=""
+status="$(playerctl status)"
+
+[ "$status" = "Playing" ] || [ "$status" = "Paused" ] && {
+	out="$(playerctl metadata title)"
+	[ ${#out} -gt "$max_len" ] && {
+		i="$(( ( $(date +%s) % ( ${#out} + 3 ) ) + 1 ))"
+		out="$(echo "$out   $out" | tail -c +$i)"
+	}
+}
+
+[ "${#out}" -gt "$max_len" ] \
+	&& printf '{"text": "%s", "class": "%s"}\n' "$(echo "$out" | head -c "$(( $max_len - 1 ))")" "$status" \
+	|| printf '{"text": "%s", "class": "%s"}\n' "$out" "$status"
