@@ -13,6 +13,8 @@ status="$(playerctl status)"
 	}
 }
 
-[ "${#out}" -gt "$max_len" ] \
-	&& printf '{"text": "%s", "class": "%s"}\n' "$(echo "$out" | head -c "$(( $max_len - 1 ))")" "$status" \
-	|| printf '{"text": "%s", "class": "%s"}\n' "$out" "$status"
+out="$(echo "$out" | head -c "$(( $max_len - 1 ))")"
+
+printf '{"text": %s, "class": %s}\n' \
+	"$(echo -n "$out" | jq --raw-input --slurp --ascii-output)" \
+	"$(echo -n "$status" | jq --raw-input --slurp --ascii-output)"

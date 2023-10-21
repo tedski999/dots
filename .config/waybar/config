@@ -1,3 +1,4 @@
+// TODO: crashes on sleep or something
 {
 	"ipc": true,
 
@@ -8,7 +9,7 @@
 
 	"modules-left": ["sway/workspaces", "sway/scratchpad", "sway/window"],
 	"modules-center": [],
-	"modules-right": ["custom/media", "gamemode", "bluetooth", "cpu", "memory", "disk", "temperature", "network", "wireplumber", "battery", "clock"],
+	"modules-right": ["custom/media", "gamemode", "bluetooth", "cpu", "memory", "disk", "temperature", "network", "pulseaudio", "battery", "clock"],
 
 	"sway/window": {
 		"max-length": 200
@@ -16,7 +17,6 @@
 
 	"custom/media": {
 		"exec": "~/.config/waybar/modules/media",
-		"escape": true,
 		"return-type": "json",
 		"interval": 1,
 		"on-click": "playerctl play-pause",
@@ -86,11 +86,12 @@
 		"interval": 10,
 		"max-length": 10,
 		"format-wifi": "{essid}",
+		"format-ethernet": "wired",
 		"format-disconnected": "offline",
-		"on-click": "networkctl",
+		"on-click": "networkctl wifi",
 	},
 
-	"wireplumber": {
+	"pulseaudio": {
 		"on-click": "wpctl set-mute @DEFAULT_SINK@ toggle",
 		"on-scroll-up": "wpctl set-volume @DEFAULT_SINK@ 1%-",
 		"on-scroll-down": "wpctl set-volume @DEFAULT_SINK@ 1%+",
@@ -106,7 +107,7 @@
 	},
 
 	"clock": {
-		"tooltip-format": "= {:%a %b %d, %Y} =\n{calendar}",
+		"tooltip-format": "   {:%a %b %d %Y}\n{calendar}",
 		"today-format":             "<span color='#ff0000'><b><u>{}</u></b></span>",
 		"format-calendar":          "<span color='#ffffff'>{}</span>",
 		"format-calendar-weekdays": "<span color='#ff8000'><b>{}</b></span>",

@@ -19,11 +19,13 @@ window#waybar { background-color: rgba(0,0,0,0.75); }
 #battery,
 #network,
 #wireplumber,
+#pulseaudio,
 #clock {
 	padding: 0 5px;
 }
 
 /* Workspaces */
+#workspaces { padding: 0 5px 0 0; }
 #workspaces button { border: none; border-radius: 0; padding: 0 5px; }
 #workspaces button:hover { background: inherit; }
 #workspaces button.focused { background-color: #ffffff; color: #000000; }
@@ -37,7 +39,7 @@ window#waybar { background-color: rgba(0,0,0,0.75); }
 #gamemode { color: #00ff00; }
 
 /* Bluetooth */
-#bluetooth { color: #00d0ff; }
+#bluetooth { color: #00ffff; }
 
 /* Resources */
 #disk {}
@@ -57,6 +59,9 @@ window#waybar { background-color: rgba(0,0,0,0.75); }
 /* Volume */
 #wireplumber {}
 #wireplumber.muted { color: #ff0000; }
+#pulseaudio {}
+#pulseaudio.bluetooth { color: #00ffff; }
+#pulseaudio.muted { color: #ff0000; }
 
 /* Battery */
 #battery:not(.charging) { color: #ff8000; }
@@ -65,4 +70,6 @@ window#waybar { background-color: rgba(0,0,0,0.75); }
 #battery.critical:not(.charging) { color: #000000; background-color: #800000; animation: flash .25s steps(10) infinite alternate; }
 
 /* Clock */
-#clock {}
+#clock {
+	padding: 0 10px 0 0;
+}
