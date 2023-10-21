@@ -5,8 +5,6 @@
 IFS='
 '
 
-password() { wofi --cache-file /dev/null --dmenu --password --lines 10 --width 500 --prompt "Password"; }
-
 wifi_rescan() {
 	notif_id="$(notify-send -pt 0 "Scanning for WiFI access points..." "Please be patient :)")"
 	nmcli --get-values "" device wifi list --rescan yes
@@ -29,7 +27,7 @@ wifi_conn_menu() {
 			"disconnect") nmcli connection down "$1" || notify-send "Failed to disconnect from $1" "Were you ever connected?";;
 			"forget") nmcli connection delete "$1" || notify-send "Failed to forget $1" "Were you ever connected?";;
 			"connect")
-				password="$(password)"
+				password="$(CH_LINES=1 CH_WIDTH=500 CH_PROMPT="Password to $1" CH_PASSWORD=1 choose)"
 				notif_id="$(notify-send -pt 0 "Connecting to $1..." "Please be patient :)")"
 				[ -z "$password" ] \
 					&& nmcli device wifi connect "$1" \
@@ -139,55 +137,14 @@ bluetooth_menu() {
 	done
 }
 
-vpn_conn_menu() {
-	action=""
-	while true; do
-		state="New"; connect="connect"; forget="";
-		[ -n "$(nmcli --get-values "connection.id" connection show "$1")" ] && {
-			[ -n "$(nmcli --get-values "connection.id" connection show --active "$1")" ] \
-				&& { state="Connected"; connect="disconnect"; forget="forget"; } \
-				|| { state="Known"; connect="connect"; forget="forget"; }
-		}
-
-		choice="$(CH_LINES=10 CH_WIDTH=500 CH_PROMPT="$1 - $state" choose $connect $forget)"
-		case "$choice" in
-			"") [ -z "$action" ] && break || exit;;
-			"disconnect") nmcli connection down "$1" || notify-send "Failed to disconnect from $1" "Were you ever connected?";;
-			"forget") nmcli connection delete "$1" || notify-send "Failed to forget $1" "Were you ever connected?";;
-			"connect")
-				password="$(password)"
-				notif_id="$(notify-send -pt 0 "Connecting to $1..." "Please be patient :)")"
-				[ -z "$password" ] \
-					&& nmcli connection up "$1" \
-					|| { tmp="$(mktemp)" && echo "vpn.secrets.password:$password" > "$tmp" && nmcli connection up "$1" passwd-file "$tmp" && rm "$tmp"; } \
-					&& action=1 \
-					|| notify-send "Failed to connect to $1" "Wrong password?"
-				makoctl dismiss -n "$notif_id"
-				;;
-		esac
-	done
-}
-
-vpn_menu() {
-	while true; do
-		choices="$(nmcli --get-values TYPE,NAME connection show | sed 's/\\:/;/g' | sort --unique | grep --fixed-strings "vpn:" | cut -d : -f 2)"
-		choice="$(CH_LINES=10 CH_WIDTH=500 CH_PROMPT="VPN Control" choose "$choices")"
-		case "$choice" in
-			"") break;;
-			*) vpn_conn_menu "$choice";;
-		esac
-	done
-}
-
 choice="$1"
 while true; do
-	[ -z "$choice" ] && choice="$(CH_LINES=5 CH_WIDTH=100 CH_PROMPT="Network Control" choose wifi bluetooth vpn)"
+	[ -z "$choice" ] && choice="$(CH_LINES=3 CH_WIDTH=100 CH_PROMPT="Network Control" choose wifi bluetooth)"
 	case "$choice" in
-		"")          break;;
-		"wifi")      wifi_menu;;
+		"") exit;;
+		"wifi") wifi_menu;;
 		"bluetooth") bluetooth_menu;;
-		"vpn")       vpn_menu;;
-		*)           return 1;;
-	esac || exit 1
+		*) exit 1;;
+	esac
 	[ -n "$1" ] && break
 done

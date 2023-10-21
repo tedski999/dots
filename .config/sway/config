@@ -60,7 +60,7 @@ focus_follows_mouse no
 mouse_warping output
 
 # Program shortcuts
-bindsym Mod4+space                   exec wofi --prompt "" --show "run,drun"
+bindsym Mod4+space                   exec flock -n /tmp/wofi.lock wofi --prompt "" --show "run,drun"
 bindsym Mod4+Return                  exec $TERMINAL
 bindsym Mod4+t                       exec $TERMINAL
 bindsym Mod4+w                       exec $BROWSER
@@ -79,7 +79,7 @@ bindsym Mod4+Shift+n                 exec networkctl wifi
 bindsym Mod4+Control+n               exec networkctl bluetooth
 bindsym Mod4+b                       border pixel 2
 bindsym Mod4+shift+b                 border none
-bindsym Mod4+v                       exec cliphist list | wofi --dmenu --prompt "Clipboard" | cliphist decode | wl-copy
+bindsym Mod4+v                       exec CH_PROMPT="Clipboard" choose "$(cliphist list)" | cliphist decode | wl-copy
 bindsym Mod4+grave                   exec makoctl dismiss
 bindsym Mod4+Shift+grave             exec makoctl restore
 bindsym Mod4+Control+grave           exec makoctl menu wofi --dmenu --prompt "Action"

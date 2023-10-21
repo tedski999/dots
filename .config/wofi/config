@@ -1,3 +1,4 @@
+layer=overlay
 term=alacritty
 insensitive=true
 always_parse_args=true
@@ -7,3 +8,4 @@ key_submit=Return,Control_L-j
 key_exit=Escape,Control_L-q
 key_pgup=Page_Up,Control_L-u
 key_pgdn=Page_Down,Control_L-d
+single_click=true
