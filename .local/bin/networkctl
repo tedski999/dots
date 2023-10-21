@@ -1,7 +1,5 @@
 #!/bin/sh
 
-[ "$(hostname)" = "msung" ] || exit 1
-
 IFS='
 '
 

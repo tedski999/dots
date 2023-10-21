@@ -1,7 +1,5 @@
 #!/bin/sh
 
-[ "$(hostname)" = "msung" ] || exit 1
-
 # TODO: fix nvidia hdmi
 # TODO: detect what outputs are available
 mon0="eDP-1"

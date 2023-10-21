@@ -1,7 +1,5 @@
 #!/bin/sh
 
-[ "$(hostname)" = "msung" ] || exit 1
-
 choice="$1"
 [ -z "$choice" ] && {
 	caffinate="$(pidof -q swayidle && echo "caffinate" || echo "uncaffinate")"

@@ -1,7 +1,5 @@
 #!/bin/sh
 
-[ "$(hostname)" = "msung" ] || exit 1
-
 # Restore brightness on exit
 light -O || exit 1
 sleep infinity &
