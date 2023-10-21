@@ -12,7 +12,7 @@ while true; do
 	[ "$state" = "Discharging" ] && {
 		charge="$(echo "$charge" | tr -d '%')"
 
-		[ "$old_charge" -gt 3 ] && [ "$charge" -le 3 ] && {
+		[ "$old_charge" -gt 5 ] && [ "$charge" -le 5 ] && {
 			for i in $(seq 5 -1 1); do
 				notify-send -i "battery-020" -u "critical" -r "$id" -t 0 "Battery empty!" "Suspending in $i..."
 				sleep 1

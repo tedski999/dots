@@ -10,7 +10,6 @@ wifi_rescan() {
 }
 
 wifi_conn_menu() {
-	action=""
 	while true; do
 		state="New"; connect="connect"; forget="";
 		[ -n "$(nmcli --get-values "connection.id" connection show "$1")" ] && {
@@ -21,7 +20,7 @@ wifi_conn_menu() {
 
 		choice="$(CH_LINES=10 CH_WIDTH=500 CH_PROMPT="$1 - $state" choose $connect $forget)"
 		case "$choice" in
-			"") [ -z "$action" ] && break || exit;;
+			"") exit;;
 			"disconnect") nmcli connection down "$1" || notify-send "Failed to disconnect from $1" "Were you ever connected?";;
 			"forget") nmcli connection delete "$1" || notify-send "Failed to forget $1" "Were you ever connected?";;
 			"connect")
@@ -30,8 +29,7 @@ wifi_conn_menu() {
 				[ -z "$password" ] \
 					&& nmcli device wifi connect "$1" \
 					|| nmcli device wifi connect "$1" password "$password" \
-					&& action=1 \
-					|| notify-send "Failed to connect to $1" "Wrong password?"
+					|| { notify-send "Failed to connect to $1" "Wrong password?" && nmcli connection delete "$1"; }
 				makoctl dismiss -n "$notif_id"
 				;;
 		esac
@@ -40,22 +38,33 @@ wifi_conn_menu() {
 
 wifi_menu() {
 	while true; do
-		ssids="$(nmcli --get-values SSID device wifi list --rescan no | sed 's/\\:/;/g' | sort --unique)"
-		securities="$(nmcli --get-values SSID,SECURITY device wifi list --rescan no | sed 's/\\:/;/g' | sort --unique)"
-		signals="$(nmcli --get-values SSID,SIGNAL device wifi list --rescan no | sed 's/\\:/;/g' | sort --unique)"
-		inuses="$(nmcli --get-values SSID,IN-USE device wifi list --rescan no | sed 's/\\:/;/g' | sort --unique)"
-		choices="$(for ssid in $ssids; do
-			security="$(echo "$securities" | grep --fixed-strings "$ssid" | cut -d : -f 2 | head -1)"
-			[ -z "$security" ] && security="None"
-			signal="$(echo "$signals" | grep --fixed-strings "$ssid" | cut -d : -f 2 | sort --reverse --numeric-sort | head -1)"
-			inuse="$(echo "$inuses" | grep --fixed-strings "$ssid" | cut -d : -f 2 | sort --reverse | head -1)"
-			echo "$ssid [$security] $signal% $inuse"
-		done)"
+		nmcli radio wifi | grep --fixed-strings "enabled" && {
+			power="disable"
+			rescan="rescan"
+			ssids="$(nmcli --get-values SSID device wifi list --rescan no | sed 's/\\:/;/g' | sort --unique)"
+			securities="$(nmcli --get-values SSID,SECURITY device wifi list --rescan no | sed 's/\\:/;/g' | sort --unique)"
+			signals="$(nmcli --get-values SSID,SIGNAL device wifi list --rescan no | sed 's/\\:/;/g' | sort --unique)"
+			inuses="$(nmcli --get-values SSID,IN-USE device wifi list --rescan no | sed 's/\\:/;/g' | sort --unique)"
+			choices="$(for ssid in $ssids; do
+				security="$(echo "$securities" | grep --fixed-strings "$ssid" | cut -d : -f 2 | head -1)"
+				[ -z "$security" ] && security="None"
+				nmcli --get-values "" connection show "$ssid" && security="$security | Saved"
+				signal="$(echo "$signals" | grep --fixed-strings "$ssid" | cut -d : -f 2 | sort --reverse --numeric-sort | head -1)"
+				inuse="$(echo "$inuses" | grep --fixed-strings "$ssid" | cut -d : -f 2 | sort --reverse | head -1)"
+				echo "$ssid [$security] $signal% $known $inuse"
+			done)"
+		} || {
+			power="enable"
+			rescan=""
+			choices=""
+		}
 
-		choice="$(CH_LINES=10 CH_WIDTH=500 CH_PROMPT="WiFi Control" choose rescan "$choices")"
+		choice="$(CH_LINES=10 CH_WIDTH=500 CH_PROMPT="WiFi Control" choose "$power" "$rescan" "$choices")"
 		case "$choice" in
-			"") break;;
+			"") exit;;
 			"rescan") wifi_rescan;;
+			"disable") nmcli radio wifi off || notify-send "Failed to turn off WiFi radio" "";;
+			"enable") nmcli radio wifi on || notify-send "Failed to turn on WiFi radio" "";;
 			*) wifi_conn_menu "$(echo "$choice" | cut -d "[" -f 1 | xargs)";;
 		esac
 	done
@@ -63,73 +72,70 @@ wifi_menu() {
 
 bluetooth_rescan() {
 	notif_id="$(notify-send -pt 0 "Scanning for Bluetooth devices..." "Please be patient :)")"
-	bluetoothctl --timeout 5 scan on
+	bluetoothctl --timeout 3 scan on
 	makoctl dismiss -n "$notif_id"
 }
 
 bluetooth_conn_menu() {
-	action=""
 	while true; do
 		info="$(bluetoothctl info "$1")"
-		[ -z "$info" ] && {
-			notify-send "Unknown Bluetooth device $1" "Have your rescanned recently?"
-			return 1
-		}
-
 		state="New"; connect=""; pair="pair"; trust=""
 		name="$(echo "$info" | grep --fixed-strings "Name: " | cut -d " " -f 2-)"
+		[ -z "$name" ] && name="$1"
 		echo "$info" | grep --fixed-strings "Paired: yes" && {
 			pair="forget"
 			echo "$info" | grep --fixed-strings "Trusted: yes" && trust="untrust" || trust="trust"
-			echo "$info" | grep --fixed-strings "Connected: yes" && {
-				state="Connected"
-				connect="disconnect"
-			} || {
-				state="Paired"
-				connect="connect"
-			}
+			echo "$info" | grep --fixed-strings "Connected: yes" && { state="Connected"; connect="disconnect"; } || { state="Paired"; connect="connect"; }
 		}
 
-		# TODO: pairing -> connecting not quite working here
-		choice="$(CH_LINES=10 CH_WIDTH=500 CH_PROMPT="$1 - $state" choose $connect $pair $trust)"
+		choice="$(CH_LINES=10 CH_WIDTH=500 CH_PROMPT="$name - $state" choose $connect $pair $trust)"
 		case "$choice" in
-			"") [ -z "$action" ] && break || exit;;
-			"disconnect") bluetoothctl disconnect "$1" || notify-send "Failed to disconnect from $1" "";;
-			"forget") bluetoothctl remove "$1" || notify-send "Failed to forget $1" "";;
-			"trust") bluetoothctl trust "$1" || notify-send "Failed to trust $1" "";;
-			"untrust") bluetoothctl untrust "$1" || notify-send "Failed to untrust $1" "";;
-			"connect")
-				bluetoothctl connect "$1"
-				;;
-			"pair")
-				bluetoothctl pair "$1"
-				;;
+			"") exit;;
+			"disconnect") bluetoothctl --timeout 5 disconnect "$1" || notify-send "Failed to disconnect from $1" "";;
+			"forget") bluetoothctl --timeout 5 remove "$1" || notify-send "Failed to forget $1" "";;
+			"trust") bluetoothctl --timeout 5 trust "$1" || notify-send "Failed to trust $1" "";;
+			"untrust") bluetoothctl --timeout 5 untrust "$1" || notify-send "Failed to untrust $1" "";;
+			# TODO: audio can be poor quality sometimes?
+			"connect") bluetoothctl --timeout 5 connect "$1" || notify-send "Failed to connect to $1" "";;
+			# TODO: pairing -> connecting not quite working here (probably need to input pin somehow)
+			"pair") bluetoothctl --timeout 5 pair "$1" || notify-send "Failed to pair with $1" "";;
 		esac
 	done
 }
 
 bluetooth_menu() {
-	bluetoothctl show | grep --fixed-strings "Powered: no" && bluetoothctl power on
 	while true; do
-		devices="$(bluetoothctl devices | cut -d " " -f 2 | sort --unique)"
-		choices="$(for device in $devices; do
-			info="$(bluetoothctl info "$device")"
-			printf "$device"
-			name="$(echo "$info" | grep --fixed-strings "Name: " | cut -d " " -f 2-)"
-			[ -n "$name" ] && printf " $name"
-			echo "$info" | grep --fixed-strings "Paired: yes" && printf " p"
-			echo "$info" | grep --fixed-strings "Trusted: yes" && printf " t"
-			echo "$info" | grep --fixed-strings "Connected: yes" && printf " *"
-			echo ""
-		done)"
+		bluetoothctl show | grep --fixed-strings "Powered: yes" && {
+			power="disable"
+			rescan="rescan"
+			devices="$(bluetoothctl devices | cut -d " " -f 2 | sort --unique)"
+			choices="$(for device in $devices; do
+				info="$(bluetoothctl info "$device")"
+				name="$(echo "$info" | grep --fixed-strings "Name: " | cut -d " " -f 2-)"
+				[ -n "$name" ] && name=" $name"
+				state="Unknown" \
+					&& echo "$info" | grep --quiet --fixed-strings "Paired: yes" \
+					&& state="Paired" \
+					&& echo "$info" | grep --quiet --fixed-strings "Trusted: yes" \
+					&& state="Trusted"
+				inuse="" \
+					&& echo "$info" | grep --quiet --fixed-strings "Connected: yes" \
+					&& inuse="*"
+				echo "$device$name [$state] $inuse"
+			done)"
+		} || {
+			power="enable"
+			rescan=""
+			choices=""
+		}
 
-		choice="$(CH_LINES=10 CH_WIDTH=500 CH_PROMPT="Bluetooth Control" choose rescan "$choices")"
+		choice="$(CH_LINES=10 CH_WIDTH=500 CH_PROMPT="Bluetooth Control" choose "$power" "$rescan" "$choices")"
 		case "$choice" in
-			"") break;;
+			"") exit;;
+			"disable") bluetoothctl power off || notify-send "Failed to turn off Bluetooth radio" "";;
+			"enable") bluetoothctl power on || notify-send "Failed to turn on Bluetooth radio" "";;
 			"rescan") bluetooth_rescan;;
 			# TODO: advertise / discovery
-			#"advertise") ;;
-			#"discoverable") ;;
 			*) bluetooth_conn_menu "$(echo "$choice" | cut -d " " -f 1 | xargs)";;
 		esac
 	done
