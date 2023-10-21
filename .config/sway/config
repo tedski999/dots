@@ -98,8 +98,9 @@ bindsym Mod4+Control+h resize shrink width 50px
 bindsym Mod4+Control+j resize grow height 50px
 bindsym Mod4+Control+k resize shrink height 50px
 bindsym Mod4+Control+l resize grow width 50px
-bindsym Mod4+Tab       exec $is_1mark_focused && swaymsg "[con_mark=_2] focus; [con_mark=_1] mark --add _2; mark --add _1" || swaymsg "[con_mark=_1] focus"
-bindsym Mod4+Shift+Tab exec $is_1mark_focused || swaymsg "[con_mark=_1] mark --add _2; mark --add _1"
+# TODO: just move between all windows in workspace
+bindsym Mod4+Tab       exec echo todo
+bindsym Mod4+Shift+Tab exec echo todo
 bindsym Mod4+f focus mode_toggle
 bindsym Mod4+Shift+f border pixel 2, floating toggle
 bindsym Mod4+x sticky toggle
@@ -187,6 +188,12 @@ bindsym --locked Control+XF86AudioLowerVolume       exec wpctl set-volume @DEFAU
 bindsym --locked XF86AudioRaiseVolume               exec wpctl set-volume @DEFAULT_SINK@ 1%+    && $send_volume_notif
 bindsym --locked Shift+XF86AudioRaiseVolume         exec wpctl set-volume @DEFAULT_SINK@ 10%+   && $send_volume_notif
 bindsym --locked Control+XF86AudioRaiseVolume       exec wpctl set-volume @DEFAULT_SINK@ 100%   && $send_volume_notif
+
+# Microphone
+# TODO: test me
+bindsym --locked --no-repeat                Pause   exec wpctl set-mute @DEFAULT_SOURCE@ off
+bindsym --locked --no-repeat --release      Pause   exec wpctl set-mute @DEFAULT_SOURCE@ on
+bindsym --locked --no-repeat --whole-window button8 exec wpctl set-mute @DEFAULT_SOURCE@ toggle
 
 # Backlight
 set $send_brightness_notif b=$(printf "%.0f" "$(light -G)") && notify-send --category osd --hint "int:value:$b" "Brightness: $b%"
