@@ -2,6 +2,8 @@
 
 status=0
 
+# TODO: ensure enough space available
+
 # Mount btrfs root if not already
 unset device
 mkdir -p /media/btrfs || exit 1

@@ -101,6 +101,7 @@ compdef _ash ash
 0x0() { curl -F"file=@$1" https://0x0.st }
 
 # Generic unpacker
+# TODO: a bit flakey
 un() {
 	[[ -z "$1" ]] && echo "Usage: $0 [infile] [outdir]" && return 1
 	infile="$1"
