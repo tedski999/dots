@@ -17,10 +17,15 @@ selection:
   save_to_clipboard: true
 
 key_bindings:
-  - { key: Return, mods: Shift|Control, action: SpawnNewInstance }
-  - { key: Escape, mods: Shift|Control, action: ToggleViMode     }
-  - { key: Escape, mode: Vi,            action: ToggleViMode     }
-# TODO: scroll back/forward commands
+  - { key: Return, mods: Shift|Control, action: SpawnNewInstance     }
+  - { key: Escape, mods: Shift|Control, action: ToggleViMode         }
+  - { key: Escape, mode: Vi, action: ToggleViMode                    }
+  - { key: A, mods: Control, mode: Vi, action: ScrollToTop           }
+  - { key: A, mods: Control, mode: Vi, action: ToggleNormalSelection }
+  - { key: A, mods: Control, mode: Vi, action: ScrollToBottom        }
+  - { key: A, mods: Control, mode: Vi, action: Copy                  }
+  - { key: A, mods: Control, mode: Vi, action: ClearSelection        }
+  - { key: A, mods: Control, mode: Vi, action: ToggleViMode          }
 
 draw_bold_text_with_bright_colors: true
 
