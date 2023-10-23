@@ -1,0 +1,19 @@
+#!/bin/sh
+
+[ -f "$HOME/.local/share/applications/lf.desktop" ] || {
+	mkdir -p "$HOME/.local/share/applications" &&
+	curl -L "https://raw.githubusercontent.com/gokcehan/lf/master/lf.desktop" > "$HOME/.local/share/applications/lf.desktop"
+} || exit 1
+
+for bin in $(realpath $(which -a lf)); do
+	[ "$(realpath $0)" != "$bin" ] && [ -x "$bin" ] && exec "$bin" "$@"
+done
+
+case "$(uname --machine)" in
+	"x86_64"*) opt="$HOME/.local/opt/lf/x86_64"; bin="$opt/lf"; src="https://github.com/gokcehan/lf/releases/download/r31/lf-linux-amd64.tar.gz";;
+	"arm"*)    opt="$HOME/.local/opt/lf/arm64";  bin="$opt/lf"; src="https://github.com/gokcehan/lf/releases/download/r31/lf-linux-arm.tar.gz";;
+esac
+
+[ -d "$opt" ] || { mkdir -p "$opt" && curl -fL "$src" | tar -xzC "$opt"; } || { rm -r "$opt"; exit 1; }
+
+exec "$bin" "$@"

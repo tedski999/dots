@@ -9,12 +9,13 @@
 /.config/*
 !/.config/alacritty
 !/.config/bat
-!/.config/dunst
 !/.config/flameshot
 !/.config/git
 !/.config/gtk-3.0
 !/.config/gtk-4.0
+!/.config/imv
 !/.config/less
+!/.config/lf
 !/.config/mako
 !/.config/mpv
 !/.config/neofetch
