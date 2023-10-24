@@ -1,8 +1,8 @@
 #!/bin/sh
 
-export PATH=$(echo "$PATH" | tr ":" "\n" | grep -v "$(dirname -- "$0")" | tr "\n" ":")
-
-hash cliphist 2>/dev/null && exec cliphist $@
+for bin in $(realpath $(which -a cliphist)); do
+	[ "$(realpath $0)" != "$bin" ] && [ -x "$bin" ] && exec "$bin" "$@"
+done
 
 case "$(uname --machine)" in
 	"x86_64"*) opt="$HOME/.local/opt/cliphist/x86_64"; bin="$opt/cliphist"; src="https://github.com/sentriz/cliphist/releases/download/v0.4.0/v0.4.0-linux-amd64";;
@@ -11,4 +11,4 @@ esac
 
 [ -d "$opt" ] || { mkdir -p "$opt" && curl -fL "$src" > "$bin" && chmod +x "$bin"; } || { rm -r "$opt"; exit 1; }
 
-exec "$bin" $@
+exec "$bin" "$@"

@@ -1,8 +1,8 @@
 #!/bin/sh
 
-export PATH=$(echo "$PATH" | tr ":" "\n" | grep -v "$(dirname -- "$0")" | tr "\n" ":")
-
-hash fd 2>/dev/null && exec fd $@
+for bin in $(realpath $(which -a fd fdfind)); do
+	[ "$(realpath $0)" != "$bin" ] && [ -x "$bin" ] && exec "$bin" "$@"
+done
 
 case "$(uname --machine)" in
 	"x86_64"*) opt="$HOME/.local/opt/fd/x86_64"; bin="$opt/fd-v8.7.0-x86_64-unknown-linux-musl/fd"; src="https://github.com/sharkdp/fd/releases/download/v8.7.0/fd-v8.7.0-x86_64-unknown-linux-musl.tar.gz";;
@@ -11,4 +11,4 @@ esac
 
 [ -d "$opt" ] || { mkdir -p "$opt" && curl -fL "$src" | tar -xzC "$opt"; } || { rm -r "$opt"; exit 1; }
 
-exec "$bin" $@
+exec "$bin" "$@"

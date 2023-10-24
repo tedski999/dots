@@ -4,9 +4,9 @@ opt="$HOME/.local/opt/zsh-syntax-highlighting"; [ -d "/usr/share/zsh-syntax-high
 opt="$HOME/.local/opt/zsh-autosuggestions"; [ -d "/usr/share/zsh-autosuggestions" ] || [ -d "$opt" ] || { mkdir -p "$opt" && curl -L "https://github.com/zsh-users/zsh-autosuggestions/archive/refs/heads/master.tar.gz" | tar -xzC "$opt"; } || { rm -r "$opt"; exit 1; }
 opt="$HOME/.local/opt/fzf-scripts"; [ -d "/usr/share/doc/fzf/examples" ] || [ -d "$opt" ] || { mkdir -p "$opt" && curl -L "https://raw.githubusercontent.com/junegunn/fzf/master/shell/key-bindings.zsh" > "$opt/key-bindings.zsh" && curl -L "https://raw.githubusercontent.com/junegunn/fzf/master/shell/completion.zsh" > "$opt/completion.zsh"; } || { rm -r "$opt"; exit 1; }
 
-export PATH=$(echo "$PATH" | tr ":" "\n" | grep -v "$(dirname -- "$0")" | tr "\n" ":")
-
-hash zsh 2>/dev/null && exec zsh $@
+for bin in $(realpath $(which -a zsh)); do
+	[ "$(realpath $0)" != "$bin" ] && [ -x "$bin" ] && exec "$bin" "$@"
+done
 
 case "$(uname --machine)" in
 	"x86_64"*) opt="$HOME/.local/opt/zsh/x86_64"; bin="$opt/bin/zsh";;
@@ -15,4 +15,4 @@ esac
 
 [ -d "$opt" ] || sh -c "$(curl -fL https://raw.githubusercontent.com/romkatv/zsh-bin/master/install)" -- -d "$opt" -e no || { rm -r "$opt"; exit 1; }
 
-exec "$bin" $@
+exec "$bin" "$@"
