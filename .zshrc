@@ -26,8 +26,8 @@ alias sudo="sudo --preserve-env "
 alias ip="ip --color"
 alias ls="exa -hs=name --group-directories-first"
 alias cat="bat --paging=never"
-alias imv="imv-wayland"
 alias less="bat --paging=always"
+alias imv="imv-wayland"
 alias grep="rg"
 alias diff="delta"
 hash nvim 2>/dev/null && alias v="nvim"
@@ -91,6 +91,14 @@ export LESS_TERMCAP_ue="$(tput sgr0)"
 export LESS="--ignore-case --tabs=4 --chop-long-lines --LONG-PROMPT --RAW-CONTROL-CHARS --lesskey-file=$XDG_CONFIG_HOME/less/key"
 command less --help | grep -q -- --incsearch && export LESS="--incsearch $LESS"
 
+# GPG+SSH
+hash gpgconf 2>/dev/null && {
+	export GPG_TTY="$(tty)"
+	export SSH_AGENT_PID=""
+	export SSH_AUTH_SOCK="$(gpgconf --list-dirs agent-ssh-socket)"
+	(gpgconf --launch gpg-agent &)
+}
+
 # Arista Shell
 export ARZSH_COMP_UNSAFE=1
 ash() { eval 2>/dev/null mosh -a -o --experimental-remote-ip=remote us260 -- tmux new ${@:+-c -- a4c shell $@} }
@@ -100,55 +108,20 @@ compdef _ash ash
 # File sharing
 0x0() { curl -F"file=@$1" https://0x0.st }
 
-# Generic unpacker
-# TODO: a bit flakey
-un() {
-	[[ -z "$1" ]] && echo "Usage: $0 [infile] [outdir]" && return 1
-	infile="$1"
-	outdir="${2:-.}"
-	filetype="$(file -b "$infile")"
-	[[ ! -d "$outdir" ]] && mkdir -p "$outdir"
-	case "${filetype:l}" in
-		"zip archive"*) unzip -d "$outdir" "$infile" ;;
-		"gzip compressed"*) tar -xvzf "$infile" -C "$outdir" ;;
-		"bzip2 compressed"*) tar -xvjf "$infile" -C "$outdir" ;;
-		"posix tar archive"*) tar -xvf "$infile" -C "$outdir" ;;
-		"xz compressed data"*) tar -xvJf "$infile" -C "$outdir" ;;
-		"rar archive"*) unrar x "$infile" "$outdir" ;;
-		"7-zip archive"*) 7z x "$infile" "-o$outdir" ;;
-		"cannot open"*) echo "Could not read file: $infile"; return 1 ;;
-		*) echo "Unsupported file type: $filetype"; return 1 ;;
-	esac
-}
-
-# Btrfs snapshot shortcut
-newsnapshot() {
-	sudo systemctl start snapshots || return 1
-	sleep 1
-	sudo btrfs subvolume list / || return 1
-}
-
-# GPG+SSH
-hash gpgconf 2>/dev/null && {
-	export GPG_TTY="$(tty)"
-	export SSH_AGENT_PID=""
-	export SSH_AUTH_SOCK="$(gpgconf --list-dirs agent-ssh-socket)"
-	(gpgconf --launch gpg-agent &)
-}
-
 # cht.sh
 cht() { cht.sh "$@?style=paraiso-dark" | less }
 _cht() { compadd $commands:t }
 compdef _cht cht
 
-# trash-cli
-hash trash-put 2>/dev/null && {
-	alias del="trash-put"
-	alias lsdel="trash-list"
-	alias undel="trash-restore"
-	alias deldel="trash-empty"
-	rm() { 2>&1 echo "rm disabled, use del"; return 1; }
-} || echo "Warning: trash-cli not found, del aliases have been disabled" >&2
+# del
+alias rm="2>&1 echo rm disabled, use del; return 1"
+
+# lf
+lf() {
+	f="$XDG_CACHE_HOME/lfcd"
+	command lf -last-dir-path "$f" $@
+	[ -f "$f" ] && { cd "$(cat $f)"; command rm -f "$f"; }
+}
 
 # fd
 hash fdfind 2>/dev/null && { fd() { fdfind $@ } }

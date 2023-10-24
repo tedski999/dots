@@ -7,12 +7,15 @@ git_ssh="git@github.com:/tedski999/dots"
 git_http="https://github.com/tedski999/dots"
 
 # TODO: opt completions and manpages
+# TODO: rustup or apt
 
+# TODO: https://tracker.debian.org/pkg/git-delta
+# TODO: https://packages.debian.org/sid/source/cliphist
 msung_apts="\
 file curl wget tar gzip zip unzip git gnupg man-db
 zsh zsh-syntax-highlighting zsh-autosuggestions
-neovim git ripgrep fzf bat fd-find exa btop jq bc trash-cli
-python3 python3-venv pipx
+git lf ripgrep fzf bat fd-find exa btop jq bc
+python3 python3-venv
 sway xwayland swayidle swaylock
 nvidia-driver nvidia-driver-libs:i386 linux-headers-amd64 linux-image-amd64 firmware-misc-nonfree
 mesa-vulkan-drivers libglx-mesa0:i386 mesa-vulkan-drivers:i386 libgl1-mesa-dri:i386
@@ -32,8 +35,8 @@ google-earth-pro-stable https://dl.google.com/dl/earth/client/current/google-ear
 septs_apts="\
 file curl wget tar gzip zip unzip git gnupg man-db
 zsh zsh-syntax-highlighting zsh-autosuggestions
-neovim git ripgrep fzf bat fd-find exa btop jq bc trash-cli
-python3 python3-venv pipx"
+git lf ripgrep fzf bat fd-find exa btop jq bc
+python3 python3-venv"
 septs_debs="\
 git-delta https://github.com/dandavison/delta/releases/download/0.16.5/git-delta_0.16.5_arm64.deb"
 
