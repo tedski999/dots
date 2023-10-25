@@ -1,16 +1,15 @@
 #!/bin/zsh
 
-PS1=$'\n%F{red}%n@%m%f %F{blue}%~%f %F{red}%(?..%?)%f\n>%f '
+# Options
+PROMPT=$'\n%F{red}%n@%m%f %F{blue}%T %~%f %F{red}%(?..%?)%f\n>%f '
 HISTSIZE="100000"
 SAVEHIST="100000"
 TIMEFMT=$'\nreal\t%E\nuser\t%U\nsys\t%S\ncpu\t%P'
-
-# Options
 setopt autocd interactive_comments notify
 setopt auto_pushd pushd_ignore_dups pushd_silent
 setopt hist_ignore_all_dups hist_reduce_blanks inc_append_history
 setopt numericglobsort prompt_subst
-setopt glob_complete complete_in_word
+setopt complete_in_word
 
 # Aliases
 alias v="vim"
@@ -58,12 +57,10 @@ for k in "^[n" "^[OB" "^[[B"; bindkey "$k" down-line-or-beginning-search
 
 # Completion
 autoload -Uz compinit
-fpath=($fpath "$ZSH_DATA/completions")
-_comp_options+=(globdots)
 compinit -d "$XDG_CACHE_HOME/zcompdump" $([[ -n "$XDG_CACHE_HOME/zcompdump"(#qN.mh+24) ]] && echo -C)
+_comp_options+=(globdots)
 autoload -U bashcompinit
 bashcompinit
-# TODO: improve zsh completion ergonomics
 zstyle ":completion:*" menu select
 zstyle ":completion:*" completer _complete _match _approximate
 zstyle ":completion:*" matcher-list "" "m:{[:lower:][:upper:]}={[:upper:][:lower:]}" "+l:|=* r:|=*"

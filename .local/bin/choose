@@ -10,8 +10,8 @@ password="$CH_PASSWORD"
 [ -z "$width" ] && width="50%"
 [ -n "$password" ] && password="--password"
 
-IFS='
-'
+IFS="
+"
 
 while true; do
 	choice="$(printf "%s\n" $@ | flock -n /tmp/wofi.lock wofi --cache-file /dev/null --dmenu --lines "$lines" --width "$width" $password --prompt "$prompt")"

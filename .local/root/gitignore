@@ -50,10 +50,14 @@
 !/.local/bin/exa
 !/.local/bin/fd
 !/.local/bin/fzf
+!/.local/bin/git
+!/.local/bin/lf
 !/.local/bin/networkctl
 !/.local/bin/powerctl
 !/.local/bin/powerctlfade
 !/.local/bin/rg
+!/.local/bin/un
+!/.local/bin/xterm
 !/.local/bin/zsh
 !/.local/root
 
