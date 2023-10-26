@@ -2,8 +2,8 @@
 
 choice="$1"
 [ -z "$choice" ] && {
-	caffinate="$(pidof -q swayidle && echo "caffinate" || echo "uncaffinate")"
-	choices="lock suspend $caffinate reload logout reboot shutdown"
+	caffeinate="$(pidof -q swayidle && echo "caffeinate" || echo "uncaffeinate")"
+	choices="lock suspend $caffeinate reload logout reboot shutdown"
 	choice="$(CH_LINES=9 CH_WIDTH=100 CH_PROMPT="Power Control" choose $choices)"
 }
 
@@ -14,8 +14,8 @@ case "$choice" in
 	"logout") swaymsg exit;;
 	"reboot") systemctl reboot;;
 	"shutdown") systemctl poweroff;;
-	"caffinate") pkill swayidle;;
-	"uncaffinate") pidof swayidle || swayidle -w \
+	"caffeinate") pkill swayidle;;
+	"uncaffeinate") pidof swayidle || swayidle -w \
 		idlehint 300 lock 'swaylock --daemonize' unlock 'pkill -USR1 swaylock' \
 		timeout 300 'powerctlfade &'               resume 'pkill powerctlfade' \
 		timeout 310 'loginctl lock-session'        resume 'pkill powerctlfade' \

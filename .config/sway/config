@@ -29,7 +29,7 @@ exec_always pidof -x batteryd || batteryd
 # Clipboard manager
 exec_always pidof wl-paste || wl-paste --watch cliphist store
 # Idle locking + suspending
-exec_always powerctl uncaffinate
+exec_always powerctl uncaffeinate
 # Output setup
 exec displayctl mono
 # Bars
