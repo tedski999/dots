@@ -3,10 +3,12 @@
 max_len=25
 
 out=""
+tooltip=""
 status="$(playerctl status)"
 
 [ "$status" = "Playing" ] || [ "$status" = "Paused" ] && {
 	out="$(playerctl metadata title)"
+	tooltip="$out"
 	[ ${#out} -gt "$max_len" ] && {
 		i="$(( ( $(date +%s) % ( ${#out} + 3 ) ) + 1 ))"
 		out="$(echo "$out   $out" | tail -c +$i)"
@@ -15,6 +17,7 @@ status="$(playerctl status)"
 
 out="$(echo "$out" | head -c "$(( $max_len - 1 ))")"
 
-printf '{"text": %s, "class": %s}\n' \
+printf '{"text": %s, "tooltip": %s, "class": %s}\n' \
 	"$(echo -n "$out" | jq --raw-input --slurp --ascii-output)" \
+	"$(echo -n "$tooltip" | jq --raw-input --slurp --ascii-output)" \
 	"$(echo -n "$status" | jq --raw-input --slurp --ascii-output)"

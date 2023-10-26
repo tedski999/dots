@@ -1,11 +1,14 @@
 
-# TODO: group focus lost when focusing to its new workspace
-
 # Common functions
-set $get_workspaces $(swaymsg -rt get_workspaces | jq -r '.[].num')
-set $get_prev_workspace $(( $( swaymsg -t get_workspaces | jq '.[] | select(.focused).num' ) - 1 )) && n=$(( $n < 1 ? 1 : ($n < 9 ? $n : 9) ))
-set $get_next_workspace $(( $( swaymsg -t get_workspaces | jq '.[] | select(.focused).num' ) + 1 )) && n=$(( $n < 1 ? 1 : ($n < 9 ? $n : 9) ))
-set $get_empty_workspace $(swaymsg -rt get_workspaces | jq '. as $w | first(range(0; 9) + 1 | select(all(. != $w[].num; .)))')
+set $get_views vs=$(swaymsg -rt get_tree | jq "recurse(.nodes[], .floating_nodes[]) | select(.visible).id")
+set $get_focused f=$(swaymsg -rt get_tree | jq "recurse(.nodes[], .floating_nodes[]) | first(select(.focused)).id")
+set $get_output n=$(swaymsg -rt get_outputs | jq -r ".[] | first(select(.active).id)")
+set $get_workspaces ws=$(swaymsg -rt get_workspaces | jq -r ".[].name | split(\\\\":\\\\") | .[1]")
+set $get_prev_workspace w=$(( $( swaymsg -t get_workspaces | jq -r ".[] | first(select(.focused).name | split(\\\\":\\\\")) | .[1]" ) - 1 )) && w=$(( $w < 1 ? 1 : ($w < 9 ? $w : 9) ))
+set $get_next_workspace w=$(( $( swaymsg -t get_workspaces | jq -r ".[] | first(select(.focused).name | split(\\\\":\\\\")) | .[1]" ) + 1 )) && w=$(( $w < 1 ? 1 : ($w < 9 ? $w : 9) ))
+set $get_empty_workspace w=$(swaymsg -rt get_workspaces | jq ". as \$w | first(range(1; 9) | select(all(. != (\$w[].name | split(\\\\":\\\\") | .[1] | tonumber); .)))")
+set $group swaymsg "mark --add g" || swaymsg "splitv, mark --add g"
+set $ungroup swaymsg "[con_mark=g] focus, unmark g" || swaymsg "focus parent; focus parent; focus parent; focus parent"
 
 # Appearance
 output * bg #101010 solid_color
@@ -32,6 +35,8 @@ exec_always pidof wl-paste || wl-paste --watch cliphist store
 exec_always powerctl uncaffeinate
 # Output setup
 exec displayctl mono
+# Start on the correct workspace
+exec $get_output && swaymsg "workspace ${n}1:1"
 # Bars
 # TODO: multimonitor bars
 bar {
@@ -41,17 +46,17 @@ bar {
 
 # Input devices
 input type:keyboard {
-    xkb_layout ie
-    xkb_options caps:escape
-    repeat_delay 250
-    repeat_rate 30
+	xkb_layout ie
+	xkb_options caps:escape
+	repeat_delay 250
+	repeat_rate 30
 }
 input type:touchpad {
-    dwt disabled
-    tap enabled
-    natural_scroll enabled
-    click_method clickfinger
-    scroll_method two_finger
+	dwt disabled
+	tap enabled
+	natural_scroll enabled
+	click_method clickfinger
+	scroll_method two_finger
 }
 
 # Mouse
@@ -90,17 +95,16 @@ bindsym Mod4+h focus left
 bindsym Mod4+j focus down
 bindsym Mod4+k focus up
 bindsym Mod4+l focus right
-bindsym Mod4+Shift+h move left 50px
-bindsym Mod4+Shift+j move down 50px
-bindsym Mod4+Shift+k move up 50px
-bindsym Mod4+Shift+l move right 50px
+bindsym Mod4+Shift+h exec $group && swaymsg "move left  50px" && $ungroup
+bindsym Mod4+Shift+j exec $group && swaymsg "move down  50px" && $ungroup
+bindsym Mod4+Shift+k exec $group && swaymsg "move up    50px" && $ungroup
+bindsym Mod4+Shift+l exec $group && swaymsg "move right 50px" && $ungroup
 bindsym Mod4+Control+h resize shrink width 50px
 bindsym Mod4+Control+j resize grow height 50px
 bindsym Mod4+Control+k resize shrink height 50px
 bindsym Mod4+Control+l resize grow width 50px
-# TODO: just move between all windows in workspace
-bindsym Mod4+Tab       exec echo todo
-bindsym Mod4+Shift+Tab exec echo todo
+bindsym Mod4+Tab       exec $get_views && $get_focused && n=$(printf "$vs\n$vs\n" | cat | awk "/$f/{getline; print; exit}") && swaymsg "[con_id=$n] focus"
+bindsym Mod4+Shift+Tab exec $get_views && $get_focused && n=$(printf "$vs\n$vs\n" | tac | awk "/$f/{getline; print; exit}") && swaymsg "[con_id=$n] focus"
 bindsym Mod4+f focus mode_toggle
 bindsym Mod4+Shift+f border pixel 2, floating toggle
 bindsym Mod4+x sticky toggle
@@ -108,50 +112,45 @@ bindsym Mod4+m fullscreen
 bindsym Mod4+q kill
 
 # Workspaces
-bindsym Mod4+1 workspace number 1
-bindsym Mod4+2 workspace number 2
-bindsym Mod4+3 workspace number 3
-bindsym Mod4+4 workspace number 4
-bindsym Mod4+5 workspace number 5
-bindsym Mod4+6 workspace number 6
-bindsym Mod4+7 workspace number 7
-bindsym Mod4+8 workspace number 8
-bindsym Mod4+9 workspace number 9
-bindsym Mod4+Shift+1 move container workspace number 1, workspace number 1
-bindsym Mod4+Shift+2 move container workspace number 2, workspace number 2
-bindsym Mod4+Shift+3 move container workspace number 3, workspace number 3
-bindsym Mod4+Shift+4 move container workspace number 4, workspace number 4
-bindsym Mod4+Shift+5 move container workspace number 5, workspace number 5
-bindsym Mod4+Shift+6 move container workspace number 6, workspace number 6
-bindsym Mod4+Shift+7 move container workspace number 7, workspace number 7
-bindsym Mod4+Shift+8 move container workspace number 8, workspace number 8
-bindsym Mod4+Shift+9 move container workspace number 9, workspace number 9
-bindsym Mod4+Control+1 move container workspace number 1
-bindsym Mod4+Control+2 move container workspace number 2
-bindsym Mod4+Control+3 move container workspace number 3
-bindsym Mod4+Control+4 move container workspace number 4
-bindsym Mod4+Control+5 move container workspace number 5
-bindsym Mod4+Control+6 move container workspace number 6
-bindsym Mod4+Control+7 move container workspace number 7
-bindsym Mod4+Control+8 move container workspace number 8
-bindsym Mod4+Control+9 move container workspace number 9
-# TODO: moving workspaces around and between outputs (auto renaming?)
-#bindsym Mod4+Control+Shift+h move workspace left
-#bindsym Mod4+Control+Shift+j move workspace output down
-#bindsym Mod4+Control+Shift+k move workspace output up
-#bindsym Mod4+Control+Shift+l move workspace right
-bindsym Mod4+Comma                exec n=$get_prev_workspace && swaymsg workspace number $n
-bindsym Mod4+Period               exec n=$get_next_workspace && swaymsg workspace number $n
-bindsym Mod4+Shift+Comma          exec n=$get_prev_workspace && swaymsg move container workspace $n && swaymsg workspace number $n
-bindsym Mod4+Shift+Period         exec n=$get_next_workspace && swaymsg move container workspace $n && swaymsg workspace number $n
-bindsym Mod4+Control+Comma        exec n=$get_prev_workspace && swaymsg move container workspace number $n
-bindsym Mod4+Control+Period       exec n=$get_next_workspace && swaymsg move container workspace number $n
-bindsym Mod4+Control+Shift+Comma  exec "w=$get_workspaces && swaymsg $(for n in $w; do echo rename workspace $n to x$n,; done; for n in $w; do echo rename workspace x$n to $(( 9 - ((9 - ($n - 1)) % 9) )),; done)"
-bindsym Mod4+Control+Shift+Period exec "w=$get_workspaces && swaymsg $(for n in $w; do echo rename workspace $n to x$n,; done; for n in $w; do echo rename workspace x$n to $(( $n % 9 + 1 )),;               done)"
-bindsym Mod4+z                    exec n=$get_empty_workspace && swaymsg workspace number $n
-bindsym Mod4+Shift+z              exec n=$get_empty_workspace && swaymsg move container workspace $n && swaymsg workspace number $n
-bindsym Mod4+Control+z            exec n=$get_empty_workspace && swaymsg move container workspace number $n
-bindsym Mod4+Control+Shift+z      exec "i=1; for n in $get_workspaces; do swaymsg rename workspace $n to $i; i=$(( $i + 1 )); done"
+bindsym Mod4+1 exec $get_output && swaymsg "workspace ${n}1:1"
+bindsym Mod4+2 exec $get_output && swaymsg "workspace ${n}2:2"
+bindsym Mod4+3 exec $get_output && swaymsg "workspace ${n}3:3"
+bindsym Mod4+4 exec $get_output && swaymsg "workspace ${n}4:4"
+bindsym Mod4+5 exec $get_output && swaymsg "workspace ${n}5:5"
+bindsym Mod4+6 exec $get_output && swaymsg "workspace ${n}6:6"
+bindsym Mod4+7 exec $get_output && swaymsg "workspace ${n}7:7"
+bindsym Mod4+8 exec $get_output && swaymsg "workspace ${n}8:8"
+bindsym Mod4+9 exec $get_output && swaymsg "workspace ${n}9:9"
+bindsym Mod4+Shift+1 exec $group && $get_output && swaymsg "move container workspace ${n}1:1, workspace number ${n}1:1" && $ungroup
+bindsym Mod4+Shift+2 exec $group && $get_output && swaymsg "move container workspace ${n}2:2, workspace number ${n}2:2" && $ungroup
+bindsym Mod4+Shift+3 exec $group && $get_output && swaymsg "move container workspace ${n}3:3, workspace number ${n}3:3" && $ungroup
+bindsym Mod4+Shift+4 exec $group && $get_output && swaymsg "move container workspace ${n}4:4, workspace number ${n}4:4" && $ungroup
+bindsym Mod4+Shift+5 exec $group && $get_output && swaymsg "move container workspace ${n}5:5, workspace number ${n}5:5" && $ungroup
+bindsym Mod4+Shift+6 exec $group && $get_output && swaymsg "move container workspace ${n}6:6, workspace number ${n}6:6" && $ungroup
+bindsym Mod4+Shift+7 exec $group && $get_output && swaymsg "move container workspace ${n}7:7, workspace number ${n}7:7" && $ungroup
+bindsym Mod4+Shift+8 exec $group && $get_output && swaymsg "move container workspace ${n}8:8, workspace number ${n}8:8" && $ungroup
+bindsym Mod4+Shift+9 exec $group && $get_output && swaymsg "move container workspace ${n}9:9, workspace number ${n}9:9" && $ungroup
+bindsym Mod4+Control+1 exec $get_output && swaymsg "move container workspace number ${n}1:1"
+bindsym Mod4+Control+2 exec $get_output && swaymsg "move container workspace number ${n}2:2"
+bindsym Mod4+Control+3 exec $get_output && swaymsg "move container workspace number ${n}3:3"
+bindsym Mod4+Control+4 exec $get_output && swaymsg "move container workspace number ${n}4:4"
+bindsym Mod4+Control+5 exec $get_output && swaymsg "move container workspace number ${n}5:5"
+bindsym Mod4+Control+6 exec $get_output && swaymsg "move container workspace number ${n}6:6"
+bindsym Mod4+Control+7 exec $get_output && swaymsg "move container workspace number ${n}7:7"
+bindsym Mod4+Control+8 exec $get_output && swaymsg "move container workspace number ${n}8:8"
+bindsym Mod4+Control+9 exec $get_output && swaymsg "move container workspace number ${n}9:9"
+bindsym Mod4+Comma                exec $get_output && $get_prev_workspace && swaymsg "workspace $n$w:$w"
+bindsym Mod4+Period               exec $get_output && $get_next_workspace && swaymsg "workspace $n$w:$w"
+bindsym Mod4+Shift+Comma          exec $group && $get_output && $get_prev_workspace && swaymsg "move container workspace $n$w:$w, workspace $n$w:$w" && $ungroup
+bindsym Mod4+Shift+Period         exec $group && $get_output && $get_next_workspace && swaymsg "move container workspace $n$w:$w, workspace $n$w:$w" && $ungroup
+bindsym Mod4+Control+Comma        exec $get_output && $get_prev_workspace && swaymsg "move container workspace $n$w:$w"
+bindsym Mod4+Control+Period       exec $get_output && $get_next_workspace && swaymsg "move container workspace $n$w:$w"
+bindsym Mod4+Control+Shift+Comma  exec '$get_output && $get_workspaces && ws=$(echo "$ws" | cat) && [ "$(echo "$ws" | head -1)" != "1" ] && for w in $ws; do i=$(( $w - 1 )); swaymsg "rename workspace $n$w:$w to $n$i:$i"; done'
+bindsym Mod4+Control+Shift+Period exec '$get_output && $get_workspaces && ws=$(echo "$ws" | tac) && [ "$(echo "$ws" | head -1)" != "9" ] && for w in $ws; do i=$(( $w + 1 )); swaymsg "rename workspace $n$w:$w to $n$i:$i"; done'
+bindsym Mod4+z                    exec $get_output && $get_empty_workspace && swaymsg "workspace number $n$w:$w"
+bindsym Mod4+Shift+z              exec $group && $get_output && $get_empty_workspace && swaymsg "move container workspace $n$w:$w, workspace number $n$w:$w" && $foucs_group
+bindsym Mod4+Control+z            exec '$group && $get_output && $get_empty_workspace && swaymsg "move container workspace number $n$w:$w" && $foucs_group'
+bindsym Mod4+Control+Shift+z      exec '$group && $get_output && $get_workspaces && i=1; for w in $ws; do swaymsg rename workspace $n$w:$w to $n$i:$i; i=$(( $i + 1 )); done && $foucs_group'
 
 # Layout
 default_orientation auto
@@ -190,9 +189,8 @@ bindsym --locked Shift+XF86AudioRaiseVolume         exec wpctl set-volume @DEFAU
 bindsym --locked Control+XF86AudioRaiseVolume       exec wpctl set-volume @DEFAULT_SINK@ 100%   && $send_volume_notif
 
 # Microphone
-# TODO: test me
-bindsym --locked --no-repeat                Pause   exec wpctl set-mute @DEFAULT_SOURCE@ off
-bindsym --locked --no-repeat --release      Pause   exec wpctl set-mute @DEFAULT_SOURCE@ on
+bindsym --locked --no-repeat                Pause   exec wpctl set-mute @DEFAULT_SOURCE@ 0
+bindsym --locked --no-repeat --release      Pause   exec wpctl set-mute @DEFAULT_SOURCE@ 1
 bindsym --locked --no-repeat --whole-window button8 exec wpctl set-mute @DEFAULT_SOURCE@ toggle
 
 # Backlight

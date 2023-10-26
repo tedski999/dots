@@ -35,6 +35,9 @@ window#waybar { background-color: rgba(0,0,0,0.75); }
 #custom-media.Paused { color: #606060; }
 #custom-media.Playing {}
 
+/* Caffeinated */
+#custom-caffeinated { color: #ff8000; }
+
 /* Gamemode */
 #gamemode { color: #00ff00; }
 
@@ -48,7 +51,7 @@ window#waybar { background-color: rgba(0,0,0,0.75); }
 
 /* Temperature */
 #temperature {}
-#temperature.critical { color: #000000; background-color: #800000; animation: flash .25s steps(10) infinite alternate; }
+#temperature.critical { color: #800000; animation: pulse .5s steps(15) infinite alternate; }
 
 /* Network */
 #network {}
