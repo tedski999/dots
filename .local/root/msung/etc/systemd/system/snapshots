@@ -13,12 +13,13 @@ mountpoint /media/btrfs >/dev/null || {
 }
 
 # Prune older snapshots
+last=0
 now=$(date --utc +%s)
-last=$now
-for date in $(printf "%s\n" /media/btrfs/@rootfs-* | cut -d - -f 2- | sort --reverse); do
+for date in $(printf "%s\n" /media/btrfs/@rootfs-* | cut -d - -f 2- | sort); do
 	this=$(date -d "$date" +%s)
-	diff=$(( $last - $this ))
+	diff=$(( $this - $last ))
 	age=$(( $now - $this ))
+	echo "$age and $diff"
 	if [ $age -lt 3600 ]; then # Keep all snapshots taken within last hour
 		last=$this
 	elif [ $age -lt 86400 ] && [ $diff -gt 21600 ]; then # Keep 6 hours between snapshots older than an hour => 4 snapshots per day
