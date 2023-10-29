@@ -1,8 +1,3 @@
-
-/* TODO: clear input field */
-/** { border: none; outline-style: none; }*/
-/*#input image.left { -gtk-icon-transform: scaleX(0); }*/
-
 #window {
 	font-family: "Terminus (TTF)";
 	font-size: 16px;
