@@ -41,9 +41,11 @@
 /.local/bin/*
 !/.local/bin/bat
 !/.local/bin/batteryd
+!/.local/bin/bw
 !/.local/bin/choose
 !/.local/bin/cht.sh
 !/.local/bin/cliphist
+!/.local/bin/del
 !/.local/bin/delta
 !/.local/bin/displayctl
 !/.local/bin/dots
@@ -53,8 +55,10 @@
 !/.local/bin/git
 !/.local/bin/lf
 !/.local/bin/networkctl
+!/.local/bin/nvim
 !/.local/bin/powerctl
 !/.local/bin/powerctlfade
+!/.local/bin/psswrds
 !/.local/bin/rg
 !/.local/bin/un
 !/.local/bin/xterm

@@ -85,6 +85,9 @@ bindsym Mod4+Control+n               exec networkctl bluetooth
 bindsym Mod4+b                       border pixel 2
 bindsym Mod4+shift+b                 border none
 bindsym Mod4+v                       exec CH_PROMPT="Clipboard" choose "$(cliphist list)" | cliphist decode | wl-copy
+bindsym Mod4+apostrophe              exec psswrds get
+bindsym Mod4+Shift+apostrophe        exec psswrds new
+bindsym Mod4+Control+apostrophe      exec psswrds lock
 bindsym Mod4+grave                   exec makoctl dismiss
 bindsym Mod4+Shift+grave             exec makoctl restore
 bindsym Mod4+Control+grave           exec makoctl menu wofi --dmenu --prompt "Action"

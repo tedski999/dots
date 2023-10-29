@@ -1,0 +1,20 @@
+#!/bin/sh
+
+for bin in $(realpath $(which -a nvim)); do
+	[ "$(realpath $0)" != "$bin" ] && [ -x "$bin" ] && exec "$bin" "$@"
+done
+
+opt="$HOME/.local/opt/nvim"
+bin="$opt/nvim/AppRun"
+src="https://github.com/neovim/neovim/releases/download/v0.9.4/nvim.appimage"
+
+[ -d "$opt" ] || {
+	mkdir -p "$opt" &&
+	curl -fL "$src" > "$opt/nvim.appimage" &&
+	chmod +x "$opt/nvim.appimage" &&
+	"$opt/nvim.appimage" --appimage-extract &&
+	mv squashfs-root "$opt/nvim" &&
+	ln -sf "$opt/nvim/nvim.desktop" "$XDG_DATA_HOME/applications"
+} || { rm -r "$opt"; exit 1; }
+
+exec "$bin" "$@"

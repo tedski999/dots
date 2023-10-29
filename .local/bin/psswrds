@@ -1,0 +1,30 @@
+#!/bin/sh
+
+IFS='
+'
+
+get_menu() {
+	items="$(bw list items | jq -r ".[].name")"
+	choice="$(CH_LINES=16 CH_WIDTH=300 CH_PROMPT="Get Psswrd" choose $items)"
+	# TODO: handle choice
+}
+
+new_menu() {
+	# name, location, username, password options...
+	choice="$(CH_LINES=16 CH_WIDTH=300 CH_PROMPT="New Psswrd" choose)"
+}
+
+# TODO: handle unlock or even login
+
+choice="$1"
+while true; do
+	[ -z "$choice" ] && choice="$(CH_LINES=5 CH_WIDTH=100 CH_PROMPT="Psswrds" choose get new lock)"
+	case "$choice" in
+		"") exit;;
+		"get") get_menu;;
+		"new") new_menu;;
+		"lock") bw lock;;
+		*) exit 1;;
+	esac
+	[ -n "$1" ] && break
+done
