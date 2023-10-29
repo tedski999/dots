@@ -134,7 +134,12 @@ source "/usr/share/doc/fzf/examples/key-bindings.zsh" 2>/dev/null || source "$HO
 source "/usr/share/doc/fzf/examples/completion.zsh" 2>/dev/null || source "$HOME/.local/opt/fzf-scripts/completion.zsh"
 
 # Autosuggestions
-source "/usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh" 2>/dev/null || source "$HOME/.local/opt/zsh-autosuggestions/zsh-autosuggestions-master/zsh-autosuggestions.zsh"
+source "/usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh" 2>/dev/null || source "$HOME/.local/opt/zsh-autosuggestions/zsh-autosuggestions-master/zsh-autosuggestions.zsh" && {
+	ZSH_AUTOSUGGEST_ACCEPT_WIDGETS=(end-of-line vi-end-of-line vi-add-eol)
+	ZSH_AUTOSUGGEST_PARTIAL_ACCEPT_WIDGETS+=(forward-char vi-forward-char)
+	ZSH_AUTOSUGGEST_STRATEGY=(history completion)
+	ZSH_AUTOSUGGEST_BUFFER_MAX_SIZE=100
+}
 
 # Syntax highlighting
 source "/usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" 2>/dev/null || source "$HOME/.local/opt/zsh-syntax-highlighting/zsh-syntax-highlighting-master/zsh-syntax-highlighting.zsh" && {
