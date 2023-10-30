@@ -1,5 +1,4 @@
 -- Colorscheme
--- TODO(2, aesthetics): replace with my own
 
 local function config()
 	local f = require("nightfox")
@@ -28,7 +27,7 @@ local function config()
 		},
 		specs = {
 			all = {
-				-- TODO(2, aesthetics): syntax highlighting colors
+				-- TODO: syntax highlighting colors
 				syntax = { },
 				diag = { info = "green", error = "red", warn = "#ffaa00" },
 				diag_bg = { error = "none", warn = "none", info = "none", hint = "none" },

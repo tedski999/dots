@@ -1,7 +1,5 @@
 -- Fzf in Neovim
 
--- TODO(3): previewer with last cursor position
-
 -- Switch to an alternative file based on extension
 local function find_altfiles()
 	local fzf = require("fzf-lua")
@@ -24,48 +22,74 @@ local function find_altfiles()
 	elseif #existing ~= 0 then
 		fzf.fzf_exec(existing, { actions = fzf.config.globals.actions.files, cwd = dir, previewer = "builtin" })
 	elseif #possible ~= 0 then
-		fzf.fzf_exec(possible, { actions = fzf.config.globals.actions.files, cwd = dir, fzf_opts = { ["--header"] = [["No altfiles found"]]  } })
+		fzf.fzf_exec(possible, { actions = fzf.config.globals.actions.files, cwd = dir, fzf_opts = { ["--header"] = [["No altfiles found"]] } })
 	else
 		vim.api.nvim_echo({ { "Error: No altfiles configured", "Error" } }, false, {})
 	end
 end
 
+--- File explorer to replace netrw
+local explore_files = function()
+	dir = vim.g.getfile():match(".*/")
+	cwdfile = vim.fn.getenv("HOME").."/.cache/cwdfile"
+	vim.fn.writefile({dir}, cwdfile)
+	fzf = require("fzf-lua")
+	fzf.fzf_exec("fd --hidden --exact-depth 1 --absolute-path --search-path \"$(cat "..cwdfile..")\"", {
+		prompt = "Ex>",
+		fzf_opts = { ["--no-multi"] = "", ["--header"] = [["<ctrl-e>|<ctrl-f>|<ctrl-d>|! %f|"]] },
+		previewer = "builtin",
+		actions = {
+			["default"] = function(s) f = vim.loop.fs_stat(s[1]) or {} if f.type == "directory" then vim.fn.writefile(s, cwdfile) fzf.resume() else vim.cmd("edit "..s[1]) end end,
+			["ctrl-e"] = function() local i = vim.fn.input("New file: ", vim.fn.readfile(cwdfile)[1]) if i == "" then fzf.resume() else vim.cmd("edit "..i) end end,
+			["ctrl-f"] = function() fzf.files({ cwd = vim.fn.readfile(cwdfile)[1] } ) end,
+			["ctrl-d"] = { function() vim.cmd("cd "..vim.fn.readfile(cwdfile)[1]) end, fzf.actions.resume },
+			["-"] = { function() vim.fn.writefile({vim.fn.readfile(cwdfile)[1]:sub(1, -2):match(".*/") or "/"}, cwdfile) end, fzf.actions.resume },
+			["~"] = { function() vim.fn.writefile({vim.fn.getenv("HOME")}, cwdfile) end, fzf.actions.resume },
+			["!"] = { function(s)
+				local i = vim.fn.input("Shell command: "):gsub("%%f", s[1])
+				if i == "" then return end
+				local d = vim.fn.chdir(vim.fn.readfile(cwdfile)[1])
+				vim.notify(vim.fn.system(i))
+				vim.fn.chdir(d)
+			end, fzf.actions.resume },
+		},
+		fn_transform = function(x)
+			if x:sub(-1) == "/" then return fzf.utils.ansi_codes.blue(x) end
+			local d = x:match(".*/")
+			local b = x:sub(#d+1)
+			d = fzf.utils.ansi_codes.blue(d)
+			f = vim.loop.fs_stat(x)
+			if f == nil then return d..fzf.utils.ansi_codes.red(b)
+			elseif f.type == "directory" then return d..fzf.utils.ansi_codes.yellow(b)
+			elseif f.type == "socket" then return d..fzf.utils.ansi_codes.green(b)
+			else return d..fzf.utils.ansi_codes.white(b) end
+		end
+	})
+end
+
 -- Save and load projects using mksession
 local projects_dir = vim.fn.stdpath("data").."/projects/"
 local function find_projects()
+	fzf = require("fzf-lua")
 	local projects = {}
 	for path in vim.fn.glob(projects_dir.."*"):gmatch("[^\n]+") do
 		table.insert(projects, path:match("[^/]*$"))
 	end
-	require("fzf-lua").fzf_exec(projects, { actions = {
-		["default"] = function(projects) vim.cmd("source "..vim.fn.fnameescape(projects_dir..projects[1])) end,
-		["ctrl-e"] = function(projects) vim.cmd("edit "..projects_dir..projects[1].." | setf vim") end,
-		["ctrl-x"] = function(projects) for i = 1, #projects do vim.fn.delete(vim.fn.fnameescape(projects_dir..projects[o])) end end
-	}})
+	fzf.fzf_exec(projects, {
+		prompt = "Project>",
+		fzf_opts = { ["--header"] = [["<ctrl-x> to delete|<ctrl-e> to edit"]] },
+		actions = {
+			["default"] = function(projects) vim.cmd("source "..vim.fn.fnameescape(projects_dir..projects[1])) end,
+			["ctrl-e"] = function(projects) vim.cmd("edit "..projects_dir..projects[1].." | setf vim") end,
+			["ctrl-x"] = function(projects) for i = 1, #projects do vim.fn.delete(vim.fn.fnameescape(projects_dir..projects[i])) end end
+		}
+	})
 end
 local function save_project()
 	local project = vim.fn.input("Save project: ", vim.v.this_session:match("[^/]*$") or "")
 	if project == "" then return end
 	vim.fn.mkdir(projects_dir, "p")
 	vim.cmd("mksession! "..vim.fn.fnameescape(projects_dir..project))
-end
-
--- List all git hunks
-local function find_hunks(files)
-	local hunks, cur, file = {}, vim.g.getfile(), nil
-	local cmd = { "git", "diff", "-U0", unpack(files or { cur ~= "" and cur or "." }) }
-	for line in vim.fn.system(cmd):gmatch("[^\n]+") do
-		file = line:match("^%+%+%+ b/(.-)$") or file
-		lnum, count = line:match("^@@ %-[%d,]+ %+(%d+),(%d+) @@") or line:match("^@@ %-[%d,]+ %+(%d+) @@"), 0
-		if file and lnum and count then
-			lnum = lnum + math.floor(count / 2)
-			table.insert(hunks, file..":"..lnum)
-		end
-	end
-	-- TODO(3, git): show diff in preview
-	-- TODO(3, git): ctrl-s stage/unstage, ctrl-x reset
-	-- this would likely require generating diffs and using "git apply --cached"
-	fzf.fzf_exec(hunks, { actions = fzf.config.globals.actions.files, previewer = "builtin" })
 end
 
 -- Yank selected entries
@@ -80,38 +104,40 @@ return {
 	cmd = { "FzfLua", "Achanged", "Aopened", "Agrok", "Agrokp", "Amkid", "Agid", "Agidp" },
 	keys = {
 		{ "z=", "<cmd>FzfLua spell_suggest<cr>" },
-		{ "<leader>b", "<cmd>FzfLua buffers<cr>" },
+		{ "<leader>b", "<cmd>FzfLua buffers cwd=%:p:h cwd_only=true<cr>" },
+		{ "<leader>B", "<cmd>FzfLua buffers<cr>" },
 		{ "<leader>t", "<cmd>FzfLua tabs<cr>" },
+		{ "<leader>T", "<cmd>FzfLua tags<cr>" },
 		{ "<leader>l", "<cmd>FzfLua blines<cr>" },
-		{ "<leader>f", "<cmd>FzfLua files cwd=%:p:h<cr>" },
+		{ "<leader>L", "<cmd>FzfLua lines<cr>" },
+		{ "<leader>f", "<cmd>FzfLua files cwd=%:p:h cwd_only=true<cr>" },
 		{ "<leader>F", "<cmd>FzfLua files<cr>" },
-		{ "<leader>s", "<cmd>FzfLua grep_project cwd=%:p:h<cr>" },
-		{ "<leader>S", "<cmd>FzfLua grep_project<cr>" },
-		{ "<leader>h", "<cmd>FzfLua help_tags<cr>" },
-		{ "<leader>H", "<cmd>FzfLua man_pages<cr>" },
-		{ "<leader>o", "<cmd>FzfLua oldfiles cwd_only=true<cr>" },
+		{ "<leader>o", "<cmd>FzfLua oldfiles cwd=%:p:h cwd_only=true<cr>" },
 		{ "<leader>O", "<cmd>FzfLua oldfiles<cr>" },
-		{ "<leader>m", "<cmd>FzfLua marks cwd_only=true<cr>" },
+		{ "<leader>s", "<cmd>FzfLua grep_project cwd=%:p:h cwd_only=true<cr>" },
+		{ "<leader>S", "<cmd>FzfLua grep_project<cr>" },
+		{ "<leader>m", "<cmd>FzfLua marks cwd=%:p:h cwd_only=true<cr>" },
 		{ "<leader>M", "<cmd>FzfLua marks<cr>" },
-		{ "<leader>E", "<cmd>FzfLua diagnostics_document<cr>" },
-		{ "<leader>gs", "<cmd>FzfLua git_status<cr>" },
-		{ "<leader>go", "<cmd>FzfLua git_files<cr>" },
-		{ "<leader>gf", "<cmd>FzfLua git_files<cr>" },
+		{ "<leader>gg", "<cmd>lua require'fzf-lua'.git_status({ cwd='%:p:h', file_ignore_patterns={ '^../' } })<cr>" },
+		{ "<leader>gG", "<cmd>FzfLua git_status<cr>" },
+		{ "<leader>gf", "<cmd>FzfLua git_files cwd_only=true cwd=%:p:h<cr>" },
+		{ "<leader>gF", "<cmd>FzfLua git_files<cr>" },
 		{ "<leader>gl", "<cmd>FzfLua git_bcommits<cr>" },
 		{ "<leader>gL", "<cmd>FzfLua git_commits<cr>" },
 		{ "<leader>gb", "<cmd>FzfLua git_branches<cr>" },
-		{ "<leader>gh", find_hunks },
-		{ "<leader>gH", function() find_hunks({ "." }) end },
+		{ "<leader>gs", "<cmd>FzfLua git_stash<cr>" },
+		{ "<leader>k", "<cmd>FzfLua help_tags<cr>" },
+		{ "<leader>K", "<cmd>FzfLua man_pages<cr>" },
+		{ "<leader>E", "<cmd>FzfLua diagnostics_document<cr>" },
 		{ "<leader>d", "<cmd>FzfLua lsp_definitions<cr>" },
 		{ "<leader>D", "<cmd>FzfLua lsp_typedefs<cr>" },
-		-- TODO(3, fzf): previewer currently broken
-		-- { "<leader>r", "<cmd>FzfLua lsp_finder<cr>" },
-		{ "<leader>r", "<cmd>FzfLua lsp_references<cr>" },
+		{ "<leader>r", "<cmd>FzfLua lsp_finder<cr>" },
 		{ "<leader>c", "<cmd>FzfLua quickfix<cr>" },
 		{ "<leader>C", "<cmd>FzfLua quickfix_stack<cr>" },
 		{ "<leader>a", find_altfiles },
 		{ "<leader>p", find_projects },
 		{ "<leader>P", save_project },
+		{ "-", explore_files },
 	},
 	config = function()
 		fzf = require("fzf-lua")
@@ -121,6 +147,7 @@ return {
 				border = { "─", "─", "─", " ", "", "", "", " " },
 				hl = { normal = "NormalFloat", border = "FloatBorder" },
 				preview = {
+					hidden = "hidden",
 					layout = "horizontal",
 					border = "noborder",
 					scrollbar = "border",
@@ -133,7 +160,6 @@ return {
 					["<c-_>"] = "toggle-preview",
 					["<c-o>"] = "toggle-fullscreen",
 					["<m-j>"] = "preview-page-reset",
-					-- TODO(2): half-page is borked
 					["<m-n>"] = "preview-page-down",
 					["<m-p>"] = "preview-page-up",
 				}
@@ -183,13 +209,7 @@ return {
 						["right"] = false,
 						["left"] = false,
 						["ctrl-x"] = { fzf.actions.git_reset, fzf.actions.resume },
-						["ctrl-s"] = { fzf.actions.git_stage_unstage, fzf.actions.resume },
-						["ctrl-h"] = function(files)
-							for i = 1, #files do
-								files[i] = files[i]:match("[^\128-\254]+$")
-							end
-							find_hunks(files)
-						end
+						["ctrl-s"] = { fzf.actions.git_stage_unstage, fzf.actions.resume }
 					}
 				}
 			},

@@ -17,7 +17,7 @@ o.showmode = false                               -- No need to show current mode
 o.scrolloff = 3                                  -- Keep lines above/below the cursor when scrolling
 o.sidescrolloff = 5                              -- Keep columns to the left/right of the cursor when scrolling
 o.signcolumn = "no"                              -- Keep the sign column closed
---o.shortmess:append("sIcC")                       -- Be quieter
+o.shortmess:append("sIcC")                       -- Be quieter
 o.expandtab = false                              -- Tab key inserts tabs
 o.tabstop = 4                                    -- 4-spaced tabs
 o.shiftwidth = 0                                 -- Tab-spaced indentation
@@ -25,7 +25,7 @@ o.cinoptions = "N-s"                             -- Don't indent C++ namespaces
 o.list = true                                    -- Enable whitespace characters below
 o.listchars="space:·,tab:› ,trail:•,precedes:<,extends:>,nbsp:␣"
 o.suffixes:remove(".h")                          -- Header files are important...
---o.suffixes:append(".git")                        -- ...but .git files are not
+o.suffixes:append(".git")                        -- ...but .git files are not
 o.foldmethod = "indent"                          -- Fold based on indent
 o.foldlevelstart = 20                            -- ...and start with everything open
 o.wrap = false                                   -- Don't wrap
@@ -44,9 +44,10 @@ o.spellcapcheck = ""                             -- Don't care about capitalisat
 o.dictionary = "/usr/share/dict/words"           -- Dictionary file
 o.shada = "!,'256,<50,s100,h,r/media"            -- Specify removable media for shada
 o.undolevels = 2048                              -- More undo space
-o.hidden = false                                 -- Don't let modified buffers hide
+o.diffopt = "internal,filler,context:512"        -- I like lots of diff context
+o.hidden = true                                  -- Modified buffers can be hidden
 o.wildmode = "longest:full,full"                 -- Match common and show wildmenu
---o.wildoptions = "fuzzy,pum"                      -- Wildmenu fuzzy matching and ins-completion menu
+o.wildoptions = "fuzzy,pum"                      -- Wildmenu fuzzy matching and ins-completion menu
 o.wildignorecase = true                          -- Don't care about wildmenu file capitalisation
 
 -- Arista is a bit weird like that

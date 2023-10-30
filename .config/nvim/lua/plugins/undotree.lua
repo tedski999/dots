@@ -1,5 +1,5 @@
 -- Visualise undo history
--- TODO(3, undo): issue #129, closing with :q causes bork
+-- TODO: issue #129, closing with :q causes bork
 return {
 	"mbbill/undotree",
 	keys = { { "<leader>u", "<cmd>UndotreeToggle<cr>" } },

@@ -1,5 +1,4 @@
 -- Statusline
--- TODO(3, next): try rebelot/heirline.nvim
 return {
 	"nvim-lualine/lualine.nvim",
 	lazy = false,

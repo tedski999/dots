@@ -2,10 +2,7 @@
 return {
 	"andymass/vim-matchup",
 	lazy = false,
-	keys = {
-		-- { "yom", "<cmd>(g:matchup_matchparen_enabled == 1) ? 'NoMatchParen': 'DoMatchParen'<cr>" },
-		{ "<leader>i", "<cmd>MatchupWhereAmI???<cr>" }
-	},
+	keys = { { "<leader>i", "<cmd>MatchupWhereAmI???<cr>" } },
 	config = function()
 		vim.g.matchup_matchparen_deferred = 1
 		vim.g.matchup_matchparen_hi_surround_always = 1

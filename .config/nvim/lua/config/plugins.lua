@@ -1,6 +1,5 @@
 local path = vim.fn.stdpath("data").."/lazy/lazy.nvim"
 
--- Bootstrap lazy.nvim
 if not vim.loop.fs_stat(path) then
 	vim.api.nvim_echo({ { "Downloading lazy.nvim..." } }, false, {})
 	vim.fn.system({ "git", "clone", "--filter=blob:none", "https://github.com/folke/lazy.nvim", "--branch=stable", path })
@@ -27,7 +26,7 @@ require("lazy").setup("plugins", {
 			disabled_plugins = {
 				"2html_plugin", "tohtml", "getscript", "getscriptPlugin", "logipat",
 				"matchit", "rrhelper", "spellfile_plugin", "tutor", "syntax",
-				"synmenu", "optwin", "compiler", "bugreport", "ftplugin"
+				"synmenu", "optwin", "compiler", "bugreport", "ftplugin", "netrwPlugin"
 			}
 		}
 	}

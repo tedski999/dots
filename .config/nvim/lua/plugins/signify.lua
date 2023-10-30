@@ -2,7 +2,13 @@
 return {
 	"mhinz/vim-signify",
 	event = "VeryLazy",
-	keys = { { "<leader>gd", "<cmd>SignifyHunkDiff<cr>" } },
+	keys = {
+		{ "<leader>gd", "<cmd>SignifyHunkDiff<cr>" },
+		{ "<leader>gD", "<cmd>SignifyDiff<cr>" },
+		{ "<leader>gr", "<cmd>SignifyHunkUndo<cr>" },
+		{ "<leader>gR", "<cmd>SignifyHunkUndo<cr>" } -- TODO: undo all
+		-- TODO: hunk stage
+	},
 	config = function()
 		vim.g.signify_number_highlight = 1
 		vim.keymap.set("n", "[d", "<plug>(signify-prev-hunk)")
