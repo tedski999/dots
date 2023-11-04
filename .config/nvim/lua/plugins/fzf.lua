@@ -132,6 +132,8 @@ return {
 		{ "<leader>d", "<cmd>FzfLua lsp_definitions<cr>" },
 		{ "<leader>D", "<cmd>FzfLua lsp_typedefs<cr>" },
 		{ "<leader>r", "<cmd>FzfLua lsp_finder<cr>" },
+		-- TODO: change keybinding
+		{ "<leader>R", "<cmd>FzfLua lsp_code_actions<cr>" },
 		{ "<leader>c", "<cmd>FzfLua quickfix<cr>" },
 		{ "<leader>C", "<cmd>FzfLua quickfix_stack<cr>" },
 		{ "<leader>a", find_altfiles },
@@ -145,7 +147,7 @@ return {
 			winopts = {
 				height = 0.25, width = 1.0, row = 1.0, col = 0.5,
 				border = { "─", "─", "─", " ", "", "", "", " " },
-				hl = { normal = "NormalFloat", border = "FloatBorder" },
+				hl = { normal = "NormalFloat", border = "FloatBorder", preview_border = "FloatBorder" },
 				preview = {
 					hidden = "hidden",
 					layout = "horizontal",
@@ -185,52 +187,44 @@ return {
 			global_git_icons = true,
 			global_color_icons = true,
 			previewers = { man = { cmd = "man %s | col -bx" } },
-			files = { copen = "FzfLua quickfix", show_cwd_header = false },
-			grep = { copen = "FzfLua quickfix", show_cwd_header = false, no_header = true },
-			oldfiles = { copen = "FzfLua quickfix", show_cwd_header = false, include_current_session = true },
-			buffers = { copen = "FzfLua quickfix", show_cwd_header = false },
-			tabs = { copen = "FzfLua quickfix", show_cwd_header = false },
-			lines = { copen = "FzfLua quickfix", show_cwd_header = false },
-			blines = { copen = "FzfLua quickfix", show_cwd_header = false },
-			quickfix = { copen = "FzfLua quickfix", show_cwd_header = false },
-			quickfix_stack = { copen = "FzfLua quickfix", show_cwd_header = false, marker = "<" },
-			diagnostics = { copen = "FzfLua quickfix", show_cwd_header = false },
-			git = {
-				commits = { copen = "FzfLua quickfix", show_cwd_header = false, preview_pager = "delta --width=$FZF_PREVIEW_COLUMNS" },
-				bcommits = { copen = "FzfLua quickfix", show_cwd_header = false, preview_pager = "delta --width=$FZF_PREVIEW_COLUMNS" },
-				branches = { copen = "FzfLua quickfix", show_cwd_header = false },
-				files = { copen = "FzfLua quickfix", show_cwd_header = false },
-				stash = { copen = "FzfLua quickfix", show_cwd_header = false },
-				status = {
-					copen = "FzfLua quickfix",
-					show_cwd_header = false,
-					preview_pager = "delta --width=$FZF_PREVIEW_COLUMNS",
-					actions = {
-						["right"] = false,
-						["left"] = false,
-						["ctrl-x"] = { fzf.actions.git_reset, fzf.actions.resume },
-						["ctrl-s"] = { fzf.actions.git_stage_unstage, fzf.actions.resume }
-					}
-				}
-			},
+			files = { copen = fzf.quickfix, cwd_header = false },
+			grep = { copen = fzf.quickfix, cwd_header = false },
+			oldfiles = { copen = fzf.quickfix, cwd_header = false, include_current_session = true },
+			buffers = { copen = fzf.quickfix, cwd_header = false },
+			tabs = { copen = fzf.quickfix, cwd_header = false },
+			lines = { copen = fzf.quickfix, cwd_header = false },
+			blines = { copen = fzf.quickfix, cwd_header = false },
+			quickfix = { copen = fzf.quickfix, cwd_header = false },
+			quickfix_stack = { copen = fzf.quickfix, cwd_header = false, marker = "<" },
+			diagnostics = { copen = fzf.quickfix, cwd_header = false },
 			lsp = {
-				code_actions = { copen = "FzfLua quickfix", show_cwd_header = false },
-				finder = { copen = "FzfLua quickfix", show_cwd_header = false, async = false, separator = " " }
+				code_actions = { copen = fzf.quickfix, cwd_header = false },
+				finder = { copen = fzf.quickfix, cwd_header = false, separator = fzf.utils.nbsp }
+			},
+			git = {
+				files = { copen = fzf.quickfix, cwd_header = false },
+				stash = { copen = fzf.quickfix, cwd_header = false },
+				branches = { copen = fzf.quickfix, cwd_header = false },
+				commits = { copen = fzf.quickfix, cwd_header = false, preview_pager = "delta --width=$FZF_PREVIEW_COLUMNS" },
+				bcommits = { copen = fzf.quickfix, cwd_header = false, preview_pager = "delta --width=$FZF_PREVIEW_COLUMNS" },
+				status = { copen = fzf.quickfix, cwd_header = false, preview_pager = "delta --width=$FZF_PREVIEW_COLUMNS",
+					actions = { ["right"] = false, ["left"] = false, ["ctrl-s"] = { fzf.actions.git_stage_unstage, fzf.actions.resume } }
+				}
 			}
 		})
 		if vim.g.arista then
 			-- Perforce
-			vim.api.nvim_create_user_command("Achanged", function() fzf.fzf_exec([[a p4 diff --summary | sed s/^/\\//]],                                              { actions = fzf.config.globals.actions.files, previewer = "builtin", copen = "FzfLua quickfix" }) end, {})
-			vim.api.nvim_create_user_command("Aopened",  function() fzf.fzf_exec([[a p4 opened | sed -n "s/\/\(\/[^\/]\+\/[^\/]\+\/\)[^\/]\+\/\([^#]\+\).*/\1\2/p"]], { actions = fzf.config.globals.actions.files, previewer = "builtin", copen = "FzfLua quickfix" }) end, {})
+			vim.api.nvim_create_user_command("Achanged", function() fzf.fzf_exec([[a p4 diff --summary | sed s/^/\\//]],                                              { actions = fzf.config.globals.actions.files, previewer = "builtin", copen = fzf.quickfix }) end, {})
+			vim.api.nvim_create_user_command("Aopened",  function() fzf.fzf_exec([[a p4 opened | sed -n "s/\/\(\/[^\/]\+\/[^\/]\+\/\)[^\/]\+\/\([^#]\+\).*/\1\2/p"]], { actions = fzf.config.globals.actions.files, previewer = "builtin", copen = fzf.quickfix }) end, {})
 			vim.keymap.set("n", "<leader>gs", "<cmd>Achanged<cr>")
 			vim.keymap.set("n", "<leader>go", "<cmd>Aopened<cr>")
 			-- Opengrok
-			vim.api.nvim_create_user_command("Agrok",  function(p) fzf.fzf_exec("a grok -em 99 "..p.args.." | grep '^/src/.*'",                                                      { actions = fzf.config.globals.actions.files, previewer = "builtin", copen = "FzfLua quickfix" }) end, { nargs = 1 })
-			vim.api.nvim_create_user_command("Agrokp", function(p) fzf.fzf_exec("a grok -em 99 -f "..(vim.g.getfile():match("^/src/.-/") or "/").." "..p.args.." | grep '^/src/.*'", { actions = fzf.config.globals.actions.files, previewer = "builtin", copen = "FzfLua quickfix" }) end, { nargs = 1 })
+			vim.api.nvim_create_user_command("Agrok",  function(p) fzf.fzf_exec("a grok -em 99 "..p.args.." | grep '^/src/.*'",                                                      { actions = fzf.config.globals.actions.files, previewer = "builtin", copen = fzf.quickfix }) end, { nargs = 1 })
+			vim.api.nvim_create_user_command("Agrokp", function(p) fzf.fzf_exec("a grok -em 99 -f "..(vim.g.getfile():match("^/src/.-/") or "/").." "..p.args.." | grep '^/src/.*'", { actions = fzf.config.globals.actions.files, previewer = "builtin", copen = fzf.quickfix }) end, { nargs = 1 })
 			-- Agid
 			vim.api.nvim_create_user_command("Amkid", "belowright split | terminal echo 'Generating ID file...' && a ws mkid", {})
-			vim.api.nvim_create_user_command("Agid",  function(p) fzf.fzf_exec("a ws gid -cq "..p.args,                                                      { actions = fzf.config.globals.actions.files, previewer = "builtin", copen = "FzfLua quickfix" }) end, { nargs = 1 })
-			vim.api.nvim_create_user_command("Agidp", function(p) fzf.fzf_exec("a ws gid -cqp "..(vim.g.getfile():match("^/src/(.-)/") or "/").." "..p.args, { actions = fzf.config.globals.actions.files, previewer = "builtin", copen = "FzfLua quickfix" }) end, { nargs = 1 })
+			vim.api.nvim_create_user_command("Agid",  function(p) fzf.fzf_exec("a ws gid -cq "..p.args,                                                      { actions = fzf.config.globals.actions.files, previewer = "builtin", copen = fzf.quickfix }) end, { nargs = 1 })
+			vim.api.nvim_create_user_command("Agidp", function(p) fzf.fzf_exec("a ws gid -cqp "..(vim.g.getfile():match("^/src/(.-)/") or "/").." "..p.args, { actions = fzf.config.globals.actions.files, previewer = "builtin", copen = fzf.quickfix }) end, { nargs = 1 })
 			vim.keymap.set("n", "<leader>r", "<cmd>exec 'Agidp    '.expand('<cword>')<cr>", { silent = true })
 			vim.keymap.set("n", "<leader>R", "<cmd>exec 'Agid     '.expand('<cword>')<cr>", { silent = true })
 			vim.keymap.set("n", "<leader>d", "<cmd>exec 'Agidp -D '.expand('<cword>')<cr>", { silent = true })

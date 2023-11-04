@@ -25,6 +25,7 @@ return {
 				lualine_a = {{"mode", fmt = function(m) return m:sub(1,1) end}},
 				lualine_b = {{"filename", symbols={modified="*", readonly="-"}}},
 				lualine_c = {"diff"},
+				-- TODO should indicate that code actions are available
 				lualine_x = {{"diagnostics", sections={"error", "warn"}}},
 				lualine_y = {"filetype"},
 				lualine_z = {"progress", "location"},

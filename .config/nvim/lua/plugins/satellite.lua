@@ -1,4 +1,5 @@
 -- Scrollbar
+-- kinda slow, try: dstein64/nvim-scrollview petertriho/nvim-scrollbar
 return {
 	"lewis6991/satellite.nvim",
 	event = "VeryLazy",
