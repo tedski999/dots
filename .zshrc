@@ -11,6 +11,8 @@ setopt hist_ignore_all_dups hist_reduce_blanks inc_append_history
 setopt numericglobsort prompt_subst
 setopt complete_in_word
 
+# TODO: smarter glob completion
+
 # Aliases
 alias v="vim"
 alias p="python3"
@@ -24,6 +26,7 @@ alias di="dots init"
 alias sudo="sudo --preserve-env "
 alias ip="ip --color"
 alias ls="exa -hs=name --group-directories-first"
+# TODO: not using config
 alias cat="bat --paging=never"
 alias less="bat --paging=always"
 alias imv="imv-wayland"
@@ -111,7 +114,7 @@ _cht() { compadd $commands:t }
 compdef _cht cht
 
 # del
-alias rm="2>&1 echo rm disabled, use del; return 1"
+alias rm="2>&1 echo rm disabled, use del; return 1 #"
 
 # lf
 lf() {
@@ -130,11 +133,11 @@ export FZF_DEFAULT_OPTS="--multi --bind=$FZF_BINDINGS --preview-window sharp --m
 export FZF_DEFAULT_COMMAND="rg --files --no-messages"
 export FZF_CTRL_T_COMMAND="fd --hidden --exclude '.git' --exclude 'node_modules'"
 export FZF_ALT_C_COMMAND="fd --hidden --exclude '.git' --exclude 'node_modules' --type d"
-source "/usr/share/doc/fzf/examples/key-bindings.zsh" 2>/dev/null || source "$HOME/.local/opt/fzf-scripts/key-bindings.zsh"
-source "/usr/share/doc/fzf/examples/completion.zsh" 2>/dev/null || source "$HOME/.local/opt/fzf-scripts/completion.zsh"
+source "/usr/share/fzf/key-bindings.zsh"
+source "/usr/share/fzf/completion.zsh"
 
 # Autosuggestions
-source "/usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh" 2>/dev/null || source "$HOME/.local/opt/zsh-autosuggestions/zsh-autosuggestions-master/zsh-autosuggestions.zsh" && {
+source "/usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh" && {
 	ZSH_AUTOSUGGEST_ACCEPT_WIDGETS=(end-of-line vi-end-of-line vi-add-eol)
 	ZSH_AUTOSUGGEST_PARTIAL_ACCEPT_WIDGETS+=(forward-char vi-forward-char)
 	ZSH_AUTOSUGGEST_STRATEGY=(history completion)
@@ -142,7 +145,7 @@ source "/usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh" 2>/dev/null || s
 }
 
 # Syntax highlighting
-source "/usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" 2>/dev/null || source "$HOME/.local/opt/zsh-syntax-highlighting/zsh-syntax-highlighting-master/zsh-syntax-highlighting.zsh" && {
+source "/usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" && {
 	ZSH_HIGHLIGHT_STYLES[default]="fg=cyan"
 	ZSH_HIGHLIGHT_STYLES[unknown-token]="fg=red"
 	ZSH_HIGHLIGHT_STYLES[reserved-word]="fg=blue"
@@ -166,7 +169,7 @@ source "/usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" 2>/dev/n
 
 # Start desktop environment
 [[ -o interactive && -o login && -z "$WAYLAND_DISPLAY" && "$(tty)" = "/dev/tty1" ]] && hash sway 2>/dev/null && {
-	WLR_NO_HARDWARE_CURSORS=1 XDG_CURRENT_DESKTOP=sway sway --unsupported-gpu
+	XDG_CURRENT_DESKTOP=sway sway
 }
 
 :

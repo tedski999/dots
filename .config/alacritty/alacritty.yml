@@ -11,11 +11,12 @@ window:
 font:
   size: 13.5
   normal:
-    family: Terminus (TTF)
+    family: Terminess Nerd Font
 
 selection:
   save_to_clipboard: true
 
+# TODO: keybinding to search username@host
 key_bindings:
   - { key: Return, mods: Shift|Control, action: SpawnNewInstance     }
   - { key: Escape, mods: Shift|Control, action: ToggleViMode         }

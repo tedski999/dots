@@ -1,4 +1,4 @@
-* { font-family: "Terminus (TTF)", monospace; font-size: 16px; }
+* { font-family: "Terminess Nerd Font", monospace; font-size: 16px; }
 window#waybar { background-color: rgba(0,0,0,0.75); }
 
 @keyframes pulse { to { color: #ffffff; } }

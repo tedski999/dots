@@ -2,7 +2,7 @@
 # Common functions
 set $get_views vs=$(swaymsg -rt get_tree | jq "recurse(.nodes[], .floating_nodes[]) | select(.visible).id")
 set $get_focused f=$(swaymsg -rt get_tree | jq "recurse(.nodes[], .floating_nodes[]) | first(select(.focused)).id")
-set $get_output n=$(swaymsg -rt get_outputs | jq -r ".[] | first(select(.active).id)")
+set $get_output n=$(swaymsg -rt get_outputs | jq -r ".[] | first(select(.focused).id)")
 set $get_workspaces ws=$(swaymsg -rt get_workspaces | jq -r ".[].name | split(\\\\":\\\\") | .[1]")
 set $get_prev_workspace w=$(( $( swaymsg -t get_workspaces | jq -r ".[] | first(select(.focused).name | split(\\\\":\\\\")) | .[1]" ) - 1 )) && w=$(( $w < 1 ? 1 : ($w < 9 ? $w : 9) ))
 set $get_next_workspace w=$(( $( swaymsg -t get_workspaces | jq -r ".[] | first(select(.focused).name | split(\\\\":\\\\")) | .[1]" ) + 1 )) && w=$(( $w < 1 ? 1 : ($w < 9 ? $w : 9) ))
@@ -16,7 +16,7 @@ default_border pixel 2
 default_floating_border pixel 2
 for_window [class=".*"]  border pixel 2
 for_window [app_id=".*"] border pixel 2
-font Terminus (TTF) 12
+font Terminess Nerd Font 12
 client.focused           #202020 #ffffff #000000 #ff0000 #ffffff
 client.focused_inactive  #202020 #202020 #ffffff #202020 #202020
 client.focused_tab_title #202020 #ffffff #000000

@@ -13,32 +13,12 @@ choice="$1"
 
 case "$choice" in
 	"mono")
-		swaymsg output "$mon0" pos 0 0
+		swaymsg output "$mon0" enable pos 0 0
 		swaymsg output "$mon1" disable
-		swaymsg workspace 1 output "$mon0"
-		swaymsg workspace 2 output "$mon0"
-		swaymsg workspace 3 output "$mon0"
-		swaymsg workspace 4 output "$mon0"
-		swaymsg workspace 5 output "$mon0"
-		swaymsg workspace 6 output "$mon0"
-		swaymsg workspace 7 output "$mon0"
-		swaymsg workspace 8 output "$mon0"
-		swaymsg workspace 9 output "$mon0"
-		swaymsg workspace 10 output "$mon0"
 		;;
 	"duel")
-		swaymsg output "$mon0" pos 0 1080
-		swaymsg output "$mon1" pos 0 0
-		swaymsg workspace 1 output "$mon0"
-		swaymsg workspace 2 output "$mon1"
-		swaymsg workspace 3 output "$mon0"
-		swaymsg workspace 4 output "$mon1"
-		swaymsg workspace 5 output "$mon0"
-		swaymsg workspace 6 output "$mon1"
-		swaymsg workspace 7 output "$mon0"
-		swaymsg workspace 8 output "$mon1"
-		swaymsg workspace 9 output "$mon0"
-		swaymsg workspace 10 output "$mon1"
+		swaymsg output "$mon0" enable pos 0 1080
+		swaymsg output "$mon1" enable pos 0 0
 		;;
 	"mirror")
 		# TODO: display mirroring

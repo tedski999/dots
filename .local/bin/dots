@@ -1,44 +1,28 @@
 #!/bin/sh
 
 dots="$HOME/.local/dots"
-[ "$1" != "init" ] && exec git --git-dir="$dots" --work-tree="$HOME" "$@"
+git="git --git-dir="$dots" --work-tree="$HOME""
+[ "$1" != "init" ] && exec $git "$@"
 
 git_ssh="git@github.com:/tedski999/dots"
 git_http="https://github.com/tedski999/dots"
-
-# TODO: opt completions and manpages
-# TODO: rustup or apt
-
-# TODO: https://tracker.debian.org/pkg/git-delta
-# TODO: https://packages.debian.org/sid/source/cliphist
-msung_apts="\
-file curl wget tar gzip zip unzip git gnupg man-db
-zsh zsh-syntax-highlighting zsh-autosuggestions
-git lf ripgrep fzf bat fd-find exa btop jq bc
-python3 python3-venv
-sway xwayland swayidle swaylock
-nvidia-driver nvidia-driver-libs:i386 linux-headers-amd64 linux-image-amd64 firmware-misc-nonfree
-mesa-vulkan-drivers libglx-mesa0:i386 mesa-vulkan-drivers:i386 libgl1-mesa-dri:i386
-pipewire-audio xdg-desktop-portal-wlr playerctl
-network-manager network-manager-openvpn openvpn
-bluetooth bluez-firmware
-wl-clipboard wlr-randr light thermald acpi
-libnotify-bin mako-notifier wofi flameshot
-alacritty firefox-esr mpv obs-studio steam-installer gamemode
-materia-gtk-theme breeze-icon-theme
-fonts-terminus fonts-noto"
-msung_debs="\
-git-delta https://github.com/dandavison/delta/releases/download/0.16.5/git-delta_0.16.5_amd64.deb
-discord https://discord.com/api/download?platform=linux&format=deb
-google-earth-pro-stable https://dl.google.com/dl/earth/client/current/google-earth-pro-stable_current_amd64.deb"
-
+msung_pkgs="\
+zsh zsh-autosuggestions zsh-syntax-highlighting
+curl wget tar gzip zip unzip gnupg man-db
+git eza fzf ripgrep fd lf less bat btop git-delta jq
+sway swayidle swaylock waybar wofi xorg-xwayland xf86-video-nouveau mesa
+pipewire wireplumber pipewire-jack xdg-desktop-portal-wlr playerctl
+wl-clipboard cliphist light acpi discord alacritty mako flameshot
+materia-gtk-theme breeze-icons noto-fonts ttf-terminus-nerd
+python3 rustup"
 septs_apts="\
-file curl wget tar gzip zip unzip git gnupg man-db
 zsh zsh-syntax-highlighting zsh-autosuggestions
-git lf ripgrep fzf bat fd-find exa btop jq bc
+curl wget tar gzip zip unzip gnupg man-db
+git exa fzf ripgrep fd lf less bat btop jq
 python3 python3-venv"
 septs_debs="\
 git-delta https://github.com/dandavison/delta/releases/download/0.16.5/git-delta_0.16.5_arm64.deb"
+# TODO: guest should have opt script links installed
 
 msg() { printf "\n\033[1;33m$@\033[0m\n"; }
 
@@ -46,113 +30,103 @@ msg() { printf "\n\033[1;33m$@\033[0m\n"; }
 shift
 case "$@" in
 	"msung"|"septs"|"guest") p="$@";;
-	"") p="$(hostname)"; case "$p" in "msung"|"septs");; *) p="guest";; esac;;
+	"") p="$(uname --node)"; case "$p" in "msung"|"septs");; *) p="guest";; esac;;
 	*) echo "Usage: $0 init [ msung | septs | guest ]"; exit 1;;
 esac
 msg "Using $p profile..."
 
 # Check permissions
-[ "$(id -u)" = "0" ] && { echo "Please run as non-root."; exit 1; }
-case "$p" in "msung"|"septs") hash sudo apt-get || exit 1; esac
+[ "$(id -u)" = "0" ] && { echo "Please run as non-root"; exit 1; }
+case "$p" in
+	"msung") hash sudo pacman || exit 1;;
+	"septs") hash sudo apt-get || exit 1;;
+esac
 
-# Install dots repository
+# Clone dots repository
 [ -d "$dots" ] || {
 	msg "Cloning dots repository..."
 	git clone --bare "$git_http" "$dots" || exit 1
-	if ! out="$(git --git-dir="$dots" --work-tree="$HOME" checkout main 2>&1)"; then
+	if ! out="$($git checkout main 2>&1)"; then
 		echo "WARNING: The next operation WILL overwrite the following files:"
 		printf "%s" "$out" | tail --lines +2 | head --lines -2
 		printf "Enter y to proceed with data loss: " && read -r res
-		[ "$res" = "y" ] && git --git-dir="$dots" --work-tree="$HOME" checkout main --force || exit 1
+		[ "$res" = "y" ] && $git checkout main --force || exit 1
 	fi
 	mkdir -p "$dots/info" "$HOME/.local/share" || exit 1
 	ln -sf "$HOME/.local/root/gitignore" "$dots/info/exclude" || exit 1
 }
-[ "$(git --git-dir="$dots" --work-tree="$HOME" remote get-url origin)" != "$git_ssh" ] && {
+[ "$($git remote get-url origin)" != "$git_ssh" ] && {
 	msg "Upgrading dots remote to authenticated SSH..."
-	ssh-add -L && {
-		git --git-dir="$dots" --work-tree="$HOME" remote set-url origin "$git_ssh" || exit 1
-		git --git-dir="$dots" --work-tree="$HOME" fetch || exit 1
-	}
+	ssh-add -L && { $git remote set-url origin "$git_ssh" && $git fetch || exit 1; }
 }
 
-# Repair home permissions
+# Pre-install configuration
+unset reconfig
 chmod 644 "$HOME/.ssh/config" || exit 1
 find "$HOME/.gnupg/" -type f -exec chmod 600 {} \; || exit 1
 find "$HOME/.gnupg/" -type d -exec chmod 700 {} \; || exit 1
-
-# Install system configuration
-unset reconfig
 case "$p" in
 	"msung"|"septs")
-		dir="$(pwd)" && cd "$HOME/.local/root/$p" || exit 1
-		for file in $(find * -type f); do
-			[ -L "/$file" ] || {
+		for file in $(find "$HOME/.local/root/$p" -type f -printf %P\\n); do
+			sudo [ -L "/$file" ] || {
 				msg "Installing $HOME/.local/root/$p/$file into system..."
 				sudo mkdir -p "$(dirname "/$file")" || exit 1
+				sudo chown root: "$HOME/.local/root/$p/$file" || exit 1
 				sudo ln -sf "$HOME/.local/root/$p/$file" "/$file" || exit 1
-				sudo chown root: "/$file"
 				reconfig=1
 			}
 		done
-		cd "$dir" || exit 1
 		;;
 esac
 
-# Upgrade system packages
-case "$p" in
-	"msung"|"septs")
-		[ -z "$(find -H /var/lib/apt/lists -maxdepth 0 -mtime -1)" ] || [ -n "$reconfig" ] && {
-			msg "Updating packages..."
-			sudo apt-get -y update || exit 1
-			sudo apt-get -y upgrade || exit 1
-		}
-esac
-
-# Select appropriate packages for profile
-case "$p" in
-	"msung") apts="$msung_apts"; debs="$msung_debs";;
-	"septs") apts="$septs_apts"; debs="$septs_debs";;
-	"guest") apts=""           ; debs=""           ;;
-esac
-
-# Install apt packages
-[ -n "$apts" ] && dpkg-query --show --showformat='${Status}\n' $apts 2>&1 | grep --quiet --fixed-string --regexp "no packages found matching" --regexp "not-installed" && {
-	msg "Installing apt packages..."
-	sudo apt-get -y install $apts || exit 1
-}
-
-# Install deb packages
-missing_debs="$(echo "$debs" | while read pkg src; do dpkg-query --show --showformat='${Status}\n' $pkg 2>&1 | grep --quiet -Fe "no packages found matching" -e "not-installed" && echo "$pkg $src"; done)"
-[ -n "$missing_debs" ] && {
-	msg "Installing deb packages..."
-	tmp="$(mktemp --suffix=.deb)" || exit 1
-	echo "$missing_debs" || while read pkg src; do
-		echo "Installing $pkg..."
-		curl -fL "$src" > "$tmp/$pkg.deb" || exit 1
-		sudo apt-get -y install "$tmp/$pkg.deb" || exit 1
-	done
-}
-
-# Post-install system configuration
+# Install packages
 case "$p" in
 	"msung")
-		[ -n "$reconfig" ] && {
-			msg "Installing boot configuration..."
-			sudo update-grub && sudo update-initramfs -u || exit 1
+		pkgs="$(sudo pacman --query --check --quiet $msung_pkgs 2>&1 | cut -d "'" -f 2)"
+		[ -n "$pkgs" ] && {
+			msg "Installing packages..."
+			sudo pacman --sync --needed --noconfirm $pkgs || exit 1
+		}
+		;;
+	"septs")
+		dpkg-query --show --showformat='${Status}\n' $septs_apts 2>&1 | grep --quiet --fixed-string --regexp "no packages found matching" --regexp "not-installed" && {
+			msg "Installing packages..."
+			sudo apt-get --assume-yes install $septs_apts || exit 1
+		}
+		echo "$septs_debs" | while read pkg src; do
+			dpkg-query --show --showformat='${Status}\n' $pkg 2>&1 | grep --quiet -Fe "no packages found matching" -e "not-installed" && {
+				echo "Installing $pkg..."
+				tmp="$(mktemp --suffix=.deb)" || exit 1
+				curl -fL "$src" > "$tmp" || exit 1
+				sudo apt-get --assume-yes install "$tmp" || exit 1
+			}
+		done
+		;;
+esac
+
+# Post-install configuration
+case "$p" in
+	"msung")
+		[ "$SHELL" != "$(command -v zsh)" ] && {
+			msg "Setting login shell to zsh..."
+			sudo chsh "$USER" -s "$(command -v zsh)" || exit 1
 		}
 		sudo systemctl is-enabled snapshots.timer >/dev/null || {
 			msg "Enabling btrfs snapshot daemon..."
 			sudo systemctl enable snapshots.timer || exit 1
 		}
-		[ $SHELL != "$(which zsh)" ] || {
+		[ -n "$reconfig" ] && {
+			msg "Installing boot configuration..."
+			sudo grub-mkconfig -o /boot/grub/grub.cfg || exit 1
+			sudo mkinitcpio --allpresets || { [ $? -ne 1 ] && exit 1; }
+		}
+		;;
+	"septs")
+		[ "$SHELL" != "$(command -v zsh)" ] && {
 			msg "Setting login shell to zsh..."
-			sudo chsh $USER -s "$(which zsh)"
+			sudo chsh "$USER" -s "$(command -v zsh)" || exit 1
 		}
 		;;
 esac
 
 msg "Done."
-[ -n "$reconfig" ] && echo "System configuration changed, you should reboot"
-
-:

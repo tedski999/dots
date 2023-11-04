@@ -6,7 +6,7 @@ layer=overlay
 width=450
 height=150
 
-font=Terminus (TTF) 12
+font=Terminess Nerd Font 12
 background-color=#303030
 progress-color=#808080
 border-color=#ffffff
