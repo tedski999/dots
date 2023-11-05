@@ -4,7 +4,7 @@ max_len=25
 
 out=""
 tooltip=""
-status="$(playerctl status)"
+status="$(playerctl status 2>/dev/null)"
 
 [ "$status" = "Playing" ] || [ "$status" = "Paused" ] && {
 	out="$(playerctl metadata title)"

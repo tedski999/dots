@@ -9,9 +9,7 @@ setopt autocd interactive_comments notify
 setopt auto_pushd pushd_ignore_dups pushd_silent
 setopt hist_ignore_all_dups hist_reduce_blanks inc_append_history
 setopt numericglobsort prompt_subst
-setopt complete_in_word
-
-# TODO: smarter glob completion
+setopt complete_in_word glob_complete
 
 # Aliases
 alias v="vim"
@@ -22,16 +20,13 @@ alias ll="ls -l"
 alias la="ll -a"
 alias lt="la -T"
 alias d="dirs -v"
-alias di="dots init"
+alias di="dots init $(uname --node)"
 alias sudo="sudo --preserve-env "
 alias ip="ip --color"
 alias ls="exa -hs=name --group-directories-first"
-# TODO: not using config
 alias cat="bat --paging=never"
 alias less="bat --paging=always"
-alias imv="imv-wayland"
 alias grep="rg"
-alias diff="delta"
 hash nvim 2>/dev/null && alias v="nvim"
 for i ({1..9}) alias "$i"="cd +$i"
 for i ({3..9}) alias "${(l:i::.:)}"="${(l:i-1::.:)};.."
@@ -59,14 +54,16 @@ for k in "^[p" "^[OA" "^[[A"; bindkey "$k" up-line-or-beginning-search
 for k in "^[n" "^[OB" "^[[B"; bindkey "$k" down-line-or-beginning-search
 
 # Completion
-autoload -Uz compinit
-compinit -d "$XDG_CACHE_HOME/zcompdump" $([[ -n "$XDG_CACHE_HOME/zcompdump"(#qN.mh+24) ]] && echo -C)
+zmodload zsh/complist
+autoload -Uz compinit && compinit -d "$XDG_CACHE_HOME/zcompdump" $([[ -n "$XDG_CACHE_HOME/zcompdump"(#qN.mh+24) ]] && echo -C)
 _comp_options+=(globdots)
-autoload -U bashcompinit
-bashcompinit
+autoload -U bashcompinit && bashcompinit
 zstyle ":completion:*" menu select
+zstyle ":completion:*" complete-options true
 zstyle ":completion:*" completer _complete _match _approximate
 zstyle ":completion:*" matcher-list "" "m:{[:lower:][:upper:]}={[:upper:][:lower:]}" "+l:|=* r:|=*"
+zstyle ":completion:*" list-suffixes
+zstyle ":completion:*" expand prefix suffix 
 zstyle ":completion:*" use-cache on
 zstyle ":completion:*" cache-path "$XDG_CACHE_HOME/zcompcache"
 zstyle ":completion:*" group-name ""
@@ -115,6 +112,9 @@ compdef _cht cht
 
 # del
 alias rm="2>&1 echo rm disabled, use del; return 1 #"
+
+# delta
+diff() { command diff -u $@ | delta }
 
 # lf
 lf() {
@@ -169,6 +169,7 @@ source "/usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.z
 
 # Start desktop environment
 [[ -o interactive && -o login && -z "$WAYLAND_DISPLAY" && "$(tty)" = "/dev/tty1" ]] && hash sway 2>/dev/null && {
+	export MOZ_ENABLE_WAYLAND=1
 	XDG_CURRENT_DESKTOP=sway sway
 }
 

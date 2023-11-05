@@ -1,23 +1,20 @@
 #!/bin/sh
 
 status=0
+shopt -s nullglob
 
 # TODO: ensure enough space available
 
 # Mount btrfs root if not already
-unset device
-mkdir -p /media/btrfs || exit 1
 mountpoint /media/btrfs >/dev/null || {
-	device="$(df -P / | tail -1 | cut -d " " -f 1)"
-	mount --types btrfs "$device" /media/btrfs || exit 1
+	mount --mkdir /media/btrfs || exit 1
+	mounted="1"
 }
-
-exit
 
 # Prune older snapshots
 last=0
 now=$(date --utc +%s)
-for date in $(printf "%s\n" /media/btrfs/@rootfs-* | cut -d - -f 2- | sort); do
+for date in $(printf "%s\n" /media/btrfs/@-* | cut -d - -f 2- | sort); do
 	this=$(date -d "$date" +%s)
 	diff=$(( $this - $last ))
 	age=$(( $now - $this ))
@@ -28,15 +25,15 @@ for date in $(printf "%s\n" /media/btrfs/@rootfs-* | cut -d - -f 2- | sort); do
 	elif [ $age -lt 604800 ] && [ $diff -gt 86400 ]; then # Keep 1 day between snapshots older than a day => 7 snapshots per week
 		last=$this
 	else # Delete all snapshots older than a week
-		btrfs subvolume delete "/media/btrfs/@rootfs-$date" || status=$?
+		btrfs subvolume delete "/media/btrfs/@-$date" || status=$?
 	fi
 done
 
 # Create new snapshot
 now="$(date -d "@$now" --utc +%Y-%m-%dZ%H:%M:%S)"
-btrfs subvolume snapshot / "/media/btrfs/@rootfs-$now" || status=$?
+btrfs subvolume snapshot / "/media/btrfs/@-$now" || status=$?
 
 # Unmount btrfs root if it was not mounted before
-[ -n "$device" ] && { umount /media/btrfs || status=$?; }
+[ -n "$mounted" ] && { umount /media/btrfs || status=$?; }
 
 exit $status

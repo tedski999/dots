@@ -3,21 +3,17 @@ GRUB_TIMEOUT=1
 GRUB_TIMEOUT_STYLE=hidden
 GRUB_RECORDFAIL_TIMEOUT=1
 GRUB_DISTRIBUTOR="Arch"
-GRUB_CMDLINE_LINUX_DEFAULT="splash cryptdevice=UUID=97be34d4-4d3c-468c-98bd-63633098598a:root root=/dev/mapper/root"
+GRUB_CMDLINE_LINUX_DEFAULT="splash cryptdevice=LABEL=CRYPT:root root=/dev/disk/by-label/ROOT resume=LABEL=SWAP"
 GRUB_CMDLINE_LINUX=""
+# TODO: purpose?
 GRUB_PRELOAD_MODULES="part_gpt part_msdos"
 GRUB_ENABLE_CRYPTODISK=y
 GRUB_GFXMODE=auto
 GRUB_GFXPAYLOAD_LINUX=keep
 GRUB_DISABLE_RECOVERY=true
-
-# Uncomment and set to the desired menu colors.  Used by normal and wallpaper
-# modes only.  Entries specified as foreground/background.
+# TODO: grub theme
 #GRUB_COLOR_NORMAL="light-blue/black"
 #GRUB_COLOR_HIGHLIGHT="light-cyan/blue"
-
-# Uncomment one of them for the gfx desired, a image background or a gfxtheme
 #GRUB_BACKGROUND="/path/to/wallpaper"
 #GRUB_THEME="/path/to/gfxtheme"
-
 #GRUB_DISABLE_OS_PROBER=false

@@ -47,7 +47,6 @@
 !/.local/bin/git
 !/.local/bin/networkctl
 !/.local/bin/powerctl
-!/.local/bin/powerctlfade
 !/.local/bin/psswrds
 !/.local/bin/un
 !/.local/bin/xterm

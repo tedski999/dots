@@ -34,9 +34,7 @@ exec_always pidof wl-paste || wl-paste --watch cliphist store
 # Idle locking + suspending
 exec_always powerctl uncaffeinate
 # Output setup
-exec displayctl mono
-# Start on the correct workspace
-exec $get_output && swaymsg "workspace ${n}1:1"
+exec displayctl auto
 # Bars
 # TODO: multimonitor bars
 bar {

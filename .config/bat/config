@@ -1,4 +1,4 @@
---plain
+--style=plain
 --wrap never
 --map-syntax "*.tin:C++"
 --map-syntax '*.tac:C++'

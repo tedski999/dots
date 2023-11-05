@@ -95,7 +95,6 @@ bluetooth_conn_menu() {
 			"forget") bluetoothctl --timeout 5 remove "$1" || notify-send "Failed to forget $1" "";;
 			"trust") bluetoothctl --timeout 5 trust "$1" || notify-send "Failed to trust $1" "";;
 			"untrust") bluetoothctl --timeout 5 untrust "$1" || notify-send "Failed to untrust $1" "";;
-			# TODO: audio can be poor quality sometimes?
 			"connect") bluetoothctl --timeout 5 connect "$1" || notify-send "Failed to connect to $1" "";;
 			# TODO: pairing -> connecting not quite working here (probably need to input pin somehow)
 			"pair") bluetoothctl --timeout 5 pair "$1" || notify-send "Failed to pair with $1" "";;

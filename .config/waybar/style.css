@@ -19,7 +19,6 @@ window#waybar { background-color: rgba(0,0,0,0.75); }
 #battery,
 #network,
 #wireplumber,
-#pulseaudio,
 #clock {
 	padding: 0 5px;
 }
@@ -61,10 +60,8 @@ window#waybar { background-color: rgba(0,0,0,0.75); }
 
 /* Volume */
 #wireplumber {}
+#wireplumber.high { color: #ff8000; }
 #wireplumber.muted { color: #ff0000; }
-#pulseaudio {}
-#pulseaudio.bluetooth { color: #00ffff; }
-#pulseaudio.muted { color: #ff0000; }
 
 /* Battery */
 #battery:not(.charging) { color: #ff8000; }

@@ -6,9 +6,10 @@
 	"height": 30,
 	"spacing": 0,
 
+	// TODO: non-primary display modules
 	"modules-left": ["sway/workspaces", "sway/scratchpad", "sway/window"],
 	"modules-center": [],
-	"modules-right": ["custom/media", "custom/caffeinated", "gamemode", "bluetooth", "cpu", "memory", "temperature", "disk", "network", "pulseaudio", "battery", "clock"],
+	"modules-right": ["custom/media", "custom/caffeinated", "gamemode", "bluetooth", "cpu", "memory", "temperature", "disk", "network", "wireplumber", "battery", "clock"],
 
 	"sway/workspaces": {
 		"format": "{name}"
@@ -105,10 +106,10 @@
 		"on-click": "networkctl wifi",
 	},
 
-	"pulseaudio": {
+	"wireplumber": {
 		"on-click": "wpctl set-mute @DEFAULT_SINK@ toggle",
-		"on-scroll-up": "wpctl set-volume @DEFAULT_SINK@ 1%-",
-		"on-scroll-down": "wpctl set-volume @DEFAULT_SINK@ 1%+",
+		"max-volume": 150,
+		"states": { "high": 75 },
 	},
 
 	"battery": {
@@ -121,9 +122,25 @@
 	},
 
 	"clock": {
-		"tooltip-format": "   {:%a %b %d %Y}\n{calendar}",
-		"today-format":             "<span color='#ff0000'><b><u>{}</u></b></span>",
-		"format-calendar":          "<span color='#ffffff'>{}</span>",
-		"format-calendar-weekdays": "<span color='#ff8000'><b>{}</b></span>",
+		"format": "{:%H:%M}",
+		"format-alt": "{:%m-%d}",
+		"tooltip-format": "{calendar}",
+		"actions":  {
+			"on-click-right": "mode",
+			"on-scroll-up": "shift_up",
+			"on-scroll-down": "shift_down"
+		},
+		"calendar": {
+			"mode": "month",
+			"mode-mon-col": 3,
+			"on-click-right": "mode",
+			"on-scroll": 1,
+			"format": {
+				"months":   "<span color='#8080ff'>{}</span>",
+				"days":     "<span color='#ffffff'>{}</span>",
+				"weekdays": "<span color='#ff8000'><b>{}</b></span>",
+				"today":    "<span color='#ff0000'><b>{}</b></span>"
+			}
+		}
 	}
 }

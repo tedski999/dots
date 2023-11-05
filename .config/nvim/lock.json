@@ -1,7 +1,7 @@
 {
   "Comment.nvim": { "branch": "master", "commit": "e1fe53117aab24c378d5e6deaad786789c360123" },
   "fzf-lua": { "branch": "main", "commit": "bc5110738d44c16655cf1b23534343aaade855a2" },
-  "lazy.nvim": { "branch": "main", "commit": "16603c6917435d8446f7357cb61095138a417085" },
+  "lazy.nvim": { "branch": "main", "commit": "96584866b9c5e998cbae300594d0ccfd0c464627" },
   "lualine.nvim": { "branch": "master", "commit": "05d78e9fd0cdfb4545974a5aa14b1be95a86e9c9" },
   "mini.completion": { "branch": "main", "commit": "04e7e43e42cb0f0049f5febc4a4c9a579a59d07b" },
   "mini.splitjoin": { "branch": "main", "commit": "686c3ca413382e353f0f1b7c58bb552115d1f5d0" },
