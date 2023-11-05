@@ -16,13 +16,13 @@ esac
 
 for file in $@; do
 	case "$mode" in
-		u) [ -n "$(find "$trash$(readlink -m $file)" -maxdepth 1 -name "$pattern" 2>/dev/null)" ] || { echo "$file is not in the trash" >&2; exit 1; };;
+		u) [ -n "$(find "$trash$(readlink -m -- "$file")" -maxdepth 1 -name "$pattern" 2>/dev/null)" ] || { echo "$file is not in the trash" >&2; exit 1; };;
 		*) [ -e "$file" ] || { echo "$file does not exist" >&2; exit 1; };;
 	esac
 done
 
 for file in $@; do
-	trashdir="$trash$(readlink -m $file)"
+	trashdir="$trash$(readlink -m -- "$file")"
 	case "$mode" in
 		u)
 			trashed="$(find "$trashdir" -maxdepth 1 -name "$pattern" -printf %f\\n)"
@@ -33,9 +33,9 @@ for file in $@; do
 				trashed="$(echo "$trashed" | awk "NR == $choice { print; exit }")"
 				[ -n "$trashed" ] || exit 1
 			}
-			mv -i "$trashdir/$trashed" "$file" || exit 1
+			mv -i -- "$trashdir/$trashed" "$file" || exit 1
 			;;
-		f) rm -rf $file || exit 1;;
-		n) mkdir -p "$trashdir" && mv -i "$file" "$trashdir/$(date --utc +trashed-%y-%m-%dZ%H:%M:%S)" || exit 1;;
+		f) rm -rf "$file" || exit 1;;
+		n) mkdir -p "$trashdir" && mv -i -- "$file" "$trashdir/$(date --utc +trashed-%y-%m-%dZ%H:%M:%S)" || exit 1;;
 	esac
 done
