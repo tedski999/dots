@@ -9,8 +9,8 @@ git_http="https://github.com/tedski999/dots"
 
 msung_pkgs="\
 zsh zsh-autosuggestions zsh-syntax-highlighting
-curl wget tar gzip zip unzip gnupg man-db
-neovim git eza fzf ripgrep fd lf less bat btop git-delta jq
+curl wget tar gzip zip unzip gnupg man-db jq bc
+neovim git eza fzf ripgrep fd lf less bat btop git-delta pulsemixer
 sway swaybg swayidle swaylock waybar wofi xorg-xwayland xf86-video-nouveau mesa
 pipewire wireplumber pipewire-alsa pipewire-pulse pipewire-jack xdg-desktop-portal-wlr
 networkmanager networkmanager-openvpn openvpn bluez bluez-utils

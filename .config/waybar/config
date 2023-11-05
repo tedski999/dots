@@ -104,12 +104,14 @@
 		"format-ethernet": "wired",
 		"format-disconnected": "offline",
 		"on-click": "networkctl wifi",
+		"on-click-right": "case \"$(nmcli radio wifi)\" in \"enabled\") nmcli radio wifi off;; *) nmcli radio wifi on;; esac"
 	},
 
 	"wireplumber": {
-		"on-click": "wpctl set-mute @DEFAULT_SINK@ toggle",
 		"max-volume": 150,
 		"states": { "high": 75 },
+		"on-click": "alacritty --command pulsemixer",
+		"on-click-right": "wpctl set-mute @DEFAULT_SINK@ toggle"
 	},
 
 	"battery": {
