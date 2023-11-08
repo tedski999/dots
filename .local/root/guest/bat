@@ -1,5 +1,9 @@
 #!/bin/sh
 
+for bin in $(realpath $(which -a bat batcat)); do
+	[ "$(realpath $0)" != "$bin" ] && [ -x "$bin" ] && exec "$bin" "$@"
+done
+
 arch="$(uname --machine)"
 dir="$HOME/.local/share/opt/bat/$arch"
 case "$arch" in
