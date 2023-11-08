@@ -15,9 +15,10 @@ sway swaybg swayidle swaylock waybar wofi xorg-xwayland xf86-video-nouveau mesa
 pipewire wireplumber pipewire-alsa pipewire-pulse pipewire-jack xdg-desktop-portal-wlr
 networkmanager networkmanager-openvpn openvpn bluez bluez-utils
 playerctl wl-clipboard cliphist light acpi thermald
-firefox discord alacritty mako flameshot mpv imv
-materia-gtk-theme breeze-icons noto-fonts noto-fonts-cjk ttf-terminus-nerd
-btrfs-progs grub efibootmgr python3 rustup"
+firefox discord alacritty mako grim slurp mpv imv
+materia-gtk-theme kvantum-theme-materia breeze-icons
+noto-fonts noto-fonts-cjk ttf-terminus-nerd
+archlinux-contrib pacman-contrib btrfs-progs grub efibootmgr python3 rustup"
 
 septs_apts="\
 zsh zsh-syntax-highlighting zsh-autosuggestions

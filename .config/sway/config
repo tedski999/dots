@@ -64,13 +64,11 @@ focus_follows_mouse no
 mouse_warping output
 
 # Program shortcuts
-bindsym Mod4+space                   exec flock -n /tmp/wofi.lock wofi --prompt "" --show "run,drun"
+bindsym Mod4+space                   exec flock --nonblock --close /tmp/wofi.lock wofi --prompt "" --show "run,drun"
 bindsym Mod4+Return                  exec $TERMINAL
 bindsym Mod4+t                       exec $TERMINAL
 bindsym Mod4+w                       exec $BROWSER
 bindsym Mod4+d                       exec discord
-bindsym Mod4+s                       exec flameshot gui --delay 50 --raw | wl-copy --type image/png
-bindsym Mod4+Shift+s                 exec flameshot gui --delay 50 --raw --accept-on-select | wl-copy --type image/png
 bindsym Mod4+Escape                  exec powerctl
 bindsym --locked Mod4+Shift+Escape   exec powerctl lock
 bindsym --locked Mod4+Control+Escape exec powerctl suspend
@@ -154,6 +152,14 @@ bindsym Mod4+Shift+z         exec $group && $get_output && $get_empty_workspace 
 bindsym Mod4+Control+z       exec '$group && $get_output && $get_empty_workspace && swaymsg "move container workspace number $w:$o" && $foucs_group'
 bindsym Mod4+Control+Shift+z exec '$group && $get_output && $get_workspaces && i=1; for w in $ws; do swaymsg rename workspace $w:$o to $i:$o; i=$(( $i + 1 )); done && $foucs_group'
 
+# Outputs
+bindsym Mod4+equal         exec $get_output && swaymsg output $(swaymsg -rt get_outputs | jq -r '.[] | select(.name == "'$o'") | "\(.name) scale \(.scale * 1.1)"')
+bindsym Mod4+minus         exec $get_output && swaymsg output $(swaymsg -rt get_outputs | jq -r '.[] | select(.name == "'$o'") | "\(.name) scale \(.scale / 1.1)"')
+bindsym Mod4+Shift+equal   exec $get_output && swaymsg output $(swaymsg -rt get_outputs | jq -r '.[] | select(.name == "'$o'") | "\(.name) scale \(.scale * 1.5)"')
+bindsym Mod4+Shift+minus   exec $get_output && swaymsg output $(swaymsg -rt get_outputs | jq -r '.[] | select(.name == "'$o'") | "\(.name) scale \(.scale / 1.5)"')
+bindsym Mod4+Control+equal exec $get_output && swaymsg output "$o" scale 1
+bindsym Mod4+Control+minus exec $get_output && swaymsg output "$o" scale 2
+
 # Layout
 default_orientation auto
 bindsym Mod4+g       focus parent
@@ -164,8 +170,8 @@ bindsym Mod4+o       layout toggle splitv splith
 bindsym Mod4+Shift+o layout toggle split tabbed
 
 # Scratchpads
-bindsym Mod4+minus scratchpad show
-bindsym Mod4+Shift+minus move scratchpad
+bindsym Mod4+0 scratchpad show
+bindsym Mod4+Shift+0 move scratchpad
 
 # Media
 bindsym --locked XF86AudioPlay         exec playerctl play-pause
@@ -205,5 +211,6 @@ bindsym --locked Shift+XF86MonBrightnessUp           exec light -A 10  && $send_
 bindsym --locked Control+XF86MonBrightnessUp         exec light -S 100 && $send_brightness_notif
 
 # Screenshots
-bindsym Print       exec flameshot gui --delay 50 --raw | wl-copy --type image/png
-bindsym Shift+Print exec flameshot gui --delay 50 --raw --accept-on-select | wl-copy --type image/png
+bindsym Print         exec slurp -b "#ffffff20" | grim -g - - | wl-copy --type image/png
+bindsym Shift+Print   exec swaymsg -t get_tree | jq -r '.. | select(.pid? and .visible?) | .rect | "\(.x),\(.y) \(.width)x\(.height)"' | slurp -B "#ffffff20" | grim -g - - | wl-copy --type image/png
+bindsym Control+Print exec slurp -oB '#ffffff20' | grim -g - - | wl-copy --type image/png
