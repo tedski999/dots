@@ -9,12 +9,13 @@ password="$CH_PASSWORD"
 [ -z "$lines" ] && lines="16"
 [ -z "$width" ] && width="50%"
 [ -n "$password" ] && password="--password"
+[ -z "$@" ] && format="" || format="%s\n"
 
 IFS="
 "
 
 while true; do
-	choice="$(printf "%s\n" $@ | flock -n /tmp/wofi.lock wofi --cache-file /dev/null --dmenu --lines "$lines" --width "$width" $password --prompt "$prompt")"
+	choice="$(printf "$format" $@ | flock --nonblock --close /tmp/wofi.lock wofi --cache-file /dev/null --dmenu --lines "$lines" --width "$width" $password --prompt "$prompt")"
 	[ -n "$custom" ] || [ -z "$choice" ] || { for option in $@; do [ "$choice" = "$option" ] && break; done; } && break
 done
 

@@ -14,19 +14,8 @@ swaymsg -rt get_outputs | jq -r ".[].name" | {
 	}
 
 	case "$choice" in
-		"mono")
-			swaymsg output "$mon0" enable pos 0 0
-			swaymsg output "$mon1" disable
-			;;
-		"duel")
-			swaymsg output "$mon0" enable pos 0 1080
-			swaymsg output "$mon1" enable pos 0 0
-			;;
-		"*")
-			return 1
-			;;
+		"mono") swaymsg output "$mon0" enable pos 0 0;    swaymsg output "$mon1" disable;;
+		"duel") swaymsg output "$mon0" enable pos 0 1080; swaymsg output "$mon1" enable pos 0 0;;
+		"*") return 1;;
 	esac
-
-	# TODO: rename all workspaces to match monitor id, move focus to appropriate workspace
-	#exec $get_output && swaymsg "workspace ${n}1:1"
 }

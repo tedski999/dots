@@ -30,9 +30,9 @@ case "$choice" in
 	"caffeinate") pkill swayidle;;
 	"uncaffeinate") pidof swayidle || swayidle -w \
 		idlehint 300 lock "swaylock --daemonize" unlock "pkill -USR1 swaylock" \
-		timeout 300 "powerctl fade &"              resume "pkill powerctlfade" \
-		timeout 310 "loginctl lock-session"        resume "pkill powerctlfade" \
-		timeout 900 "systemctl suspend"            resume "pkill powerctlfade" \
-		before-sleep "loginctl lock-session" after-resume "pkill powerctlfade" &;;
+		timeout 300 "powerctl fade &"              resume "pkill powerctl" \
+		timeout 310 "loginctl lock-session"        resume "pkill powerctl" \
+		timeout 900 "systemctl suspend"            resume "pkill powerctl" \
+		before-sleep "loginctl lock-session" after-resume "pkill powerctl" &;;
 	*) return 1;;
 esac
