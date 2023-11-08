@@ -5,7 +5,7 @@ dir="$HOME/.local/share/opt/lf/$arch"
 bin="$dir/lf"
 case "$arch" in
 	"x86_64") src="https://github.com/gokcehan/lf/releases/download/r31/lf-linux-amd64.tar.gz";;
-	"armv71") src="https://github.com/gokcehan/lf/releases/download/r31/lf-linux-arm.tar.gz";;
+	"armv7l") src="https://github.com/gokcehan/lf/releases/download/r31/lf-linux-arm.tar.gz";;
 esac
 
 [ -x "$bin" ] || { mkdir -p "$dir" && curl -fL "$src" | tar -xzC "$dir" || exit 1; }
