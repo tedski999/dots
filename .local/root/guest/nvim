@@ -1,0 +1,9 @@
+#!/bin/sh
+
+arch="$(uname --machine)"
+dir="$HOME/.local/share/opt/nvim/$arch"
+bin="$dir/nvim-linux64/bin/nvim"
+src="https://github.com/neovim/neovim/releases/download/stable/nvim-linux64.tar.gz"
+
+[ -x "$bin" ] || { mkdir -p "$dir" && curl -fL "$src" | tar -xzC "$dir" || exit 1; }
+exec "$bin" "$@"

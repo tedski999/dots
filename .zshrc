@@ -11,6 +11,10 @@ setopt hist_ignore_all_dups hist_reduce_blanks inc_append_history
 setopt numericglobsort prompt_subst
 setopt complete_in_word glob_complete
 
+# opt resources directory
+opt="$HOME/.local/share/opt"
+[ -d "$opt" ] || mkdir -p "$opt"
+
 # Aliases
 alias v="vim"
 alias p="python3"
@@ -23,7 +27,7 @@ alias d="dirs -v"
 alias di="dots init $(uname --node)"
 alias sudo="sudo --preserve-env "
 alias ip="ip --color"
-alias ls="exa -hs=name --group-directories-first"
+alias ls="exa -hs=name --group-directories-first" # TODO: eza
 alias cat="bat --paging=never"
 alias less="bat --paging=always"
 alias grep="rg"
@@ -106,7 +110,8 @@ compdef _ash ash
 0x0() { curl -F"file=@$1" https://0x0.st }
 
 # cht.sh
-cht() { cht.sh "$@?style=paraiso-dark" | less }
+[ -f "$opt/cht.sh" ] || { curl -L "https://cht.sh/:cht.sh" > "$opt/cht.sh" || exit 1; }
+cht() { bash "$opt/cht.sh" "$@?style=paraiso-dark" | less }
 _cht() { compadd $commands:t }
 compdef _cht cht
 
@@ -133,39 +138,41 @@ export FZF_DEFAULT_OPTS="--multi --bind=$FZF_BINDINGS --preview-window sharp --m
 export FZF_DEFAULT_COMMAND="rg --files --no-messages"
 export FZF_CTRL_T_COMMAND="fd --hidden --exclude '.git' --exclude 'node_modules'"
 export FZF_ALT_C_COMMAND="fd --hidden --exclude '.git' --exclude 'node_modules' --type d"
-source "/usr/share/fzf/key-bindings.zsh"
-source "/usr/share/fzf/completion.zsh"
+[ -f "$opt/fzf-key-bindings.zsh" ] || { curl -L "https://raw.githubusercontent.com/junegunn/fzf/master/shell/key-bindings.zsh" > "$opt/fzf-key-bindings.zsh" || exit 1; }
+[ -f "$opt/fzf-completion.zsh" ] || { curl -L "https://raw.githubusercontent.com/junegunn/fzf/master/shell/completion.zsh" > "$opt/fzf-completion.zsh" || exit 1; }
+source "$opt/fzf-key-bindings.zsh"
+source "$opt/fzf-completion.zsh"
 
 # Autosuggestions
-source "/usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh" && {
-	ZSH_AUTOSUGGEST_ACCEPT_WIDGETS=(end-of-line vi-end-of-line vi-add-eol)
-	ZSH_AUTOSUGGEST_PARTIAL_ACCEPT_WIDGETS+=(forward-char vi-forward-char)
-	ZSH_AUTOSUGGEST_STRATEGY=(history completion)
-	ZSH_AUTOSUGGEST_BUFFER_MAX_SIZE=100
-}
+[ -f "$opt/zsh-autosuggestions-master/zsh-autosuggestions.zsh" ] || { curl -L "https://github.com/zsh-users/zsh-autosuggestions/archive/refs/heads/master.tar.gz" | tar -xzC "$opt" || exit 1; }
+source "$opt/zsh-autosuggestions-master/zsh-autosuggestions.zsh"
+ZSH_AUTOSUGGEST_ACCEPT_WIDGETS=(end-of-line vi-end-of-line vi-add-eol)
+ZSH_AUTOSUGGEST_PARTIAL_ACCEPT_WIDGETS+=(forward-char vi-forward-char)
+ZSH_AUTOSUGGEST_STRATEGY=(history completion)
+ZSH_AUTOSUGGEST_BUFFER_MAX_SIZE=100
 
 # Syntax highlighting
-source "/usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" && {
-	ZSH_HIGHLIGHT_STYLES[default]="fg=cyan"
-	ZSH_HIGHLIGHT_STYLES[unknown-token]="fg=red"
-	ZSH_HIGHLIGHT_STYLES[reserved-word]="fg=blue"
-	ZSH_HIGHLIGHT_STYLES[path]="fg=cyan,underline"
-	ZSH_HIGHLIGHT_STYLES[suffix-alias]="fg=blue,underline"
-	ZSH_HIGHLIGHT_STYLES[precommand]="fg=blue,underline"
-	ZSH_HIGHLIGHT_STYLES[commandseparator]="fg=magenta"
-	ZSH_HIGHLIGHT_STYLES[globbing]="fg=magenta"
-	ZSH_HIGHLIGHT_STYLES[history-expansion]="fg=magenta"
-	ZSH_HIGHLIGHT_STYLES[single-hyphen-option]="fg=green"
-	ZSH_HIGHLIGHT_STYLES[double-hyphen-option]="fg=green"
-	ZSH_HIGHLIGHT_STYLES[rc-quote]="fg=cyan,bold"
-	ZSH_HIGHLIGHT_STYLES[dollar-double-quoted-argument]="fg=cyan,bold"
-	ZSH_HIGHLIGHT_STYLES[back-double-quoted-argument]="fg=cyan,bold"
-	ZSH_HIGHLIGHT_STYLES[back-dollar-quoted-argument]="fg=cyan,bold"
-	ZSH_HIGHLIGHT_STYLES[assign]="none"
-	ZSH_HIGHLIGHT_STYLES[redirection]="fg=yellow,bold"
-	ZSH_HIGHLIGHT_STYLES[named-fd]="none"
-	ZSH_HIGHLIGHT_STYLES[arg0]="fg=blue"
-}
+[ -f "$opt/zsh-syntax-highlighting-master/zsh-syntax-highlighting.zsh" ] || { curl -L "https://github.com/zsh-users/zsh-syntax-highlighting/archive/refs/heads/master.tar.gz" | tar -xzC "$opt" || exit 1; }
+source "$opt/zsh-syntax-highlighting-master/zsh-syntax-highlighting.zsh"
+ZSH_HIGHLIGHT_STYLES[default]="fg=cyan"
+ZSH_HIGHLIGHT_STYLES[unknown-token]="fg=red"
+ZSH_HIGHLIGHT_STYLES[reserved-word]="fg=blue"
+ZSH_HIGHLIGHT_STYLES[path]="fg=cyan,underline"
+ZSH_HIGHLIGHT_STYLES[suffix-alias]="fg=blue,underline"
+ZSH_HIGHLIGHT_STYLES[precommand]="fg=blue,underline"
+ZSH_HIGHLIGHT_STYLES[commandseparator]="fg=magenta"
+ZSH_HIGHLIGHT_STYLES[globbing]="fg=magenta"
+ZSH_HIGHLIGHT_STYLES[history-expansion]="fg=magenta"
+ZSH_HIGHLIGHT_STYLES[single-hyphen-option]="fg=green"
+ZSH_HIGHLIGHT_STYLES[double-hyphen-option]="fg=green"
+ZSH_HIGHLIGHT_STYLES[rc-quote]="fg=cyan,bold"
+ZSH_HIGHLIGHT_STYLES[dollar-double-quoted-argument]="fg=cyan,bold"
+ZSH_HIGHLIGHT_STYLES[back-double-quoted-argument]="fg=cyan,bold"
+ZSH_HIGHLIGHT_STYLES[back-dollar-quoted-argument]="fg=cyan,bold"
+ZSH_HIGHLIGHT_STYLES[assign]="none"
+ZSH_HIGHLIGHT_STYLES[redirection]="fg=yellow,bold"
+ZSH_HIGHLIGHT_STYLES[named-fd]="none"
+ZSH_HIGHLIGHT_STYLES[arg0]="fg=blue"
 
 # Start desktop environment
 [[ -o interactive && -o login && -z "$WAYLAND_DISPLAY" && "$(tty)" = "/dev/tty1" ]] && hash sway 2>/dev/null && {

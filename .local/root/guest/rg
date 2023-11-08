@@ -1,0 +1,11 @@
+#!/bin/sh
+
+arch="$(uname --machine)"
+dir="$HOME/.local/share/opt/rg/$arch"
+case "$arch" in
+	"x86_64") bin="$dir/ripgrep-13.0.0-x86_64-unknown-linux-musl/rg";   src="https://github.com/BurntSushi/ripgrep/releases/download/13.0.0/ripgrep-13.0.0-x86_64-unknown-linux-musl.tar.gz";;
+	"armv71") bin="$dir/ripgrep-13.0.0-arm-unknown-linux-gnueabihf/rg"; src="https://github.com/BurntSushi/ripgrep/releases/download/13.0.0/ripgrep-13.0.0-arm-unknown-linux-gnueabihf.tar.gz";;
+esac
+
+[ -x "$bin" ] || { mkdir -p "$dir" && curl -fL "$src" | tar -xzC "$dir" || exit 1; }
+exec "$bin" "$@"

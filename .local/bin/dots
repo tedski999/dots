@@ -8,8 +8,7 @@ git_ssh="git@github.com:/tedski999/dots"
 git_http="https://github.com/tedski999/dots"
 
 msung_pkgs="\
-zsh zsh-autosuggestions zsh-syntax-highlighting
-curl wget tar gzip zip unzip gnupg man-db jq bc
+zsh curl wget tar gzip zip unzip gnupg man-db jq bc
 neovim git eza fzf ripgrep fd lf less bat btop git-delta pulsemixer
 sway swaybg swayidle swaylock waybar wofi xorg-xwayland xf86-video-nouveau mesa
 pipewire wireplumber pipewire-alsa pipewire-pulse pipewire-jack xdg-desktop-portal-wlr
@@ -21,15 +20,12 @@ noto-fonts noto-fonts-cjk ttf-terminus-nerd
 archlinux-contrib pacman-contrib btrfs-progs grub efibootmgr python3 rustup"
 
 septs_apts="\
-zsh zsh-syntax-highlighting zsh-autosuggestions
-curl wget tar gzip zip unzip gnupg man-db
+zsh curl wget tar gzip zip unzip gnupg man-db
 git exa fzf ripgrep fd lf less bat btop jq
 python3 python3-venv"
 
 septs_debs="\
 git-delta https://github.com/dandavison/delta/releases/download/0.16.5/git-delta_0.16.5_arm64.deb"
-
-# TODO: guest should have opt script links installed
 
 msg() { printf "\n\033[1;33m$@\033[0m\n"; }
 
@@ -110,6 +106,15 @@ case "$p" in
 			}
 		done
 		;;
+	"guest")
+		# TODO: check this works
+		for file in $(find "$HOME/.local/root/$p" -type f -printf %P\\n); do
+			[ -L "$HOME/.local/bin/$file" ] || {
+				msg "Installing $HOME/.local/root/$p/$file into system..."
+				mkdir -p "$(dirname "$HOME/.local/bin/$file")" || exit 1
+				ln -sf "$HOME/.local/root/$p/$file" "$HOME/.local/bin/$file" || exit 1
+			}
+		done
 esac
 
 # Post-install configuration

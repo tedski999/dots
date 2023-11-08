@@ -1,0 +1,11 @@
+#!/bin/sh
+
+arch="$(uname --machine)"
+dir="$HOME/.local/share/opt/bat/$arch"
+case "$arch" in
+	"x86_64") bin="$dir/bat-v0.24.0-x86_64-unknown-linux-musl/bat";    src="https://github.com/sharkdp/bat/releases/download/v0.24.0/bat-v0.24.0-x86_64-unknown-linux-musl.tar.gz";;
+	"armv71") bin="$dir/bat-v0.24.0-arm-unknown-linux-musleabihf/bat"; src="https://github.com/sharkdp/bat/releases/download/v0.24.0/bat-v0.24.0-arm-unknown-linux-musleabihf.tar.gz";;
+esac
+
+[ -x "$bin" ] || { mkdir -p "$dir" && curl -fL "$src" | tar -xzC "$dir" || exit 1; }
+exec "$bin" "$@"

@@ -1,0 +1,9 @@
+#!/bin/sh
+
+arch="$(uname --machine)"
+dir="$HOME/.local/share/opt/zsh/$arch"
+bin="$dir/bin/zsh"
+src="https://raw.githubusercontent.com/romkatv/zsh-bin/master/install"
+
+[ -x "$bin" ] || { sh -c "$(curl -fL https://raw.githubusercontent.com/romkatv/zsh-bin/master/install)" -- -d "$dir" -e no || exit 1; }
+exec "$bin" "$@"
