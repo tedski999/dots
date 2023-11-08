@@ -34,7 +34,8 @@ local explore_files = function()
 	cwdfile = vim.fn.getenv("HOME").."/.cache/cwdfile"
 	vim.fn.writefile({dir}, cwdfile)
 	fzf = require("fzf-lua")
-	fzf.fzf_exec("fd --hidden --exact-depth 1 --absolute-path --search-path \"$(cat "..cwdfile..")\"", {
+	cmd = "fd --hidden --exact-depth 1 --absolute-path --search-path \"$(cat "..cwdfile..")\""
+	fzf.fzf_exec(cmd.." --type d && "..cmd.." --type f", {
 		prompt = "Ex>",
 		fzf_opts = { ["--no-multi"] = "", ["--header"] = [["<ctrl-e>|<ctrl-f>|<ctrl-d>|! %f|"]] },
 		previewer = "builtin",
@@ -132,7 +133,6 @@ return {
 		{ "<leader>d", "<cmd>FzfLua lsp_definitions<cr>" },
 		{ "<leader>D", "<cmd>FzfLua lsp_typedefs<cr>" },
 		{ "<leader>r", "<cmd>FzfLua lsp_finder<cr>" },
-		-- TODO: change keybinding
 		{ "<leader>R", "<cmd>FzfLua lsp_code_actions<cr>" },
 		{ "<leader>c", "<cmd>FzfLua quickfix<cr>" },
 		{ "<leader>C", "<cmd>FzfLua quickfix_stack<cr>" },
@@ -145,17 +145,11 @@ return {
 		fzf = require("fzf-lua")
 		fzf.setup({
 			winopts = {
+				fullscreen = true,
 				height = 0.25, width = 1.0, row = 1.0, col = 0.5,
 				border = { "─", "─", "─", " ", "", "", "", " " },
 				hl = { normal = "NormalFloat", border = "FloatBorder", preview_border = "FloatBorder" },
-				preview = {
-					hidden = "hidden",
-					layout = "horizontal",
-					border = "noborder",
-					scrollbar = "border",
-					scrollchars = { "│", "" },
-					winopts = { list = true }
-				}
+				preview = { hidden = "nohidden", border = "noborder", scrollchars = { "│", "" }, winopts = { list = true } }
 			},
 			keymap = {
 				builtin = {
