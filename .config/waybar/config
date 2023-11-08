@@ -12,7 +12,7 @@
 	"modules-right": ["custom/media", "custom/caffeinated", "gamemode", "bluetooth", "cpu", "memory", "temperature", "disk", "network", "wireplumber", "battery", "clock"],
 
 	"sway/workspaces": {
-		"format": "{name}"
+		"format": "{index}"
 	},
 
 	"sway/window": {
