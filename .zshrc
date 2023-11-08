@@ -27,7 +27,7 @@ alias d="dirs -v"
 alias di="dots init $(uname --node)"
 alias sudo="sudo --preserve-env "
 alias ip="ip --color"
-alias ls="exa -hs=name --group-directories-first" # TODO: eza
+alias ls="eza -hs=name --group-directories-first"
 alias cat="bat --paging=never"
 alias less="bat --paging=always"
 alias grep="rg"
