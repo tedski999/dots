@@ -11,14 +11,15 @@ msung_pkgs="\
 zsh curl wget tar gzip zip unzip gnupg man-db jq bc
 neovim git eza fzf ripgrep fd lf less bat btop git-delta pulsemixer
 sway swaybg swayidle swaylock waybar wofi xorg-xwayland xf86-video-nouveau mesa
-pipewire wireplumber pipewire-alsa pipewire-pulse pipewire-jack
+pipewire wireplumber pipewire-alsa pipewire-pulse pipewire-jack sof-firmware
 xdg-desktop-portal-wlr xdg-desktop-portal-gtk
 networkmanager networkmanager-openvpn openvpn bluez bluez-utils
 playerctl wl-clipboard cliphist light acpi thermald
-firefox discord alacritty mako grim slurp mpv imv
+firefox alacritty mako grim slurp mpv imv
 materia-gtk-theme kvantum-theme-materia breeze-icons
 noto-fonts noto-fonts-cjk ttf-terminus-nerd
-archlinux-contrib pacman-contrib btrfs-progs grub efibootmgr python3 rustup"
+btrfs-progs grub efibootmgr os-prober
+archlinux-contrib pacman-contrib python3 rustup"
 
 septs_apts="\
 zsh curl wget tar gzip zip unzip gnupg man-db
