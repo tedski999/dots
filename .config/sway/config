@@ -23,8 +23,6 @@ client.focused_tab_title #202020 #ffffff #000000
 client.unfocused         #202020 #202020 #808080 #202020 #202020
 
 # Startup scripts and daemons
-# Import envvars into dbus user session
-exec_always systemctl --user import-environment DISPLAY WAYLAND_DISPLAY SWAYSOCK XDG_CURRENT_DESKTOP
 # Notifications
 exec_always pidof mako || mako
 # Battery warning notifications
@@ -211,6 +209,8 @@ bindsym --locked Shift+XF86MonBrightnessUp           exec light -A 10  && $send_
 bindsym --locked Control+XF86MonBrightnessUp         exec light -S 100 && $send_brightness_notif
 
 # Screenshots
-bindsym Print         exec slurp -b "#ffffff20" | grim -g - - | wl-copy --type image/png
-bindsym Shift+Print   exec swaymsg -t get_tree | jq -r '.. | select(.pid? and .visible?) | .rect | "\(.x),\(.y) \(.width)x\(.height)"' | slurp -B "#ffffff20" | grim -g - - | wl-copy --type image/png
-bindsym Control+Print exec slurp -oB '#ffffff20' | grim -g - - | wl-copy --type image/png
+bindsym Print       exec flameshot gui --raw | wl-copy --type image/png
+bindsym Shift+Print exec flameshot gui --raw --accept-on-select | wl-copy --type image/png
+
+# System config
+include /etc/sway/config.d/*
