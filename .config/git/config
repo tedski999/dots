@@ -31,6 +31,7 @@
 	d = diff
 	ds = diff --staged
 	rs = restore --staged
+	b = branch
 [interactive]
 	diffFilter = delta --color-only
 [delta]
