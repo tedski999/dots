@@ -91,6 +91,8 @@ case "$p" in
 		[ -n "$pkgs" ] && {
 			msg "Installing packages..."
 			sudo pacman --sync --needed --noconfirm $pkgs || exit 1
+			msg "Checking services..."
+			sudo DIFFPROG="delta" checkservices || exit 1
 		}
 		;;
 	"septs")
