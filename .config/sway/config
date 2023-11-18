@@ -63,6 +63,7 @@ mouse_warping output
 
 # Program shortcuts
 bindsym Mod4+space                   exec flock --nonblock --close /tmp/wofi.lock wofi --prompt "" --show "run,drun"
+bindsym Mod4+Shift+space             exec rm /tmp/wofi.lock
 bindsym Mod4+Return                  exec $TERMINAL
 bindsym Mod4+t                       exec $TERMINAL
 bindsym Mod4+w                       exec $BROWSER
