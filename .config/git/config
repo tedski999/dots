@@ -31,6 +31,7 @@
 	d = diff
 	ds = diff --staged
 	rs = restore --staged
+	undo = reset --soft HEAD~
 	b = branch
 [interactive]
 	diffFilter = delta --color-only
@@ -51,7 +52,7 @@
 	file-style = brightyellow
 	file-decoration-style = omit
 	hunk-label = "#"
-	hunk-header-style = "file line-number #000000" ; hack to hide text
+	hunk-header-style = "file line-number"
 	hunk-header-file-style = blue
 	hunk-header-line-number-style = grey
 	hunk-header-decoration-style = omit
