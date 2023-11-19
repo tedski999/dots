@@ -3,6 +3,7 @@
 --- File explorer to replace netrw
 local function explore_files(root)
 	local fzf = require("fzf-lua")
+	local root = vim.fn.expand(root):gsub("/$", "").."/"
 	fzf.fzf_exec("fd --hidden", {
 		prompt = root,
 		cwd = root,
@@ -188,7 +189,7 @@ return {
 				height = 0.25, width = 1.0, row = 1.0, col = 0.5,
 				border = { "─", "─", "─", " ", "", "", "", " " },
 				hl = { normal = "Normal", border = "NormalBorder", preview_border = "NormalBorder" },
-				preview = { hidden = "nohidden", border = "noborder", scrollchars = { "│", "" }, winopts = { list = true } }
+				preview = { flip_columns = 100, scrollchars = { "│", "" }, winopts = { list = true } }
 			},
 			keymap = {
 				builtin = {
@@ -220,7 +221,7 @@ return {
 					["ctrl-y"] = yank_selection
 				}
 			},
-			fzf_opts = { ["--separator"] = [[""]] },
+			fzf_opts = { ["--separator"] = [[""]], ["--preview-window"] = [["border-none"]] },
 			global_file_icons = false,
 			global_git_icons = true,
 			global_color_icons = true,
