@@ -134,7 +134,6 @@ bluetooth_menu() {
 			"disable") bluetoothctl power off || notify-send "Failed to turn off Bluetooth radio" "";;
 			"enable") bluetoothctl power on || notify-send "Failed to turn on Bluetooth radio" "";;
 			"rescan") bluetooth_rescan;;
-			# TODO: advertise / discovery
 			*) bluetooth_conn_menu "$(echo "$choice" | cut -d " " -f 1 | xargs)";;
 		esac
 	done

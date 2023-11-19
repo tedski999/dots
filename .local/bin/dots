@@ -111,7 +111,6 @@ case "$p" in
 		done
 		;;
 	"guest")
-		# TODO: check this works
 		for file in $(find "$HOME/.local/root/$p" -type f -printf %P\\n); do
 			[ -L "$HOME/.local/bin/$file" ] || {
 				msg "Installing $HOME/.local/root/$p/$file into system..."
