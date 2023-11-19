@@ -135,6 +135,7 @@ case "$p" in
 		[ -n "$full" ] && {
 			msg "Generating locale..."; sudo locale-gen || exit 1
 			msg "Generating grub.cfg..."; sudo grub-mkconfig -o /boot/grub/grub.cfg || exit 1
+			msg "Installing grub theme..."; sudo cp -rL /usr/share/grub/themes/minimal /boot/grub/themes/minimal || exit 1
 			msg "Generating initramfs..."; sudo mkinitcpio --allpresets || { [ $? -ne 1 ] && exit 1; }
 		}
 		;;
