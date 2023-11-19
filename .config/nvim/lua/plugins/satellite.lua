@@ -3,6 +3,7 @@
 return {
 	"lewis6991/satellite.nvim",
 	event = "VeryLazy",
+	enabled = false,
 	opts = {
 		winblend = 0,
 		handlers = {

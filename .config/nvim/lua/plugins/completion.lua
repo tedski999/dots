@@ -15,6 +15,10 @@ return {
 		local mc = require("mini.completion")
 		mc.setup({
 			set_vim_settings = false,
+			window = {
+				info = { border = { " ", "", "", " " } },
+				signature = { border = { " ", "", "", " " } },
+			},
 			lsp_completion = {
 				process_items = function(items, base)
 					items = mc.default_process_items(items, base)

@@ -1,5 +1,39 @@
 -- Fzf in Neovim
 
+--- File explorer to replace netrw
+local function explore_files(root)
+	local fzf = require("fzf-lua")
+	fzf.fzf_exec("fd --hidden", {
+		prompt = root,
+		cwd = root,
+		fzf_opts = { ["--no-multi"] = "" },
+		previewer = "builtin",
+		actions = {
+			["default"] = function(s)
+				f = root..s[1]
+				s = vim.loop.fs_stat(f)
+				if s and s.type == "directory" then explore_files(f) else vim.cmd("edit "..f) end
+			end,
+			["ctrl-k"] = function() explore_files(root:sub(1, -2):match(".*/") or "/") end,
+			["ctrl-h"] = function() explore_files("$HOME") end,
+			["ctrl-s"] = function() fzf.grep_project({ cwd=root, cwd_only=true }) end,
+			["ctrl-r"] = { function(s)
+				if #s == 0 then return end
+				local i = vim.fn.input(s[1].." > "):gsub("$d", root):gsub("$f", s[1])
+				if i == "" then return end
+				local d = vim.fn.chdir(root)
+				vim.notify(vim.fn.system(i))
+				vim.fn.chdir(d)
+			end, fzf.actions.resume },
+		},
+		fn_transform = function(x)
+			local dir = x:match(".*/") or ""
+			local file = x:sub(#dir+1)
+			return fzf.utils.ansi_codes.blue(dir)..fzf.utils.ansi_codes.white(file)
+		end,
+	})
+end
+
 -- Switch to an alternative file based on extension
 local function find_altfiles()
 	local fzf = require("fzf-lua")
@@ -28,50 +62,10 @@ local function find_altfiles()
 	end
 end
 
---- File explorer to replace netrw
-local explore_files = function()
-	dir = vim.g.getfile():match(".*/")
-	cwdfile = vim.fn.getenv("HOME").."/.cache/cwdfile"
-	vim.fn.writefile({dir}, cwdfile)
-	fzf = require("fzf-lua")
-	cmd = "fd --hidden --exact-depth 1 --absolute-path --search-path \"$(cat "..cwdfile..")\""
-	fzf.fzf_exec(cmd.." --type d && "..cmd.." --type f", {
-		prompt = "Ex>",
-		fzf_opts = { ["--no-multi"] = "", ["--header"] = [["<ctrl-e>|<ctrl-f>|<ctrl-d>|! %f|"]] },
-		previewer = "builtin",
-		actions = {
-			["default"] = function(s) f = vim.loop.fs_stat(s[1]) or {} if f.type == "directory" then vim.fn.writefile(s, cwdfile) fzf.resume() else vim.cmd("edit "..s[1]) end end,
-			["ctrl-e"] = function() local i = vim.fn.input("New file: ", vim.fn.readfile(cwdfile)[1]) if i == "" then fzf.resume() else vim.cmd("edit "..i) end end,
-			["ctrl-f"] = function() fzf.files({ cwd = vim.fn.readfile(cwdfile)[1] } ) end,
-			["ctrl-d"] = { function() vim.cmd("cd "..vim.fn.readfile(cwdfile)[1]) end, fzf.actions.resume },
-			["-"] = { function() vim.fn.writefile({vim.fn.readfile(cwdfile)[1]:sub(1, -2):match(".*/") or "/"}, cwdfile) end, fzf.actions.resume },
-			["~"] = { function() vim.fn.writefile({vim.fn.getenv("HOME")}, cwdfile) end, fzf.actions.resume },
-			["!"] = { function(s)
-				local i = vim.fn.input("Shell command: "):gsub("%%f", s[1])
-				if i == "" then return end
-				local d = vim.fn.chdir(vim.fn.readfile(cwdfile)[1])
-				vim.notify(vim.fn.system(i))
-				vim.fn.chdir(d)
-			end, fzf.actions.resume },
-		},
-		fn_transform = function(x)
-			if x:sub(-1) == "/" then return fzf.utils.ansi_codes.blue(x) end
-			local d = x:match(".*/")
-			local b = x:sub(#d+1)
-			d = fzf.utils.ansi_codes.blue(d)
-			f = vim.loop.fs_stat(x)
-			if f == nil then return d..fzf.utils.ansi_codes.red(b)
-			elseif f.type == "directory" then return d..fzf.utils.ansi_codes.yellow(b)
-			elseif f.type == "socket" then return d..fzf.utils.ansi_codes.green(b)
-			else return d..fzf.utils.ansi_codes.white(b) end
-		end
-	})
-end
-
 -- Save and load projects using mksession
 local projects_dir = vim.fn.stdpath("data").."/projects/"
 local function find_projects()
-	fzf = require("fzf-lua")
+	local fzf = require("fzf-lua")
 	local projects = {}
 	for path in vim.fn.glob(projects_dir.."*"):gmatch("[^\n]+") do
 		table.insert(projects, path:match("[^/]*$"))
@@ -93,6 +87,50 @@ local function save_project()
 	vim.cmd("mksession! "..vim.fn.fnameescape(projects_dir..project))
 end
 
+-- Visualise and select from the branched undotree
+local function view_undotree()
+	local fzf = require("fzf-lua")
+	local undotree = vim.fn.undotree()
+	local function build_entries(tree, depth)
+		local entries = {}
+		for i = #tree, 1, -1  do
+			local cs = { "magenta", "blue", "yellow", "green", "red" }
+			c = fzf.utils.ansi_codes[cs[math.fmod(depth, #cs) + 1]]
+			if tree[i].save then e = tree[i].seq.."*" else e = tree[i].seq.."" end
+			t = os.time() - tree[i].time
+			if t > 86400 then t = math.floor(t/86400).."d" elseif t > 3600 then t = math.floor(t/3600).."h" elseif t > 60 then t = math.floor(t/60).."m" else t = t.."s" end
+			if tree[i].seq == undotree.seq_cur then t = fzf.utils.ansi_codes.white(t.." <") else t = fzf.utils.ansi_codes.grey(t) end
+			table.insert(entries, c(e).." "..t)
+			if tree[i].alt then
+				subentries = build_entries(tree[i].alt, depth + 1)
+				for j = 1, #subentries do table.insert(entries, " "..subentries[j]) end
+			end
+		end
+		return entries
+	end
+	local curbuf = vim.api.nvim_get_current_buf()
+	local curfile = vim.g.getfile()
+	fzf.fzf_exec(build_entries(undotree.entries, 0), {
+		prompt = "Undotree>",
+		fzf_opts = { ["--no-multi"] = "" },
+		actions = { ["default"] = function(s) vim.cmd("undo "..s[1]:match("%d+")) end },
+		previewer = false,
+		preview = fzf.shell.raw_preview_action_cmd(function(s)
+			if #s == 0 then return end
+			local newbuf = vim.api.nvim_get_current_buf()
+			local tmpfile = vim.fn.tempname()
+			change = s[1]:match("%d+")
+			vim.api.nvim_set_current_buf(curbuf)
+			vim.cmd("undo "..change)
+			lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
+			vim.cmd("undo "..undotree.seq_cur)
+			vim.fn.writefile(lines, tmpfile)
+			vim.api.nvim_set_current_buf(newbuf)
+			return "delta --file-modified-label '' --hunk-header-style '' --file-transformation 's/tmp.*//' "..curfile.." "..tmpfile
+		end)
+	})
+end
+
 -- Yank selected entries
 local function yank_selection(selected)
 	for i = 1, #selected do
@@ -111,21 +149,22 @@ return {
 		{ "<leader>T", "<cmd>FzfLua tags<cr>" },
 		{ "<leader>l", "<cmd>FzfLua blines<cr>" },
 		{ "<leader>L", "<cmd>FzfLua lines<cr>" },
-		{ "<leader>f", "<cmd>FzfLua files cwd=%:p:h cwd_only=true<cr>" },
-		{ "<leader>F", "<cmd>FzfLua files<cr>" },
+		{ "<leader>f", function() explore_files(vim.g.getfile():match(".*/")) end },
+		{ "<leader>F", function() explore_files(vim.fn.getcwd()) end },
 		{ "<leader>o", "<cmd>FzfLua oldfiles cwd=%:p:h cwd_only=true<cr>" },
 		{ "<leader>O", "<cmd>FzfLua oldfiles<cr>" },
 		{ "<leader>s", "<cmd>FzfLua grep_project cwd=%:p:h cwd_only=true<cr>" },
 		{ "<leader>S", "<cmd>FzfLua grep_project<cr>" },
 		{ "<leader>m", "<cmd>FzfLua marks cwd=%:p:h cwd_only=true<cr>" },
 		{ "<leader>M", "<cmd>FzfLua marks<cr>" },
-		{ "<leader>gg", "<cmd>lua require'fzf-lua'.git_status({ cwd='%:p:h', file_ignore_patterns={ '^../' } })<cr>" },
+		{ "<leader>gg", "<cmd>lua require('fzf-lua').git_status({ cwd='%:p:h', file_ignore_patterns={ '^../' } })<cr>" },
 		{ "<leader>gG", "<cmd>FzfLua git_status<cr>" },
 		{ "<leader>gf", "<cmd>FzfLua git_files cwd_only=true cwd=%:p:h<cr>" },
 		{ "<leader>gF", "<cmd>FzfLua git_files<cr>" },
 		{ "<leader>gl", "<cmd>FzfLua git_bcommits<cr>" },
 		{ "<leader>gL", "<cmd>FzfLua git_commits<cr>" },
-		{ "<leader>gb", "<cmd>FzfLua git_branches<cr>" },
+		{ "<leader>gb", "<cmd>lua require('fzf-lua').git_branches({ preview='b={1}; git log --graph --pretty=oneline --abbrev-commit --color HEAD..$b; git diff HEAD $b | delta' })<cr>" },
+		{ "<leader>gB", "<cmd>lua require('fzf-lua').git_branches({ preview='b={1}; git log --graph --pretty=oneline --abbrev-commit --color origin/HEAD..$b; git diff origin/HEAD $b | delta' })<cr>" },
 		{ "<leader>gs", "<cmd>FzfLua git_stash<cr>" },
 		{ "<leader>k", "<cmd>FzfLua help_tags<cr>" },
 		{ "<leader>K", "<cmd>FzfLua man_pages<cr>" },
@@ -139,7 +178,7 @@ return {
 		{ "<leader>a", find_altfiles },
 		{ "<leader>p", find_projects },
 		{ "<leader>P", save_project },
-		{ "-", explore_files },
+		{ "<leader>u", view_undotree },
 	},
 	config = function()
 		fzf = require("fzf-lua")
@@ -148,17 +187,22 @@ return {
 				fullscreen = true,
 				height = 0.25, width = 1.0, row = 1.0, col = 0.5,
 				border = { "─", "─", "─", " ", "", "", "", " " },
-				hl = { normal = "NormalFloat", border = "FloatBorder", preview_border = "FloatBorder" },
+				hl = { normal = "Normal", border = "NormalBorder", preview_border = "NormalBorder" },
 				preview = { hidden = "nohidden", border = "noborder", scrollchars = { "│", "" }, winopts = { list = true } }
 			},
 			keymap = {
 				builtin = {
 					["<c-_>"] = "toggle-preview",
 					["<c-o>"] = "toggle-fullscreen",
-					["<m-j>"] = "preview-page-reset",
-					["<m-n>"] = "preview-page-down",
-					["<m-p>"] = "preview-page-up",
-				}
+					["<m-d>"] = "preview-page-down",
+					["<m-u>"] = "preview-page-up",
+				},
+				fzf = {
+					["ctrl-d"] = "half-page-down",
+					["ctrl-u"] = "half-page-up",
+					["alt-n"] = "preview-page-down",
+					["alt-p"] = "preview-page-up",
+				},
 			},
 			actions = {
 				files = {
