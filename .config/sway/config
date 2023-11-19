@@ -67,7 +67,7 @@ bindsym Mod4+Shift+space             exec rm /tmp/wofi.lock
 bindsym Mod4+Return                  exec $TERMINAL
 bindsym Mod4+t                       exec $TERMINAL
 bindsym Mod4+w                       exec $BROWSER
-bindsym Mod4+d                       exec discord
+bindsym Mod4+d                       exec $BROWSER "https://discord.com/app"
 bindsym Mod4+Escape                  exec powerctl
 bindsym --locked Mod4+Shift+Escape   exec powerctl lock
 bindsym --locked Mod4+Control+Escape exec powerctl suspend
