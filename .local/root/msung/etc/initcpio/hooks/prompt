@@ -1,0 +1,14 @@
+#!/usr/bin/ash
+
+run_hook() {
+	clear
+	echo -e ""
+	echo -e " \e[0;31m███\e[0m  ███    ███ ██████ ██   ██ ███   ██  █████   \e[0;31m███\e[0m"
+	echo -e " \e[0;31m██ \e[0m  ████  ████ ██     ██   ██ ████  ██ ██       \e[0;31m ██\e[0m"
+	echo -e " \e[0;31m██ \e[0m  ██ ████ ██ ██████ ██   ██ ██ ██ ██ ██  ███  \e[0;31m ██\e[0m"
+	echo -e " \e[0;31m██ \e[0m  ██  ██  ██     ██ ██   ██ ██  ████ ██   ██  \e[0;31m ██\e[0m"
+	echo -e " \e[0;31m███\e[0m  ██      ██ ██████  █████  ██   ███  █████   \e[0;31m███\e[0m"
+	echo -e ""
+	echo -e " Property of Ted Johnson - ted at h8c.de"
+	echo -e ""
+}
