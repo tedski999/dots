@@ -1,0 +1,10 @@
+#!/bin/sh
+
+ups="$(checkupdates --nocolor 2>/dev/null)"
+[ -z "$ups" ] && {
+	printf '{"text": "", "tooltip": ""}\n'
+} || {
+	printf '{"text": %s, "tooltip": %s}\n' \
+		"$(echo -n "$(echo "$ups" | wc -l)" | jq --raw-input --slurp --ascii-output)" \
+		"$(echo -n "$ups" | jq --raw-input --slurp --ascii-output)"
+}

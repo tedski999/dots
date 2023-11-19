@@ -7,9 +7,10 @@
 	"spacing": 0,
 
 	// TODO: non-primary display modules
+	// TODO: vpn icon
 	"modules-left": ["sway/workspaces", "sway/scratchpad", "sway/window"],
 	"modules-center": [],
-	"modules-right": ["custom/media", "custom/caffeinated", "gamemode", "bluetooth", "cpu", "memory", "temperature", "disk", "network", "wireplumber", "battery", "clock"],
+	"modules-right": ["custom/media", "custom/caffeinated", "custom/pacman", "gamemode", "bluetooth", "cpu", "memory", "temperature", "disk", "network", "wireplumber", "battery", "clock"],
 
 	"sway/workspaces": {
 		"format": "{index}"
@@ -34,6 +35,16 @@
 		"tooltip": true,
 		"interval": 1,
 		"on-click": "powerctl uncaffeinate",
+	},
+
+	"custom/pacman": {
+		"exec": "~/.config/waybar/modules/pacman",
+		"return-type": "json",
+		"tooltip": true,
+		"interval": 3600,
+		"signal": 8,
+		"on-click": "alacritty --command sudo pacman -Syu; pkill -SIGRTMIN+8 waybar",
+		"on-click-right": "pkill -SIGRTMIN+8 waybar",
 	},
 
 	"gamemode": {

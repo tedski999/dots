@@ -10,6 +10,8 @@ window#waybar { background-color: rgba(0,0,0,0.75); }
 #scratchpad,
 #window,
 #custom-media,
+#custom-caffeinated,
+#custom-pacman,
 #gamemode,
 #bluetooth,
 #cpu,
@@ -36,6 +38,9 @@ window#waybar { background-color: rgba(0,0,0,0.75); }
 
 /* Caffeinated */
 #custom-caffeinated { color: #ff8000; }
+
+/* Pacman */
+#custom-pacman { color: #8000ff; }
 
 /* Gamemode */
 #gamemode { color: #00ff00; }
