@@ -43,7 +43,7 @@
 		"tooltip": true,
 		"interval": 3600,
 		"signal": 8,
-		"on-click": "alacritty --command sudo pacman -Syu; pkill -SIGRTMIN+8 waybar",
+		"on-click": "alacritty --class floating --command sudo pacman -Syu; pkill -SIGRTMIN+8 waybar",
 		"on-click-right": "pkill -SIGRTMIN+8 waybar",
 	},
 
@@ -76,7 +76,7 @@
 			"<span color='#ff8000'>▇</span>",
 			"<span color='#ff0000'>█</span>"
 		],
-		"on-click": "alacritty --command btop"
+		"on-click": "alacritty --class floating --command btop"
 	},
 
 	"memory": {
@@ -93,19 +93,19 @@
 			"<span color='#ff0000'>█</span>"
 		],
 		"tooltip-format": "RAM: {used:0.1f}Gib ({percentage}%)\nSWP: {swapUsed:0.1f}Gib ({swapPercentage}%)",
-		"on-click": "alacritty --command btop"
+		"on-click": "alacritty --class floating --command btop"
 	},
 
 	"temperature": {
 		"thermal-zone": 6,
 		"critical-threshold": 80,
 		"interval": 5,
-		"on-click": "alacritty --command btop"
+		"on-click": "alacritty --class floating --command btop"
 	},
 
 	"disk": {
 		"format": "{free}",
-		"on-click": "alacritty --command btop"
+		"on-click": "alacritty --class floating --command btop"
 	},
 
 	"network": {
@@ -121,7 +121,7 @@
 	"wireplumber": {
 		"max-volume": 150,
 		"states": { "high": 75 },
-		"on-click": "alacritty --command pulsemixer",
+		"on-click": "alacritty --class floating --command pulsemixer",
 		"on-click-right": "wpctl set-mute @DEFAULT_SINK@ toggle"
 	},
 
@@ -136,8 +136,8 @@
 
 	"clock": {
 		"format": "{:%H:%M}",
-		"format-alt": "{:%m-%d}",
 		"tooltip-format": "{calendar}",
+		"on-click": "notify-send \"$(date)\" \"$(date \"+Day %j, Week %V, %Z (%:z)\")\"",
 		"actions":  {
 			"on-click-right": "mode",
 			"on-scroll-up": "shift_up",

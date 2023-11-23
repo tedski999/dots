@@ -16,6 +16,7 @@ default_border pixel 2
 default_floating_border pixel 2
 for_window [class=".*"]  border pixel 2
 for_window [app_id=".*"] border pixel 2
+for_window [app_id="floating.*"] floating enable
 font Terminess Nerd Font 12
 client.focused           #202020 #ffffff #000000 #ff0000 #ffffff
 client.focused_inactive  #202020 #202020 #ffffff #202020 #202020
@@ -78,6 +79,8 @@ bindsym Mod4+Control+backslash       exec displayctl duel
 bindsym Mod4+n                       exec networkctl
 bindsym Mod4+Shift+n                 exec networkctl wifi
 bindsym Mod4+Control+n               exec networkctl bluetooth
+bindsym Mod4+u                       exec $TERMINAL --class floating --command btop
+bindsym Mod4+Shift+u                 exec $TERMINAL --class floating --command sudo pacman -Syu
 bindsym Mod4+b                       border pixel 2
 bindsym Mod4+shift+b                 border none
 bindsym Mod4+v                       exec CH_PROMPT="Clipboard" choose "$(cliphist list)" | cliphist decode | wl-copy

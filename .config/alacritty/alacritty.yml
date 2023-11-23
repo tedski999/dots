@@ -7,6 +7,9 @@ scrolling:
 window:
   dynamic_padding: true
   opacity: 0.85
+  dimensions:
+    columns: 120
+    lines: 40
 
 font:
   size: 13.5
