@@ -1,13 +1,14 @@
 #!/bin/zsh
 
 # Options
-PROMPT=$'\n%F{red}%n@%m%f %F{blue}%T %~%f %F{red}%(?..%?)%f\n>%f '
-HISTSIZE="100000"
-SAVEHIST="100000"
-TIMEFMT=$'\nreal\t%E\nuser\t%U\nsys\t%S\ncpu\t%P'
+export PROMPT=$'\n%F{red}%n@%m%f %F{blue}%T %~%f %F{red}%(?..%?)%f\n>%f '
+export HISTSIZE="1000000"
+export SAVEHIST="$HISTSIZE"
+export TIMEFMT=$'\nreal\t%E\nuser\t%U\nsys\t%S\ncpu\t%P'
 setopt autocd interactive_comments notify
 setopt auto_pushd pushd_ignore_dups pushd_silent
-setopt hist_ignore_all_dups hist_reduce_blanks inc_append_history
+setopt extended_history inc_append_history hist_ignore_space
+setopt hist_expire_dups_first hist_ignore_all_dups hist_reduce_blanks
 setopt numericglobsort prompt_subst
 setopt complete_in_word glob_complete
 
