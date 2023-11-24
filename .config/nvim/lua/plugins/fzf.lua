@@ -4,7 +4,7 @@
 local function explore_files(root)
 	local fzf = require("fzf-lua")
 	local root = vim.fn.expand(root):gsub("/$", "").."/"
-	fzf.fzf_exec("fd --hidden", {
+	fzf.fzf_exec("fd --hidden --exclude '**/.git/' --exclude '**/node_modules/'", {
 		prompt = root,
 		cwd = root,
 		fzf_opts = { ["--no-multi"] = "" },
@@ -15,12 +15,12 @@ local function explore_files(root)
 				s = vim.loop.fs_stat(f)
 				if s and s.type == "directory" then explore_files(f) else vim.cmd("edit "..f) end
 			end,
+			["ctrl-d"] = { function() vim.fn.chdir(root) end, fzf.actions.resume },
 			["ctrl-k"] = function() explore_files(root:sub(1, -2):match(".*/") or "/") end,
 			["ctrl-h"] = function() explore_files("$HOME") end,
 			["ctrl-s"] = function() fzf.grep_project({ cwd=root, cwd_only=true }) end,
 			["ctrl-r"] = { function(s)
-				if #s == 0 then return end
-				local i = vim.fn.input(s[1].." > "):gsub("$d", root):gsub("$f", s[1])
+				local i = vim.fn.input((s[1] or "").." > "):gsub("$d", root):gsub("$f", s[1] or "")
 				if i == "" then return end
 				local d = vim.fn.chdir(root)
 				vim.notify(vim.fn.system(i))
@@ -195,8 +195,8 @@ return {
 				builtin = {
 					["<c-_>"] = "toggle-preview",
 					["<c-o>"] = "toggle-fullscreen",
-					["<m-d>"] = "preview-page-down",
-					["<m-u>"] = "preview-page-up",
+					["<m-n>"] = "preview-page-down",
+					["<m-p>"] = "preview-page-up",
 				},
 				fzf = {
 					["ctrl-d"] = "half-page-down",
