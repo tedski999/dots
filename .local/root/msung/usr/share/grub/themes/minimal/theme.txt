@@ -2,9 +2,9 @@ title-text: ""
 title-color: "#0f0"
 desktop-color: "#000"
 + boot_menu {
-	left = 40%
+	left = 35%
 	width = 25%
-	top = 40%
+	top = 45%
 	height = 100%
 	item_color = "#0f0"
 	selected_item_color = "#000"
