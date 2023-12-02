@@ -8,7 +8,7 @@ git_ssh="git@github.com:/tedski999/dots"
 git_http="https://github.com/tedski999/dots"
 
 msung_pkgs="\
-zsh curl wget tar gzip zip unzip gnupg man-db jq bc
+zsh curl wget tar gzip zip unzip gnupg man-db man-pages jq bc
 neovim git eza fzf ripgrep fd lf less bat btop git-delta pulsemixer
 sway swaybg swayidle swaylock waybar wofi xorg-xwayland xf86-video-nouveau mesa
 pipewire wireplumber pipewire-alsa pipewire-pulse pipewire-jack sof-firmware
@@ -22,7 +22,7 @@ btrfs-progs grub efibootmgr os-prober
 archlinux-contrib pacman-contrib python3 rustup"
 
 septs_apts="\
-zsh curl wget tar gzip zip unzip gnupg man-db
+zsh curl wget tar gzip zip unzip gnupg man-db man-pages
 git exa fzf ripgrep fd lf less bat btop jq
 python3 python3-venv"
 
