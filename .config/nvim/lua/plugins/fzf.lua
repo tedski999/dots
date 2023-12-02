@@ -19,13 +19,7 @@ local function explore_files(root)
 			["ctrl-k"] = function() explore_files(root:sub(1, -2):match(".*/") or "/") end,
 			["ctrl-h"] = function() explore_files("$HOME") end,
 			["ctrl-s"] = function() fzf.grep_project({ cwd=root, cwd_only=true }) end,
-			["ctrl-r"] = { function(s)
-				local i = vim.fn.input((s[1] or "").." > "):gsub("$d", root):gsub("$f", s[1] or "")
-				if i == "" then return end
-				local d = vim.fn.chdir(root)
-				vim.notify(vim.fn.system(i))
-				vim.fn.chdir(d)
-			end, fzf.actions.resume },
+			["ctrl-r"] = function(s) vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes(": "..root..s[1].."<home>", false, false, true), "n", {}) end,
 		},
 		fn_transform = function(x)
 			local dir = x:match(".*/") or ""

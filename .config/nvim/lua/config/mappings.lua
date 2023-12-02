@@ -19,10 +19,6 @@ km("n", "<leader>", "")
 km({ "n", "v" }, "j", "gj")
 km({ "n", "v" }, "k", "gk")
 -- Handy buffer shortcuts
-km("n", "<leader>w", "<cmd>w<cr>",  { nowait = true })
-km("n", "<leader>W", "<cmd>wq<cr>", { nowait = true })
-km("n", "<leader>q", "<cmd>q<cr>",  { nowait = true })
-km("n", "<leader>Q", "<cmd>qa<cr>", { nowait = true })
 uc("W", ":w !>/dev/null sudo tee %", {})
 -- Split lines at cursor, opposite of <s-j>
 km("n", "<c-j>", "m`i<cr><esc>``")
