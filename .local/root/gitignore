@@ -13,14 +13,15 @@
 !/.config/git
 !/.config/gtk-3.0
 !/.config/gtk-4.0
+!/.config/home-manager
 !/.config/imv
 !/.config/less
 !/.config/lf
 !/.config/mako
 !/.config/mpv
 !/.config/neofetch
-!/.config/npm
 !/.config/nix
+!/.config/npm
 !/.config/nvim
 !/.config/python
 !/.config/ripgrep
