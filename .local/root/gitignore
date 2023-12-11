@@ -20,6 +20,7 @@
 !/.config/mpv
 !/.config/neofetch
 !/.config/npm
+!/.config/nix
 !/.config/nvim
 !/.config/python
 !/.config/ripgrep
