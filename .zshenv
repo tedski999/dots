@@ -7,6 +7,7 @@ export PATH="$HOME/.local/bin:$PATH:/sbin:/usr/sbin"
 export EDITOR="nvim"
 export VISUAL="nvim"
 export DIFFPROG="delta"
+# TODO: nvim as merger
 export MANPAGER="nvim +Man!"
 export MANWIDTH="80"
 export TERMINAL="alacritty"

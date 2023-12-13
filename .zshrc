@@ -12,12 +12,7 @@ setopt hist_expire_dups_first hist_ignore_all_dups hist_reduce_blanks
 setopt numericglobsort prompt_subst
 setopt complete_in_word glob_complete
 
-# opt resources directory
-opt="$HOME/.local/share/opt"
-[ -d "$opt" ] || mkdir -p "$opt"
-
 # Aliases
-alias v="vim"
 alias p="python3"
 alias c="cargo"
 alias g="git"
@@ -33,7 +28,7 @@ alias cat="bat --paging=never"
 alias less="bat --paging=always"
 alias grep="rg"
 alias z="exec zsh"
-hash nvim 2>/dev/null && alias v="nvim"
+hash nvim 2>/dev/null && alias v="nvim" || alias v="vim"
 for i ({1..9}) alias "$i"="cd +$i"
 for i ({3..9}) alias "${(l:i::.:)}"="${(l:i-1::.:)};.."
 
@@ -112,10 +107,11 @@ compdef _ash ash
 0x0() { curl -F"file=@$1" https://0x0.st }
 
 # cht.sh
-[ -f "$opt/cht.sh" ] || { curl -L "https://cht.sh/:cht.sh" > "$opt/cht.sh" || exit 1; }
-cht() { bash "$opt/cht.sh" "$@?style=paraiso-dark" | less }
+cht() { cht.sh "$@?style=paraiso-dark" | less }
 _cht() { compadd $commands:t }
 compdef _cht cht
+
+# TODO: explainshell.com
 
 # del
 alias rm="2>&1 echo rm disabled, use del; return 1 #"
@@ -140,22 +136,18 @@ export FZF_DEFAULT_OPTS="--multi --bind=$FZF_BINDINGS --preview-window sharp --m
 export FZF_DEFAULT_COMMAND="rg --files --no-messages"
 export FZF_CTRL_T_COMMAND="fd --hidden --exclude '.git' --exclude 'node_modules'"
 export FZF_ALT_C_COMMAND="fd --hidden --exclude '.git' --exclude 'node_modules' --type d"
-[ -f "$opt/fzf-key-bindings.zsh" ] || { curl -L "https://raw.githubusercontent.com/junegunn/fzf/master/shell/key-bindings.zsh" > "$opt/fzf-key-bindings.zsh" || exit 1; }
-[ -f "$opt/fzf-completion.zsh" ] || { curl -L "https://raw.githubusercontent.com/junegunn/fzf/master/shell/completion.zsh" > "$opt/fzf-completion.zsh" || exit 1; }
-source "$opt/fzf-key-bindings.zsh"
-source "$opt/fzf-completion.zsh"
+# source "$opt/fzf-key-bindings.zsh" # TODO: nixed
+# source "$opt/fzf-completion.zsh" # TODO: nixed
 
 # Autosuggestions
-[ -f "$opt/zsh-autosuggestions-master/zsh-autosuggestions.zsh" ] || { curl -L "https://github.com/zsh-users/zsh-autosuggestions/archive/refs/heads/master.tar.gz" | tar -xzC "$opt" || exit 1; }
-source "$opt/zsh-autosuggestions-master/zsh-autosuggestions.zsh"
+# source "$opt/zsh-autosuggestions-master/zsh-autosuggestions.zsh" # TODO: nixed
 ZSH_AUTOSUGGEST_ACCEPT_WIDGETS=(end-of-line vi-end-of-line vi-add-eol)
 ZSH_AUTOSUGGEST_PARTIAL_ACCEPT_WIDGETS+=(forward-char vi-forward-char)
 ZSH_AUTOSUGGEST_STRATEGY=(history completion)
 ZSH_AUTOSUGGEST_BUFFER_MAX_SIZE=100
 
 # Syntax highlighting
-[ -f "$opt/zsh-syntax-highlighting-master/zsh-syntax-highlighting.zsh" ] || { curl -L "https://github.com/zsh-users/zsh-syntax-highlighting/archive/refs/heads/master.tar.gz" | tar -xzC "$opt" || exit 1; }
-source "$opt/zsh-syntax-highlighting-master/zsh-syntax-highlighting.zsh"
+# source "$opt/zsh-syntax-highlighting-master/zsh-syntax-highlighting.zsh" # TODO: nixed
 ZSH_HIGHLIGHT_STYLES[default]="fg=cyan"
 ZSH_HIGHLIGHT_STYLES[unknown-token]="fg=red"
 ZSH_HIGHLIGHT_STYLES[reserved-word]="fg=blue"
