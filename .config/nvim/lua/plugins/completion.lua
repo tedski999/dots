@@ -1,7 +1,7 @@
 -- Autocompletion
 
 local function normalise_string(str, max)
-	local str = (str or ""):match("[!-~].*[!-~]") or ""
+	str = (str or ""):match("[!-~].*[!-~]") or ""
 	return #str > max
 		and vim.fn.strcharpart(str, 0, max-1).."…"
 		or str..(" "):rep(max-#str)

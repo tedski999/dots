@@ -3,11 +3,9 @@ return {
 	"tpope/vim-fugitive",
 	event = "VeryLazy",
 	keys = {
-		-- TODO: undo hunk / file
-		-- TODO: stage hunk / file
-		-- TODO: unstage hunk / file
+		-- TODO(vcs) undo hunk/file, stage hunk/file, unstage hunk/file
 	},
 	config = function()
-		-- TODO: learn fugitive
+		-- TODO(vcs): learn fugitive
 	end
 }

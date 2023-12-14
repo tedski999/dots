@@ -4,7 +4,7 @@ return {
 	event = "VeryLazy",
 	keys = {
 		{ "<leader>gd", "<cmd>SignifyHunkDiff<cr>" },
-		{ "<leader>gD", "<cmd>SignifyDiff<cr>" },
+		{ "<leader>gD", "<cmd>SignifyDiff!<cr>" },
 		{ "<leader>gr", "<cmd>SignifyHunkUndo<cr>" },
 	},
 	config = function()

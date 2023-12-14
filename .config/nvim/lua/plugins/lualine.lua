@@ -23,17 +23,16 @@ return {
 			},
 			sections = {
 				lualine_a = {{"mode", fmt = function(m) return m:sub(1,1) end}},
-				lualine_b = {{"filename", symbols={modified="*", readonly="-"}}},
+				lualine_b = {{"filename", newfile_status=true, path=1, symbols={newfile="?", modified="*", readonly="-"}}},
 				lualine_c = {"diff"},
-				-- TODO should indicate that code actions are available
 				lualine_x = {{"diagnostics", sections={"error", "warn"}}},
 				lualine_y = {"filetype"},
-				lualine_z = {"progress", "location"},
+				lualine_z = {{"searchcount", maxcount=9999}, "progress", "location"},
 			},
 			inactive_sections = {
 				lualine_a = {{"mode", fmt=function() return " " end}},
 				lualine_b = {},
-				lualine_c = {{"filename", symbols={modified="*", readonly="-"}}, "diff"},
+				lualine_c = {{"filename", newfile_status=true, path=1, symbols={newfile="?", modified="*", readonly="-"}}},
 				lualine_x = {{"diagnostics", sections={"error", "warn"}}},
 				lualine_y = {},
 				lualine_z = {}

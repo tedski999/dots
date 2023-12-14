@@ -50,7 +50,6 @@ if vim.g.arista then
 			if strlen(glob(expand('%')))
 				belowright split
 				exec 'terminal a p4 login && a p4 edit '.shellescape(expand('%:p'))
-				set noreadonly
 			endif
 		endfunction
 		function! A4revert()

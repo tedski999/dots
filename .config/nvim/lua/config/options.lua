@@ -17,7 +17,7 @@ o.showmode = false                               -- No need to show current mode
 o.scrolloff = 3                                  -- Keep lines above/below the cursor when scrolling
 o.sidescrolloff = 5                              -- Keep columns to the left/right of the cursor when scrolling
 o.signcolumn = "no"                              -- Keep the sign column closed
-o.shortmess:append("sIcC")                       -- Be quieter
+o.shortmess:append("sSIcC")                      -- Be quieter
 o.expandtab = false                              -- Tab key inserts tabs
 o.tabstop = 4                                    -- 4-spaced tabs
 o.shiftwidth = 0                                 -- Tab-spaced indentation
