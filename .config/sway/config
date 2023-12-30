@@ -33,7 +33,7 @@ exec_always pidof wl-paste || wl-paste --watch cliphist store
 # Idle locking + suspending
 exec_always powerctl uncaffeinate
 # Output setup
-exec displayctl auto
+exec_always displayctl auto
 exec $get_output && swaymsg "workspace 1:$o"
 # Bars
 # TODO: multimonitor bars
@@ -79,8 +79,10 @@ bindsym Mod4+Control+backslash       exec displayctl duel
 bindsym Mod4+n                       exec networkctl
 bindsym Mod4+Shift+n                 exec networkctl wifi
 bindsym Mod4+Control+n               exec networkctl bluetooth
-bindsym Mod4+u                       exec $TERMINAL --class floating --command btop
+# TODO: persistent floating btop
+bindsym Mod4+u                       exec $TERMINAL --class floating-btop --command btop
 bindsym Mod4+Shift+u                 exec $TERMINAL --class floating --command sudo pacman -Syu
+# bindsym Mod4+Control+u                       exec swaymsg '[class="floating-btop"] scratchpad show'
 bindsym Mod4+b                       border pixel 2
 bindsym Mod4+shift+b                 border none
 bindsym Mod4+v                       exec CH_PROMPT="Clipboard" choose "$(cliphist list)" | cliphist decode | wl-copy
@@ -213,6 +215,7 @@ bindsym --locked Shift+XF86MonBrightnessUp           exec light -A 10  && $send_
 bindsym --locked Control+XF86MonBrightnessUp         exec light -S 100 && $send_brightness_notif
 
 # Screenshots
+# TODO: handle multimonitor
 bindsym Print       exec flameshot gui --raw | wl-copy --type image/png
 bindsym Shift+Print exec flameshot gui --raw --accept-on-select | wl-copy --type image/png
 
