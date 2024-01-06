@@ -65,7 +65,7 @@ wifi_menu() {
 			"rescan") wifi_rescan;;
 			"disable") nmcli radio wifi off || notify-send "Failed to turn off WiFi radio" "";;
 			"enable") nmcli radio wifi on || notify-send "Failed to turn on WiFi radio" "";;
-			*) wifi_conn_menu "$(echo "$choice" | cut -d "[" -f 1 | xargs)";;
+			*) wifi_conn_menu "$(echo "$choice" | cut -d "[" -f 1 | head -c -2)";;
 		esac
 	done
 }
@@ -134,7 +134,7 @@ bluetooth_menu() {
 			"disable") bluetoothctl power off || notify-send "Failed to turn off Bluetooth radio" "";;
 			"enable") bluetoothctl power on || notify-send "Failed to turn on Bluetooth radio" "";;
 			"rescan") bluetooth_rescan;;
-			*) bluetooth_conn_menu "$(echo "$choice" | cut -d " " -f 1 | xargs)";;
+			*) bluetooth_conn_menu "$(echo "$choice" | cut -d " " -f 1)";;
 		esac
 	done
 }
