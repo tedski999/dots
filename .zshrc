@@ -136,18 +136,18 @@ export FZF_DEFAULT_OPTS="--multi --bind=$FZF_BINDINGS --preview-window sharp --m
 export FZF_DEFAULT_COMMAND="rg --files --no-messages"
 export FZF_CTRL_T_COMMAND="fd --hidden --exclude '.git' --exclude 'node_modules'"
 export FZF_ALT_C_COMMAND="fd --hidden --exclude '.git' --exclude 'node_modules' --type d"
-# source "$opt/fzf-key-bindings.zsh" # TODO: nixed
-# source "$opt/fzf-completion.zsh" # TODO: nixed
+source "$HOME/.local/state/nix/profile/share/fzf/key-bindings.zsh"
+source "$HOME/.local/state/nix/profile/share/fzf/completion.zsh"
 
 # Autosuggestions
-# source "$opt/zsh-autosuggestions-master/zsh-autosuggestions.zsh" # TODO: nixed
+source "$HOME/.local/state/nix/profile/share/zsh-autosuggestions/zsh-autosuggestions.zsh"
 ZSH_AUTOSUGGEST_ACCEPT_WIDGETS=(end-of-line vi-end-of-line vi-add-eol)
 ZSH_AUTOSUGGEST_PARTIAL_ACCEPT_WIDGETS+=(forward-char vi-forward-char)
 ZSH_AUTOSUGGEST_STRATEGY=(history completion)
 ZSH_AUTOSUGGEST_BUFFER_MAX_SIZE=100
 
 # Syntax highlighting
-# source "$opt/zsh-syntax-highlighting-master/zsh-syntax-highlighting.zsh" # TODO: nixed
+source "$HOME/.local/state/nix/profile/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
 ZSH_HIGHLIGHT_STYLES[default]="fg=cyan"
 ZSH_HIGHLIGHT_STYLES[unknown-token]="fg=red"
 ZSH_HIGHLIGHT_STYLES[reserved-word]="fg=blue"
