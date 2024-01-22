@@ -30,6 +30,7 @@
 !/.config/tmux
 !/.config/waybar
 !/.config/wofi
+!/.config/gitignore
 !/.config/mimeapps.list
 !/.config/user-dirs.dirs
 !/.config/user-dirs.locale
@@ -49,7 +50,6 @@
 !/.local/bin/git
 !/.local/bin/networkctl
 !/.local/bin/powerctl
-!/.local/bin/psswrds
 !/.local/bin/un
 !/.local/bin/xterm
 !/.local/root
