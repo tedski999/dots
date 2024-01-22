@@ -18,6 +18,7 @@
          paths = with pkgs; [
           zsh
           zsh-autosuggestions
+          zsh-syntax-highlighting
           zsh-completions
           neovim
           ripgrep
