@@ -1,5 +1,0 @@
-# TODO: defaults? noatime? autodefrag?
-LABEL=MUSNG_ROOT / btrfs rw,relatime,ssd,space_cache=v2,compress=zstd,subvol=/@rootfs 0 0
-LABEL=MUSNG_ROOT /media/btrfs btrfs noauto,rw,relatime,ssd,space_cache=v2,compress=zstd,subvol=/ 0 0
-LABEL=MUSNG_BOOT /boot ext2 defaults 0 2
-LABEL=MUSNG_SWAP none swap defaults 0 0

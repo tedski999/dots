@@ -167,15 +167,3 @@ ZSH_HIGHLIGHT_STYLES[assign]="none"
 ZSH_HIGHLIGHT_STYLES[redirection]="fg=yellow,bold"
 ZSH_HIGHLIGHT_STYLES[named-fd]="none"
 ZSH_HIGHLIGHT_STYLES[arg0]="fg=blue"
-
-# Start desktop environment
-[[ -o interactive && -o login && -z "$WAYLAND_DISPLAY" && "$(tty)" = "/dev/tty1" ]] && hash sway 2>/dev/null && {
-	export MOZ_ENABLE_WAYLAND=1
-	export SDL_VIDEODRIVER=wayland
-	export _JAVA_AWT_WM_NONREPARENTING=1
-	export QT_QPA_PLATFORM=wayland
-	export QT_STYLE_OVERRIDE=kvantum
-	XDG_CURRENT_DESKTOP=sway sway
-}
-
-:

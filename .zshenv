@@ -26,4 +26,3 @@ export RUSTUP_HOME="$XDG_CONFIG_HOME/rustup"
 export WINEPREFIX="$XDG_DATA_HOME/wine"
 export npm_config_userconfig="$XDG_CONFIG_HOME/npm/npmrc"
 export skip_global_compinit=1
-# TODO: .cert .googleearth

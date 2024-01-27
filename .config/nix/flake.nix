@@ -1,6 +1,5 @@
 {
   inputs.nixpkgs.url = "github:NixOS/nixpkgs";
-  # inputs.nixgl.url = "github:guibou/nixGL";
   outputs = { self, nixpkgs }:
    let
      systems = [ "x86_64-linux" "aarch64-linux" ];

@@ -1,6 +1,0 @@
-#!/bin/sh
-
-text="$(pidof -q swayidle && echo "" || echo "C")"
-tooltip="$(pidof -q swayidle && echo "" || echo "Caffeinated")"
-
-printf '{"text": "%s", "tooltip": "%s" }\n' "$text" "$tooltip"
