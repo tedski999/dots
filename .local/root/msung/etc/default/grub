@@ -10,3 +10,4 @@ GRUB_GFXPAYLOAD_LINUX=keep
 GRUB_DISABLE_SUBMENU=true
 GRUB_DISABLE_RECOVERY=true
 GRUB_THEME="/boot/grub/themes/minimal/theme.txt"
+GRUB_BACKGROUND=""
