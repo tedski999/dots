@@ -19,7 +19,7 @@
 !/.config/python
 !/.config/ripgrep
 !/.config/tmux
-!/.config/gitignore
+!/.config/kglobalshortcutsrc
 !/.config/user-dirs.dirs
 !/.config/user-dirs.locale
 
