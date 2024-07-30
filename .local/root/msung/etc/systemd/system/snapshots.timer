@@ -1,9 +1,0 @@
-[Unit]
-Description=Take snapshots on boot and every 10 minutes
-
-[Timer]
-OnBootSec=1min
-OnUnitActiveSec=10min
-
-[Install]
-WantedBy=timers.target
