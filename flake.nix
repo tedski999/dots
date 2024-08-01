@@ -8,27 +8,22 @@
     nixgl.inputs.nixpkgs.follows = "nixpkgs";
   };
 
-  outputs = { self, nixpkgs, nur, home-manager, nixgl, ...  } @ inputs:
+  outputs = { self, nixpkgs, nur, home-manager, nixgl, ...  }@inputs:
   let
     lib = nixpkgs.lib // home-manager.lib;
-    systems = [ "aarch64-linux" "x86_64-linux" ];
-    forEachSystem = lib.genAttrs systems;
   in {
 
-    # inherit lib;
-    # overlays = import ./overlays { inherit inputs; };
-    # packages = forEachSystem (system: import ./pkgs nixpkgs.legacyPackages.${system});
-    #(import nixgl { inherit pkgs; }).auto.nixGLDefault
-
     # `nix --extra-experimental-features 'nix-command flakes' develop github:tedski999/dots --command home-manager switch --flake .config/nix#<name>` shell to bootstap any system
-    devShell = forEachSystem (system: let
+    devShells = lib.genAttrs [ "aarch64-linux" "x86_64-linux" ] (system: let
       pkgs = (import nixpkgs) { inherit system; };
-    in pkgs.mkShell {
-      NIX_CONFIG = "extra-experimental-features = nix-command flakes\nuse-xdg-base-directories = true";
-      buildInputs = [ pkgs.home-manager ];
+    in {
+      default = pkgs.mkShell {
+        NIX_CONFIG = "extra-experimental-features = nix-command flakes\nuse-xdg-base-directories = true";
+        buildInputs = [ pkgs.home-manager ];
+      };
     });
 
-    # `home-manager switch --flake .#<name>` for declaritive home management
+    # `home-manager switch --flake .#<name>` for declarative home management
     homeConfigurations = {
       "ski@msung" = lib.homeManagerConfiguration {
         modules = [ ./homes/ski_msung.nix ];
