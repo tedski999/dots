@@ -1,5 +1,4 @@
-# TODO: autologin
-# TODO: imports = [];
+# TODO(next): imports = [];
 
 {pkgs, lib, config, inputs, ...}: {
   home.username = "tedj";
@@ -14,10 +13,23 @@
   home.packages = with pkgs; [
     nixgl.nixGLIntel
     nix
+    # core cli
+    man
+    curl
+    diffutils
+    # bonus cli
     eza
+    btop
+    cht-sh
+    # gui
     wl-clipboard
+    wireplumber # TODO(now, pipewire): pipewire and wireplumber
+    brightnessctl
+    playerctl
+    grim
+    slurp
 
-    # TODO: no otb or other bitmap fonts showing up in fc-list
+    # TODO(now, fonts): no otb or other bitmap fonts showing up in fc-list
     terminus-nerdfont
     terminus_font_ttf
     terminus_font
@@ -39,7 +51,7 @@
 
   programs.gpg = {
     enable = true;
-    # TODO: publicKeys
+    # TODO(work): publicKeys
   };
 
   programs.git = {
@@ -83,7 +95,7 @@
     delta.options.hunk-header-decoration-style = "omit";
     delta.options.blame-palette = "#101010 #282828";
     delta.options.blame-separator-format = "{n:^5}";
-    # TODO
+    # TODO(work)
     #[pull] rebase = false
     #[push] default = current
     #[merge] conflictstyle = diff3
@@ -98,7 +110,6 @@
 
   programs.firefox = {
     enable = true;
-    # TODO: use firefox sync instead?
     profiles.work = {
       id = 0;
       name = "Work";
@@ -197,6 +208,8 @@
                 { name = "eosdoc"; url = "https://eosdoc2.infra.corp.arista.io/#/"; }
                 { name = "godbolt"; url = "https://code-explorer.infra.corp.arista.io/"; }
                 { name = "grep.app"; url = "https://grep.app/"; }
+                { name = "explainshell"; url = "https://explainshell.com/"; }
+                { name = "shellcheck"; url = "https://www.shellcheck.net/"; }
               ];
             }
             {
@@ -298,6 +311,7 @@
         }
       ];
     };
+    # TODO(later): firefox sync?
     profiles.home = {
       id = 1;
       name = "Home";
@@ -334,49 +348,12 @@
       font.size = 13.5;
       font.normal.family = "Terminess Nerd Font";
       selection.save_to_clipboard = true;
-      # TODO: keybinding to search username@host
-      #[[keyboard.bindings]]
-      #action = "SpawnNewInstance"
-      #key = "Return"
-      #mods = "Shift|Control"
-      #[[keyboard.bindings]]
-      #action = "ToggleViMode"
-      #key = "Escape"
-      #mods = "Shift|Control"
-      #[[keyboard.bindings]]
-      #action = "ToggleViMode"
-      #key = "Escape"
-      #mode = "Vi"
-      #[[keyboard.bindings]]
-      #action = "ScrollToTop"
-      #key = "A"
-      #mode = "Vi"
-      #mods = "Control"
-      #[[keyboard.bindings]]
-      #action = "ToggleNormalSelection"
-      #key = "A"
-      #mode = "Vi"
-      #mods = "Control"
-      #[[keyboard.bindings]]
-      #action = "ScrollToBottom"
-      #key = "A"
-      #mode = "Vi"
-      #mods = "Control"
-      #[[keyboard.bindings]]
-      #action = "Copy"
-      #key = "A"
-      #mode = "Vi"
-      #mods = "Control"
-      #[[keyboard.bindings]]
-      #action = "ClearSelection"
-      #key = "A"
-      #mode = "Vi"
-      #mods = "Control"
-      #[[keyboard.bindings]]
-      #action = "ToggleViMode"
-      #key = "A"
-      #mode = "Vi"
-      #mods = "Control"
+      # TODO(later): keybinding to search username@host
+      keyboard.bindings = [
+          { key = "Return"; mods = "Shift|Control"; action = "SpawnNewInstance"; }
+          { key = "Escape"; mods = "Shift|Control"; action = "ToggleViMode"; }
+          { key = "Escape"; mode = "Vi"; action = "ToggleViMode"; }
+      ];
       colors.draw_bold_text_with_bright_colors = true;
       colors.primary.background = "#000000";
       colors.primary.foreground = "#dddddd";
@@ -413,7 +390,7 @@
 
   programs.less = {
     enable = true;
-    # TODO:  M+Gc l *h ) F
+    # TODO(later):  M+Gc l *h ) F
     # keys = ''
     # '';
   };
@@ -422,7 +399,7 @@
     enable = true;
   };
 
-  programs.neovim  = { # TODO: config
+  programs.neovim = { # TODO(work): config
     enable = true;
   };
 
@@ -442,19 +419,43 @@
     ];
   };
 
-  programs.ssh  = { # TODO: config
+  programs.ssh = { # TODO(work): config
     enable = true;
   };
 
   programs.zsh = {
     enable = true;
+    dotDir = ".config/zsh";
+    defaultKeymap = "emacs";
+    enableCompletion = true;
+    completionInit = "autoload -U compinit && compinit -d '${config.xdg.cacheHome}/zcompdump'";
+    localVariables.PROMPT = "\n%F{red}%n@%m%f %F{blue}%T %~%f %F{red}%(?..%?)%f\n>%f ";
+    localVariables.TIMEFMT = "\nreal\t%E\nuser\t%U\nsys\t%S\ncpu\t%P";
     history.path = "${config.xdg.dataHome}/zsh_history";
     history.extended = true;
     history.share = true;
     history.save = 1000000;
     history.size = 1000000;
+    shellAliases.z = "exec zsh";
+    shellAliases.v = "nvim";
+    shellAliases.p = "python3";
+    shellAliases.c = "cargo";
+    shellAliases.g = "git";
+    shellAliases.d = "dirs -v";
+    shellAliases.rm = "2>&1 echo rm disabled, use del; return 1 && ";
+    shellAliases.ls = "eza -hs=name --group-directories-first";
+    shellAliases.ll = "ls -la";
+    shellAliases.lt = "ll -T";
+    shellAliases.ip = "ip --color";
+    shellAliases.sudo = "sudo --preserve-env ";
+    shellGlobalAliases.cat = "bat --paging=never";
+    shellGlobalAliases.less = "bat";
+    shellGlobalAliases.grep = "rg";
     autosuggestion.enable = true;
     autosuggestion.strategy = [ "history" "completion" ];
+    localVariables.ZSH_AUTOSUGGEST_BUFFER_MAX_SIZE = 100;
+    localVariables.ZSH_AUTOSUGGEST_ACCEPT_WIDGETS = [ "end-of-line" "vi-end-of-line" "vi-add-eol" ];
+    localVariables.ZSH_AUTOSUGGEST_PARTIAL_ACCEPT_WIDGETS = [ "forward-char" "vi-forward-char" "forward-word" "emacs-forward-word" "vi-forward-word" "vi-forward-word-end" "vi-forward-blank-word" "vi-forward-blank-word-end" "vi-find-next-char" "vi-find-next-char-skip" ];
     syntaxHighlighting.enable = true;
     syntaxHighlighting.styles.default = "fg=cyan";
     syntaxHighlighting.styles.unknown-token = "fg=red";
@@ -475,142 +476,89 @@
     syntaxHighlighting.styles.redirection = "fg=yellow,bold";
     syntaxHighlighting.styles.named-fd = "none";
     syntaxHighlighting.styles.arg0 = "fg=blue";
-
-    dotDir = ".config/zsh";
-    # TODO: remove bad defaults and migrate config
     initExtra = ''
-ZSH_AUTOSUGGEST_ACCEPT_WIDGETS=(end-of-line vi-end-of-line vi-add-eol)
-ZSH_AUTOSUGGEST_PARTIAL_ACCEPT_WIDGETS+=(forward-char vi-forward-char)
-ZSH_AUTOSUGGEST_BUFFER_MAX_SIZE=100
+      setopt autopushd pushdsilent
+      setopt promptsubst notify
+      setopt completeinword globcomplete globdots
 
-# Options
-export PROMPT=$'\n%F{red}%n@%m%f %F{blue}%T %~%f %F{red}%(?..%?)%f\n>%f '
-export TIMEFMT=$'\nreal\t%E\nuser\t%U\nsys\t%S\ncpu\t%P'
-setopt auto_pushd pushd_silent
-setopt prompt_subst notify
-setopt complete_in_word glob_complete
+      # word delimiters
+      autoload -U select-word-style
+      select-word-style bash
 
-# Aliases
-alias p="python3"
-alias c="cargo"
-alias g="git"
-alias ls="eza -hs=name --group-directories-first"
-alias ll="ls -la"
-alias lt="ll -T"
-alias d="dirs -v"
-alias sudo="sudo --preserve-env "
-alias ip="ip --color"
-alias cat="bat --paging=never"
-alias less="bat --paging=always"
-alias grep="rg"
-alias z="exec zsh"
-alias v="nvim"
-for i ({1..9}) alias "$i"="cd +$i"
+      # home end delete
+      bindkey "^[[H"  beginning-of-line
+      bindkey "^[[F"  end-of-line
+      bindkey "^[[3~" delete-char
 
-# Primary keybindings
-bindkey -e
-bindkey "^[[H"  beginning-of-line
-bindkey "^[[F"  end-of-line
-bindkey "^[[3~" delete-char
+      # command line editor
+      autoload edit-command-line
+      zle -N edit-command-line
+      bindkey "^V" edit-command-line
 
-# External editor
-autoload edit-command-line
-zle -N edit-command-line
-bindkey "^V" edit-command-line
+      # beam cursor
+      zle -N zle-line-init
+      zle-line-init() { echo -ne "\e[6 q" }
 
-# Beam cursor
-zle -N zle-line-init
-zle-line-init() { echo -ne "\e[6 q" }
+      # history search
+      autoload -Uz up-line-or-beginning-search down-line-or-beginning-search
+      zle -N up-line-or-beginning-search
+      zle -N down-line-or-beginning-search
+      for k in "^[p" "^[OA" "^[[A"; bindkey "$k" up-line-or-beginning-search
+      for k in "^[n" "^[OB" "^[[B"; bindkey "$k" down-line-or-beginning-search
 
-# History search
-autoload -Uz up-line-or-beginning-search down-line-or-beginning-search
-zle -N up-line-or-beginning-search
-zle -N down-line-or-beginning-search
-for k in "^[p" "^[OA" "^[[A"; bindkey "$k" up-line-or-beginning-search
-for k in "^[n" "^[OB" "^[[B"; bindkey "$k" down-line-or-beginning-search
+      # completion
+      autoload -U bashcompinit && bashcompinit
+      bindkey "^[[Z" reverse-menu-complete
+      # TODO(later): is all this really necessary?
+      zstyle ":completion:*" menu select
+      zstyle ":completion:*" complete-options true
+      zstyle ":completion:*" completer _complete _match _approximate
+      zstyle ":completion:*" matcher-list "" "m:{[:lower:][:upper:]}={[:upper:][:lower:]}" "+l:|=* r:|=*"
+      zstyle ":completion:*" list-suffixes
+      zstyle ":completion:*" expand prefix suffix 
+      zstyle ":completion:*" use-cache on
+      zstyle ":completion:*" cache-path "$XDG_CACHE_HOME/zcompcache"
+      zstyle ":completion:*" group-name ""
+      zstyle ":completion:*" list-colors "$${(s.:.)LS_COLORS}"
+      zstyle ":completion:*:*:*:*:descriptions" format "%F{green}-- %d --%f"
+      zstyle ":completion:*:messages" format " %F{purple} -- %d --%f"
+      zstyle ":completion:*:warnings" format " %F{red}-- no matches found --%f"
 
-# Completion
-zmodload zsh/complist
-autoload -Uz compinit && compinit -d "$XDG_CACHE_HOME/zcompdump" $([[ -n "$XDG_CACHE_HOME/zcompdump"(#qN.mh+24) ]] && echo -C)
-_comp_options+=(globdots)
-#autoload -U bashcompinit && bashcompinit
-zstyle ":completion:*" menu select
-zstyle ":completion:*" complete-options true
-zstyle ":completion:*" completer _complete _match _approximate
-zstyle ":completion:*" matcher-list "" "m:{[:lower:][:upper:]}={[:upper:][:lower:]}" "+l:|=* r:|=*"
-zstyle ":completion:*" list-suffixes
-zstyle ":completion:*" expand prefix suffix 
-zstyle ":completion:*" use-cache on
-zstyle ":completion:*" cache-path "$XDG_CACHE_HOME/zcompcache"
-zstyle ":completion:*" group-name ""
-zstyle ":completion:*" list-colors "$${(s.:.)LS_COLORS}"
-zstyle ":completion:*:*:*:*:descriptions" format "%F{green}-- %d --%f"
-zstyle ":completion:*:messages" format " %F{purple} -- %d --%f"
-zstyle ":completion:*:warnings" format " %F{red}-- no matches found --%f"
-bindkey "^[[Z" reverse-menu-complete
+      # Pager
+      # TODO(later): move to less config or something?
+      export LESS_TERMCAP_mb="$(tput setaf 2; tput blink)"
+      export LESS_TERMCAP_md="$(tput setaf 0; tput bold)"
+      export LESS_TERMCAP_me="$(tput sgr0)"
+      export LESS_TERMCAP_so="$(tput setaf 3; tput smul; tput bold)"
+      export LESS_TERMCAP_se="$(tput sgr0)"
+      export LESS_TERMCAP_us="$(tput setaf 4; tput smul)"
+      export LESS_TERMCAP_ue="$(tput sgr0)"
+      #export LESS="--ignore-case --tabs=4 --chop-long-lines --LONG-PROMPT --RAW-CONTROL-CHARS --lesskey-file=$XDG_CONFIG_HOME/less/key"
+      #command less --help | grep -q -- --incsearch && export LESS="--incsearch $LESS"
 
-# Word delimiters
-autoload -U select-word-style
-select-word-style bash
+      # GPG+SSH
+      # TODO(work): this should probably be done in gpg-agent config
+      #hash gpgconf 2>/dev/null && {
+      #	export GPG_TTY="$(tty)"
+      #	export SSH_AGENT_PID=""
+      #	export SSH_AUTH_SOCK="$(gpgconf --list-dirs agent-ssh-socket)"
+      #	(gpgconf --launch gpg-agent &)
+      #}
 
-# Pager
-export LESS_TERMCAP_mb="$(tput setaf 2; tput blink)"
-export LESS_TERMCAP_md="$(tput setaf 0; tput bold)"
-export LESS_TERMCAP_me="$(tput sgr0)"
-export LESS_TERMCAP_so="$(tput setaf 3; tput smul; tput bold)"
-export LESS_TERMCAP_se="$(tput sgr0)"
-export LESS_TERMCAP_us="$(tput setaf 4; tput smul)"
-export LESS_TERMCAP_ue="$(tput sgr0)"
-#export LESS="--ignore-case --tabs=4 --chop-long-lines --LONG-PROMPT --RAW-CONTROL-CHARS --lesskey-file=$XDG_CONFIG_HOME/less/key"
-#command less --help | grep -q -- --incsearch && export LESS="--incsearch $LESS"
+      0x0() { curl -F"file=@$1" https://0x0.st; }
 
-# GPG+SSH
-hash gpgconf 2>/dev/null && {
-	export GPG_TTY="$(tty)"
-	export SSH_AGENT_PID=""
-	export SSH_AUTH_SOCK="$(gpgconf --list-dirs agent-ssh-socket)"
-	(gpgconf --launch gpg-agent &)
-}
+      diff() { command diff -u $@ | delta; }
 
-# TODO: all of this can likely be moved
+      cht() { cht.sh "$@?style=paraiso-dark" | less; }
+      _cht() { compadd $commands:t; }; compdef _cht cht
 
-# Arista Shell
-export ARZSH_COMP_UNSAFE=1
-ash() { eval 2>/dev/null mosh -a -o --experimental-remote-ip=remote us260 -- tmux new $${@:+-c -- a4c shell $@} }
-_ash() { compadd "$(ssh us260 -- a4c ps -N)" }
-compdef _ash ash
+      #ash() { eval 2>/dev/null mosh -a -o --experimental-remote-ip=remote us260 -- tmux new $${@:+-c -- a4c shell $@}; }
+      #_ash() { compadd "$(ssh us260 -- a4c ps -N)"; }; compdef _ash ash
 
-# File sharing
-0x0() { curl -F"file=@$1" https://0x0.st }
-
-# cht.sh
-cht() { cht.sh "$@?style=paraiso-dark" | less }
-_cht() { compadd $commands:t }
-compdef _cht cht
-
-# TODO: explainshell.com
-
-# del
-alias rm="2>&1 echo rm disabled, use del; return 1 #"
-
-# delta
-diff() { command diff -u $@ | delta }
-
-# lf
-lf() {
-	f="$XDG_CACHE_HOME/lfcd"
-	command lf -last-dir-path "$f" $@
-	[ -f "$f" ] && { cd "$(cat $f)"; command rm -f "$f"; }
-}
-
-
-
-
-# Start desktop environment
-# TODO
-#[[ -o interactive && -o login && -z "$WAYLAND_DISPLAY" && "$(tty)" = "/dev/tty1" ]] && hash sway 2>/dev/null && {
-#	sway
-#}
+      # Start desktop environment
+      [[ -o interactive && -o login && -z "$WAYLAND_DISPLAY" && "$(tty)" = "/dev/tty1" ]] && hash sway 2>/dev/null && {
+        nixGLIntel sway
+      }
     '';
   };
 
@@ -641,6 +589,7 @@ lf() {
       sf = "#ffffff";
       ab = "#000000";
       af = "#ffffff";
+      fn = "Terminess Nerd Font";
     };
   };
 
@@ -648,26 +597,83 @@ lf() {
     enable = true;
     colors = { "fg" = "bold"; "pointer" = "red"; "hl" = "red"; "hl+" = "red"; "gutter" = "-1"; "marker" = "red"; };
     defaultCommand = "rg --files --no-messages";
-    defaultOptions = [ "--multi" "--bind='ctrl-n:down,ctrl-p:up,up:previous-history,down:next-history,ctrl-j:accept,ctrl-k:toggle,alt-a:toggle-all,ctrl-/:toggle-preview'" "--preview-window sharp" "--marker=k" "--color=$FZF_COLORS" "--history $XDG_DATA_HOME/fzf_history" ];
+    defaultOptions = [ "--multi" "--bind='ctrl-n:down,ctrl-p:up,up:previous-history,down:next-history,ctrl-j:accept,ctrl-k:toggle,alt-a:toggle-all,ctrl-/:toggle-preview'" "--preview-window sharp" "--marker=k" "--color=fg+:bold,pointer:red,hl:red,hl+:red,gutter:-1,marker:red" "--history ${config.xdg.dataHome}/fzf_history" ];
     changeDirWidgetCommand = "fd --hidden --exclude '.git' --exclude 'node_modules' --type d";
     fileWidgetCommand = "fd --hidden --exclude '.git' --exclude 'node_modules'";
   };
 
-  # TODO: programs.lf/nnn/yazi
-  # TODO: programs: feh and mpv
-  # TODO: programs.tmux
-  # TODO(now): services.mako/swaync
-  # TODO(now): services.flameshot or something else
-  # TODO: services.gromit-mpx or something else
-  # TODO: service.swayidle
+  # TODO(now): fix me
+  services.gromit-mpx = {
+    enable = true;
+  };
+
+  services.mako = {
+    enable = true;
+    width = 450;
+    height = 150;
+    layer = "overlay";
+    maxVisible = 10;
+    defaultTimeout = 10000;
+    backgroundColor = "#303030";
+    borderColor = "#ffffff";
+    progressColor = "#808080";
+    font = "Terminess Nerd Font 12";
+    icons = true;
+    maxIconSize = 32;
+    # TODO iconPath = "/usr/share/icons/breeze-dark";
+    extraConfig = ''
+      max-history=10
+      on-button-left=exec makoctl menu bemenu --prompt "Action"
+      on-button-right=dismiss
+
+      [actionable]
+      format=<b>%s</b> •\n%b
+
+      [urgency=low]
+      background-color=#202020
+      text-color=#d0d0d0
+      border-color=#808080
+
+      [urgency=high]
+      default-timeout=0
+      background-color=#c00000
+      border-color=#ff0000
+
+      [category=osd]
+      format=%s\n%b
+      group-by=category
+      default-timeout=500
+      history=0
+    '';
+  };
+
+
+  # TODO(now, bar): programs.eww/waybar/yambar or services.polybar/taffybar
   # TODO(now): service.syncthing
-  # TODO(now): programs.eww/waybar/yambar or services.polybar/taffybar
+  # TODO(now): service.swayidle? or integrate with systemd somehow
 
-  # TODO: services.gpg-agent?
-  # TODO: services.ssh-agent?
-  # TODO: direnv? keychain? newsboat? obs-studio?
+  # TODO(work): programs.tmux
+  # TODO(work): services.gpg-agent?
+  # TODO(work): services.ssh-agent?
 
+  # TODO(later): programs.lf/nnn/yazi
+  # TODO(later): programs.direnv? keychain? newsboat? obs-studio?
   # TODO(later): programs.beets
+
+  programs.feh = {
+    enable = true;
+    # TODO(later): feh config
+    #buttons = {};
+    #keybindings = {};
+  };
+
+  programs.mpv = {
+    enable = true;
+    # TODO(later): mpv config
+    #bindings = {};
+    #config = {};
+    #extraInput = {};
+  };
 
   programs.swaylock = {
     enable = true;
@@ -710,269 +716,228 @@ lf() {
 
   wayland.windowManager.sway = {
     enable = true;
-    #package = nixGL pkgs.sway; # TODO: wrap sway with nixGL here instead of in shell?
+    #package = nixGL pkgs.sway; # TODO(later): wrap sway with nixGL here instead of in shell?
     systemd.enable = true;
     extraOptions = [ "--unsupported-gpu" ];
-    config = { # TODO: remove default and migrate config
+    config = {
       modifier = "Mod4";
-      keybindings = {};
-      startup = [];
+      workspaceLayout = "default";
+      #wrapperFeatures.gtk = true;
+      output."*".bg = "#101010 solid_color";
+      seat."*".hide_cursor = "when-typing enable";
+      focus.followMouse = true;
+      focus.mouseWarping = "output";
+      focus.wrapping = "no";
+      window.border = 1;
+      window.hideEdgeBorders = "none";
+      window.titlebar = false;
+      window.commands = [
+        { criteria.class = ".*"; command = "border pixel 1"; }
+        { criteria.app_id = ".*"; command = "border pixel 1"; }
+        { criteria.app_id = "floating.*"; command = "floating enable"; }
+      ];
+      floating.modifier = "Mod4";
+      floating.border = 1;
+      floating.titlebar = false;
+      input."type:keyboard".xkb_layout = "ie";
+      input."type:keyboard".xkb_options = "caps:escape";
+      input."type:keyboard".repeat_delay = "250";
+      input."type:keyboard".repeat_rate = "30";
+      input."type:touchpad".dwt = "disabled";
+      input."type:touchpad".tap = "enabled";
+      input."type:touchpad".natural_scroll = "enabled";
+      input."type:touchpad".click_method = "clickfinger";
+      input."type:touchpad".scroll_method = "two_finger";
       modes = {};
-      menu = "bemenu-run";
-      terminal = "alacritty";
-      # TODO: just wrong
-      # colors.focused           = { background = "#202020"; border = "#ffffff"; childBorder = "#000000"; indicator = "#ff0000"; text = "#ffffff"; };
-      # colors.focusedInactive  = { background = "#202020"; border = "#202020"; childBorder = "#ffffff"; indicator = "#202020"; text = "#202020"; };
-      # # colors.focused_tab_title = { background = "#202020"; border = "#ffffff"; childBoarder = "#000000"; };
-      # colors.unfocused         = { background = "#202020"; border = "#202020"; childBorder = "#808080"; indicator = "#202020"; text = "#202020"; };
+      fonts = {}; 
+      startup = [
+        #{ command = "pidof -x batteryd || batteryd"; always = true; }
+        #{ command = "powerctl uncaffeinate"; always = true; }
+        # TODO(later): focus on every monitor 
+        #{ command = "displayctl auto"; always = true; }
+        #{ command = "$get_output && swaymsg \"workspace 1:$o\""; }
+      ];
+      # TODO(later): multimonitor bars
+      # TODO(now, bar): bar
+      #bars.waybar.command = "waybar";
+      #bars.waybar.mode = "hide";
+      # shortcuts
+      keybindings."Mod4+space" = "exec bemenu-run";
+      keybindings."Mod4+Return" = "exec $TERMINAL";
+      keybindings."Mod4+t" = "exec $TERMINAL";
+      keybindings."Mod4+w" = "exec $BROWSER";
+      keybindings."Mod4+d" = "exec $BROWSER 'https://discord.com/app'";
+      # TODO(now, bins)
+      keybindings."Mod4+Shift+c" = "reload";
+      keybindings."Mod4+Shift+e" = "exit";
+      #keybindings."Mod4+Escape" = "exec powerctl";
+      #keybindings."--locked Mod4+Shift+Escape" = "exec powerctl lock";
+      #keybindings."--locked Mod4+Control+Escape" = "exec powerctl suspend";
+      #keybindings."Mod4+Control+Shift+Escape" = "exec powerctl reload";
+      #keybindings."Mod4+backslash" = "exec displayctl";
+      #keybindings."Mod4+Shift+backslash" = "exec displayctl mono";
+      #keybindings."Mod4+Control+backslash" = "exec displayctl duel";
+      #keybindings."Mod4+n" = "exec networkctl";
+      #keybindings."Mod4+Shift+n" = "exec networkctl wifi";
+      #keybindings."Mod4+Control+n" = "exec networkctl bluetooth";
+      # TODO(later): persistent floating btop
+      keybindings."Mod4+u" = "exec $TERMINAL --class floating-btop --command btop";
+      keybindings."Mod4+Control+u" = "exec swaymsg '[class=\"floating-btop\"] scratchpad show'";
+      # TODO(work): bemenu bitwarden
+      keybindings."Mod4+b" = "border pixel 1";
+      keybindings."Mod4+shift+b" = "border none";
+      keybindings."Mod4+v" = "exec cliphist list | bemenu --prompt 'Clipboard' | cliphist decode | wl-copy";
+      keybindings."Mod4+grave" = "exec makoctl dismiss";
+      keybindings."Mod4+Shift+grave" = "exec makoctl restore";
+      keybindings."Mod4+Control+grave" = "exec makoctl menu bemenu --prompt 'Action'";
+      # containers
+      # TODO(later): for loop
+      keybindings."Mod4+h"         = "focus left";
+      keybindings."Mod4+Shift+h"   = "exec $group && swaymsg 'move left 50px' && $ungroup";
+      keybindings."Mod4+Control+h" = "resize shrink width 50px";
+      keybindings."Mod4+j"         = "focus down";
+      keybindings."Mod4+Shift+j"   = "exec $group && swaymsg 'move down 50px' && $ungroup";
+      keybindings."Mod4+Control+j" = "resize grow height 50px";
+      keybindings."Mod4+k"         = "focus up";
+      keybindings."Mod4+Shift+k"   = "exec $group && swaymsg 'move up 50px' && $ungroup";
+      keybindings."Mod4+Control+k" = "resize shrink height 50px";
+      keybindings."Mod4+l"         = "focus right";
+      keybindings."Mod4+Shift+l"   = "exec $group && swaymsg 'move right 50px' && $ungroup";
+      keybindings."Mod4+Control+l" = "resize grow width 50px";
+      # TODO(later): doesnt work if nothing is focused
+      keybindings."Mod4+Tab" = ''exec $get_views && $get_focused && n=$(printf "$vs\n$vs\n" | cat | awk "/$f/{getline; print; exit}") && swaymsg "[con_id=$n] focus"'';
+      keybindings."Mod4+Shift+Tab" = ''exec $get_views && $get_focused && n=$(printf "$vs\n$vs\n" | tac | awk "/$f/{getline; print; exit}") && swaymsg "[con_id=$n] focus"'';
+      keybindings."Mod4+f" = "focus mode_toggle";
+      keybindings."Mod4+Shift+f" = "border pixel 1, floating toggle";
+      keybindings."Mod4+x" = "sticky toggle";
+      keybindings."Mod4+m" = "fullscreen";
+      keybindings."Mod4+q" = "kill";
+      # workspaces
+      # TODO(later): for loop
+      keybindings."Mod4+1" = ''exec $get_output && swaymsg "workspace 1:$o"'';
+      keybindings."Mod4+2" = ''exec $get_output && swaymsg "workspace 2:$o"'';
+      keybindings."Mod4+3" = ''exec $get_output && swaymsg "workspace 3:$o"'';
+      keybindings."Mod4+4" = ''exec $get_output && swaymsg "workspace 4:$o"'';
+      keybindings."Mod4+5" = ''exec $get_output && swaymsg "workspace 5:$o"'';
+      keybindings."Mod4+6" = ''exec $get_output && swaymsg "workspace 6:$o"'';
+      keybindings."Mod4+7" = ''exec $get_output && swaymsg "workspace 7:$o"'';
+      keybindings."Mod4+8" = ''exec $get_output && swaymsg "workspace 8:$o"'';
+      keybindings."Mod4+9" = ''exec $get_output && swaymsg "workspace 9:$o"'';
+      keybindings."Mod4+Shift+1" = ''exec $group && $get_output && swaymsg "move container workspace 1:$o, workspace 1:$o" && $ungroup'';
+      keybindings."Mod4+Shift+2" = ''exec $group && $get_output && swaymsg "move container workspace 2:$o, workspace 2:$o" && $ungroup'';
+      keybindings."Mod4+Shift+3" = ''exec $group && $get_output && swaymsg "move container workspace 3:$o, workspace 3:$o" && $ungroup'';
+      keybindings."Mod4+Shift+4" = ''exec $group && $get_output && swaymsg "move container workspace 4:$o, workspace 4:$o" && $ungroup'';
+      keybindings."Mod4+Shift+5" = ''exec $group && $get_output && swaymsg "move container workspace 5:$o, workspace 5:$o" && $ungroup'';
+      keybindings."Mod4+Shift+6" = ''exec $group && $get_output && swaymsg "move container workspace 6:$o, workspace 6:$o" && $ungroup'';
+      keybindings."Mod4+Shift+7" = ''exec $group && $get_output && swaymsg "move container workspace 7:$o, workspace 7:$o" && $ungroup'';
+      keybindings."Mod4+Shift+8" = ''exec $group && $get_output && swaymsg "move container workspace 8:$o, workspace 8:$o" && $ungroup'';
+      keybindings."Mod4+Shift+9" = ''exec $group && $get_output && swaymsg "move container workspace 9:$o, workspace 9:$o" && $ungroup'';
+      keybindings."Mod4+Control+1" = ''exec $get_output && swaymsg "move container workspace 1:$o"'';
+      keybindings."Mod4+Control+2" = ''exec $get_output && swaymsg "move container workspace 2:$o"'';
+      keybindings."Mod4+Control+3" = ''exec $get_output && swaymsg "move container workspace 3:$o"'';
+      keybindings."Mod4+Control+4" = ''exec $get_output && swaymsg "move container workspace 4:$o"'';
+      keybindings."Mod4+Control+5" = ''exec $get_output && swaymsg "move container workspace 5:$o"'';
+      keybindings."Mod4+Control+6" = ''exec $get_output && swaymsg "move container workspace 6:$o"'';
+      keybindings."Mod4+Control+7" = ''exec $get_output && swaymsg "move container workspace 7:$o"'';
+      keybindings."Mod4+Control+8" = ''exec $get_output && swaymsg "move container workspace 8:$o"'';
+      keybindings."Mod4+Control+9" = ''exec $get_output && swaymsg "move container workspace 9:$o"'';
+      keybindings."Mod4+Comma"                = ''exec $get_output && $get_prev_workspace && swaymsg "workspace $w:$o"'';
+      keybindings."Mod4+Period"               = ''exec $get_output && $get_next_workspace && swaymsg "workspace $w:$o"'';
+      keybindings."Mod4+Shift+Comma"          = ''exec $group && $get_output && $get_prev_workspace && swaymsg "move container workspace $w:$o, workspace $w:$o" && $ungroup'';
+      keybindings."Mod4+Shift+Period"         = ''exec $group && $get_output && $get_next_workspace && swaymsg "move container workspace $w:$o, workspace $w:$o" && $ungroup'';
+      keybindings."Mod4+Control+Comma"        = ''exec $get_output && $get_prev_workspace && swaymsg "move container workspace $w:$o"'';
+      keybindings."Mod4+Control+Period"       = ''exec $get_output && $get_next_workspace && swaymsg "move container workspace $w:$o"'';
+      keybindings."Mod4+Control+Shift+Comma"  = ''exec '$group && $get_output && $get_workspaces && ws=$(echo "$ws" | cat) && [ "$(echo "$ws" | head -1)" != "1" ] && for w in $ws; do i=$(( $w - 1 )); swaymsg "rename workspace $w:$o to $i:$o"; done && ungroup' '';
+      keybindings."Mod4+Control+Shift+Period" = ''exec '$group && $get_output && $get_workspaces && ws=$(echo "$ws" | tac) && [ "$(echo "$ws" | head -1)" != "9" ] && for w in $ws; do i=$(( $w + 1 )); swaymsg "rename workspace $w:$o to $i:$o"; done && ungroup' '';
+      keybindings."Mod4+z"               = ''exec $get_output && $get_empty_workspace && swaymsg "workspace $w:$o"'';
+      keybindings."Mod4+Shift+z"         = ''exec $group && $get_output && $get_empty_workspace && swaymsg "move container workspace $w:$o, workspace $w:$o" && $ungroup'';
+      keybindings."Mod4+Control+z"       = ''exec '$get_output && $get_empty_workspace && swaymsg "move container workspace $w:$o"' '';
+      keybindings."Mod4+Control+Shift+z" = ''exec '$group && $get_output && $get_workspaces && i=1; for w in $ws; do swaymsg rename workspace $w:$o to $i:$o; i=$(( $i + 1 )); done && $ungroup' '';
+      # outputs
+      keybindings."Mod4+equal"         = ''exec $get_output && swaymsg output $(swaymsg -rt get_outputs | jq -r '.[] | select(.name == "'$o'") | "\(.name) scale \(.scale * 1.1)"')'';
+      keybindings."Mod4+minus"         = ''exec $get_output && swaymsg output $(swaymsg -rt get_outputs | jq -r '.[] | select(.name == "'$o'") | "\(.name) scale \(.scale / 1.1)"')'';
+      keybindings."Mod4+Shift+equal"   = ''exec $get_output && swaymsg output $(swaymsg -rt get_outputs | jq -r '.[] | select(.name == "'$o'") | "\(.name) scale \(.scale * 1.5)"')'';
+      keybindings."Mod4+Shift+minus"   = ''exec $get_output && swaymsg output $(swaymsg -rt get_outputs | jq -r '.[] | select(.name == "'$o'") | "\(.name) scale \(.scale / 1.5)"')'';
+      keybindings."Mod4+Control+equal" = ''exec $get_output && swaymsg output "$o" scale 1'';
+      keybindings."Mod4+Control+minus" = ''exec $get_output && swaymsg output "$o" scale 2'';
+      # layout
+      keybindings."Mod4+g"       = "focus parent";
+      keybindings."Mod4+Shift+g" = "focus child";
+      keybindings."Mod4+p"       = "split vertical";
+      keybindings."Mod4+Shift+p" = "split none";
+      keybindings."Mod4+o"       = "layout toggle splitv splith";
+      keybindings."Mod4+Shift+o" = "layout toggle split tabbed";
+      # scratchpads
+      keybindings."Mod4+0"       = "scratchpad show";
+      keybindings."Mod4+Shift+0" = "move scratchpad";
+      # media
+      # TODO(later): --locked
+      keybindings."XF86AudioPlay"         = "exec playerctl play-pause";
+      keybindings."Shift+XF86AudioPlay"   = "exec playerctl pause";
+      keybindings."Control+XF86AudioPlay" = "exec playerctl stop";
+      keybindings."XF86AudioPrev"         = "exec playerctl position 1-";
+      keybindings."Shift+XF86AudioPrev"   = "exec playerctl position 10-";
+      keybindings."Control+XF86AudioPrev" = "exec playerctl previous";
+      keybindings."XF86AudioNext"         = "exec playerctl position 1+";
+      keybindings."Shift+XF86AudioNext"   = "exec playerctl position 10+";
+      keybindings."Control+XF86AudioNext" = "exec playerctl next";
+      # volume
+      # TODO(later): --locked
+      keybindings."XF86AudioMute"                = "exec wpctl set-mute   @DEFAULT_SINK@ toggle && $send_volume_notif";
+      keybindings."Shift+XF86AudioMute"          = "exec                                           $send_volume_notif";
+      keybindings."Control+XF86AudioMute"        = "exec wpctl set-mute   @DEFAULT_SINK@ 1      && $send_volume_notif";
+      keybindings."XF86AudioLowerVolume"         = "exec wpctl set-volume @DEFAULT_SINK@ 1%-    && $send_volume_notif";
+      keybindings."Shift+XF86AudioLowerVolume"   = "exec wpctl set-volume @DEFAULT_SINK@ 10%-   && $send_volume_notif";
+      keybindings."Control+XF86AudioLowerVolume" = "exec wpctl set-volume @DEFAULT_SINK@ 0%     && $send_volume_notif";
+      keybindings."XF86AudioRaiseVolume"         = "exec wpctl set-volume @DEFAULT_SINK@ 1%+    && $send_volume_notif";
+      keybindings."Shift+XF86AudioRaiseVolume"   = "exec wpctl set-volume @DEFAULT_SINK@ 10%+   && $send_volume_notif";
+      keybindings."Control+XF86AudioRaiseVolume" = "exec wpctl set-volume @DEFAULT_SINK@ 100%   && $send_volume_notif";
+      # microphone
+      # TODO(later): --locked
+      #keybindings."Pause"   = "exec wpctl set-mute @DEFAULT_SOURCE@ 0"; TODO(later): --no-repeat
+      #keybindings."Pause"   = "exec wpctl set-mute @DEFAULT_SOURCE@ 1"; TODO(later): --no-repeat --release
+      #keybindings."button8" = "exec wpctl set-mute @DEFAULT_SOURCE@ toggle"; # TODO(later): --no-repeat --release --whole-window
+      # backlight
+      # TODO(later): --locked
+      keybindings."XF86MonBrightnessDown"         = "exec brightnessctl set 1%-  && $send_brightness_notif";
+      keybindings."Shift+XF86MonBrightnessDown"   = "exec brightnessctl set 10%- && $send_brightness_notif";
+      keybindings."Control+XF86MonBrightnessDown" = "exec brightnessctl set 1    && $send_brightness_notif";
+      keybindings."XF86MonBrightnessUp"           = "exec brightnessctl set 1%+  && $send_brightness_notif";
+      keybindings."Shift+XF86MonBrightnessUp"     = "exec brightnessctl set 10%+ && $send_brightness_notif";
+      keybindings."Control+XF86MonBrightnessUp"   = "exec brightnessctl set 100% && $send_brightness_notif";
+      # screenshots
+      keybindings."Print"         = ''exec slurp -b '#ffffff20' | grim -g - - | wl-copy --type image/png'';
+      keybindings."Shift+Print"   = ''exec swaymsg -t get_tree | jq -r '.. | select(.pid? and .visible?) | .rect | "\(.x),\(.y) \(.width)x\(.height)"' | slurp -B '#ffffff20' | grim -g - - | wl-copy --type image/png'';
+      keybindings."Control+Print" = ''exec slurp -oB '#ffffff20' | grim -g - - | wl-copy --type image/png'';
     };
 
-
+    # TODO(later): just wrong
+    # config.colors.focused           = { background = "#202020"; border = "#ffffff"; childBorder = "#000000"; indicator = "#ff0000"; text = "#ffffff"; };
+    # config.colors.focusedInactive  = { background = "#202020"; border = "#202020"; childBorder = "#ffffff"; indicator = "#202020"; text = "#202020"; };
+    # config.colors.focused_tab_title = { background = "#202020"; border = "#ffffff"; childBoarder = "#000000"; };
+    # config.colors.unfocused         = { background = "#202020"; border = "#202020"; childBorder = "#808080"; indicator = "#202020"; text = "#202020"; };
     extraConfig = ''
+      client.focused           #202020 #ffffff #000000 #ff0000 #ffffff
+      client.focused_inactive  #202020 #202020 #ffffff #202020 #202020
+      client.focused_tab_title #202020 #ffffff #000000
+      client.unfocused         #202020 #202020 #808080 #202020 #202020
+    '';
 
-# TODO: replace with powerctl
-bindsym Mod4+Shift+c reload
-bindsym Mod4+Shift+e exit
-
-# TODO: still needed?
-#exec_always pidof wl-paste || wl-paste --watch cliphist store
-
-# Common functions
-set $get_views vs=$(swaymsg -rt get_tree | jq "recurse(.nodes[], .floating_nodes[]) | select(.visible).id")
-set $get_focused f=$(swaymsg -rt get_tree | jq "recurse(.nodes[], .floating_nodes[]) | first(select(.focused)).id")
-set $get_output o=$(swaymsg -rt get_outputs | jq -r ".[] | first(select(.focused).name)")
-set $get_workspaces ws=$(swaymsg -rt get_workspaces | jq -r ".[].num")
-set $get_prev_workspace w=$(( $( swaymsg -t get_workspaces | jq -r ".[] | first(select(.focused).num)" ) - 1 )) && w=$(( $w < 1 ? 1 : ($w < 9 ? $w : 9) ))
-set $get_next_workspace w=$(( $( swaymsg -t get_workspaces | jq -r ".[] | first(select(.focused).num)" ) + 1 )) && w=$(( $w < 1 ? 1 : ($w < 9 ? $w : 9) ))
-# TODO: always skips 1
-set $get_empty_workspace w=$(swaymsg -rt get_workspaces | jq ". as \$w | first(range(1; 9) | select(all(. != \$w[].num; .)))")
-set $group swaymsg "mark --add g" || swaymsg "splitv, mark --add g"
-set $ungroup swaymsg "[con_mark=g] focus, unmark g" || swaymsg "focus parent; focus parent; focus parent; focus parent"
-
-# Appearance
-output * bg #101010 solid_color
-default_border pixel 2
-default_floating_border pixel 2
-for_window [class=".*"]  border pixel 2
-for_window [app_id=".*"] border pixel 2
-for_window [app_id="floating.*"] floating enable
-client.focused           #202020 #ffffff #000000 #ff0000 #ffffff
-client.focused_inactive  #202020 #202020 #ffffff #202020 #202020
-client.focused_tab_title #202020 #ffffff #000000
-client.unfocused         #202020 #202020 #808080 #202020 #202020
-# TODO
-# font terminus 12
-
-# Startup scripts and daemons
-# TODO
-# Notifications
-#exec_always pidof mako || mako
-# Battery warning notifications
-# TODO
-#exec_always pidof -x batteryd || batteryd
-# Idle locking + suspending
-# TODO
-#exec_always powerctl uncaffeinate
-# Output setup
-# TODO
-# TODO: focus for every monitor 
-#exec_always displayctl auto
-exec $get_output && swaymsg "workspace 1:$o"
-# Bars
-# TODO
-# TODO: multimonitor bars
-#bar {
-#	swaybar_command waybar
-#	mode hide
-#}
-
-# Input devices
-input type:keyboard {
-	xkb_layout ie
-	xkb_options caps:escape
-	repeat_delay 250
-	repeat_rate 30
-}
-input type:touchpad {
-	dwt disabled
-	tap enabled
-	natural_scroll enabled
-	click_method clickfinger
-	scroll_method two_finger
-}
-
-# Mouse
-floating_modifier Mod4 normal
-focus_follows_mouse no
-mouse_warping output
-
-# Program shortcuts
-bindsym Mod4+space                   exec bemenu-run
-bindsym Mod4+Return                  exec $TERMINAL
-bindsym Mod4+t                       exec $TERMINAL
-bindsym Mod4+w                       exec $BROWSER
-bindsym Mod4+d                       exec $BROWSER "https://discord.com/app"
-# TODO
-#bindsym Mod4+Escape                  exec powerctl
-#bindsym --locked Mod4+Shift+Escape   exec powerctl lock
-#bindsym --locked Mod4+Control+Escape exec powerctl suspend
-#bindsym Mod4+Control+Shift+Escape    exec powerctl reload
-# TODO
-#bindsym Mod4+backslash               exec displayctl
-#bindsym Mod4+Shift+backslash         exec displayctl mono
-#bindsym Mod4+Control+backslash       exec displayctl duel
-# TODO
-#bindsym Mod4+n                       exec networkctl
-#bindsym Mod4+Shift+n                 exec networkctl wifi
-#bindsym Mod4+Control+n               exec networkctl bluetooth
-# TODO
-# TODO: persistent floating btop
-#bindsym Mod4+u                       exec $TERMINAL --class floating-btop --command btop
-# TODO
-#bindsym Mod4+Shift+u                 exec $TERMINAL --class floating --command sudo pacman -Syu
-# TODO
-# bindsym Mod4+Control+u                       exec swaymsg '[class="floating-btop"] scratchpad show'
-# TODO: bemenu bitwarden
-bindsym Mod4+b                       border pixel 2
-bindsym Mod4+shift+b                 border none
-# TODO
-#bindsym Mod4+v                       exec CH_PROMPT="Clipboard" choose "$(cliphist list)" | cliphist decode | wl-copy
-# TODO
-#bindsym Mod4+grave                   exec makoctl dismiss
-#bindsym Mod4+Shift+grave             exec makoctl restore
-#bindsym Mod4+Control+grave           exec makoctl menu wofi --dmenu --prompt "Action"
-
-# Windows
-focus_wrapping no
-bindsym Mod4+h focus left
-bindsym Mod4+j focus down
-bindsym Mod4+k focus up
-bindsym Mod4+l focus right
-bindsym Mod4+Shift+h exec $group && swaymsg "move left  50px" && $ungroup
-bindsym Mod4+Shift+j exec $group && swaymsg "move down  50px" && $ungroup
-bindsym Mod4+Shift+k exec $group && swaymsg "move up    50px" && $ungroup
-bindsym Mod4+Shift+l exec $group && swaymsg "move right 50px" && $ungroup
-bindsym Mod4+Control+h resize shrink width 50px
-bindsym Mod4+Control+j resize grow height 50px
-bindsym Mod4+Control+k resize shrink height 50px
-bindsym Mod4+Control+l resize grow width 50px
-# TODO: doesnt work if nothing is focused
-bindsym Mod4+Tab       exec $get_views && $get_focused && n=$(printf "$vs\n$vs\n" | cat | awk "/$f/{getline; print; exit}") && swaymsg "[con_id=$n] focus"
-bindsym Mod4+Shift+Tab exec $get_views && $get_focused && n=$(printf "$vs\n$vs\n" | tac | awk "/$f/{getline; print; exit}") && swaymsg "[con_id=$n] focus"
-bindsym Mod4+f focus mode_toggle
-bindsym Mod4+Shift+f border pixel 2, floating toggle
-bindsym Mod4+x sticky toggle
-bindsym Mod4+m fullscreen
-bindsym Mod4+q kill
-
-# Workspaces
-bindsym Mod4+1 exec $get_output && swaymsg "workspace 1:$o"
-bindsym Mod4+2 exec $get_output && swaymsg "workspace 2:$o"
-bindsym Mod4+3 exec $get_output && swaymsg "workspace 3:$o"
-bindsym Mod4+4 exec $get_output && swaymsg "workspace 4:$o"
-bindsym Mod4+5 exec $get_output && swaymsg "workspace 5:$o"
-bindsym Mod4+6 exec $get_output && swaymsg "workspace 6:$o"
-bindsym Mod4+7 exec $get_output && swaymsg "workspace 7:$o"
-bindsym Mod4+8 exec $get_output && swaymsg "workspace 8:$o"
-bindsym Mod4+9 exec $get_output && swaymsg "workspace 9:$o"
-bindsym Mod4+Shift+1 exec $group && $get_output && swaymsg "move container workspace 1:$o, workspace 1:$o" && $ungroup
-bindsym Mod4+Shift+2 exec $group && $get_output && swaymsg "move container workspace 2:$o, workspace 2:$o" && $ungroup
-bindsym Mod4+Shift+3 exec $group && $get_output && swaymsg "move container workspace 3:$o, workspace 3:$o" && $ungroup
-bindsym Mod4+Shift+4 exec $group && $get_output && swaymsg "move container workspace 4:$o, workspace 4:$o" && $ungroup
-bindsym Mod4+Shift+5 exec $group && $get_output && swaymsg "move container workspace 5:$o, workspace 5:$o" && $ungroup
-bindsym Mod4+Shift+6 exec $group && $get_output && swaymsg "move container workspace 6:$o, workspace 6:$o" && $ungroup
-bindsym Mod4+Shift+7 exec $group && $get_output && swaymsg "move container workspace 7:$o, workspace 7:$o" && $ungroup
-bindsym Mod4+Shift+8 exec $group && $get_output && swaymsg "move container workspace 8:$o, workspace 8:$o" && $ungroup
-bindsym Mod4+Shift+9 exec $group && $get_output && swaymsg "move container workspace 9:$o, workspace 9:$o" && $ungroup
-bindsym Mod4+Control+1 exec $get_output && swaymsg "move container workspace 1:$o"
-bindsym Mod4+Control+2 exec $get_output && swaymsg "move container workspace 2:$o"
-bindsym Mod4+Control+3 exec $get_output && swaymsg "move container workspace 3:$o"
-bindsym Mod4+Control+4 exec $get_output && swaymsg "move container workspace 4:$o"
-bindsym Mod4+Control+5 exec $get_output && swaymsg "move container workspace 5:$o"
-bindsym Mod4+Control+6 exec $get_output && swaymsg "move container workspace 6:$o"
-bindsym Mod4+Control+7 exec $get_output && swaymsg "move container workspace 7:$o"
-bindsym Mod4+Control+8 exec $get_output && swaymsg "move container workspace 8:$o"
-bindsym Mod4+Control+9 exec $get_output && swaymsg "move container workspace 9:$o"
-bindsym Mod4+Comma                exec $get_output && $get_prev_workspace && swaymsg "workspace $w:$o"
-bindsym Mod4+Period               exec $get_output && $get_next_workspace && swaymsg "workspace $w:$o"
-bindsym Mod4+Shift+Comma          exec $group && $get_output && $get_prev_workspace && swaymsg "move container workspace $w:$o, workspace $w:$o" && $ungroup
-bindsym Mod4+Shift+Period         exec $group && $get_output && $get_next_workspace && swaymsg "move container workspace $w:$o, workspace $w:$o" && $ungroup
-bindsym Mod4+Control+Comma        exec $get_output && $get_prev_workspace && swaymsg "move container workspace $w:$o"
-bindsym Mod4+Control+Period       exec $get_output && $get_next_workspace && swaymsg "move container workspace $w:$o"
-bindsym Mod4+Control+Shift+Comma  exec '$get_output && $get_workspaces && ws=$(echo "$ws" | cat) && [ "$(echo "$ws" | head -1)" != "1" ] && for w in $ws; do i=$(( $w - 1 )); swaymsg "rename workspace $w:$o to $i:$o"; done'
-bindsym Mod4+Control+Shift+Period exec '$get_output && $get_workspaces && ws=$(echo "$ws" | tac) && [ "$(echo "$ws" | head -1)" != "9" ] && for w in $ws; do i=$(( $w + 1 )); swaymsg "rename workspace $w:$o to $i:$o"; done'
-bindsym Mod4+z               exec $get_output && $get_empty_workspace && swaymsg "workspace $w:$o"
-bindsym Mod4+Shift+z         exec $group && $get_output && $get_empty_workspace && swaymsg "move container workspace $w:$o, workspace $w:$o" && $foucs_group
-bindsym Mod4+Control+z       exec '$group && $get_output && $get_empty_workspace && swaymsg "move container workspace $w:$o" && $foucs_group'
-bindsym Mod4+Control+Shift+z exec '$group && $get_output && $get_workspaces && i=1; for w in $ws; do swaymsg rename workspace $w:$o to $i:$o; i=$(( $i + 1 )); done && $foucs_group'
-
-# Outputs
-bindsym Mod4+equal         exec $get_output && swaymsg output $(swaymsg -rt get_outputs | jq -r '.[] | select(.name == "'$o'") | "\(.name) scale \(.scale * 1.1)"')
-bindsym Mod4+minus         exec $get_output && swaymsg output $(swaymsg -rt get_outputs | jq -r '.[] | select(.name == "'$o'") | "\(.name) scale \(.scale / 1.1)"')
-bindsym Mod4+Shift+equal   exec $get_output && swaymsg output $(swaymsg -rt get_outputs | jq -r '.[] | select(.name == "'$o'") | "\(.name) scale \(.scale * 1.5)"')
-bindsym Mod4+Shift+minus   exec $get_output && swaymsg output $(swaymsg -rt get_outputs | jq -r '.[] | select(.name == "'$o'") | "\(.name) scale \(.scale / 1.5)"')
-bindsym Mod4+Control+equal exec $get_output && swaymsg output "$o" scale 1
-bindsym Mod4+Control+minus exec $get_output && swaymsg output "$o" scale 2
-
-# Layout
-default_orientation auto
-bindsym Mod4+g       focus parent
-bindsym Mod4+Shift+g focus child
-bindsym Mod4+p       split vertical
-bindsym Mod4+Shift+p split none
-bindsym Mod4+o       layout toggle splitv splith
-bindsym Mod4+Shift+o layout toggle split tabbed
-
-# Scratchpads
-bindsym Mod4+0 scratchpad show
-bindsym Mod4+Shift+0 move scratchpad
-
-# Media
-# TODO
-#bindsym --locked XF86AudioPlay         exec playerctl play-pause
-#bindsym --locked Shift+XF86AudioPlay   exec playerctl pause
-#bindsym --locked Control+XF86AudioPlay exec playerctl stop
-#bindsym --locked XF86AudioPrev         exec playerctl position 1-
-#bindsym --locked Shift+XF86AudioPrev   exec playerctl position 10-
-#bindsym --locked Control+XF86AudioPrev exec playerctl previous
-#bindsym --locked XF86AudioNext         exec playerctl position 1+
-#bindsym --locked Shift+XF86AudioNext   exec playerctl position 10+
-#bindsym --locked Control+XF86AudioNext exec playerctl next
-
-# Volume
-# TODO
-#set $send_volume_notif wpctl get-volume @DEFAULT_SINK@ | (read _ v m && v=$(printf "%.0f" $(echo "100*$v" | bc)) && notify-send --category osd --hint "int:value:$v" "Volume: $v% $m")
-#bindsym --locked XF86AudioMute                      exec wpctl set-mute   @DEFAULT_SINK@ toggle && $send_volume_notif
-#bindsym --locked Shift+XF86AudioMute                exec                                           $send_volume_notif
-#bindsym --locked Control+XF86AudioMute              exec wpctl set-mute   @DEFAULT_SINK@ 1      && $send_volume_notif
-#bindsym --locked XF86AudioLowerVolume               exec wpctl set-volume @DEFAULT_SINK@ 1%-    && $send_volume_notif
-#bindsym --locked Shift+XF86AudioLowerVolume         exec wpctl set-volume @DEFAULT_SINK@ 10%-   && $send_volume_notif
-#bindsym --locked Control+XF86AudioLowerVolume       exec wpctl set-volume @DEFAULT_SINK@ 0%     && $send_volume_notif
-#bindsym --locked XF86AudioRaiseVolume               exec wpctl set-volume @DEFAULT_SINK@ 1%+    && $send_volume_notif
-#bindsym --locked Shift+XF86AudioRaiseVolume         exec wpctl set-volume @DEFAULT_SINK@ 10%+   && $send_volume_notif
-#bindsym --locked Control+XF86AudioRaiseVolume       exec wpctl set-volume @DEFAULT_SINK@ 100%   && $send_volume_notif
-
-# Microphone
-# TODO
-#bindsym --locked --no-repeat                Pause   exec wpctl set-mute @DEFAULT_SOURCE@ 0
-#bindsym --locked --no-repeat --release      Pause   exec wpctl set-mute @DEFAULT_SOURCE@ 1
-#bindsym --locked --no-repeat --whole-window button8 exec wpctl set-mute @DEFAULT_SOURCE@ toggle
-
-# Backlight
-# TODO
-#set $send_brightness_notif b=$(printf "%.0f" "$(light -G)") && notify-send --category osd --hint "int:value:$b" "Brightness: $b%"
-#bindsym --locked XF86MonBrightnessDown               exec light -U 1   && $send_brightness_notif
-#bindsym --locked Shift+XF86MonBrightnessDown         exec light -U 10  && $send_brightness_notif
-#bindsym --locked Control+XF86MonBrightnessDown       exec light -S 0   && $send_brightness_notif
-#bindsym --locked XF86MonBrightnessUp                 exec light -A 1   && $send_brightness_notif
-#bindsym --locked Shift+XF86MonBrightnessUp           exec light -A 10  && $send_brightness_notif
-#bindsym --locked Control+XF86MonBrightnessUp         exec light -S 100 && $send_brightness_notif
-
-# Screenshots
-# TODO
-# TODO: handle multimonitor
-#bindsym Print       exec flameshot gui --raw | wl-copy --type image/png
-#bindsym Shift+Print exec flameshot gui --raw --accept-on-select | wl-copy --type image/png
+    extraConfigEarly = ''
+      workspace_auto_back_and_forth yes
+      set $send_volume_notif wpctl get-volume @DEFAULT_SINK@ | (read _ v m && v=$(printf "%.0f" $(echo "100*$v" | bc)) && notify-send --category osd --hint "int:value:$v" "Volume: $v% $m")
+      set $send_brightness_notif b=$(($(brightnessctl get)00/$(brightnessctl max))) && notify-send --category osd --hint "int:value:$b" "Brightness: $b%"
+      set $get_views vs=$(swaymsg -rt get_tree | jq "recurse(.nodes[], .floating_nodes[]) | select(.visible).id")
+      set $get_focused f=$(swaymsg -rt get_tree | jq "recurse(.nodes[], .floating_nodes[]) | first(select(.focused)).id")
+      set $get_output o=$(swaymsg -rt get_outputs | jq -r ".[] | first(select(.focused).name)")
+      set $get_workspaces ws=$(swaymsg -rt get_workspaces | jq -r ".[].num")
+      set $get_prev_workspace w=$(( $( swaymsg -t get_workspaces | jq -r ".[] | first(select(.focused).num)" ) - 1 )) && w=$(( $w < 1 ? 1 : ($w < 9 ? $w : 9) ))
+      set $get_next_workspace w=$(( $( swaymsg -t get_workspaces | jq -r ".[] | first(select(.focused).num)" ) + 1 )) && w=$(( $w < 1 ? 1 : ($w < 9 ? $w : 9) ))
+      # TODO(later): always skips 1
+      set $get_empty_workspace w=$(swaymsg -rt get_workspaces | jq ". as \$w | first(range(1; 9) | select(all(. != \$w[].num; .)))")
+      # TODO(later): doesnt work well at high speeds (e.g. key held down)
+      set $group swaymsg "mark --add g" || swaymsg "splitv, mark --add g"
+      set $ungroup swaymsg "[con_mark=g] focus, unmark g" || swaymsg "focus parent; focus parent; focus parent; focus parent"
     '';
   };
 
@@ -1006,7 +971,7 @@ bindsym Mod4+Shift+0 move scratchpad
     "application/x-extension-xhtml" = "firefox.desktop";
     "application/x-extension-xht" = "firefox.desktop";
   };
-  xdg.portal = { # TODO
+  xdg.portal = { # TODO(now, pipewire): for screensharing etc
     #enable = true;
     xdgOpenUsePortal = true;
   };
@@ -1017,7 +982,7 @@ bindsym Mod4+Shift+0 move scratchpad
     templates = null;
   };
 
-  # TODO: fonts
+  # TODO(now, fonts): default fonts
   fonts.fontconfig.enable = true;
   #fonts.fontconfig.defaultFonts.monospace = [];
   #fonts.fontconfig.defaultFonts.sansSerif = [];
@@ -1030,7 +995,7 @@ bindsym Mod4+Shift+0 move scratchpad
   gtk.theme.package = pkgs.materia-theme;
   gtk.theme.name = "Materia-dark";
 
-  nix.package = pkgs.nix;  
+  nix.package = pkgs.nix;
   nix.settings.auto-optimise-store = true;
   nix.settings.use-xdg-base-directories = true;
   nix.settings.experimental-features = [ "nix-command" "flakes" ];

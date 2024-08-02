@@ -2,7 +2,7 @@
 Install nix
 ```sh
 sh <(curl -L https://nixos.org/nix/install) --daemon
-echo "trusted-users = tedj" | sudo tee --append /etc/nix/nix.conf
+echo 'trusted-users = tedj' | sudo tee --append /etc/nix/nix.conf
 nix --extra-experimental-features 'nix-command flakes' develop github:tedski999/dots --command home-manager switch --flake .config/nix#tedj@tedj
 # git clone https://github.com/tedski999/dots .config/nix
 ```
@@ -23,3 +23,10 @@ Install swaylock systemd-wide due to PAM integration stuff.
 sudo apt install swaylock
 ```
 
+Autologin to /etc/systemd/system/getty@tty1.service.d/skip-prompt.conf to autologin.
+```sh
+mkdir /etc/systemd/system/getty@tty1.service.d
+echo '[Service]
+ExecStart=
+ExecStart=-/usr/bin/agetty --skip-login --nonewline --noissue --autologin tedj --noclear %I $TERM' | sudo tee /etc/systemd/system/getty@tty1.service.d/skip-prompt.conf
+```
