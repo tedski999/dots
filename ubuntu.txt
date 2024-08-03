@@ -23,10 +23,10 @@ Install swaylock systemd-wide due to PAM integration stuff.
 sudo apt install swaylock
 ```
 
-Autologin to /etc/systemd/system/getty@tty1.service.d/skip-prompt.conf to autologin.
+Skip username when logging in
 ```sh
 mkdir /etc/systemd/system/getty@tty1.service.d
 echo '[Service]
 ExecStart=
-ExecStart=-/usr/bin/agetty --skip-login --nonewline --noissue --autologin tedj --noclear %I $TERM' | sudo tee /etc/systemd/system/getty@tty1.service.d/skip-prompt.conf
+ExecStart=-/sbin/agetty -o '-p -- tedj' --noclear --skip-login - $TERM' | sudo tee /etc/systemd/system/getty@tty1.service.d/skip-username.conf
 ```

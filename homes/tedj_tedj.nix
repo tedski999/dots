@@ -1,5 +1,7 @@
 # TODO(next): imports = [];
 
+# pipewire, bins
+
 {pkgs, lib, config, inputs, ...}: {
   home.username = "tedj";
   home.homeDirectory = "/home/tedj";
@@ -17,6 +19,7 @@
     man
     curl
     diffutils
+    procps
     # bonus cli
     eza
     btop
@@ -28,14 +31,8 @@
     playerctl
     grim
     slurp
-
-    # TODO(now, fonts): no otb or other bitmap fonts showing up in fc-list
+    # fonts
     terminus-nerdfont
-    terminus_font_ttf
-    terminus_font
-    termsyn
-    tamsyn
-
   ];
 
   programs.home-manager = {
@@ -225,6 +222,7 @@
                 { name = "aid"; url = "https://aid.infra.corp.arista.io/1/"; }
                 { name = "go"; url = "https://go.infra.corp.arista.io/admin/"; }
                 { name = "map"; url = "https://intranet.arista.com/directory/floor-plan-map?location=Dublin2GD"; }
+                { name = "tldraw"; url = "https://www.tldraw.com"; }
               ];
             }
             {
@@ -433,6 +431,7 @@
     localVariables.TIMEFMT = "\nreal\t%E\nuser\t%U\nsys\t%S\ncpu\t%P";
     history.path = "${config.xdg.dataHome}/zsh_history";
     history.extended = true;
+    history.ignoreAllDups = true;
     history.share = true;
     history.save = 1000000;
     history.size = 1000000;
@@ -539,10 +538,10 @@
       # GPG+SSH
       # TODO(work): this should probably be done in gpg-agent config
       #hash gpgconf 2>/dev/null && {
-      #	export GPG_TTY="$(tty)"
-      #	export SSH_AGENT_PID=""
-      #	export SSH_AUTH_SOCK="$(gpgconf --list-dirs agent-ssh-socket)"
-      #	(gpgconf --launch gpg-agent &)
+      #  export GPG_TTY="$(tty)"
+      #  export SSH_AGENT_PID=""
+      #  export SSH_AUTH_SOCK="$(gpgconf --list-dirs agent-ssh-socket)"
+      #  (gpgconf --launch gpg-agent &)
       #}
 
       0x0() { curl -F"file=@$1" https://0x0.st; }
@@ -602,11 +601,6 @@
     fileWidgetCommand = "fd --hidden --exclude '.git' --exclude 'node_modules'";
   };
 
-  # TODO(now): fix me
-  services.gromit-mpx = {
-    enable = true;
-  };
-
   services.mako = {
     enable = true;
     width = 450;
@@ -648,14 +642,207 @@
   };
 
 
-  # TODO(now, bar): programs.eww/waybar/yambar or services.polybar/taffybar
-  # TODO(now): service.syncthing
-  # TODO(now): service.swayidle? or integrate with systemd somehow
+  programs.waybar = {
+    enable = true;
+    systemd.enable = true;
+    settings = [
+      {
+        ipc = true;
+        layer = "top";
+        position = "top";
+        height = 30;
+        spacing = 0;
+        # TODO(later): non-primary display modules
+        # TODO(later): vpn icon
+        modules-left = [ "sway/workspaces" "sway/scratchpad" "sway/window" ];
+        modules-center = [];
+        modules-right = [ "custom/media" "custom/caffeinated" "gamemode" "bluetooth" "cpu" "memory" "temperature" "disk" "network" "wireplumber" "battery" "clock" ];
+        "sway/workspaces".format = "{index}";
+	# TODO(later, bar): scratchpad functionality
+        "sway/window".max-length = 200;
+        "custom/media" = {
+          exec = "~/.config/waybar/modules/media"; # TODO(later)
+          return-type = "json";
+          interval = 1;
+          on-click = "playerctl play-pause";
+          on-scroll-up = "playerctl position 5+";
+          on-scroll-down = "playerctl position 5-";
+        };
+        "custom/caffeinated" = {
+          exec = "~/.config/waybar/modules/caffeinated"; # TODO(later)
+          return-type = "json";
+          tooltip = true;
+          interval = 1;
+          on-click = "powerctl uncaffeinate";
+        };
+        gamemode = {
+          format = "{count}";
+          format-alt = "{count}";
+          tooltip-format = "Gaming™";
+          use-icon = false;
+          icon-spacing = 0;
+          icon-size = 0;
+        };
+        bluetooth = {
+          format = "";
+          format-connected = "{num_connections}";
+          tooltip-format = "{device_alias}";
+          on-click = "networkctl bluetooth";
+        };
+        cpu = {
+          interval = 1;
+          format = "{icon0}{icon1}{icon2}{icon3}{icon4}{icon5}{icon6}{icon7}{icon8}{icon9}{icon10}{icon11}{icon12}{icon13}{icon14}{icon15}";
+          format-icons = [
+            "<span color='#00ff00'>▁</span>"
+            "<span color='#00ff00'>▂</span>"
+            "<span color='#00ff00'>▃</span>"
+            "<span color='#00ff00'>▄</span>"
+            "<span color='#ff8000'>▅</span>"
+            "<span color='#ff8000'>▆</span>"
+            "<span color='#ff8000'>▇</span>"
+            "<span color='#ff0000'>█</span>"
+          ];
+          on-click = "alacritty --class floating --command btop";
+        };
+        memory = {
+          interval = 5;
+          format = "{icon}";
+          format-icons = [
+            "<span color='#00ff00'>▁</span>"
+            "<span color='#00ff00'>▂</span>"
+            "<span color='#00ff00'>▃</span>"
+            "<span color='#00ff00'>▄</span>"
+            "<span color='#ff8000'>▅</span>"
+            "<span color='#ff8000'>▆</span>"
+            "<span color='#ff8000'>▇</span>"
+            "<span color='#ff0000'>█</span>"
+          ];
+          tooltip-format = "RAM: {used:0.1f}Gib ({percentage}%)\nSWP: {swapUsed:0.1f}Gib ({swapPercentage}%)";
+          on-click = "alacritty --class floating --command btop";
+        };
+        temperature = { # TODO(later, bar): show more info on hover
+          thermal-zone = 6;
+          critical-threshold = 80;
+          interval = 5;
+          on-click = "alacritty --class floating --command btop";
+        };
+        disk = {
+          format = "{free}";
+          on-click = "alacritty --class floating --command btop";
+        };
+        network = {
+          interval = 10;
+          max-length = 10;
+          format-wifi = "{essid}";
+          format-ethernet = "wired";
+          # TODO(later): format while connecting
+          format-disconnected = "offline";
+          on-click = "networkctl wifi";
+          on-click-right = ''case "$(nmcli radio wifi)" in "enabled") nmcli radio wifi off;; *) nmcli radio wifi on;; esac'';
+        };
+        wireplumber = {
+          max-volume = 150;
+          states.high = 75;
+          on-click = "alacritty --class floating --command pulsemixer"; # TODO(later): better cli mixer?
+          on-click-right = "wpctl set-mute @DEFAULT_SINK@ toggle";
+        };
+        battery = {
+          interval = 10;
+          states.warning = 30;
+          states.critical = 15;
+          format = "{capacity}%";
+          on-click = "powerctl";
+          on-scroll-up = "brightnessctl set 1%-";
+          on-scroll-down = "brightnessctl set 1%+";
+        };
+        clock = {
+          format = "{:%H:%M}";
+          tooltip-format = "{calendar}";
+          on-click = ''notify-send "$(date)" "$(date "+Day %j, Week %V, %Z (%:z)")"'';
+          actions.on-click-right = "mode";
+          actions.on-scroll-up = "shift_up";
+          actions.on-scroll-down = "shift_down";
+          calender.mode = "month";
+          calender.mode-mon-col = 3;
+          calender.on-click-right = "mode";
+          calender.on-scroll = 1;
+          calender.format.months =   "<span color='#8080ff'>{}</span>";
+          calender.format.days =     "<span color='#ffffff'>{}</span>";
+          calender.format.weekdays = "<span color='#ff8000'><b>{}</b></span>";
+          calender.format.today =    "<span color='#ff0000'><b>{}</b></span>";
+        };
+      }
+    ];
+    style = ''
+      * { font-family: "Terminess Nerd Font", monospace; font-size: 16px; margin: 0; }
+      window#waybar { background-color: rgba(0,0,0,0.75); }
+
+      @keyframes pulse { to { color: #ffffff; } }
+      @keyframes flash { to { background-color: #ffffff; } }
+      @keyframes luminate { to { background-color: #b0b0b0; } }
+
+      #workspaces, #scratchpad, #window, #custom-media, #custom-caffeinated, #gamemode, #bluetooth, #cpu, #memory, #disk, #temperature, #battery, #network, #wireplumber {
+        padding: 0 5px;
+      }
+      #workspaces button:hover, #scratchpad:hover, #custom-caffeinated:hover, #gamemode:hover, #bluetooth:hover, #cpu:hover, #memory:hover, #disk:hover, #temperature:hover, #battery:hover, #network:hover, #wireplumber:hover, #clock:hover {
+        background-color: #404040;
+      }
+
+      #workspaces { padding: 0 5px 0 0; }
+      #workspaces button { border: none; border-radius: 0; padding: 0 5px; min-width: 20px; animation: none; }
+      #workspaces button.focused { background-color: #ffffff; color: #000000; }
+      #workspaces button.urgent { background-color: #404040; animation: luminate 1s steps(30) infinite alternate; }
+
+      #scratchpad { color: #ffff00; padding: 0 10px 0 0; }
+
+      #custom-media.Paused { color: #606060; }
+
+      #custom-caffeinated { color: #ff8000; }
+
+      #gamemode { color: #00ff00; }
+
+      #bluetooth { color: #00ffff; }
+
+      #temperature.critical { color: #800000; animation: pulse .5s steps(15) infinite alternate; }
+
+      #network.disabled { color: #ff0000; }
+      #network.disconnected { color: #ff8000; }
+      #network.linked, #network.ethernet, #network.wifi { color: #00ff00; }
+
+      #wireplumber.high { color: #ff8000; }
+      #wireplumber.muted { color: #ff0000; }
+
+      #battery:not(.charging) { color: #ff8000; }
+      #battery.charging, #battery.full { color: #00ff00; }
+      #battery.warning:not(.charging) { color: #800000; animation: pulse .5s steps(15) infinite alternate; }
+      #battery.critical:not(.charging) { color: #000000; background-color: #800000; animation: flash .25s steps(10) infinite alternate; }
+      
+      #clock { padding: 0 5px; }
+    '';
+  };
+
+  # TODO(later, bin): powerctl fade
+  services.swayidle = {
+    enable = true;
+    extraArgs = [ "-w"  "idlehint 300" ];
+    events = [
+      { event = "before-sleep"; command = "loginctl lock-session"; }
+      #{ event = "after-resume"; command = "pkill powerctl"; }
+      { event = "lock"; command = "swaylock --daemonize"; }
+      { event = "unlock"; command = "pkill -USR1 swaylock"; }
+    ];
+    timeouts = [
+      #{ timeout = 300; command = "powerctl fade &"; }
+      { timeout = 310; command = "loginctl lock-session"; }
+      { timeout = 900; command = "systemctl suspend"; }
+    ];
+  };
 
   # TODO(work): programs.tmux
   # TODO(work): services.gpg-agent?
   # TODO(work): services.ssh-agent?
 
+  # TODO(later): service.syncthing
   # TODO(later): programs.lf/nnn/yazi
   # TODO(later): programs.direnv? keychain? newsboat? obs-studio?
   # TODO(later): programs.beets
@@ -724,7 +911,6 @@
       workspaceLayout = "default";
       #wrapperFeatures.gtk = true;
       output."*".bg = "#101010 solid_color";
-      seat."*".hide_cursor = "when-typing enable";
       focus.followMouse = true;
       focus.mouseWarping = "output";
       focus.wrapping = "no";
@@ -758,15 +944,13 @@
         #{ command = "$get_output && swaymsg \"workspace 1:$o\""; }
       ];
       # TODO(later): multimonitor bars
-      # TODO(now, bar): bar
-      #bars.waybar.command = "waybar";
-      #bars.waybar.mode = "hide";
+      bars = [ { command = "waybar"; mode = "hide"; } ];
       # shortcuts
       keybindings."Mod4+space" = "exec bemenu-run";
-      keybindings."Mod4+Return" = "exec $TERMINAL";
-      keybindings."Mod4+t" = "exec $TERMINAL";
-      keybindings."Mod4+w" = "exec $BROWSER";
-      keybindings."Mod4+d" = "exec $BROWSER 'https://discord.com/app'";
+      keybindings."Mod4+Return" = "exec alacritty";
+      keybindings."Mod4+t" = "exec alacritty";
+      keybindings."Mod4+w" = "exec firefox";
+      keybindings."Mod4+d" = "exec firefox 'https://discord.com/app'";
       # TODO(now, bins)
       keybindings."Mod4+Shift+c" = "reload";
       keybindings."Mod4+Shift+e" = "exit";
@@ -781,7 +965,7 @@
       #keybindings."Mod4+Shift+n" = "exec networkctl wifi";
       #keybindings."Mod4+Control+n" = "exec networkctl bluetooth";
       # TODO(later): persistent floating btop
-      keybindings."Mod4+u" = "exec $TERMINAL --class floating-btop --command btop";
+      keybindings."Mod4+u" = "exec alacritty --class floating-btop --command btop";
       keybindings."Mod4+Control+u" = "exec swaymsg '[class=\"floating-btop\"] scratchpad show'";
       # TODO(work): bemenu bitwarden
       keybindings."Mod4+b" = "border pixel 1";
@@ -982,12 +1166,11 @@
     templates = null;
   };
 
-  # TODO(now, fonts): default fonts
   fonts.fontconfig.enable = true;
-  #fonts.fontconfig.defaultFonts.monospace = [];
-  #fonts.fontconfig.defaultFonts.sansSerif = [];
-  #fonts.fontconfig.defaultFonts.serif = [];
-  #fonts.fontconfig.defaultFonts.emoji = [];
+  fonts.fontconfig.defaultFonts.monospace = [ "Terminess Nerd Font" ];
+  fonts.fontconfig.defaultFonts.sansSerif = [];
+  fonts.fontconfig.defaultFonts.serif = [];
+  fonts.fontconfig.defaultFonts.emoji = [];
   
   gtk.enable = true;
   gtk.iconTheme.package = pkgs.kdePackages.breeze-icons;
