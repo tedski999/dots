@@ -24,6 +24,7 @@ sudo apt install swaylock
 ```
 
 Skip username when logging in
+# TODO: not working
 ```sh
 mkdir /etc/systemd/system/getty@tty1.service.d
 echo '[Service]

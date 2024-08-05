@@ -1,38 +1,163 @@
 # TODO(next): imports = [];
 
-# pipewire, bins
-
 {pkgs, lib, config, inputs, ...}: {
   home.username = "tedj";
   home.homeDirectory = "/home/tedj";
   home.stateVersion = "23.05";
   home.preferXdgDirectories = true;
-  home.keyboard.layout = "ie";
-  home.keyboard.options = [ "caps:escape" ];
-  home.sessionVariables = { EDITOR = "nvim"; TERMINAL = "alacritty"; BROWSER = "firefox"; MANPAGER = "nvim +Man!"; MANWIDTH = 80; };
+  home.keyboard = { layout = "ie"; options = [ "caps:escape" ]; };
   home.sessionPath = [ "$HOME/.local/bin" ];
+  home.sessionVariables.QT_QPA_PLATFORM = "wayland";
+  home.sessionVariables.LIBSEAT_BACKEND = "logind";
 
   home.packages = with pkgs; [
     nixgl.nixGLIntel
     nix
     # core cli
+    coreutils
+    diffutils
     man
     curl
-    diffutils
+    gnused
     procps
+    file
     # bonus cli
     eza
     btop
     cht-sh
+    openconnect
+    acpi
+    libnotify
     # gui
     wl-clipboard
-    wireplumber # TODO(now, pipewire): pipewire and wireplumber
+    wireplumber
+    swayidle
     brightnessctl
     playerctl
     grim
     slurp
     # fonts
     terminus-nerdfont
+    # temporary file share
+    (writeShellScriptBin "0x0" ''curl -F"file=@$1" https://0x0.st;'')
+    # decompression utility
+    (writeShellScriptBin "un" ''
+      ft="$(file -b "$1" | tr "[:upper:]" "[:lower:]" || exit 1)"
+      mkdir -p "''${2:-.}" || exit 1
+      case "$ft" in
+        "zip archive"*) unzip -d "''${2:-.}" "$1";;
+        "gzip compressed"*) tar -xvzf "$1" -C "''${2:-.}";;
+        "bzip2 compressed"*) tar -xvjf "$1" -C "''${2:-.}";;
+        "posix tar archive"*) tar -xvf "$1" -C "''${2:-.}";;
+        "xz compressed data"*) tar -xvJf "$1" -C "''${2:-.}";;
+        "rar archive"*) unrar x "$1" "''${2:-.}";;
+        "7-zip archive"*) 7zz x "$1" "-o''${2:-.}";;
+        *) echo "Unable to un: $ft"; exit 1;;
+      esac
+    '')
+    # safe rm
+    (writeShellScriptBin "del" ''
+      IFS=$'\n'
+      trash="${config.xdg.dataHome}/trash"
+      format="trashed-[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]Z[0-9][0-9]:[0-9][0-9]:[0-9][0-9]"
+
+      case "$1" in "-u") shift; mode=u;; "-f") shift; mode=f;; *) mode=n;; esac
+      [ -n "$1" ] || exit 1
+      
+      for file in $@; do
+        case $mode in
+          u) [ -n "$(find "$trash$(readlink -m -- "$file")" -maxdepth 1 -name "$format" 2>/dev/null)" ] \
+            || { echo "'$file' not in trash" >&2; exit 1; };;
+          *) [ -e "$file" ] \
+            || { echo "'$file' does not exist" >&2; exit 1; };;
+        esac
+      done
+      
+      for file in $@; do
+        dir="$trash$(readlink -m -- "$file")"
+        case $mode in
+          u)
+            trashed="$(find "$dir" -maxdepth 1 -name "$format" -printf %f\\n)"
+            [ "$(echo "$trashed" | wc -l)" -gt 1 ] && {
+              echo "Multiple trashed files '$file'"
+              echo "$trashed" | awk '{ printf "%d: %s\n", NR, $0 }'
+              read -p "Choice: " i
+              trashed="$(echo "$trashed" | awk "NR == $i { print; exit }")"
+              [ -n "$trashed" ] || exit 1
+            }
+            mv -i -- "$dir/$trashed" "$file" || exit 1;;
+          f) rm -rf "$file" || exit 1;;
+          n) mkdir -p "$dir" && mv -i -- "$file" "$dir/$(date --utc +trashed-%FZ%T)" || exit 1;;
+        esac
+      done
+    '')
+    # display menu
+    # TODO(later): focus on every monitor 
+    (writeShellScriptBin "displayctl" ''
+      swaymsg -t get_outputs
+
+      #swaymsg output "$mon0" enable pos 0 0
+      #swaymsg output "$mon1" disable
+
+      #swaymsg output eDP-1 enable pos 0 1080
+      #swaymsg output HDMI-1-0 enable pos 0 0
+
+      #swaymsg "workspace 1:eDP-1"
+    '')
+    # power menu
+    # TODO(later): idle warning
+    (writeShellScriptBin "powerctl" ''
+      case "$([ -n "$1" ] && echo $1 || printf "lock\nsuspend\n$(pidof -q swayidle && echo coffee || echo decaf)\nreload\nlogout\nreboot\nshutdown" | bemenu -p "Power" -l 9 -W 0.2)" in
+        "lock") loginctl lock-session;;
+        "suspend") systemctl suspend;;
+        "reload") swaymsg reload;;
+        "logout") swaymsg exit;;
+        "reboot") systemctl reboot;;
+        "shutdown") systemctl poweroff;;
+        "coffee") pkill swayidle;;
+        "decaf") pidof swayidle || swayidle -w idlehint 300 \
+          before-sleep "loginctl lock-session" \
+          lock "swaylock --daemonize" \
+          unlock "pkill -USR1 swaylock" \
+          timeout 300 "loginctl lock-session" \
+          timeout 900 "systemctl suspend" &;;
+        *) exit 1;;
+      esac
+    '')
+    # network menu
+    # TODO(later): networkctl
+    (writeShellScriptBin "networkctl" ''
+      echo "Hello, world!"
+    '')
+    # low battery notification
+    (writeShellScriptBin "batteryd" ''
+      old_charge=100
+      while true; do
+        sleep 1
+        info="$(acpi | sed "s/.*: //")"
+        state="$(echo "$info" | cut -f 1 -d ',')"
+        charge="$(echo "$info" | cut -f 2 -d ',')"
+        time="$(echo "$info" | cut -f 3 -d ',')"
+        [ "$state" = "Discharging" ] && {
+          charge="$(echo "$charge" | tr -d '%')"
+          [ "$old_charge" -gt 5 ] && [ "$charge" -le 5 ] && {
+            for i in $(seq 5 -1 1); do notify-send -i "battery-020" -u "critical" -r "$$" -t 0 "Battery empty!" "Suspending in $i..."; sleep 1; done
+            powerctl suspend
+          } || {
+            [ "$old_charge" -gt 10 ] && [ "$charge" -le 10 ] && {
+              notify-send -i "battery-020" -u "critical" -r "$$" -t 0 "Battery critical!" "Less than$time"
+            } || {
+              [ "$old_charge" -gt 20 ] && [ "$charge" -le 20 ] && {
+                notify-send -i "battery-020" -u "normal" -r "$$" "Battery low!" "Less than$time"
+              }
+            }
+          }
+          old_charge="$charge"
+        }
+      done
+    '')
+
+    (writeShellScriptBin "avpn" ''sudo ${openconnect}/bin/openconnect --protocol=gp gp-ie.arista.com -u tedj -c $HOME/Documents/wi-fi-certificates/tedj.crt -k $HOME/Documents/wi-fi-certificates/tedj.pem'')
   ];
 
   programs.home-manager = {
@@ -41,9 +166,7 @@
 
   programs.bat = {
     enable = true;
-    config.style = "plain";
-    config.wrap = "never";
-    config.map-syntax = [ "*.tin:C++" "*.tac:C++" ];
+    config = { style = "plain"; wrap = "never"; map-syntax = [ "*.tin:C++" "*.tac:C++" ]; };
   };
 
   programs.gpg = {
@@ -55,8 +178,7 @@
     enable = true;
     userEmail = "ski@h8c.de";
     userName = "tedski999";
-    signing.key = "00ADEF0A!";
-    signing.signByDefault = true;
+    signing = { signByDefault = true; key = "00ADEF0A!"; };
     aliases.l = "log";
     aliases.s = "status";
     aliases.a = "add";
@@ -105,15 +227,17 @@
     ignores = [ ".git/" ];
   };
 
+  # TODO(later): https://github.com/Misterio77/nix-config/blob/main/home/gabriel/features/desktop/common/firefox.nix
+  home.sessionVariables.BROWSER = "firefox";
+  home.sessionVariables.MOZ_ENABLE_WAYLAND = 1;
   programs.firefox = {
     enable = true;
     profiles.work = {
       id = 0;
       name = "Work";
       isDefault = true;
-      search.default = "DuckDuckGo";
-      search.privateDefault = "DuckDuckGo";
-      search.force = true;
+      search = { default = "DuckDuckGo"; privateDefault = "DuckDuckGo"; force = true; };
+      extensions = with pkgs.nur.repos.rycee.firefox-addons; [ ublock-origin vimium ];
       settings = {
         "accessibility.typeaheadfind.flashBar" = 0;
         "app.shield.optoutstudies.enabled" = false;
@@ -169,10 +293,6 @@
         "privacy.trackingprotection.socialtracking.enabled" = true;
         "widget.gtk.overlay-scrollbars.enabled" = false;
       };
-      extensions = with pkgs.nur.repos.rycee.firefox-addons; [
-        ublock-origin
-        vimium
-      ];
       bookmarks = [
         {
           name = "toolbar";
@@ -229,7 +349,6 @@
               name = "docs";
               bookmarks = [
                 { name = "links"; url = "https://docs.google.com/document/d/1EC3rGgvN1T90W-gXwgXl3XaiDUb7pD86QnqXxp1Yk1I/preview"; }
-                { name = "creating an agent"; url = "https://docs.google.com/document/d/1k6HmxdQTyhBuLCzNfoj6WDKhcfxxCw9VYt6LxvIymnA/preview"; }
                 { name = "how to software"; url = "https://docs.google.com/document/d/1xPFv1zf_Mw1JWXq5ZX5HvCyudTJOyn6XGnuQXOhCGAE/preview"; }
                 { name = "sand"; url = "https://docs.google.com/document/d/1yfP0Qc03wk-cp87hEGp9RWQiMy_s6nErBNou3cYDR24/preview"; }
                 { name = "areview"; url = "https://docs.google.com/document/d/1-jm1mkHcS5PaFrn0M_FE6484FSGL5xuRguRhRZ2oavM/preview"; }
@@ -285,6 +404,7 @@
                 { name = "Transitioning from School to Arista - Google Docs"; url = "https://docs.google.com/document/d/1RRERZWg5eOT2QsU4P-CkFWxtkOxW36fLWY81XgLX4EE/preview"; }
                 { name = "intern link list"; url = "https://docs.google.com/document/d/1XMzfZYF_ekOfsuUPBZJdZfPn9eQ7V0OrVSvTzSZMqZI/preview"; }
                 { name = "AID48 Software Engineering at Arista - Google Docs"; url = "https://docs.google.com/document/d/12-MQ48Ea8SwSrOWpfoldd_KlFXTJtgwMtjFc6B3eidQ/preview"; }
+                { name = "creating an agent"; url = "https://docs.google.com/document/d/1k6HmxdQTyhBuLCzNfoj6WDKhcfxxCw9VYt6LxvIymnA/preview"; }
               ];
             }
             { name = "AID7587: Recommended email filters - Google Docs"; url = "https://docs.google.com/document/d/1CA_p08yOrjpaDMzmfvxN5RVyKN36i8DAg51PdO2r0lM/preview"; }
@@ -304,7 +424,6 @@
               ];
             }
             { name = "jack nixfiles"; url = "https://gitlab.aristanetworks.com/jack/nixfiles/-/tree/arista/home-manager?ref_type=heads"; }
-            
           ];
         }
       ];
@@ -314,18 +433,10 @@
       id = 1;
       name = "Home";
       isDefault = false;
-      search.default = "DuckDuckGo";
-      search.privateDefault = "DuckDuckGo";
-      search.force = true;
-      settings = {
-      };
-      extensions = with pkgs.nur.repos.rycee.firefox-addons; [
-        ublock-origin
-        darkreader
-        vimium
-      ];
-      bookmarks = [
-      ];
+      search = { default = "DuckDuckGo"; privateDefault = "DuckDuckGo"; force = true; };
+      extensions = with pkgs.nur.repos.rycee.firefox-addons; [ ublock-origin darkreader vimium ];
+      settings = {};
+      bookmarks = [];
     };
   };
 
@@ -333,70 +444,59 @@
     enable = true;
   };
 
+  home.sessionVariables.TERMINAL = "alacritty";
   programs.alacritty = {
     enable = true;
     settings = {
       live_config_reload = false;
-      scrolling.history = 10000;
-      scrolling.multiplier = 5;
-      window.dynamic_padding = true;
-      window.opacity = 0.85;
-      window.dimensions.columns = 120;
-      window.dimensions.lines = 40;
-      font.size = 13.5;
-      font.normal.family = "Terminess Nerd Font";
+      scrolling = { history = 10000; multiplier = 5; };
+      window = { dynamic_padding = true; opacity = 0.85; dimensions = { columns = 120; lines = 40; }; };
+      font = { size = 13.5; normal.family = "Terminess Nerd Font"; };
       selection.save_to_clipboard = true;
-      # TODO(later): keybinding to search username@host
       keyboard.bindings = [
           { key = "Return"; mods = "Shift|Control"; action = "SpawnNewInstance"; }
           { key = "Escape"; mods = "Shift|Control"; action = "ToggleViMode"; }
           { key = "Escape"; mode = "Vi"; action = "ToggleViMode"; }
+          # TODO(later): keybinding to search tedj@tedj
       ];
       colors.draw_bold_text_with_bright_colors = true;
-      colors.primary.background = "#000000";
-      colors.primary.foreground = "#dddddd";
-      colors.cursor.cursor = "#cccccc";
-      colors.cursor.text = "#111111";
-      colors.normal.black = "#000000";
-      colors.normal.blue = "#0d73cc";
-      colors.normal.cyan = "#0dcdcd";
-      colors.normal.green = "#19cb00";
-      colors.normal.magenta = "#cb1ed1";
-      colors.normal.red = "#cc0403";
-      colors.normal.white = "#dddddd";
-      colors.normal.yellow = "#cecb00";
-      colors.bright.black = "#767676";
-      colors.bright.blue = "#1a8fff";
-      colors.bright.cyan = "#14ffff";
-      colors.bright.green = "#23fd00";
-      colors.bright.magenta = "#fd28ff";
-      colors.bright.red = "#f2201f";
-      colors.bright.white = "#ffffff";
-      colors.bright.yellow = "#fffd00";
-      colors.search.focused_match.background = "#ffffff";
-      colors.search.focused_match.foreground = "#000000";
-      colors.search.matches.background = "#edb443";
-      colors.search.matches.foreground = "#091f2e";
-      colors.footer_bar.background = "#000000";
-      colors.footer_bar.foreground = "#ffffff";
-      colors.line_indicator.background = "#000000";
-      colors.line_indicator.foreground = "#ffffff";
-      colors.selection.background = "#fffacd";
-      colors.selection.text = "#000000";
+      colors.primary = { background = "#000000"; foreground = "#dddddd"; };
+      colors.cursor = { cursor = "#cccccc"; text = "#111111"; };
+      colors.normal = { black = "#000000"; blue = "#0d73cc"; cyan = "#0dcdcd"; green = "#19cb00"; magenta = "#cb1ed1"; red = "#cc0403"; white = "#dddddd"; yellow = "#cecb00"; };
+      colors.bright = { black = "#767676"; blue = "#1a8fff"; cyan = "#14ffff"; green = "#23fd00"; magenta = "#fd28ff"; red = "#f2201f"; white = "#ffffff"; yellow = "#fffd00"; };
+      colors.search.focused_match = { background = "#ffffff"; foreground = "#000000"; };
+      colors.search.matches = { background = "#edb443"; foreground = "#091f2e"; };
+      colors.footer_bar = { background = "#000000"; foreground = "#ffffff"; };
+      colors.line_indicator = { background = "#000000"; foreground = "#ffffff"; };
+      colors.selection = { background = "#fffacd"; text = "#000000"; };
     };
   };
 
   programs.less = {
     enable = true;
-    # TODO(later):  M+Gc l *h ) F
-    # keys = ''
-    # '';
+    keys = "h left-scroll\nl right-scroll";
   };
+  home.sessionVariables.LESS="--incsearch --ignore-case --tabs=4 --chop-long-lines --LONG-PROMPT";
+
+      # pager
+      # TODO(later): move to less config or something?
+      #export LESS_TERMCAP_mb="$(tput setaf 2; tput blink)"
+      #export LESS_TERMCAP_md="$(tput setaf 0; tput bold)"
+      #export LESS_TERMCAP_me="$(tput sgr0)"
+      #export LESS_TERMCAP_so="$(tput setaf 3; tput smul; tput bold)"
+      #export LESS_TERMCAP_se="$(tput sgr0)"
+      #export LESS_TERMCAP_us="$(tput setaf 4; tput smul)"
+      #export LESS_TERMCAP_ue="$(tput sgr0)"
+
 
   programs.man = {
     enable = true;
   };
 
+  home.sessionVariables.EDITOR = "nvim";
+  home.sessionVariables.VISUAL = "nvim";
+  home.sessionVariables.MANPAGER = "nvim +Man!";
+  home.sessionVariables.MANWIDTH = 80;
   programs.neovim = { # TODO(work): config
     enable = true;
   };
@@ -427,20 +527,14 @@
     defaultKeymap = "emacs";
     enableCompletion = true;
     completionInit = "autoload -U compinit && compinit -d '${config.xdg.cacheHome}/zcompdump'";
+    history = { path = "${config.xdg.dataHome}/zsh_history"; extended = true; ignoreAllDups = true; share = true; save = 1000000; size = 1000000; };
     localVariables.PROMPT = "\n%F{red}%n@%m%f %F{blue}%T %~%f %F{red}%(?..%?)%f\n>%f ";
     localVariables.TIMEFMT = "\nreal\t%E\nuser\t%U\nsys\t%S\ncpu\t%P";
-    history.path = "${config.xdg.dataHome}/zsh_history";
-    history.extended = true;
-    history.ignoreAllDups = true;
-    history.share = true;
-    history.save = 1000000;
-    history.size = 1000000;
     shellAliases.z = "exec zsh";
     shellAliases.v = "nvim";
     shellAliases.p = "python3";
     shellAliases.c = "cargo";
     shellAliases.g = "git";
-    shellAliases.d = "dirs -v";
     shellAliases.rm = "2>&1 echo rm disabled, use del; return 1 && ";
     shellAliases.ls = "eza -hs=name --group-directories-first";
     shellAliases.ll = "ls -la";
@@ -448,10 +542,8 @@
     shellAliases.ip = "ip --color";
     shellAliases.sudo = "sudo --preserve-env ";
     shellGlobalAliases.cat = "bat --paging=never";
-    shellGlobalAliases.less = "bat";
     shellGlobalAliases.grep = "rg";
-    autosuggestion.enable = true;
-    autosuggestion.strategy = [ "history" "completion" ];
+    autosuggestion = { enable = true; strategy = [ "history" "completion" ]; };
     localVariables.ZSH_AUTOSUGGEST_BUFFER_MAX_SIZE = 100;
     localVariables.ZSH_AUTOSUGGEST_ACCEPT_WIDGETS = [ "end-of-line" "vi-end-of-line" "vi-add-eol" ];
     localVariables.ZSH_AUTOSUGGEST_PARTIAL_ACCEPT_WIDGETS = [ "forward-char" "vi-forward-char" "forward-word" "emacs-forward-word" "vi-forward-word" "vi-forward-word-end" "vi-forward-blank-word" "vi-forward-blank-word-end" "vi-find-next-char" "vi-find-next-char-skip" ];
@@ -508,34 +600,19 @@
       # completion
       autoload -U bashcompinit && bashcompinit
       bindkey "^[[Z" reverse-menu-complete
-      # TODO(later): is all this really necessary?
       zstyle ":completion:*" menu select
-      zstyle ":completion:*" complete-options true
       zstyle ":completion:*" completer _complete _match _approximate
-      zstyle ":completion:*" matcher-list "" "m:{[:lower:][:upper:]}={[:upper:][:lower:]}" "+l:|=* r:|=*"
-      zstyle ":completion:*" list-suffixes
+      zstyle ":completion:*" matcher-list "" "m:{a-zA-Z}={A-Za-z}" "+l:|=* r:|=*"
       zstyle ":completion:*" expand prefix suffix 
       zstyle ":completion:*" use-cache on
-      zstyle ":completion:*" cache-path "$XDG_CACHE_HOME/zcompcache"
+      zstyle ":completion:*" cache-path "${config.xdg.cacheHome}/zcompcache"
       zstyle ":completion:*" group-name ""
-      zstyle ":completion:*" list-colors "$${(s.:.)LS_COLORS}"
+      zstyle ":completion:*" list-colors "''${(s.:.)LS_COLORS}"
       zstyle ":completion:*:*:*:*:descriptions" format "%F{green}-- %d --%f"
       zstyle ":completion:*:messages" format " %F{purple} -- %d --%f"
-      zstyle ":completion:*:warnings" format " %F{red}-- no matches found --%f"
+      zstyle ":completion:*:warnings" format " %F{red}-- no matches --%f"
 
-      # Pager
-      # TODO(later): move to less config or something?
-      export LESS_TERMCAP_mb="$(tput setaf 2; tput blink)"
-      export LESS_TERMCAP_md="$(tput setaf 0; tput bold)"
-      export LESS_TERMCAP_me="$(tput sgr0)"
-      export LESS_TERMCAP_so="$(tput setaf 3; tput smul; tput bold)"
-      export LESS_TERMCAP_se="$(tput sgr0)"
-      export LESS_TERMCAP_us="$(tput setaf 4; tput smul)"
-      export LESS_TERMCAP_ue="$(tput sgr0)"
-      #export LESS="--ignore-case --tabs=4 --chop-long-lines --LONG-PROMPT --RAW-CONTROL-CHARS --lesskey-file=$XDG_CONFIG_HOME/less/key"
-      #command less --help | grep -q -- --incsearch && export LESS="--incsearch $LESS"
-
-      # GPG+SSH
+      # gpg+ssh
       # TODO(work): this should probably be done in gpg-agent config
       #hash gpgconf 2>/dev/null && {
       #  export GPG_TTY="$(tty)"
@@ -544,17 +621,13 @@
       #  (gpgconf --launch gpg-agent &)
       #}
 
-      0x0() { curl -F"file=@$1" https://0x0.st; }
-
-      diff() { command diff -u $@ | delta; }
-
-      cht() { cht.sh "$@?style=paraiso-dark" | less; }
+      cht() { cht.sh "$@?style=paraiso-dark"; }
       _cht() { compadd $commands:t; }; compdef _cht cht
 
-      #ash() { eval 2>/dev/null mosh -a -o --experimental-remote-ip=remote us260 -- tmux new $${@:+-c -- a4c shell $@}; }
+      #ash() { eval 2>/dev/null mosh -a -o --experimental-remote-ip=remote us260 -- tmux new ''${@:+-c -- a4c shell $@}; }
       #_ash() { compadd "$(ssh us260 -- a4c ps -N)"; }; compdef _ash ash
 
-      # Start desktop environment
+      # desktop environment
       [[ -o interactive && -o login && -z "$WAYLAND_DISPLAY" && "$(tty)" = "/dev/tty1" ]] && hash sway 2>/dev/null && {
         nixGLIntel sway
       }
@@ -614,25 +687,21 @@
     font = "Terminess Nerd Font 12";
     icons = true;
     maxIconSize = 32;
-    # TODO iconPath = "/usr/share/icons/breeze-dark";
+    iconPath = "${config.gtk.iconTheme.package}/share/icons/breeze-dark";
     extraConfig = ''
       max-history=10
       on-button-left=exec makoctl menu bemenu --prompt "Action"
       on-button-right=dismiss
-
       [actionable]
       format=<b>%s</b> •\n%b
-
       [urgency=low]
       background-color=#202020
       text-color=#d0d0d0
       border-color=#808080
-
       [urgency=high]
       default-timeout=0
       background-color=#c00000
       border-color=#ff0000
-
       [category=osd]
       format=%s\n%b
       group-by=category
@@ -645,7 +714,18 @@
   programs.waybar = {
     enable = true;
     systemd.enable = true;
-    settings = [
+    settings = let 
+      ramp = [
+        "<span color='#00ff00'>▁</span>"
+        "<span color='#00ff00'>▂</span>"
+        "<span color='#00ff00'>▃</span>"
+        "<span color='#00ff00'>▄</span>"
+        "<span color='#ff8000'>▅</span>"
+        "<span color='#ff8000'>▆</span>"
+        "<span color='#ff8000'>▇</span>"
+        "<span color='#ff0000'>█</span>"
+      ];
+    in [
       {
         ipc = true;
         layer = "top";
@@ -658,7 +738,6 @@
         modules-center = [];
         modules-right = [ "custom/media" "custom/caffeinated" "gamemode" "bluetooth" "cpu" "memory" "temperature" "disk" "network" "wireplumber" "battery" "clock" ];
         "sway/workspaces".format = "{index}";
-	# TODO(later, bar): scratchpad functionality
         "sway/window".max-length = 200;
         "custom/media" = {
           exec = "~/.config/waybar/modules/media"; # TODO(later)
@@ -673,7 +752,7 @@
           return-type = "json";
           tooltip = true;
           interval = 1;
-          on-click = "powerctl uncaffeinate";
+          on-click = "powerctl decaf";
         };
         gamemode = {
           format = "{count}";
@@ -692,31 +771,13 @@
         cpu = {
           interval = 1;
           format = "{icon0}{icon1}{icon2}{icon3}{icon4}{icon5}{icon6}{icon7}{icon8}{icon9}{icon10}{icon11}{icon12}{icon13}{icon14}{icon15}";
-          format-icons = [
-            "<span color='#00ff00'>▁</span>"
-            "<span color='#00ff00'>▂</span>"
-            "<span color='#00ff00'>▃</span>"
-            "<span color='#00ff00'>▄</span>"
-            "<span color='#ff8000'>▅</span>"
-            "<span color='#ff8000'>▆</span>"
-            "<span color='#ff8000'>▇</span>"
-            "<span color='#ff0000'>█</span>"
-          ];
+          format-icons = ramp;
           on-click = "alacritty --class floating --command btop";
         };
         memory = {
           interval = 5;
           format = "{icon}";
-          format-icons = [
-            "<span color='#00ff00'>▁</span>"
-            "<span color='#00ff00'>▂</span>"
-            "<span color='#00ff00'>▃</span>"
-            "<span color='#00ff00'>▄</span>"
-            "<span color='#ff8000'>▅</span>"
-            "<span color='#ff8000'>▆</span>"
-            "<span color='#ff8000'>▇</span>"
-            "<span color='#ff0000'>█</span>"
-          ];
+          format-icons = ramp;
           tooltip-format = "RAM: {used:0.1f}Gib ({percentage}%)\nSWP: {swapUsed:0.1f}Gib ({swapPercentage}%)";
           on-click = "alacritty --class floating --command btop";
         };
@@ -748,8 +809,7 @@
         };
         battery = {
           interval = 10;
-          states.warning = 30;
-          states.critical = 15;
+          states = { warning = 30; critical = 15; };
           format = "{capacity}%";
           on-click = "powerctl";
           on-scroll-up = "brightnessctl set 1%-";
@@ -821,21 +881,8 @@
     '';
   };
 
-  # TODO(later, bin): powerctl fade
-  services.swayidle = {
+  services.playerctld = {
     enable = true;
-    extraArgs = [ "-w"  "idlehint 300" ];
-    events = [
-      { event = "before-sleep"; command = "loginctl lock-session"; }
-      #{ event = "after-resume"; command = "pkill powerctl"; }
-      { event = "lock"; command = "swaylock --daemonize"; }
-      { event = "unlock"; command = "pkill -USR1 swaylock"; }
-    ];
-    timeouts = [
-      #{ timeout = 300; command = "powerctl fade &"; }
-      { timeout = 310; command = "loginctl lock-session"; }
-      { timeout = 900; command = "systemctl suspend"; }
-    ];
   };
 
   # TODO(work): programs.tmux
@@ -899,32 +946,46 @@
     };
   };
 
-  services.cliphist.enable = true;
+  services.cliphist = {
+    enable = true;
+  };
 
   wayland.windowManager.sway = {
     enable = true;
     #package = nixGL pkgs.sway; # TODO(later): wrap sway with nixGL here instead of in shell?
+    wrapperFeatures.gtk = true;
     systemd.enable = true;
     extraOptions = [ "--unsupported-gpu" ];
+    extraConfigEarly = ''
+      set $send_volume_notif wpctl get-volume @DEFAULT_SINK@ | (read _ v m && v=$(printf "%.0f" $(echo "100*$v" | bc)) && notify-send --category osd --hint "int:value:$v" "Volume: $v% $m")
+      set $send_brightness_notif b=$(($(brightnessctl get)00/$(brightnessctl max))) && notify-send --category osd --hint "int:value:$b" "Brightness: $b%"
+      set $get_views vs=$(swaymsg -rt get_tree | jq "recurse(.nodes[], .floating_nodes[]) | select(.visible).id")
+      set $get_focused f=$(swaymsg -rt get_tree | jq "recurse(.nodes[], .floating_nodes[]) | first(select(.focused)).id")
+      set $get_output o=$(swaymsg -rt get_outputs | jq -r ".[] | first(select(.focused).name)")
+      set $get_workspaces ws=$(swaymsg -rt get_workspaces | jq -r ".[].num")
+      set $get_prev_workspace w=$(( $( swaymsg -t get_workspaces | jq -r ".[] | first(select(.focused).num)" ) - 1 )) && w=$(( $w < 1 ? 1 : ($w < 9 ? $w : 9) ))
+      set $get_next_workspace w=$(( $( swaymsg -t get_workspaces | jq -r ".[] | first(select(.focused).num)" ) + 1 )) && w=$(( $w < 1 ? 1 : ($w < 9 ? $w : 9) ))
+      # TODO(later): always skips 1
+      set $get_empty_workspace w=$(swaymsg -rt get_workspaces | jq ". as \$w | first(range(1; 9) | select(all(. != \$w[].num; .)))")
+      # TODO(later): doesnt work well at high speeds (e.g. key held down)
+      set $group swaymsg "mark --add g" || swaymsg "splitv, mark --add g"
+      set $ungroup swaymsg "[con_mark=g] focus, unmark g" || swaymsg "focus parent; focus parent; focus parent; focus parent"
+    '';
     config = {
       modifier = "Mod4";
       workspaceLayout = "default";
-      #wrapperFeatures.gtk = true;
       output."*".bg = "#101010 solid_color";
-      focus.followMouse = true;
-      focus.mouseWarping = "output";
-      focus.wrapping = "no";
-      window.border = 1;
-      window.hideEdgeBorders = "none";
-      window.titlebar = false;
-      window.commands = [
+      focus = { followMouse = true; mouseWarping = "output"; wrapping = "no"; };
+      floating = { modifier = "Mod4"; border = 1; titlebar = false; };
+      window = { border = 1; hideEdgeBorders = "none"; titlebar = false; commands = [
         { criteria.class = ".*"; command = "border pixel 1"; }
         { criteria.app_id = ".*"; command = "border pixel 1"; }
         { criteria.app_id = "floating.*"; command = "floating enable"; }
-      ];
-      floating.modifier = "Mod4";
-      floating.border = 1;
-      floating.titlebar = false;
+      ]; };
+      colors.focused         = { border = "#202020"; background = "#ffffff"; text = "#000000"; indicator = "#ff0000"; childBorder = "#ffffff"; };
+      colors.focusedInactive = { border = "#202020"; background = "#202020"; text = "#ffffff"; indicator = "#202020"; childBorder = "#202020"; };
+      colors.unfocused       = { border = "#202020"; background = "#202020"; text = "#808080"; indicator = "#202020"; childBorder = "#202020"; };
+      colors.urgent          = { border = "#2f343a"; background = "#202020"; text = "#ffffff"; indicator = "#900000"; childBorder = "#900000"; };
       input."type:keyboard".xkb_layout = "ie";
       input."type:keyboard".xkb_options = "caps:escape";
       input."type:keyboard".repeat_delay = "250";
@@ -937,11 +998,9 @@
       modes = {};
       fonts = {}; 
       startup = [
-        #{ command = "pidof -x batteryd || batteryd"; always = true; }
-        #{ command = "powerctl uncaffeinate"; always = true; }
-        # TODO(later): focus on every monitor 
-        #{ command = "displayctl auto"; always = true; }
-        #{ command = "$get_output && swaymsg \"workspace 1:$o\""; }
+        { command = "pidof -x batteryd || batteryd"; always = true; }
+        { command = "powerctl decaf"; always = true; }
+        { command = "displayctl auto"; always = true; }
       ];
       # TODO(later): multimonitor bars
       bars = [ { command = "waybar"; mode = "hide"; } ];
@@ -951,19 +1010,18 @@
       keybindings."Mod4+t" = "exec alacritty";
       keybindings."Mod4+w" = "exec firefox";
       keybindings."Mod4+d" = "exec firefox 'https://discord.com/app'";
-      # TODO(now, bins)
-      keybindings."Mod4+Shift+c" = "reload";
-      keybindings."Mod4+Shift+e" = "exit";
-      #keybindings."Mod4+Escape" = "exec powerctl";
-      #keybindings."--locked Mod4+Shift+Escape" = "exec powerctl lock";
-      #keybindings."--locked Mod4+Control+Escape" = "exec powerctl suspend";
-      #keybindings."Mod4+Control+Shift+Escape" = "exec powerctl reload";
-      #keybindings."Mod4+backslash" = "exec displayctl";
-      #keybindings."Mod4+Shift+backslash" = "exec displayctl mono";
-      #keybindings."Mod4+Control+backslash" = "exec displayctl duel";
-      #keybindings."Mod4+n" = "exec networkctl";
-      #keybindings."Mod4+Shift+n" = "exec networkctl wifi";
-      #keybindings."Mod4+Control+n" = "exec networkctl bluetooth";
+      keybindings."Mod4+Escape" = "exec powerctl";
+      # TODO(later): --locked
+      keybindings."Mod4+Shift+Escape" = "exec powerctl lock";
+      keybindings."Mod4+Control+Escape" = "exec powerctl suspend";
+      keybindings."Mod4+Control+Shift+Escape" = "exec powerctl reload";
+      keybindings."Mod4+Apostrophe" = "exec displayctl";
+      #keybindings."Mod4+Shift+Apostrophe" = "exec displayctl external";
+      #keybindings."Mod4+Control+Apostrophe" = "exec displayctl internal";
+      #keybindings."Mod4+Control+Shift+Apostrophe" = "exec displayctl both";
+      keybindings."Mod4+n" = "exec networkctl";
+      keybindings."Mod4+Shift+n" = "exec networkctl wifi";
+      keybindings."Mod4+Control+n" = "exec networkctl bluetooth";
       # TODO(later): persistent floating btop
       keybindings."Mod4+u" = "exec alacritty --class floating-btop --command btop";
       keybindings."Mod4+Control+u" = "exec swaymsg '[class=\"floating-btop\"] scratchpad show'";
@@ -975,7 +1033,6 @@
       keybindings."Mod4+Shift+grave" = "exec makoctl restore";
       keybindings."Mod4+Control+grave" = "exec makoctl menu bemenu --prompt 'Action'";
       # containers
-      # TODO(later): for loop
       keybindings."Mod4+h"         = "focus left";
       keybindings."Mod4+Shift+h"   = "exec $group && swaymsg 'move left 50px' && $ungroup";
       keybindings."Mod4+Control+h" = "resize shrink width 50px";
@@ -997,7 +1054,6 @@
       keybindings."Mod4+m" = "fullscreen";
       keybindings."Mod4+q" = "kill";
       # workspaces
-      # TODO(later): for loop
       keybindings."Mod4+1" = ''exec $get_output && swaymsg "workspace 1:$o"'';
       keybindings."Mod4+2" = ''exec $get_output && swaymsg "workspace 2:$o"'';
       keybindings."Mod4+3" = ''exec $get_output && swaymsg "workspace 3:$o"'';
@@ -1094,38 +1150,104 @@
       keybindings."Shift+Print"   = ''exec swaymsg -t get_tree | jq -r '.. | select(.pid? and .visible?) | .rect | "\(.x),\(.y) \(.width)x\(.height)"' | slurp -B '#ffffff20' | grim -g - - | wl-copy --type image/png'';
       keybindings."Control+Print" = ''exec slurp -oB '#ffffff20' | grim -g - - | wl-copy --type image/png'';
     };
-
-    # TODO(later): just wrong
-    # config.colors.focused           = { background = "#202020"; border = "#ffffff"; childBorder = "#000000"; indicator = "#ff0000"; text = "#ffffff"; };
-    # config.colors.focusedInactive  = { background = "#202020"; border = "#202020"; childBorder = "#ffffff"; indicator = "#202020"; text = "#202020"; };
-    # config.colors.focused_tab_title = { background = "#202020"; border = "#ffffff"; childBoarder = "#000000"; };
-    # config.colors.unfocused         = { background = "#202020"; border = "#202020"; childBorder = "#808080"; indicator = "#202020"; text = "#202020"; };
     extraConfig = ''
-      client.focused           #202020 #ffffff #000000 #ff0000 #ffffff
-      client.focused_inactive  #202020 #202020 #ffffff #202020 #202020
-      client.focused_tab_title #202020 #ffffff #000000
-      client.unfocused         #202020 #202020 #808080 #202020 #202020
-    '';
-
-    extraConfigEarly = ''
       workspace_auto_back_and_forth yes
-      set $send_volume_notif wpctl get-volume @DEFAULT_SINK@ | (read _ v m && v=$(printf "%.0f" $(echo "100*$v" | bc)) && notify-send --category osd --hint "int:value:$v" "Volume: $v% $m")
-      set $send_brightness_notif b=$(($(brightnessctl get)00/$(brightnessctl max))) && notify-send --category osd --hint "int:value:$b" "Brightness: $b%"
-      set $get_views vs=$(swaymsg -rt get_tree | jq "recurse(.nodes[], .floating_nodes[]) | select(.visible).id")
-      set $get_focused f=$(swaymsg -rt get_tree | jq "recurse(.nodes[], .floating_nodes[]) | first(select(.focused)).id")
-      set $get_output o=$(swaymsg -rt get_outputs | jq -r ".[] | first(select(.focused).name)")
-      set $get_workspaces ws=$(swaymsg -rt get_workspaces | jq -r ".[].num")
-      set $get_prev_workspace w=$(( $( swaymsg -t get_workspaces | jq -r ".[] | first(select(.focused).num)" ) - 1 )) && w=$(( $w < 1 ? 1 : ($w < 9 ? $w : 9) ))
-      set $get_next_workspace w=$(( $( swaymsg -t get_workspaces | jq -r ".[] | first(select(.focused).num)" ) + 1 )) && w=$(( $w < 1 ? 1 : ($w < 9 ? $w : 9) ))
-      # TODO(later): always skips 1
-      set $get_empty_workspace w=$(swaymsg -rt get_workspaces | jq ". as \$w | first(range(1; 9) | select(all(. != \$w[].num; .)))")
-      # TODO(later): doesnt work well at high speeds (e.g. key held down)
-      set $group swaymsg "mark --add g" || swaymsg "splitv, mark --add g"
-      set $ungroup swaymsg "[con_mark=g] focus, unmark g" || swaymsg "focus parent; focus parent; focus parent; focus parent"
     '';
   };
 
+
+
+  # TODO(now, pipewire): wpctl not working
+  # TODO(now, pipewire): for screensharing etc
+  # https://gitlab.aristanetworks.com/jack/nixfiles/-/blob/arista/home-manager/configs/thonkpod/default.nix?ref_type=heads
+  # https://gitlab.aristanetworks.com/jack/nixfiles/-/blob/arista/nixos/modules/gui.nix?ref_type=heads
+  #XDG_DESKTOP_PORTAL_DIR = "${joinedPortals}/share/xdg-desktop-portal/portals"
+  
+  #xdg = {
+  #  configFile = {
+  #    # Use the right portal for screen{shot,cast}ing (copied from `nixos/modules/gui.nix`)
+  #    "xdg-desktop-portal/sway-portals.conf".text = ''
+  #      [preferred]
+  #      default=gtk
+  #      org.freedesktop.impl.portal.Screenshot=wlr
+  #      org.freedesktop.impl.portal.ScreenCast=wlr
+  #    '';
+  #  };
+  #};
+  #
+  #systemd.user = {
+  #  services = {
+  #    xdg-desktop-portal = {
+  #      Unit = {
+  #        Description = "Portal service";
+  #        PartOf = "graphical-session.target";
+  #        After = "graphical-session.target";
+  #      };
+  #      Service = {
+  #        Type = "dbus";
+  #        BusName = "org.freedesktop.portal.Desktop";
+  #        ExecStart = "${pkgs.nixgl.nixGLIntel}/bin/nixGLIntel ${pkgs.xdg-desktop-portal}/libexec/xdg-desktop-portal";
+  #        Restart = "on-failure";
+  #        Environment = [ "XDG_DESKTOP_PORTAL_DIR=${joinedPortals}/share/xdg-desktop-portal/portals" ];
+  #      };
+  #      Install.WantedBy = [ "graphical-session.target" ];
+  #    };
+
+  #    # Ubuntu 22.04 xdg-desktop-portal-wlr is broken :)
+  #    # Note we still need the package installed to get the entry in `/usr/share/xdg-desktop-portal/portals`
+  #    xdg-desktop-portal-wlr = {
+  #      Unit = {
+  #        Description = "Portal service (wlroots implementation)";
+  #        PartOf = "graphical-session.target";
+  #        After = "graphical-session.target";
+  #        ConditionEnvironment = "WAYLAND_DISPLAY";
+  #      };
+  #      Service = {
+  #        Type = "dbus";
+  #        BusName = "org.freedesktop.impl.portal.desktop.wlr";
+  #        ExecStart = "${pkgs.nixgl.nixGLIntel}/bin/nixGLIntel ${pkgs.xdg-desktop-portal-wlr}/libexec/xdg-desktop-portal-wlr";
+  #        Restart = "on-failure";
+  #      };
+  #      Install.WantedBy = [ "graphical-session.target" ];
+  #    };
+
+  #    xdg-desktop-portal-gtk = {
+  #      Unit = {
+  #        Description = "Portal service (GTK/GNOME implementation)";
+  #        PartOf = "graphical-session.target";
+  #        After = "graphical-session.target";
+  #      };
+  #      Service = {
+  #        Type = "dbus";
+  #        BusName = "org.freedesktop.impl.portal.desktop.gtk";
+  #        ExecStart = "${pkgs.nixgl.nixGLIntel}/bin/nixGLIntel ${pkgs.xdg-desktop-portal-gtk}/libexec/xdg-desktop-portal-gtk";
+  #        Restart = "on-failure";
+  #      };
+  #      Install.WantedBy = [ "graphical-session.target" ];
+  #    };
+  #  };
+  #};
+
+
+
+  #xdg.portal = {
+  #  enable = true;
+  #  xdgOpenUsePortal = true;
+  #  extraPortals = with pkgs; [
+  #    xdg-desktop-portal-gtk
+  #    xdg-desktop-portal-wlr
+  #  ];
+  #  config = {
+  #    common.default = [ "gtk" ];
+  #    common."org.freedesktop.impl.portal.Screenshot" = [ "wlr" ];
+  #    common."org.freedesktop.impl.portal.ScreenCast" = [ "wlr" ];
+  #  };
+  #};
+
+
+
   xdg.enable = true;
+  xdg.userDirs = { enable = true; createDirectories = true; publicShare = null; templates = null; };
   xdg.mime.enable = true;
   xdg.mimeApps.enable = true;
   xdg.mimeApps.associations.added = {
@@ -1155,36 +1277,18 @@
     "application/x-extension-xhtml" = "firefox.desktop";
     "application/x-extension-xht" = "firefox.desktop";
   };
-  xdg.portal = { # TODO(now, pipewire): for screensharing etc
-    #enable = true;
-    xdgOpenUsePortal = true;
-  };
-  xdg.userDirs = {
-    enable = true;
-    createDirectories = true;
-    publicShare = null;
-    templates = null;
-  };
 
   fonts.fontconfig.enable = true;
-  fonts.fontconfig.defaultFonts.monospace = [ "Terminess Nerd Font" ];
-  fonts.fontconfig.defaultFonts.sansSerif = [];
-  fonts.fontconfig.defaultFonts.serif = [];
-  fonts.fontconfig.defaultFonts.emoji = [];
+  fonts.fontconfig.defaultFonts = { monospace = [ "Terminess Nerd Font" ]; sansSerif = []; serif = []; emoji = []; };
   
   gtk.enable = true;
-  gtk.iconTheme.package = pkgs.kdePackages.breeze-icons;
-  gtk.iconTheme.name = "breeze-dark";
-  gtk.theme.package = pkgs.materia-theme;
-  gtk.theme.name = "Materia-dark";
+  gtk.theme = { package = pkgs.materia-theme; name = "Materia-dark"; };
+  gtk.iconTheme = { package = pkgs.kdePackages.breeze-icons; name = "breeze-dark"; };
+  #gtk.cursorTheme = { package = pkgs.; name = ""; };
 
   nix.package = pkgs.nix;
-  nix.settings.auto-optimise-store = true;
-  nix.settings.use-xdg-base-directories = true;
-  nix.settings.experimental-features = [ "nix-command" "flakes" ];
-
-  nixpkgs.overlays = [];
+  nix.settings = { auto-optimise-store = true; use-xdg-base-directories = true; experimental-features = [ "nix-command" "flakes" ]; };
   nixpkgs.config.allowUnfree = true;
-
+  systemd.user.startServices = "sd-switch";
   targets.genericLinux.enable = true;
 }
