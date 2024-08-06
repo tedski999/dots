@@ -1,3 +1,4 @@
+`sudo visudo` and comment out "Defaults env_reset" and "Defaults secure_path". Optionally add "tedj ALL=(ALL) NOPASSWD:ALL" if you're feeling lucky.
 
 Install nix
 ```sh
@@ -30,4 +31,11 @@ mkdir /etc/systemd/system/getty@tty1.service.d
 echo '[Service]
 ExecStart=
 ExecStart=-/sbin/agetty -o '-p -- tedj' --noclear --skip-login - $TERM' | sudo tee /etc/systemd/system/getty@tty1.service.d/skip-username.conf
+```
+
+Setup syncthing at 127.0.0.1:8384
+
+Import GPG key
+```sh
+gpg --import Documents/keys/ski@h8c.de.gpg
 ```

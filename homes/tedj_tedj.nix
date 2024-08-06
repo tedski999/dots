@@ -1,4 +1,6 @@
 # TODO(next): imports = [];
+# TODO(work): sshfs for working locally? need to inv. homebus first
+# TODO(later): secret management in nix (oh no): gpg, bitwarden, firefox sync, syncthing
 
 {pkgs, lib, config, inputs, ...}: {
   home.username = "tedj";
@@ -7,8 +9,31 @@
   home.preferXdgDirectories = true;
   home.keyboard = { layout = "ie"; options = [ "caps:escape" ]; };
   home.sessionPath = [ "$HOME/.local/bin" ];
-  home.sessionVariables.QT_QPA_PLATFORM = "wayland";
-  home.sessionVariables.LIBSEAT_BACKEND = "logind";
+
+  home.sessionVariables.PYTHONSTARTUP = "${config.xdg.configHome}/python/pythonrc";
+  xdg.configFile."python/pythonrc" = {
+    text = ''
+      import atexit, readline
+      
+      try:
+          readline.read_history_file("${config.xdg.dataHome}/python_history")
+      except OSError as e:
+          pass
+      if readline.get_current_history_length() == 0:
+          readline.add_history("# history created")
+      
+      def write_history(path):
+          try:
+              import os, readline
+              os.makedirs(os.path.dirname(path), mode=0o700, exist_ok=True)
+              readline.write_history_file(path)
+          except OSError:
+              pass
+      
+      atexit.register(write_history, "${config.xdg.dataHome}/python_history")
+      del (atexit, readline, write_history)
+    '';
+  };
 
   home.packages = with pkgs; [
     nixgl.nixGLIntel
@@ -28,9 +53,16 @@
     openconnect
     acpi
     libnotify
+    mosh
+    bitwarden-cli
     # gui
     wl-clipboard
-    wireplumber
+
+    # TODO(pipewire): fix these
+    #pipewire
+    #wireplumber
+    pulsemixer
+
     swayidle
     brightnessctl
     playerctl
@@ -92,35 +124,40 @@
       done
     '')
     # display menu
-    # TODO(later): focus on every monitor 
+    # TODO(later): bemenu menu
     (writeShellScriptBin "displayctl" ''
-      swaymsg -t get_outputs
-
-      #swaymsg output "$mon0" enable pos 0 0
-      #swaymsg output "$mon1" disable
-
-      #swaymsg output eDP-1 enable pos 0 1080
-      #swaymsg output HDMI-1-0 enable pos 0 0
-
-      #swaymsg "workspace 1:eDP-1"
+      swaymsg output \"AOC 2270W GNKJ1HA001311\" disable
+      swaymsg output \"AU Optronics 0xD291 Unknown\" disable
+      sleep 1
+      swaymsg output \"Pixio USA Pixio PXC348C Unknown\" enable pos 1080 $((1920/2 - 1440/2)) transform 0 mode 3440x1440@100Hz
+      sleep 1
+      swaymsg output \"AU Optronics 0xD291 Unknown\" enable pos $((3440/2 - 1920/2 + 1080)) $((1440 + 1920/2 - 1440/2)) transform 0 mode 1920x1200@60Hz
+      sleep 1
+      swaymsg output \"AOC 2270W GNKJ1HA001311\" enable pos 0 0 transform 90 mode 1920x1080@60Hz
+      sleep 1
+      swaymsg output \"AOC 2270W GNKJ1HA001311\" enable pos 0 0 transform 270 mode 1920x1080@60Hz
+      sleep 1
+      swaymsg "focus output \"AU Optronics 0xD291 Unknown\"" && swaymsg "workspace 1:AU Optronics 0xD291 Unknown"
+      swaymsg "focus output \"AOC 2270W GNKJ1HA001311\"" && swaymsg "workspace 1:AOC 2270W GNKJ1HA001311"
+      swaymsg "focus output \"Pixio USA Pixio PXC348C Unknown\"" && swaymsg "workspace 1:Pixio USA Pixio PXC348C Unknown"
     '')
     # power menu
-    # TODO(later): idle warning
     (writeShellScriptBin "powerctl" ''
-      case "$([ -n "$1" ] && echo $1 || printf "lock\nsuspend\n$(pidof -q swayidle && echo coffee || echo decaf)\nreload\nlogout\nreboot\nshutdown" | bemenu -p "Power" -l 9 -W 0.2)" in
+      case "$([ -n "$1" ] && echo $1 || printf "lock\nsuspend\n$(pidof -q swayidle && echo caffeinate || echo decafeinate)\nreload\nlogout\nreboot\nshutdown" | bemenu -p "Power" -l 9 -W 0.2)" in
         "lock") loginctl lock-session;;
         "suspend") systemctl suspend;;
         "reload") swaymsg reload;;
         "logout") swaymsg exit;;
         "reboot") systemctl reboot;;
         "shutdown") systemctl poweroff;;
-        "coffee") pkill swayidle;;
-        "decaf") pidof swayidle || swayidle -w idlehint 300 \
-          before-sleep "loginctl lock-session" \
-          lock "swaylock --daemonize" \
-          unlock "pkill -USR1 swaylock" \
-          timeout 300 "loginctl lock-session" \
-          timeout 900 "systemctl suspend" &;;
+        "caffeinate") pkill swayidle;;
+        "decafeinate") pidof swayidle || swayidle -w idlehint 300 \
+          lock 'swaylock --daemonize' \
+          unlock 'pkill -USR1 swaylock' \
+          before-sleep 'loginctl lock-session' \
+          timeout 295 'notify-send -i clock "Idle Warning" "Locking in 5 seconds..."' \
+          timeout 300 'loginctl lock-session' \
+          timeout 900 'systemctl suspend' &;;
         *) exit 1;;
       esac
     '')
@@ -141,14 +178,14 @@
         [ "$state" = "Discharging" ] && {
           charge="$(echo "$charge" | tr -d '%')"
           [ "$old_charge" -gt 5 ] && [ "$charge" -le 5 ] && {
-            for i in $(seq 5 -1 1); do notify-send -i "battery-020" -u "critical" -r "$$" -t 0 "Battery empty!" "Suspending in $i..."; sleep 1; done
+            for i in $(seq 5 -1 1); do notify-send -i battery-020 -u critical -r "$$" -t 0 "Battery empty!" "Suspending in $i..."; sleep 1; done
             powerctl suspend
           } || {
             [ "$old_charge" -gt 10 ] && [ "$charge" -le 10 ] && {
-              notify-send -i "battery-020" -u "critical" -r "$$" -t 0 "Battery critical!" "Less than$time"
+              notify-send -i battery-020 -u critical -r "$$" -t 0 "Battery critical!" "Less than$time"
             } || {
               [ "$old_charge" -gt 20 ] && [ "$charge" -le 20 ] && {
-                notify-send -i "battery-020" -u "normal" -r "$$" "Battery low!" "Less than$time"
+                notify-send -i battery-020 -u normal -r "$$" "Battery low!" "Less than$time"
               }
             }
           }
@@ -156,8 +193,31 @@
         }
       done
     '')
+    # bemenu with bitwarden cli
+    (writeShellScriptBin "bmbwd" ''
+      show() {
+        [ -z "$BW_SESSION" ] \
+          && export BW_SESSION="$(: | bemenu --password indicator --list 0 --width-factor 0.2 --prompt 'Bitwarden Password:' | tr -d '\n' | base64 | bw unlock --raw)" \
+          && [ -z "$BW_SESSION" ] \
+          && notify-send -i lock -u critical "Bitwarden Failed" "Wrong password?" \
+          && return 1
 
-    (writeShellScriptBin "avpn" ''sudo ${openconnect}/bin/openconnect --protocol=gp gp-ie.arista.com -u tedj -c $HOME/Documents/wi-fi-certificates/tedj.crt -k $HOME/Documents/wi-fi-certificates/tedj.pem'')
+        [ -z "$items" ] \
+          && notify-send -i lock "Bitwarden" "Updating items..." \
+          && items="$(bw list items)"
+        
+        # TODO(later): fetch fields of index, bemenu choose field (or all)
+        #echo "$items" | jq -r 'range(length) as $i | .[$i] | select(.type==1) | ($i | tostring)+" "+.name+" <"+.login.username+">"' | bemenu --width-factor 0.2 | cut -d' ' -f1
+        echo "$items" | jq -r '.[] | select(.type==1) | .name+" <"+.login.username+"> "+.login.password' | bemenu --width-factor 0.4 | rev | cut -d' ' -f1 | rev | wl-copy --trim-newline
+      }
+
+      trap "show" USR1
+      trap "unset items && show" USR2
+      trap "unset items BW_SESSION && show" TERM
+      while true; do sleep infinity & wait; done
+    '')
+    # arista vpn shorcut
+    (writeShellScriptBin "avpn" ''sudo ${openconnect}/bin/openconnect --protocol=gp gp-ie.arista.com -u tedj -c $HOME/Documents/keys/tedj@arista.com.crt -k $HOME/Documents/keys/tedj@arista.com.pem'')
   ];
 
   programs.home-manager = {
@@ -167,11 +227,6 @@
   programs.bat = {
     enable = true;
     config = { style = "plain"; wrap = "never"; map-syntax = [ "*.tin:C++" "*.tac:C++" ]; };
-  };
-
-  programs.gpg = {
-    enable = true;
-    # TODO(work): publicKeys
   };
 
   programs.git = {
@@ -214,7 +269,7 @@
     delta.options.hunk-header-decoration-style = "omit";
     delta.options.blame-palette = "#101010 #282828";
     delta.options.blame-separator-format = "{n:^5}";
-    # TODO(work)
+    # TODO(later)
     #[pull] rebase = false
     #[push] default = current
     #[merge] conflictstyle = diff3
@@ -407,7 +462,6 @@
                 { name = "creating an agent"; url = "https://docs.google.com/document/d/1k6HmxdQTyhBuLCzNfoj6WDKhcfxxCw9VYt6LxvIymnA/preview"; }
               ];
             }
-            { name = "AID7587: Recommended email filters - Google Docs"; url = "https://docs.google.com/document/d/1CA_p08yOrjpaDMzmfvxN5RVyKN36i8DAg51PdO2r0lM/preview"; }
             { name = "Source Code Navigation at Arista (AID/1270)"; url = "https://aid.infra.corp.arista.io/1270/cached.html"; }
             { name = "Tracking Hours for Irish R&D Tax Credits - Google Docs"; url = "https://docs.google.com/document/d/1-VsNiTTlXNwj69IGbKtAqdNA7Ve84RVfAnv-aJGCQO0/preview"; }
             { name = "guitarband";
@@ -457,7 +511,6 @@
           { key = "Return"; mods = "Shift|Control"; action = "SpawnNewInstance"; }
           { key = "Escape"; mods = "Shift|Control"; action = "ToggleViMode"; }
           { key = "Escape"; mode = "Vi"; action = "ToggleViMode"; }
-          # TODO(later): keybinding to search tedj@tedj
       ];
       colors.draw_bold_text_with_bright_colors = true;
       colors.primary = { background = "#000000"; foreground = "#dddddd"; };
@@ -472,33 +525,663 @@
     };
   };
 
+  home.sessionVariables.LESS="--incsearch --ignore-case --tabs=4 --chop-long-lines --LONG-PROMPT";
   programs.less = {
     enable = true;
     keys = "h left-scroll\nl right-scroll";
   };
-  home.sessionVariables.LESS="--incsearch --ignore-case --tabs=4 --chop-long-lines --LONG-PROMPT";
-
-      # pager
-      # TODO(later): move to less config or something?
-      #export LESS_TERMCAP_mb="$(tput setaf 2; tput blink)"
-      #export LESS_TERMCAP_md="$(tput setaf 0; tput bold)"
-      #export LESS_TERMCAP_me="$(tput sgr0)"
-      #export LESS_TERMCAP_so="$(tput setaf 3; tput smul; tput bold)"
-      #export LESS_TERMCAP_se="$(tput sgr0)"
-      #export LESS_TERMCAP_us="$(tput setaf 4; tput smul)"
-      #export LESS_TERMCAP_ue="$(tput sgr0)"
-
 
   programs.man = {
     enable = true;
   };
 
-  home.sessionVariables.EDITOR = "nvim";
   home.sessionVariables.VISUAL = "nvim";
   home.sessionVariables.MANPAGER = "nvim +Man!";
   home.sessionVariables.MANWIDTH = 80;
-  programs.neovim = { # TODO(work): config
+  programs.neovim = {
     enable = true;
+    defaultEditor = true;
+    viAlias = true;
+    vimAlias = true;
+    vimdiffAlias = true;
+    plugins = with pkgs.vimPlugins; [
+      {
+        plugin = pkgs.vimPlugins.nvim-surround;
+        config = ''lua require("nvim-surround").setup({ move_cursor = false })'';
+      }
+      {
+        plugin = pkgs.vimPlugins.mini-nvim;
+        config = ''
+          lua << END
+          require("mini.align").setup({})
+          local function normalise_string(str, max)
+            str = (str or ""):match("[!-~].*[!-~]") or ""
+            return #str > max and vim.fn.strcharpart(str, 0, max-1).."…" or str..(" "):rep(max-#str)
+          end
+          require("mini.completion").setup({
+            set_vim_settings = false,
+            window = { info = { border = { " ", "", "", " " } }, signature = { border = { " ", "", "", " " } } },
+            lsp_completion = {
+              process_items = function(items, base)
+                items = require("mini.completion").default_process_items(items, base)
+                for _, item in ipairs(items) do
+                  item.label = normalise_string(item.label, 40)
+                  item.detail = normalise_string(item.detail, 10)
+                  item.additionalTextEdits = {}
+                end
+                return items
+              end
+            }
+          })
+          require("mini.cursorword").setup({ delay = 0 })
+          require("mini.splitjoin").setup({ mappings = { toggle = "", join = "<space>j", split = "<space>J" } })
+          END
+        '';
+      }
+      {
+        plugin = pkgs.vimPlugins.vim-rsi;
+        config = "";
+      }
+      {
+        plugin = pkgs.vimPlugins.lualine-nvim;
+        config = ''
+          lua << END
+          local p = require("nightfox.palette").load("carbonfox")
+          require("lualine").setup({
+            options = {
+              icons_enabled = false,
+              section_separators = "",
+              component_separators = "",
+              refresh = { statusline = 100, tabline = 100, winbar = 100 },
+              theme = {
+                normal =   { a = { bg = p.black.bright, fg = p.fg1, gui = "bold" }, b = { bg = p.bg4, fg = p.fg2 }, c = { bg = p.bg3, fg = p.fg3 } },
+                insert =   { a = { bg = p.green.base,   fg = p.fg1, gui = "bold" }, b = { bg = p.bg4, fg = p.fg2 }, c = { bg = p.bg3, fg = p.fg3 } },
+                visual =   { a = { bg = p.magenta.dim,  fg = p.fg1, gui = "bold" }, b = { bg = p.bg4, fg = p.fg2 }, c = { bg = p.bg3, fg = p.fg3 } },
+                replace =  { a = { bg = p.red.base,     fg = p.fg1, gui = "bold" }, b = { bg = p.bg4, fg = p.fg2 }, c = { bg = p.bg3, fg = p.fg3 } },
+                command =  { a = { bg = p.black.bright, fg = p.fg1, gui = "bold" }, b = { bg = p.bg4, fg = p.fg2 }, c = { bg = p.bg3, fg = p.fg3 } },
+                terminal = { a = { bg = p.bg0,          fg = p.fg1, gui = "bold" }, b = { bg = p.bg4, fg = p.fg2 }, c = { bg = p.bg3, fg = p.fg3 } },
+                inactive = { a = { bg = p.bg0,          fg = p.fg1, gui = "bold" }, b = { bg = p.bg0, fg = p.fg2 }, c = { bg = p.bg0, fg = p.fg3 } },
+              }
+            },
+            sections = {
+              lualine_a = {{"mode", fmt = function(m) return m:sub(1,1) end}},
+              lualine_b = {{"filename", newfile_status=true, path=1, symbols={newfile="?", modified="*", readonly="-"}}},
+              lualine_c = {"diff"},
+              lualine_x = {{"diagnostics", sections={"error", "warn"}}},
+              lualine_y = {"filetype"},
+              lualine_z = {{"searchcount", maxcount=9999}, "progress", "location"},
+            },
+            inactive_sections = {
+              lualine_a = {{"mode", fmt=function() return " " end}},
+              lualine_b = {},
+              lualine_c = {{"filename", newfile_status=true, path=1, symbols={newfile="?", modified="*", readonly="-"}}},
+              lualine_x = {{"diagnostics", sections={"error", "warn"}}},
+              lualine_y = {},
+              lualine_z = {}
+            }
+          })
+          END
+        '';
+      }
+      {
+        plugin = pkgs.vimPlugins.nightfox-nvim;
+        config = ''
+          lua << END
+          require("nightfox").setup({
+            options = {
+              dim_inactive = true,
+              module_default = false,
+              modules = { ["mini"] = true, ["signify"] = true }
+            },
+            palettes = {
+              all = {
+                fg0 = "#ff00ff", fg1 = "#ffffff", fg2 = "#999999", fg3 = "#666666",
+                bg0 = "#0c0c0c", bg1 = "#121212", bg2 = "#222222", bg3 = "#222222", bg4 = "#333333",
+                sel0 = "#222222", sel1 = "#555555", comment = "#666666"
+              }
+            },
+            specs = {
+              all = {
+                diag = { info = "green", error = "red", warn = "#ffaa00" },
+                diag_bg = { error = "none", warn = "none", info = "none", hint = "none" },
+                diff = { add = "green", removed = "red", changed = "#ffaa00" },
+                git = { add = "green", removed = "red", changed = "#ffaa00" }
+              }
+            },
+            groups = {
+              all = {
+                Visual = { bg = "palette.bg4" },
+                Search = { fg = "black", bg = "yellow" },
+                IncSearch = { fg = "black", bg = "white" },
+                NormalBorder = { bg = "palette.bg1", fg = "palette.fg3" },
+                NormalFloat = { bg = "palette.bg2" },
+                FloatBorder = { bg = "palette.bg2" },
+                CursorWord = { bg = "none", fg = "none", style = "underline,bold" },
+                CursorLineNr = { fg = "palette.fg1" },
+                Whitespace = { fg = "palette.sel1" },
+                ExtraWhitespace = { bg = "red", fg = "red" },
+                Todo = { bg = "none", fg = "palette.blue" },
+                WinSeparator = { bg = "palette.bg0", fg = "palette.bg0" },
+                PmenuKind = { bg = "palette.sel0", fg = "palette.blue" },
+                PmenuKindSel = { bg = "palette.sel1", fg = "palette.blue" },
+                PmenuExtra = { bg = "palette.sel0", fg = "palette.fg2" },
+                PmenuExtraSel = { bg = "palette.sel1", fg = "palette.fg2" },
+                TabLine     = { bg = "palette.bg1", fg = "palette.fg2", gui = "none" },
+                TabLineSel  = { bg = "palette.bg2", fg = "palette.fg1", gui = "none" },
+                TabLineFill = { bg = "palette.bg0", fg = "palette.fg2", gui = "none" },
+                SatelliteBar = { bg = "palette.bg4" },
+                SatelliteCursor = { fg = "palette.fg2" },
+                SatelliteQuickfix = { fg = "palette.fg0" },
+              }
+            }
+          })
+          vim.cmd("colorscheme carbonfox")
+          END
+        '';
+      }
+      {
+        plugin = pkgs.vimPlugins.vim-signify;
+        config = ''
+          lua << END
+          vim.g.signify_number_highlight = 1
+          vim.keymap.set("n", "[d", "<plug>(signify-prev-hunk)")
+          vim.keymap.set("n", "]d", "<plug>(signify-next-hunk)")
+          vim.keymap.set("n", "[D", "9999<plug>(signify-prev-hunk)")
+          vim.keymap.set("n", "]D", "9999<plug>(signify-next-hunk)")
+          vim.keymap.set("n", "<space>gd", "<cmd>SignifyHunkDiff<cr>")
+          vim.keymap.set("n", "<space>gD", "<cmd>SignifyDiff!<cr>")
+          vim.keymap.set("n", "<space>gr", "<cmd>SignifyHunkUndo<cr>")
+          -- if vim.g.arista then
+          --   local vcs_cmds = vim.g.signify_vcs_cmds or {}
+          --   local vcs_cmds_diffmode = vim.g.signify_vcs_cmds_diffmode or {}
+          --   vcs_cmds.perforce = "env P4DIFF= P4COLORS= a p4 diff -du 0 %f"
+          --   vcs_cmds_diffmode.perforce = "a p4 print %f"
+          --   vim.g.signify_vcs_cmds = vcs_cmds
+          --   vim.g.signify_vcs_cmds_diffmode = vcs_cmds_diffmode
+          -- end
+          END
+        '';
+      }
+      {
+        plugin = pkgs.vimPlugins.satellite-nvim;
+        config = ''
+          lua << END
+          require("satellite").setup({
+            winblend = 0,
+            handlers = {
+              --cursor = { enable = true, symbols = { '⎺', '⎻', '—', '⎼', '⎽' } },
+              cursor = { enable = false, symbols = { '⎺', '⎻', '—', '⎼', '⎽' } },
+              search = { enable = true },
+              diagnostic = { enable = true, min_severity = vim.diagnostic.severity.WARN },
+              gitsigns = { enable = false },
+              marks = { enable = false }
+            }
+          })
+          END
+        '';
+      }
+      {
+        plugin = pkgs.vimPlugins.fzf-lua;
+        config = ''
+        lua << END
+        -- Yank selected entries
+        local function yank_selection(selected)
+          for i = 1, #selected do
+            vim.fn.setreg("+", selected[i])
+          end
+        end
+        
+        --- File explorer to replace netrw
+        local function explore_files(root)
+          root = vim.fn.resolve(vim.fn.expand(root)):gsub("/$", "").."/"
+          local fzf = require("fzf-lua")
+          fzf.fzf_exec("echo .. && fd --base-directory "..root.." --hidden --exclude '**/.git/' --exclude '**/node_modules/'", {
+            prompt = root,
+            cwd = root,
+            fzf_opts = { ["--header"] = "<ctrl-x> to exec|<ctrl-s> to grep|<ctrl-r> to cwd" },
+            previewer = "builtin",
+            actions = {
+              ["default"] = function(s, opts)
+                for i = 1, #s do s[i] = vim.fn.resolve(root..s[i]) end
+                if #s > 1 then
+                  fzf.actions.file_sel_to_qf(s, opts)
+                elseif (vim.loop.fs_stat(s[1]) or {}).type == "directory" then
+                  explore_files(s[1])
+                else
+                  vim.cmd("edit "..s[1])
+                end
+              end,
+              ["ctrl-x"] = function(s)
+                local k = ": " for i = 1, #s do k = k.." "..root..s[i] end
+                vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes(k.."<home>", false, false, true), "n", {})
+              end,
+              ["ctrl-s"] = function() fzf.grep_project({ cwd=root, cwd_only=true }) end,
+              ["ctrl-r"] = { function() vim.fn.chdir(root) end, fzf.actions.resume },
+              ["ctrl-v"] = fzf.actions.file_vsplit,
+              ["ctrl-t"] = fzf.actions.file_tabedit,
+              ["ctrl-y"] = function(s) for i = 1, #s do s[i] = root..s[i] end yank_selection(s) end,
+            },
+            fn_transform = function(x)
+              local dir = x:match(".*/") or ""
+              local file = x:sub(#dir+1)
+              return fzf.utils.ansi_codes.blue(dir)..fzf.utils.ansi_codes.white(file)
+            end,
+          })
+        end
+        
+        -- Switch to an alternative file based on extension
+        local altfile_map = {
+          [".c"] = { ".h", ".hpp", ".tin" },
+          [".h"] = { ".c", ".cpp", ".tac" },
+          [".cpp"] = { ".hpp", ".h", ".tin" },
+          [".hpp"] = { ".cpp", ".c", ".tac" },
+          [".vert.glsl"] = { ".frag.glsl" },
+          [".frag.glsl"] = { ".vert.glsl" },
+          [".tac"] = { ".tin", ".cpp", ".c" },
+          [".tin"] = { ".tac", ".hpp", ".h" }
+        }
+        local function find_altfiles()
+          local fzf = require("fzf-lua")
+          local dir = vim.g.getfile():match(".*/")
+          local file = vim.g.getfile():sub(#dir+1)
+          local possible, existing = {}, {}
+          for ext, altexts in pairs(altfile_map) do
+            if file:sub(-#ext) == ext then
+              for _, altext in ipairs(altexts) do
+                local altfile = file:sub(1, -#ext-1)..altext
+                table.insert(possible, altfile)
+                if vim.loop.fs_stat(dir..altfile) then
+                  table.insert(existing, altfile)
+                end
+              end
+            end
+          end
+          if #existing == 1 then
+            vim.cmd("edit "..dir..existing[1])
+          elseif #existing ~= 0 then
+            fzf.fzf_exec(existing, { actions = fzf.config.globals.actions.files, cwd = dir, previewer = "builtin" })
+          elseif #possible ~= 0 then
+            fzf.fzf_exec(possible, { actions = fzf.config.globals.actions.files, cwd = dir, fzf_opts = { ["--header"] = "No altfiles found" } })
+          else
+            vim.api.nvim_echo({ { "Error: No altfiles configured", "Error" } }, false, {})
+          end
+        end
+        
+        -- Save and load projects using mksession
+        local projects_dir = vim.fn.stdpath("data").."/projects/"
+        local function find_projects()
+          local fzf = require("fzf-lua")
+          local projects = {}
+          for path in vim.fn.glob(projects_dir.."*"):gmatch("[^\n]+") do
+            table.insert(projects, path:match("[^/]*$"))
+          end
+          fzf.fzf_exec(projects, {
+            prompt = "Project>",
+            fzf_opts = { ["--no-multi"] = "", ["--header"] = "<ctrl-x> to delete|<ctrl-e> to edit" },
+            actions = {
+              ["default"] = function(s) vim.cmd("source "..vim.fn.fnameescape(projects_dir..s[1])) end,
+              ["ctrl-e"] = function(s) vim.cmd("edit "..projects_dir..s[1].." | setf vim") end,
+              ["ctrl-x"] = function(s) for i = 1, #s do vim.fn.delete(vim.fn.fnameescape(projects_dir..s[i])) end end
+            }
+          })
+        end
+        local function save_project()
+          local project = vim.fn.input("Save project: ", vim.v.this_session:match("[^/]*$") or "")
+          if project == "" then return end
+          vim.fn.mkdir(projects_dir, "p")
+          vim.cmd("mksession! "..vim.fn.fnameescape(projects_dir..project))
+        end
+        
+        -- Visualise and select from the branched undotree
+        local function view_undotree()
+          local fzf = require("fzf-lua")
+          local undotree = vim.fn.undotree()
+          local function build_entries(tree, depth)
+            local entries = {}
+            for i = #tree, 1, -1  do
+              local cs = { "magenta", "blue", "yellow", "green", "red" }
+              local c = fzf.utils.ansi_codes[cs[math.fmod(depth, #cs) + 1]]
+              local e = tree[i].seq..""
+              if tree[i].save then e = e.."*" end
+              local t = os.time() - tree[i].time
+              if t > 86400 then t = math.floor(t/86400).."d" elseif t > 3600 then t = math.floor(t/3600).."h" elseif t > 60 then t = math.floor(t/60).."m" else t = t.."s" end
+              if tree[i].seq == undotree.seq_cur then t = fzf.utils.ansi_codes.white(t.." <") else t = fzf.utils.ansi_codes.grey(t) end
+              table.insert(entries, c(e).." "..t)
+              if tree[i].alt then
+                local subentries = build_entries(tree[i].alt, depth + 1)
+                for j = 1, #subentries do table.insert(entries, " "..subentries[j]) end
+              end
+            end
+            return entries
+          end
+          local curbuf = vim.api.nvim_get_current_buf()
+          local curfile = vim.g.getfile()
+          fzf.fzf_exec(build_entries(undotree.entries, 0), {
+            prompt = "Undotree>",
+            fzf_opts = { ["--no-multi"] = "" },
+            actions = { ["default"] = function(s) vim.cmd("undo "..s[1]:match("%d+")) end },
+            previewer = false,
+            preview = fzf.shell.raw_preview_action_cmd(function(s)
+              if #s == 0 then return end
+              local newbuf = vim.api.nvim_get_current_buf()
+              local tmpfile = vim.fn.tempname()
+              local change = s[1]:match("%d+")
+              vim.api.nvim_set_current_buf(curbuf)
+              vim.cmd("undo "..change)
+              local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
+              vim.cmd("undo "..undotree.seq_cur)
+              vim.fn.writefile(lines, tmpfile)
+              vim.api.nvim_set_current_buf(newbuf)
+              return "delta --file-modified-label ''' --hunk-header-style ''' --file-transformation 's/tmp.*//' "..curfile.." "..tmpfile
+            end)
+          })
+        end
+
+        vim.keymap.set("n", "z=", "<cmd>FzfLua spell_suggest<cr>")
+        vim.keymap.set("n", "<space>b", "<cmd>FzfLua buffers cwd=%:p:h cwd_only=true<cr>")
+        vim.keymap.set("n", "<space>B", "<cmd>FzfLua buffers<cr>")
+        vim.keymap.set("n", "<space>t", "<cmd>FzfLua tabs<cr>")
+        vim.keymap.set("n", "<space>T", "<cmd>FzfLua tags<cr>")
+        vim.keymap.set("n", "<space>l", "<cmd>FzfLua blines<cr>")
+        vim.keymap.set("n", "<space>L", "<cmd>FzfLua lines<cr>")
+        vim.keymap.set("n", "<space>f", function() explore_files(vim.g.getfile():match(".*/")) end)
+        vim.keymap.set("n", "<space>F", function() explore_files(vim.fn.getcwd()) end)
+        vim.keymap.set("n", "<space>o", "<cmd>FzfLua oldfiles cwd=%:p:h cwd_only=true<cr>")
+        vim.keymap.set("n", "<space>O", "<cmd>FzfLua oldfiles<cr>")
+        vim.keymap.set("n", "<space>s", "<cmd>FzfLua grep_project cwd=%:p:h cwd_only=true<cr>")
+        vim.keymap.set("n", "<space>S", "<cmd>FzfLua grep_project<cr>")
+        vim.keymap.set("n", "<space>m", "<cmd>FzfLua marks cwd=%:p:h cwd_only=true<cr>")
+        vim.keymap.set("n", "<space>M", "<cmd>FzfLua marks<cr>")
+        vim.keymap.set("n", "<space>gg", "<cmd>lua require('fzf-lua').git_status({ cwd='%:p:h', file_ignore_patterns={ '^../' } })<cr>")
+        vim.keymap.set("n", "<space>gG", "<cmd>FzfLua git_status<cr>")
+        vim.keymap.set("n", "<space>gf", "<cmd>FzfLua git_files cwd_only=true cwd=%:p:h<cr>")
+        vim.keymap.set("n", "<space>gF", "<cmd>FzfLua git_files<cr>")
+        vim.keymap.set("n", "<space>gl", "<cmd>FzfLua git_bcommits<cr>")
+        vim.keymap.set("n", "<space>gL", "<cmd>FzfLua git_commits<cr>")
+        vim.keymap.set("n", "<space>gb", "<cmd>lua require('fzf-lua').git_branches({ preview='b={1}; git log --graph --pretty=oneline --abbrev-commit --color HEAD..$b; git diff HEAD $b | delta' })<cr>")
+        vim.keymap.set("n", "<space>gB", "<cmd>lua require('fzf-lua').git_branches({ preview='b={1}; git log --graph --pretty=oneline --abbrev-commit --color origin/HEAD..$b; git diff origin/HEAD $b | delta' })<cr>")
+        vim.keymap.set("n", "<space>gs", "<cmd>FzfLua git_stash<cr>") 
+        -- TODO(later): help_tags doesnt work (command works), man_pages doesnt work (command complains about nil value)
+        vim.keymap.set("n", "<space>k", "<cmd>FzfLua help_tags<cr>")
+	vim.keymap.set("n", "<space>K", "<cmd>FzfLua man_pages<cr>")
+        vim.keymap.set("n", "<space>E", "<cmd>FzfLua diagnostics_document<cr>")
+        vim.keymap.set("n", "<space>d", "<cmd>FzfLua lsp_definitions<cr>")
+        vim.keymap.set("n", "<space>D", "<cmd>FzfLua lsp_typedefs<cr>")
+        vim.keymap.set("n", "<space>r", "<cmd>FzfLua lsp_finder<cr>")
+        vim.keymap.set("n", "<space>R", "<cmd>FzfLua lsp_document_symbols<cr>")
+        vim.keymap.set("n", "<space>A", "<cmd>FzfLua lsp_code_actions<cr>")
+        vim.keymap.set("n", "<space>c", "<cmd>FzfLua quickfix<cr>")
+        vim.keymap.set("n", "<space>C", "<cmd>FzfLua quickfix_stack<cr>")
+        vim.keymap.set("n", "<space>a", find_altfiles)
+        vim.keymap.set("n", "<space>p", find_projects)
+        vim.keymap.set("n", "<space>P", save_project)
+        vim.keymap.set("n", "<space>u", view_undotree)
+        
+        local fzf = require("fzf-lua")
+        fzf.setup({
+          winopts = {
+            fullscreen = false,
+            height = 0.33, width = 1.0, row = 1.0, col = 0.5,
+            border = { "─", "─", "─", " ", "", "", "", " " },
+            hl = { normal = "Normal", border = "NormalBorder", preview_border = "NormalBorder" },
+            preview = { flip_columns = 100, scrollchars = { "│", "" }, winopts = { list = true } }
+          },
+          keymap = {
+            builtin = {
+              ["<c-_>"] = "toggle-preview",
+              ["<c-o>"] = "toggle-fullscreen",
+              ["<m-n>"] = "preview-page-down",
+              ["<m-p>"] = "preview-page-up",
+            },
+            fzf = {
+              ["ctrl-d"] = "half-page-down",
+              ["ctrl-u"] = "half-page-up",
+              ["alt-n"] = "preview-page-down",
+              ["alt-p"] = "preview-page-up",
+            },
+          },
+          actions = {
+            files = {
+              ["default"] = fzf.actions.file_edit_or_qf,
+              ["ctrl-s"] = fzf.actions.file_split,
+              ["ctrl-v"] = fzf.actions.file_vsplit,
+              ["ctrl-t"] = fzf.actions.file_tabedit,
+              ["ctrl-y"] = yank_selection
+            },
+            buffers = {
+              ["default"] = fzf.actions.buf_edit_or_qf,
+              ["ctrl-s"] = fzf.actions.buf_split,
+              ["ctrl-v"] = fzf.actions.buf_vsplit,
+              ["ctrl-t"] = fzf.actions.buf_tabedit,
+              ["ctrl-y"] = yank_selection
+            }
+          },
+          fzf_opts = { ["--separator='''"] = "", ["--preview-window"] = "border-none" },
+          previewers = { man = { cmd = "man %s | col -bx" } },
+          defaults = { preview_pager = "delta --width=$FZF_PREVIEW_COLUMNS", file_icons = false, git_icons = true, color_icons = true, cwd_header = false, copen = function() fzf.quickfix() end },
+          oldfiles = { include_current_session = true },
+          quickfix_stack = { actions = { ["default"] = function() fzf.quickfix() end } },
+          git = { status = { actions = { ["right"] = false, ["left"] = false, ["ctrl-s"] = { fzf.actions.git_stage_unstage, fzf.actions.resume } } } }
+        })
+        if vim.g.arista then
+          -- Perforce
+          vim.api.nvim_create_user_command("Achanged", function() fzf.fzf_exec([[a p4 diff --summary | sed s/^/\\//]],                                              { actions = fzf.config.globals.actions.files, previewer = "builtin" }) end, {})
+          vim.api.nvim_create_user_command("Aopened",  function() fzf.fzf_exec([[a p4 opened | sed -n "s/\/\(\/[^\/]\+\/[^\/]\+\/\)[^\/]\+\/\([^#]\+\).*/\1\2/p"]], { actions = fzf.config.globals.actions.files, previewer = "builtin" }) end, {})
+          vim.keymap.set("n", "<space>gs", "<cmd>Achanged<cr>")
+          vim.keymap.set("n", "<space>go", "<cmd>Aopened<cr>")
+          -- Opengrok
+          vim.api.nvim_create_user_command("Agrok",  function(p) fzf.fzf_exec("a grok -em 99 "..p.args.." | grep '^/src/.*'",                                                      { actions = fzf.config.globals.actions.files, previewer = "builtin" }) end, { nargs = 1 })
+          vim.api.nvim_create_user_command("Agrokp", function(p) fzf.fzf_exec("a grok -em 99 -f "..(vim.g.getfile():match("^/src/.-/") or "/").." "..p.args.." | grep '^/src/.*'", { actions = fzf.config.globals.actions.files, previewer = "builtin" }) end, { nargs = 1 })
+          -- Agid
+          vim.api.nvim_create_user_command("Amkid", "belowright split | terminal echo 'Generating ID file...' && a ws mkid", {})
+          vim.api.nvim_create_user_command("Agid",  function(p) fzf.fzf_exec("a ws gid -cq "..p.args,                                                      { actions = fzf.config.globals.actions.files, previewer = "builtin" }) end, { nargs = 1 })
+          vim.api.nvim_create_user_command("Agidp", function(p) fzf.fzf_exec("a ws gid -cqp "..(vim.g.getfile():match("^/src/(.-)/") or "/").." "..p.args, { actions = fzf.config.globals.actions.files, previewer = "builtin" }) end, { nargs = 1 })
+          vim.keymap.set("n", "<space>r", "<cmd>exec 'Agidp    '.expand('<cword>')<cr>", { silent = true })
+          vim.keymap.set("n", "<space>R", "<cmd>exec 'Agid     '.expand('<cword>')<cr>", { silent = true })
+          vim.keymap.set("n", "<space>d", "<cmd>exec 'Agidp -D '.expand('<cword>')<cr>", { silent = true })
+          vim.keymap.set("n", "<space>D", "<cmd>exec 'Agid  -D '.expand('<cword>')<cr>", { silent = true })
+        end
+        END
+      '';
+      }
+      # TODO(later): neogit/vim-fugitive
+    ];
+    extraLuaConfig = ''
+      
+      -- Get full path of path or current buffer
+      vim.g.getfile = function(path)
+        return vim.fn.fnamemodify(path or vim.api.nvim_buf_get_name(0), ":p")
+      end
+
+      -- Consistent aesthetics
+      vim.lsp.protocol.CompletionItemKind = {
+        '""', ".f", "fn", "()", ".x",
+        "xy", "{}", "{}", "[]", ".p",
+        "$$", "00", "∀e", ";;", "~~",
+        "rg", "/.", "&x", "//", "∃e",
+        "#x", "{}", "ev", "++", "<>"
+      }
+      
+      -- Provide method to apply ftplugin and syntax settings to all filetypes
+      -- TODO(later): still used? maybe for snippets and arista .tac syntax
+      -- vim.g.myfiletypefile = vim.fn.stdpath("config").."/ftplugin/ftplugin.vim"
+      -- vim.g.mysyntaxfile = vim.fn.stdpath("config").."/syntax/syntax.vim"
+      
+      vim.opt.title = true                                   -- Update window title
+      vim.opt.mouse = "a"                                    -- Enable mouse support
+      vim.opt.updatetime = 100                               -- Faster refreshing
+      vim.opt.timeoutlen = 5000                              -- 5 seconds to complete mapping
+      vim.opt.clipboard = "unnamedplus"                      -- Use system clipboard
+      vim.opt.undofile = true                                -- Write undo history to disk
+      vim.opt.swapfile = false                               -- No need for swap files
+      vim.opt.modeline = false                               -- Don't read mode line
+      vim.opt.virtualedit = "onemore"                        -- Allow cursor to extend one character past the end of the line
+      vim.opt.grepprg = "rg --vimgrep --smart-case --follow" -- Use ripgrep for grepping
+      vim.opt.number = true                                  -- Enable line numbers...
+      vim.opt.relativenumber = false                         -- ...and not relative line numbers
+      vim.opt.ruler = false                                  -- No need to show line/column number with lightline
+      vim.opt.showmode = false                               -- No need to show current mode with lightline
+      vim.opt.scrolloff = 3                                  -- Keep lines above/below the cursor when scrolling
+      vim.opt.sidescrolloff = 5                              -- Keep columns to the left/right of the cursor when scrolling
+      vim.opt.signcolumn = "no"                              -- Keep the sign column closed
+      vim.opt.shortmess:append("sSIcC")                      -- Be quieter
+      vim.opt.expandtab = false                              -- Tab key inserts tabs
+      vim.opt.tabstop = 4                                    -- 4-spaced tabs
+      vim.opt.shiftwidth = 0                                 -- Tab-spaced indentation
+      vim.opt.cinoptions = "N-s"                             -- Don't indent C++ namespaces
+      vim.opt.list = true                                    -- Enable whitespace characters below
+      vim.opt.listchars="space:·,tab:› ,trail:•,precedes:<,extends:>,nbsp:␣"
+      vim.opt.suffixes:remove(".h")                          -- Header files are important...
+      vim.opt.suffixes:append(".git")                        -- ...but .git files are not
+      vim.opt.foldmethod = "indent"                          -- Fold based on indent
+      vim.opt.foldlevelstart = 20                            -- ...and start with everything open
+      vim.opt.wrap = false                                   -- Don't wrap
+      vim.opt.lazyredraw = true                              -- Redraw only after commands have completed
+      vim.opt.termguicolors = true                           -- Enable true colors and gui cursor
+      vim.opt.guicursor = "n-v-c-sm:block,i-ci-ve:ver25,r-cr-o:hor20,a:blinkwait400-blinkoff400-blinkon400"
+      vim.opt.ignorecase = true                              -- Ignore case when searching...
+      vim.opt.smartcase = true                               -- ...except for searching with uppercase characters
+      vim.opt.complete = ".,w,kspell"                        -- Complete menu contents
+      vim.opt.completeopt = "menu,menuone,noinsert,noselect" -- Complete menu functionality
+      vim.opt.pumheight = 8                                  -- Limit complete menu height
+      vim.opt.spell = true                                   -- Enable spelling by default
+      vim.opt.spelloptions = "camel"                         -- Enable CamelCase word spelling
+      vim.opt.spellsuggest = "best,20"                       -- Only show best spelling corrections
+      vim.opt.spellcapcheck = ""                             -- Don't care about capitalisation
+      vim.opt.dictionary = "/usr/share/dict/words"           -- Dictionary file
+      vim.opt.shada = "!,'256,<50,s100,h,r/media"            -- Specify removable media for shada
+      vim.opt.undolevels = 2048                              -- More undo space
+      vim.opt.diffopt = "internal,filler,context:512"        -- I like lots of diff context
+      vim.opt.hidden = true                                  -- Modified buffers can be hidden
+      vim.opt.wildmode = "longest:full,full"                 -- Match common and show wildmenu
+      vim.opt.wildoptions = "fuzzy,pum"                      -- Wildmenu fuzzy matching and ins-completion menu
+      vim.opt.wildignorecase = true                          -- Don't care about wildmenu file capitalisation
+
+      -- Is this an Arista environment?
+      vim.g.arista = vim.loop.fs_stat("/usr/share/vim/vimfiles/arista.vim") and vim.fn.getcwd():find("^/src") ~= nil
+      if vim.g.arista then
+        vim.api.nvim_echo({ { "Note: Arista-specifics have been enabled for this Neovim instance", "MoreMsg" } }, false, {})
+
+        -- Always rooted at /src
+        vim.fn.chdir("/src")
+
+        -- Source arista.vim but override A4edit and A4revert
+        vim.cmd([[
+          let g:a4_auto_edit = 0
+          source /usr/share/vim/vimfiles/arista.vim
+          function! A4edit()
+            if strlen(glob(expand('%')))
+              belowright split
+              exec 'terminal a p4 login && a p4 edit '.shellescape(expand('%:p'))
+            endif
+          endfunction
+          function! A4revert()
+            if strlen(glob(expand('%'))) && confirm('Revert Perforce file changes?', '&Yes\n&No', 1) == 1
+              exec 'terminal a p4 login && a p4 revert '.shellescape(expand('%:p'))
+              set readonly
+            endif
+          endfunction
+        ]])
+        vim.api.nvim_create_user_command("Aedit", "call A4edit()", {})
+        vim.api.nvim_create_user_command("Arevert", "call A4revert()", {})
+      end
+      
+      -- Return the alphabetically previous and next files
+      local function prev_next_file(file)
+        file = (file or vim.g.getfile()):gsub("/$", "")
+        local prev, dir = file, file:match(".*/") or "/"
+        local files = (vim.fn.glob(dir..".[^.]*").."\n"..vim.fn.glob(dir.."*")):gmatch("[^\n]+")
+        for next in files do
+          if next == file then return prev, files() or next
+          elseif next > file then return prev, next
+          else prev = next end
+        end
+        return prev, file
+      end
+      
+      vim.g.mapleader = " "
+      vim.keymap.set("n", "<space>", "")
+      -- Split lines at cursor, opposite of <s-j>
+      vim.keymap.set("n", "<c-j>", "m`i<cr><esc>``")
+      -- Terminal shortcuts
+      vim.keymap.set("n", "<space><return>", "<cmd>belowright split | terminal<cr>")
+      vim.keymap.set("t", "<esc>", "(&filetype == 'fzf') ? '<esc>' : '<c-\\><c-n>'", { expr = true })
+      -- Open notes
+      vim.keymap.set("n", "<space>n", "<cmd>lcd ~/Documents/notes | enew | set filetype=markdown<cr>")
+      vim.keymap.set("n", "<space>N", "<cmd>lcd ~/Documents/notes | edit `=strftime('./journal/%Y/%m/%d.md')` | call mkdir(expand('%:h'), 'p')<cr>")
+      -- LSP
+      vim.keymap.set("n", "<space><space>", "<cmd>lua vim.lsp.buf.hover()<cr>")
+      vim.keymap.set("n", "<space>k",        "<cmd>lua vim.lsp.buf.code_action()<cr>")
+      vim.keymap.set("n", "]e",               "<cmd>lua vim.diagnostic.goto_next()<cr>")
+      vim.keymap.set("n", "[e",               "<cmd>lua vim.diagnostic.goto_prev()<cr>")
+      vim.keymap.set("n", "<space>e",        "<cmd>lua vim.diagnostic.open_float()<cr>")
+      vim.keymap.set("n", "<space>E",        "<cmd>lua vim.diagnostic.setqflist()<cr>")
+      vim.keymap.set("n", "<space>d",        "<cmd>lua vim.lsp.buf.definition()<cr>")
+      vim.keymap.set("n", "<space>t",        "<cmd>lua vim.lsp.buf.type_definition()<cr>")
+      vim.keymap.set("n", "<space>r",        "<cmd>lua vim.lsp.buf.references()<cr>")
+      -- Buffers
+      vim.keymap.set("n", "[b", "<cmd>bprevious<cr>")
+      vim.keymap.set("n", "]b", "<cmd>bnext<cr>")
+      vim.keymap.set("n", "[B", "<cmd>bfirst<cr>")
+      vim.keymap.set("n", "]B", "<cmd>blast<cr>")
+      -- Files
+      vim.keymap.set("n", "[f", function() vim.cmd("edit "..select(1, prev_next_file())) end)
+      vim.keymap.set("n", "]f", function() vim.cmd("edit "..select(2, prev_next_file())) end)
+      vim.keymap.set("n", "[F", function() local cur, old = vim.g.getfile(); while cur ~= old do old = cur; cur, _ = prev_next_file(cur) end vim.cmd("edit "..cur) end)
+      vim.keymap.set("n", "]F", function() local cur, old = vim.g.getfile(); while cur ~= old do old = cur; _, cur = prev_next_file(cur) end vim.cmd("edit "..cur) end)
+      -- Quickfix
+      vim.keymap.set("n", "[c", "<cmd>cprevious<cr>")
+      vim.keymap.set("n", "]c", "<cmd>cnext<cr>")
+      vim.keymap.set("n", "[C", "<cmd>cfirst<cr>")
+      vim.keymap.set("n", "]C", "<cmd>clast<cr>")
+      -- Toggles
+      vim.keymap.set("n", "yo", "")
+      vim.keymap.set("n", "yot", "<cmd>set expandtab! expandtab?<cr>")
+      vim.keymap.set("n", "yow", "<cmd>set wrap! wrap?<cr>")
+      vim.keymap.set("n", "yon", "<cmd>set number! number?<cr>")
+      vim.keymap.set("n", "yor", "<cmd>set relativenumber! relativenumber?<cr>")
+      vim.keymap.set("n", "yoi", "<cmd>set ignorecase! ignorecase?<cr>")
+      vim.keymap.set("n", "yol", "<cmd>set list! list?<cr>")
+      vim.keymap.set("n", "yoz", "<cmd>set spell! spell?<cr>")
+      vim.keymap.set("n", "yod", "<cmd>if &diff | diffoff | else | diffthis | endif<cr>")
+      
+      -- Highlight suspicious whitespace
+      local function get_whitespace_pattern()
+        local pattern = [[[\u00a0\u1680\u180e\u2000-\u200b\u202f\u205f\u3000\ufeff]\+\|\s\+$\|[\u0020]\+\ze[\u0009]\+]]
+        return "\\("..(vim.o.expandtab and pattern..[[\|^[\u0009]\+]] or pattern..[[\|^[\u0020]\+]]).."\\)"
+      end
+      local function apply_whitespace_pattern(pattern)
+        local no_ft = { diff=1, git=1, gitcommit=1, markdown=1 }
+        local no_bt = { quickfix=1, nofile=1, help=1, terminal=1 }
+        if no_ft[vim.o.ft] or no_bt[vim.o.bt] then vim.cmd("match none") else vim.cmd("match ExtraWhitespace '"..pattern.."'") end
+      end
+      vim.api.nvim_create_autocmd({ "BufEnter", "FileType", "TermOpen", "InsertLeave" }, { callback = function()
+        apply_whitespace_pattern(get_whitespace_pattern())
+      end })
+      vim.api.nvim_create_autocmd({ "InsertEnter", "CursorMovedI" }, { callback = function()
+        local line, pattern = vim.fn.line("."), get_whitespace_pattern()
+        apply_whitespace_pattern("\\%<"..line.."l"..pattern.."\\|\\%>"..line.."l"..pattern)
+      end })
+      
+      -- Remember last cursor position
+      vim.api.nvim_create_autocmd("BufWinEnter", { callback = function()
+        local no_ft = { diff=1, git=1, gitcommit=1, gitrebase=1 }
+        local no_bt = { quickfix=1, nofile=1, help=1, terminal=1 }
+        if not (no_ft[vim.o.ft] or no_bt[vim.o.buftype] or vim.fn.line(".") > 1 or vim.fn.line("'\"") <= 0 or vim.fn.line("'\"") > vim.fn.line("$")) then
+          vim.cmd([[normal! g`"]])
+        end
+      end })
+      
+      -- Hide cursorline if not in current buffer
+      vim.api.nvim_create_autocmd({ "WinLeave", "FocusLost" }, { callback = function() vim.opt.cursorline, vim.opt.cursorcolumn = false, false end })
+      vim.api.nvim_create_autocmd({ "VimEnter", "WinEnter", "FocusGained" }, { callback = function() vim.opt.cursorline, vim.opt.cursorcolumn = true, true end })
+      
+      -- Keep universal formatoptions
+      vim.api.nvim_create_autocmd("Filetype", { callback = function() vim.o.formatoptions = "rqlj" end })
+      
+      -- Swap to manual folding after loading
+      vim.api.nvim_create_autocmd("BufWinEnter", { callback = function() vim.o.foldmethod = "manual" end })
+    '';
   };
 
   programs.ripgrep = {
@@ -517,32 +1200,58 @@
     ];
   };
 
-  programs.ssh = { # TODO(work): config
+  programs.ssh = {
     enable = true;
+    controlMaster = "auto";
+    controlPersist = "12h";
+    serverAliveCountMax = 3;
+    serverAliveInterval = 5;
+  };
+
+  programs.gpg = {
+    enable = true;
+    settings = {
+      keyid-format = "LONG";
+      with-fingerprint = true;
+      with-subkey-fingerprint = true;
+      with-keygrip = true;
+    };
+  };
+
+  services.gpg-agent = {
+    enable = true;
+    enableSshSupport = true;
+    defaultCacheTtl = 86400;
+    defaultCacheTtlSsh = 86400;
+    maxCacheTtl = 2592000;
+    maxCacheTtlSsh = 2592000;
+    pinentryPackage = pkgs.pinentry-curses;
+    sshKeys = [ "613AB861624F38ECCEBBB3764CF4A761DBE24D1B" ];
   };
 
   programs.zsh = {
     enable = true;
     dotDir = ".config/zsh";
+    initExtraFirst = ''[[ -o interactive && -o login && -z "$WAYLAND_DISPLAY" && "$(tty)" = "/dev/tty1" ]] && exec nixGLIntel sway'';
     defaultKeymap = "emacs";
     enableCompletion = true;
     completionInit = "autoload -U compinit && compinit -d '${config.xdg.cacheHome}/zcompdump'";
     history = { path = "${config.xdg.dataHome}/zsh_history"; extended = true; ignoreAllDups = true; share = true; save = 1000000; size = 1000000; };
     localVariables.PROMPT = "\n%F{red}%n@%m%f %F{blue}%T %~%f %F{red}%(?..%?)%f\n>%f ";
     localVariables.TIMEFMT = "\nreal\t%E\nuser\t%U\nsys\t%S\ncpu\t%P";
-    shellAliases.z = "exec zsh";
-    shellAliases.v = "nvim";
-    shellAliases.p = "python3";
-    shellAliases.c = "cargo";
-    shellAliases.g = "git";
+    shellAliases.z = "exec zsh ";
+    shellAliases.v = "nvim ";
+    shellAliases.p = "python3 ";
+    shellAliases.c = "cargo ";
+    shellAliases.g = "git ";
     shellAliases.rm = "2>&1 echo rm disabled, use del; return 1 && ";
-    shellAliases.ls = "eza -hs=name --group-directories-first";
-    shellAliases.ll = "ls -la";
-    shellAliases.lt = "ll -T";
-    shellAliases.ip = "ip --color";
+    shellAliases.ls = "eza -hs=name --group-directories-first ";
+    shellAliases.ll = "ls -la ";
+    shellAliases.lt = "ll -T ";
+    shellAliases.ip = "ip --color ";
     shellAliases.sudo = "sudo --preserve-env ";
-    shellGlobalAliases.cat = "bat --paging=never";
-    shellGlobalAliases.grep = "rg";
+    shellGlobalAliases.cat = "bat --paging=never ";
+    shellGlobalAliases.grep = "rg ";
     autosuggestion = { enable = true; strategy = [ "history" "completion" ]; };
     localVariables.ZSH_AUTOSUGGEST_BUFFER_MAX_SIZE = 100;
     localVariables.ZSH_AUTOSUGGEST_ACCEPT_WIDGETS = [ "end-of-line" "vi-end-of-line" "vi-add-eol" ];
@@ -614,23 +1323,15 @@
 
       # gpg+ssh
       # TODO(work): this should probably be done in gpg-agent config
-      #hash gpgconf 2>/dev/null && {
-      #  export GPG_TTY="$(tty)"
-      #  export SSH_AGENT_PID=""
-      #  export SSH_AUTH_SOCK="$(gpgconf --list-dirs agent-ssh-socket)"
-      #  (gpgconf --launch gpg-agent &)
-      #}
+      # export SSH_AGENT_PID=""
+      # export SSH_AUTH_SOCK="$(gpgconf --list-dirs agent-ssh-socket)"
+      # (gpgconf --launch gpg-agent &)
 
       cht() { cht.sh "$@?style=paraiso-dark"; }
       _cht() { compadd $commands:t; }; compdef _cht cht
 
       #ash() { eval 2>/dev/null mosh -a -o --experimental-remote-ip=remote us260 -- tmux new ''${@:+-c -- a4c shell $@}; }
       #_ash() { compadd "$(ssh us260 -- a4c ps -N)"; }; compdef _ash ash
-
-      # desktop environment
-      [[ -o interactive && -o login && -z "$WAYLAND_DISPLAY" && "$(tty)" = "/dev/tty1" ]] && hash sway 2>/dev/null && {
-        nixGLIntel sway
-      }
     '';
   };
 
@@ -710,7 +1411,6 @@
     '';
   };
 
-
   programs.waybar = {
     enable = true;
     systemd.enable = true;
@@ -727,20 +1427,37 @@
       ];
     in [
       {
+        output = "eDP-1";
         ipc = true;
         layer = "top";
         position = "top";
         height = 30;
         spacing = 0;
-        # TODO(later): non-primary display modules
-        # TODO(later): vpn icon
         modules-left = [ "sway/workspaces" "sway/scratchpad" "sway/window" ];
         modules-center = [];
-        modules-right = [ "custom/media" "custom/caffeinated" "gamemode" "bluetooth" "cpu" "memory" "temperature" "disk" "network" "wireplumber" "battery" "clock" ];
+        modules-right = [ "custom/media" "custom/caffeinated" "gamemode" "bluetooth" "cpu" "memory" "temperature" "disk" "network" "pulseaudio" "battery" "clock" ];
         "sway/workspaces".format = "{index}";
         "sway/window".max-length = 200;
         "custom/media" = {
-          exec = "~/.config/waybar/modules/media"; # TODO(later)
+          exec = pkgs.writeShellScript "waybar-media" ''
+            max_len=25
+            out=""
+            tooltip=""
+            status="$(playerctl status 2>/dev/null)"
+            [ "$status" = "Playing" ] || [ "$status" = "Paused" ] && {
+              out="$(playerctl metadata title)"
+              tooltip="$out"
+              [ ''${#out} -gt "$max_len" ] && {
+            		i="$(( ( $(date +%s) % ( ''${#out} + 3 ) ) + 1 ))"
+            		out="$(echo "$out   $out" | tail -c +$i)"
+              }
+            }
+            out="$(echo "$out" | head -c "$(( $max_len - 1 ))")"
+            printf '{"text": %s, "tooltip": %s, "class": %s}\n' \
+              "$(echo -n "$out" | jq --raw-input --slurp --ascii-output)" \
+              "$(echo -n "$tooltip" | jq --raw-input --slurp --ascii-output)" \
+              "$(echo -n "$status" | jq --raw-input --slurp --ascii-output)"
+          '';
           return-type = "json";
           interval = 1;
           on-click = "playerctl play-pause";
@@ -748,11 +1465,11 @@
           on-scroll-down = "playerctl position 5-";
         };
         "custom/caffeinated" = {
-          exec = "~/.config/waybar/modules/caffeinated"; # TODO(later)
+          exec = pkgs.writeShellScript "waybar-coffee" ''printf '{"text": "%s", "tooltip": "%s" }\n' $(pidof -q swayidle && echo "" || echo "C Caffeinated")'';
           return-type = "json";
           tooltip = true;
           interval = 1;
-          on-click = "powerctl decaf";
+          on-click = "powerctl decafeinate";
         };
         gamemode = {
           format = "{count}";
@@ -781,7 +1498,8 @@
           tooltip-format = "RAM: {used:0.1f}Gib ({percentage}%)\nSWP: {swapUsed:0.1f}Gib ({swapPercentage}%)";
           on-click = "alacritty --class floating --command btop";
         };
-        temperature = { # TODO(later, bar): show more info on hover
+        temperature = {
+          tooltip-format = "{temperatureC}°C / {temperatureF}°F\nThermal zone 6";
           thermal-zone = 6;
           critical-threshold = 80;
           interval = 5;
@@ -796,16 +1514,21 @@
           max-length = 10;
           format-wifi = "{essid}";
           format-ethernet = "wired";
-          # TODO(later): format while connecting
           format-disconnected = "offline";
           on-click = "networkctl wifi";
           on-click-right = ''case "$(nmcli radio wifi)" in "enabled") nmcli radio wifi off;; *) nmcli radio wifi on;; esac'';
         };
-        wireplumber = {
+        #wireplumber = {
+        #  max-volume = 150;
+        #  states.high = 75;
+        #  on-click = "alacritty --class floating --command pulsemixer";
+        #  on-click-right = "pulsemixer --toggle-mute";
+        #};
+        pulseaudio = {
           max-volume = 150;
           states.high = 75;
-          on-click = "alacritty --class floating --command pulsemixer"; # TODO(later): better cli mixer?
-          on-click-right = "wpctl set-mute @DEFAULT_SINK@ toggle";
+          on-click = "alacritty --class floating --command pulsemixer";
+          on-click-right = "pulsemixer --toggle-mute";
         };
         battery = {
           interval = 10;
@@ -818,7 +1541,7 @@
         clock = {
           format = "{:%H:%M}";
           tooltip-format = "{calendar}";
-          on-click = ''notify-send "$(date)" "$(date "+Day %j, Week %V, %Z (%:z)")"'';
+          on-click = ''notify-send -i clock "$(date)" "$(date "+Day %j, Week %V, %Z (%:z)")"'';
           actions.on-click-right = "mode";
           actions.on-scroll-up = "shift_up";
           actions.on-scroll-down = "shift_down";
@@ -832,6 +1555,19 @@
           calender.format.today =    "<span color='#ff0000'><b>{}</b></span>";
         };
       }
+      {
+        output = "!eDP-1";
+        ipc = true;
+        layer = "top";
+        position = "top";
+        height = 30;
+        spacing = 0;
+        modules-left = [ "sway/workspaces" "sway/scratchpad" "sway/window" ];
+        modules-center = [];
+        modules-right = [];
+        "sway/workspaces".format = "{index}";
+        "sway/window".max-length = 200;
+      }
     ];
     style = ''
       * { font-family: "Terminess Nerd Font", monospace; font-size: 16px; margin: 0; }
@@ -841,10 +1577,12 @@
       @keyframes flash { to { background-color: #ffffff; } }
       @keyframes luminate { to { background-color: #b0b0b0; } }
 
-      #workspaces, #scratchpad, #window, #custom-media, #custom-caffeinated, #gamemode, #bluetooth, #cpu, #memory, #disk, #temperature, #battery, #network, #wireplumber {
+      /*#workspaces, #scratchpad, #window, #custom-media, #custom-caffeinated, #gamemode, #bluetooth, #cpu, #memory, #disk, #temperature, #battery, #network, #wireplumber {*/
+      #workspaces, #scratchpad, #window, #custom-media, #custom-caffeinated, #gamemode, #bluetooth, #cpu, #memory, #disk, #temperature, #battery, #network, #pulseaudio {
         padding: 0 5px;
       }
-      #workspaces button:hover, #scratchpad:hover, #custom-caffeinated:hover, #gamemode:hover, #bluetooth:hover, #cpu:hover, #memory:hover, #disk:hover, #temperature:hover, #battery:hover, #network:hover, #wireplumber:hover, #clock:hover {
+      /*#workspaces button:hover, #scratchpad:hover, #custom-caffeinated:hover, #gamemode:hover, #bluetooth:hover, #cpu:hover, #memory:hover, #disk:hover, #temperature:hover, #battery:hover, #network:hover, #wireplumber:hover, #clock:hover {*/
+      #workspaces button:hover, #scratchpad:hover, #custom-caffeinated:hover, #gamemode:hover, #bluetooth:hover, #cpu:hover, #memory:hover, #disk:hover, #temperature:hover, #battery:hover, #network:hover, #pulseaudio:hover, #clock:hover {
         background-color: #404040;
       }
 
@@ -869,8 +1607,10 @@
       #network.disconnected { color: #ff8000; }
       #network.linked, #network.ethernet, #network.wifi { color: #00ff00; }
 
-      #wireplumber.high { color: #ff8000; }
-      #wireplumber.muted { color: #ff0000; }
+      /*#wireplumber.high { color: #ff8000; }*/
+      /*#wireplumber.muted { color: #ff0000; }*/
+      /*#pulseaudio.high { color: #ff8000; }*/
+      #pulseaudio.muted { color: #ff0000; }
 
       #battery:not(.charging) { color: #ff8000; }
       #battery.charging, #battery.full { color: #00ff00; }
@@ -886,13 +1626,12 @@
   };
 
   # TODO(work): programs.tmux
-  # TODO(work): services.gpg-agent?
-  # TODO(work): services.ssh-agent?
 
-  # TODO(later): service.syncthing
-  # TODO(later): programs.lf/nnn/yazi
-  # TODO(later): programs.direnv? keychain? newsboat? obs-studio?
-  # TODO(later): programs.beets
+  services.syncthing = {
+    enable = true;
+  };
+
+  # TODO(later): programs.lf/nnn/yazi programs.direnv? keychain? newsboat? obs-studio? programs.beets
 
   programs.feh = {
     enable = true;
@@ -950,23 +1689,24 @@
     enable = true;
   };
 
+  home.sessionVariables.QT_QPA_PLATFORM = "wayland";
+  home.sessionVariables.LIBSEAT_BACKEND = "logind";
   wayland.windowManager.sway = {
     enable = true;
-    #package = nixGL pkgs.sway; # TODO(later): wrap sway with nixGL here instead of in shell?
     wrapperFeatures.gtk = true;
     systemd.enable = true;
+    systemd.variables = [ "--all" ];
     extraOptions = [ "--unsupported-gpu" ];
     extraConfigEarly = ''
-      set $send_volume_notif wpctl get-volume @DEFAULT_SINK@ | (read _ v m && v=$(printf "%.0f" $(echo "100*$v" | bc)) && notify-send --category osd --hint "int:value:$v" "Volume: $v% $m")
-      set $send_brightness_notif b=$(($(brightnessctl get)00/$(brightnessctl max))) && notify-send --category osd --hint "int:value:$b" "Brightness: $b%"
+      set $send_volume_notif v=$(pulsemixer --get-volume | cut -d' ' -f1) && notify-send -i audio-volume-high --category osd --hint "int:value:$v" "Volume: $v% $([ $(pulsemixer --get-mute) = 1 ] && echo '[MUTED]')"
+      set $send_brightness_notif b=$(($(brightnessctl get)00/$(brightnessctl max))) && notify-send -i brightness-high --category osd --hint "int:value:$b" "Brightness: $b%"
       set $get_views vs=$(swaymsg -rt get_tree | jq "recurse(.nodes[], .floating_nodes[]) | select(.visible).id")
       set $get_focused f=$(swaymsg -rt get_tree | jq "recurse(.nodes[], .floating_nodes[]) | first(select(.focused)).id")
-      set $get_output o=$(swaymsg -rt get_outputs | jq -r ".[] | first(select(.focused).name)")
+      set $get_output o=$(swaymsg -rt get_outputs | jq -r '.[] | first(select(.focused)) | .make+" "+.model+" "+.serial')
       set $get_workspaces ws=$(swaymsg -rt get_workspaces | jq -r ".[].num")
       set $get_prev_workspace w=$(( $( swaymsg -t get_workspaces | jq -r ".[] | first(select(.focused).num)" ) - 1 )) && w=$(( $w < 1 ? 1 : ($w < 9 ? $w : 9) ))
       set $get_next_workspace w=$(( $( swaymsg -t get_workspaces | jq -r ".[] | first(select(.focused).num)" ) + 1 )) && w=$(( $w < 1 ? 1 : ($w < 9 ? $w : 9) ))
-      # TODO(later): always skips 1
-      set $get_empty_workspace w=$(swaymsg -rt get_workspaces | jq ". as \$w | first(range(1; 9) | select(all(. != \$w[].num; .)))")
+      set $get_empty_workspace w=$(swaymsg -rt get_workspaces | jq -r '.[] | select(.focused).num as $w | first(range(1; 9) | select(. != $w))')
       # TODO(later): doesnt work well at high speeds (e.g. key held down)
       set $group swaymsg "mark --add g" || swaymsg "splitv, mark --add g"
       set $ungroup swaymsg "[con_mark=g] focus, unmark g" || swaymsg "focus parent; focus parent; focus parent; focus parent"
@@ -999,10 +1739,10 @@
       fonts = {}; 
       startup = [
         { command = "pidof -x batteryd || batteryd"; always = true; }
-        { command = "powerctl decaf"; always = true; }
-        { command = "displayctl auto"; always = true; }
+        { command = "pidof -x bmbwd || bmbwd"; always = true; }
+        { command = "displayctl";  always = true; }
+        { command = "powerctl decafeinate"; }
       ];
-      # TODO(later): multimonitor bars
       bars = [ { command = "waybar"; mode = "hide"; } ];
       # shortcuts
       keybindings."Mod4+space" = "exec bemenu-run";
@@ -1010,27 +1750,26 @@
       keybindings."Mod4+t" = "exec alacritty";
       keybindings."Mod4+w" = "exec firefox";
       keybindings."Mod4+d" = "exec firefox 'https://discord.com/app'";
-      keybindings."Mod4+Escape" = "exec powerctl";
-      # TODO(later): --locked
-      keybindings."Mod4+Shift+Escape" = "exec powerctl lock";
-      keybindings."Mod4+Control+Escape" = "exec powerctl suspend";
-      keybindings."Mod4+Control+Shift+Escape" = "exec powerctl reload";
-      keybindings."Mod4+Apostrophe" = "exec displayctl";
-      #keybindings."Mod4+Shift+Apostrophe" = "exec displayctl external";
-      #keybindings."Mod4+Control+Apostrophe" = "exec displayctl internal";
-      #keybindings."Mod4+Control+Shift+Apostrophe" = "exec displayctl both";
-      keybindings."Mod4+n" = "exec networkctl";
-      keybindings."Mod4+Shift+n" = "exec networkctl wifi";
+      keybindings."Mod4+Escape"                        = "exec powerctl";
+      keybindings."Mod4+Shift+Escape"                  = "exec powerctl lock";
+      keybindings."--locked Mod4+Control+Escape"       = "exec powerctl suspend";
+      keybindings."--locked Mod4+Control+Shift+Escape" = "exec powerctl reload";
+      keybindings."Mod4+Apostrophe"               = "exec displayctl";
+      keybindings."Mod4+Shift+Apostrophe"         = "exec displayctl external";
+      keybindings."Mod4+Control+Apostrophe"       = "exec displayctl internal";
+      keybindings."Mod4+Control+Shift+Apostrophe" = "exec displayctl both";
+      keybindings."Mod4+n"         = "exec networkctl";
+      keybindings."Mod4+Shift+n"   = "exec networkctl wifi";
       keybindings."Mod4+Control+n" = "exec networkctl bluetooth";
       # TODO(later): persistent floating btop
       keybindings."Mod4+u" = "exec alacritty --class floating-btop --command btop";
       keybindings."Mod4+Control+u" = "exec swaymsg '[class=\"floating-btop\"] scratchpad show'";
-      # TODO(work): bemenu bitwarden
-      keybindings."Mod4+b" = "border pixel 1";
-      keybindings."Mod4+shift+b" = "border none";
+      keybindings."Mod4+b"         = "exec pkill -USR1 bmbwd";
+      keybindings."Mod4+Shift+b"   = "exec pkill -USR2 bmbwd";
+      keybindings."Mod4+Control+b" = "exec pkill -TERM bmbwd";
       keybindings."Mod4+v" = "exec cliphist list | bemenu --prompt 'Clipboard' | cliphist decode | wl-copy";
-      keybindings."Mod4+grave" = "exec makoctl dismiss";
-      keybindings."Mod4+Shift+grave" = "exec makoctl restore";
+      keybindings."Mod4+grave"         = "exec makoctl dismiss";
+      keybindings."Mod4+Shift+grave"   = "exec makoctl restore";
       keybindings."Mod4+Control+grave" = "exec makoctl menu bemenu --prompt 'Action'";
       # containers
       keybindings."Mod4+h"         = "focus left";
@@ -1045,9 +1784,9 @@
       keybindings."Mod4+l"         = "focus right";
       keybindings."Mod4+Shift+l"   = "exec $group && swaymsg 'move right 50px' && $ungroup";
       keybindings."Mod4+Control+l" = "resize grow width 50px";
-      # TODO(later): doesnt work if nothing is focused
-      keybindings."Mod4+Tab" = ''exec $get_views && $get_focused && n=$(printf "$vs\n$vs\n" | cat | awk "/$f/{getline; print; exit}") && swaymsg "[con_id=$n] focus"'';
-      keybindings."Mod4+Shift+Tab" = ''exec $get_views && $get_focused && n=$(printf "$vs\n$vs\n" | tac | awk "/$f/{getline; print; exit}") && swaymsg "[con_id=$n] focus"'';
+      # TODO(later): doesnt really work
+      #keybindings."Mod4+Tab" = ''exec $get_views && $get_focused && n=$(printf "$vs\n$vs\n" | cat | awk "/$f/{getline; print; exit}") && swaymsg "[con_id=$n] focus"'';
+      #keybindings."Mod4+Shift+Tab" = ''exec $get_views && $get_focused && n=$(printf "$vs\n$vs\n" | tac | awk "/$f/{getline; print; exit}") && swaymsg "[con_id=$n] focus"'';
       keybindings."Mod4+f" = "focus mode_toggle";
       keybindings."Mod4+Shift+f" = "border pixel 1, floating toggle";
       keybindings."Mod4+x" = "sticky toggle";
@@ -1111,54 +1850,48 @@
       keybindings."Mod4+0"       = "scratchpad show";
       keybindings."Mod4+Shift+0" = "move scratchpad";
       # media
-      # TODO(later): --locked
-      keybindings."XF86AudioPlay"         = "exec playerctl play-pause";
-      keybindings."Shift+XF86AudioPlay"   = "exec playerctl pause";
-      keybindings."Control+XF86AudioPlay" = "exec playerctl stop";
-      keybindings."XF86AudioPrev"         = "exec playerctl position 1-";
-      keybindings."Shift+XF86AudioPrev"   = "exec playerctl position 10-";
-      keybindings."Control+XF86AudioPrev" = "exec playerctl previous";
-      keybindings."XF86AudioNext"         = "exec playerctl position 1+";
-      keybindings."Shift+XF86AudioNext"   = "exec playerctl position 10+";
-      keybindings."Control+XF86AudioNext" = "exec playerctl next";
+      keybindings."--locked XF86AudioPlay"         = "exec playerctl play-pause";
+      keybindings."--locked Shift+XF86AudioPlay"   = "exec playerctl pause";
+      keybindings."--locked Control+XF86AudioPlay" = "exec playerctl stop";
+      keybindings."--locked XF86AudioPrev"         = "exec playerctl position 1-";
+      keybindings."--locked Shift+XF86AudioPrev"   = "exec playerctl position 10-";
+      keybindings."--locked Control+XF86AudioPrev" = "exec playerctl previous";
+      keybindings."--locked XF86AudioNext"         = "exec playerctl position 1+";
+      keybindings."--locked Shift+XF86AudioNext"   = "exec playerctl position 10+";
+      keybindings."--locked Control+XF86AudioNext" = "exec playerctl next";
       # volume
-      # TODO(later): --locked
-      keybindings."XF86AudioMute"                = "exec wpctl set-mute   @DEFAULT_SINK@ toggle && $send_volume_notif";
-      keybindings."Shift+XF86AudioMute"          = "exec                                           $send_volume_notif";
-      keybindings."Control+XF86AudioMute"        = "exec wpctl set-mute   @DEFAULT_SINK@ 1      && $send_volume_notif";
-      keybindings."XF86AudioLowerVolume"         = "exec wpctl set-volume @DEFAULT_SINK@ 1%-    && $send_volume_notif";
-      keybindings."Shift+XF86AudioLowerVolume"   = "exec wpctl set-volume @DEFAULT_SINK@ 10%-   && $send_volume_notif";
-      keybindings."Control+XF86AudioLowerVolume" = "exec wpctl set-volume @DEFAULT_SINK@ 0%     && $send_volume_notif";
-      keybindings."XF86AudioRaiseVolume"         = "exec wpctl set-volume @DEFAULT_SINK@ 1%+    && $send_volume_notif";
-      keybindings."Shift+XF86AudioRaiseVolume"   = "exec wpctl set-volume @DEFAULT_SINK@ 10%+   && $send_volume_notif";
-      keybindings."Control+XF86AudioRaiseVolume" = "exec wpctl set-volume @DEFAULT_SINK@ 100%   && $send_volume_notif";
+      #wpctl set-mute/set-volume @DEFAULT_SINK@ toggle/1/1%-/1%+";
+      keybindings."--locked XF86AudioMute"                = "exec pulsemixer --toggle-mute       && $send_volume_notif";
+      keybindings."--locked Shift+XF86AudioMute"          = "exec                                   $send_volume_notif";
+      keybindings."--locked Control+XF86AudioMute"        = "exec pulsemixer --toggle-mute       && $send_volume_notif";
+      keybindings."--locked XF86AudioLowerVolume"         = "exec pulsemixer --change-volume  -1 && $send_volume_notif";
+      keybindings."--locked Shift+XF86AudioLowerVolume"   = "exec pulsemixer --change-volume -10 && $send_volume_notif";
+      keybindings."--locked Control+XF86AudioLowerVolume" = "exec pulsemixer --set-volume      0 && $send_volume_notif";
+      keybindings."--locked XF86AudioRaiseVolume"         = "exec pulsemixer --change-volume  +1 && $send_volume_notif";
+      keybindings."--locked Shift+XF86AudioRaiseVolume"   = "exec pulsemixer --change-volume +10 && $send_volume_notif";
+      keybindings."--locked Control+XF86AudioRaiseVolume" = "exec pulsemixer --set-volume    100 && $send_volume_notif";
       # microphone
-      # TODO(later): --locked
-      #keybindings."Pause"   = "exec wpctl set-mute @DEFAULT_SOURCE@ 0"; TODO(later): --no-repeat
-      #keybindings."Pause"   = "exec wpctl set-mute @DEFAULT_SOURCE@ 1"; TODO(later): --no-repeat --release
-      #keybindings."button8" = "exec wpctl set-mute @DEFAULT_SOURCE@ toggle"; # TODO(later): --no-repeat --release --whole-window
+      #wpctl set-mute @DEFAULT_SOURCE@ 0/1/toggle
+      keybindings."--locked --no-repeat Pause"                            = "exec pulsemixer --id $(pulsemixer --list-sources | grep 'Default' | cut -d',' -f1 | cut -d' ' -f3) --unmute";
+      keybindings."--locked --no-repeat --release Pause"                  = "exec pulsemixer --id $(pulsemixer --list-sources | grep 'Default' | cut -d',' -f1 | cut -d' ' -f3) --mute";
+      keybindings."--locked --no-repeat --release --whole-window button8" = "exec pulsemixer --id $(pulsemixer --list-sources | grep 'Default' | cut -d',' -f1 | cut -d' ' -f3) --toggle-mute";
       # backlight
-      # TODO(later): --locked
-      keybindings."XF86MonBrightnessDown"         = "exec brightnessctl set 1%-  && $send_brightness_notif";
-      keybindings."Shift+XF86MonBrightnessDown"   = "exec brightnessctl set 10%- && $send_brightness_notif";
-      keybindings."Control+XF86MonBrightnessDown" = "exec brightnessctl set 1    && $send_brightness_notif";
-      keybindings."XF86MonBrightnessUp"           = "exec brightnessctl set 1%+  && $send_brightness_notif";
-      keybindings."Shift+XF86MonBrightnessUp"     = "exec brightnessctl set 10%+ && $send_brightness_notif";
-      keybindings."Control+XF86MonBrightnessUp"   = "exec brightnessctl set 100% && $send_brightness_notif";
+      keybindings."--locked XF86MonBrightnessDown"         = "exec brightnessctl set 1%-  && $send_brightness_notif";
+      keybindings."--locked Shift+XF86MonBrightnessDown"   = "exec brightnessctl set 10%- && $send_brightness_notif";
+      keybindings."--locked Control+XF86MonBrightnessDown" = "exec brightnessctl set 1    && $send_brightness_notif";
+      keybindings."--locked XF86MonBrightnessUp"           = "exec brightnessctl set 1%+  && $send_brightness_notif";
+      keybindings."--locked Shift+XF86MonBrightnessUp"     = "exec brightnessctl set 10%+ && $send_brightness_notif";
+      keybindings."--locked Control+XF86MonBrightnessUp"   = "exec brightnessctl set 100% && $send_brightness_notif";
       # screenshots
       keybindings."Print"         = ''exec slurp -b '#ffffff20' | grim -g - - | wl-copy --type image/png'';
       keybindings."Shift+Print"   = ''exec swaymsg -t get_tree | jq -r '.. | select(.pid? and .visible?) | .rect | "\(.x),\(.y) \(.width)x\(.height)"' | slurp -B '#ffffff20' | grim -g - - | wl-copy --type image/png'';
       keybindings."Control+Print" = ''exec slurp -oB '#ffffff20' | grim -g - - | wl-copy --type image/png'';
     };
-    extraConfig = ''
-      workspace_auto_back_and_forth yes
-    '';
   };
 
 
 
-  # TODO(now, pipewire): wpctl not working
-  # TODO(now, pipewire): for screensharing etc
+  # TODO(pipewire): for screensharing etc
   # https://gitlab.aristanetworks.com/jack/nixfiles/-/blob/arista/home-manager/configs/thonkpod/default.nix?ref_type=heads
   # https://gitlab.aristanetworks.com/jack/nixfiles/-/blob/arista/nixos/modules/gui.nix?ref_type=heads
   #XDG_DESKTOP_PORTAL_DIR = "${joinedPortals}/share/xdg-desktop-portal/portals"
@@ -1282,6 +2015,9 @@
   fonts.fontconfig.defaultFonts = { monospace = [ "Terminess Nerd Font" ]; sansSerif = []; serif = []; emoji = []; };
   
   gtk.enable = true;
+  gtk.gtk2.extraConfig = ''gtk-key-theme-name = "Emacs"'';
+  gtk.gtk3.extraConfig.gtk-key-theme-name = "Emacs";
+  gtk.gtk4.extraConfig.gtk-key-theme-name = "Emacs";
   gtk.theme = { package = pkgs.materia-theme; name = "Materia-dark"; };
   gtk.iconTheme = { package = pkgs.kdePackages.breeze-icons; name = "breeze-dark"; };
   #gtk.cursorTheme = { package = pkgs.; name = ""; };
