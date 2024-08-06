@@ -14,14 +14,14 @@
   xdg.configFile."python/pythonrc" = {
     text = ''
       import atexit, readline
-      
+
       try:
           readline.read_history_file("${config.xdg.dataHome}/python_history")
       except OSError as e:
           pass
       if readline.get_current_history_length() == 0:
           readline.add_history("# history created")
-      
+
       def write_history(path):
           try:
               import os, readline
@@ -29,7 +29,7 @@
               readline.write_history_file(path)
           except OSError:
               pass
-      
+
       atexit.register(write_history, "${config.xdg.dataHome}/python_history")
       del (atexit, readline, write_history)
     '';
@@ -95,7 +95,7 @@
 
       case "$1" in "-u") shift; mode=u;; "-f") shift; mode=f;; *) mode=n;; esac
       [ -n "$1" ] || exit 1
-      
+
       for file in $@; do
         case $mode in
           u) [ -n "$(find "$trash$(readlink -m -- "$file")" -maxdepth 1 -name "$format" 2>/dev/null)" ] \
@@ -104,7 +104,7 @@
             || { echo "'$file' does not exist" >&2; exit 1; };;
         esac
       done
-      
+
       for file in $@; do
         dir="$trash$(readlink -m -- "$file")"
         case $mode in
@@ -205,7 +205,7 @@
         [ -z "$items" ] \
           && notify-send -i lock "Bitwarden" "Updating items..." \
           && items="$(bw list items)"
-        
+
         # TODO(later): fetch fields of index, bemenu choose field (or all)
         #echo "$items" | jq -r 'range(length) as $i | .[$i] | select(.type==1) | ($i | tostring)+" "+.name+" <"+.login.username+">"' | bemenu --width-factor 0.2 | cut -d' ' -f1
         echo "$items" | jq -r '.[] | select(.type==1) | .name+" <"+.login.username+"> "+.login.password' | bemenu --width-factor 0.4 | rev | cut -d' ' -f1 | rev | wl-copy --trim-newline
@@ -478,6 +478,7 @@
               ];
             }
             { name = "jack nixfiles"; url = "https://gitlab.aristanetworks.com/jack/nixfiles/-/tree/arista/home-manager?ref_type=heads"; }
+            { name = "C++ Exceptions ACCU 24"; url = "https://www.youtube.com/watch?v=BGmzMuSDt-Y"; }
           ];
         }
       ];
@@ -656,7 +657,8 @@
                 NormalBorder = { bg = "palette.bg1", fg = "palette.fg3" },
                 NormalFloat = { bg = "palette.bg2" },
                 FloatBorder = { bg = "palette.bg2" },
-                CursorWord = { bg = "none", fg = "none", style = "underline,bold" },
+                MiniCursorword = { bg = "none", fg = "none", style = "underline,bold" },
+                MiniCursorwordCurrent = { bg = "none", fg = "none", style = "underline,bold" },
                 CursorLineNr = { fg = "palette.fg1" },
                 Whitespace = { fg = "palette.sel1" },
                 ExtraWhitespace = { bg = "red", fg = "red" },
@@ -709,7 +711,6 @@
           require("satellite").setup({
             winblend = 0,
             handlers = {
-              --cursor = { enable = true, symbols = { '⎺', '⎻', '—', '⎼', '⎽' } },
               cursor = { enable = false, symbols = { '⎺', '⎻', '—', '⎼', '⎽' } },
               search = { enable = true },
               diagnostic = { enable = true, min_severity = vim.diagnostic.severity.WARN },
@@ -730,7 +731,7 @@
             vim.fn.setreg("+", selected[i])
           end
         end
-        
+
         --- File explorer to replace netrw
         local function explore_files(root)
           root = vim.fn.resolve(vim.fn.expand(root)):gsub("/$", "").."/"
@@ -768,7 +769,7 @@
             end,
           })
         end
-        
+
         -- Switch to an alternative file based on extension
         local altfile_map = {
           [".c"] = { ".h", ".hpp", ".tin" },
@@ -806,7 +807,7 @@
             vim.api.nvim_echo({ { "Error: No altfiles configured", "Error" } }, false, {})
           end
         end
-        
+
         -- Save and load projects using mksession
         local projects_dir = vim.fn.stdpath("data").."/projects/"
         local function find_projects()
@@ -831,7 +832,7 @@
           vim.fn.mkdir(projects_dir, "p")
           vim.cmd("mksession! "..vim.fn.fnameescape(projects_dir..project))
         end
-        
+
         -- Visualise and select from the branched undotree
         local function view_undotree()
           local fzf = require("fzf-lua")
@@ -900,10 +901,10 @@
         vim.keymap.set("n", "<space>gL", "<cmd>FzfLua git_commits<cr>")
         vim.keymap.set("n", "<space>gb", "<cmd>lua require('fzf-lua').git_branches({ preview='b={1}; git log --graph --pretty=oneline --abbrev-commit --color HEAD..$b; git diff HEAD $b | delta' })<cr>")
         vim.keymap.set("n", "<space>gB", "<cmd>lua require('fzf-lua').git_branches({ preview='b={1}; git log --graph --pretty=oneline --abbrev-commit --color origin/HEAD..$b; git diff origin/HEAD $b | delta' })<cr>")
-        vim.keymap.set("n", "<space>gs", "<cmd>FzfLua git_stash<cr>") 
+        vim.keymap.set("n", "<space>gs", "<cmd>FzfLua git_stash<cr>")
         -- TODO(later): help_tags doesnt work (command works), man_pages doesnt work (command complains about nil value)
         vim.keymap.set("n", "<space>k", "<cmd>FzfLua help_tags<cr>")
-	vim.keymap.set("n", "<space>K", "<cmd>FzfLua man_pages<cr>")
+        vim.keymap.set("n", "<space>K", "<cmd>FzfLua man_pages<cr>")
         vim.keymap.set("n", "<space>E", "<cmd>FzfLua diagnostics_document<cr>")
         vim.keymap.set("n", "<space>d", "<cmd>FzfLua lsp_definitions<cr>")
         vim.keymap.set("n", "<space>D", "<cmd>FzfLua lsp_typedefs<cr>")
@@ -916,7 +917,7 @@
         vim.keymap.set("n", "<space>p", find_projects)
         vim.keymap.set("n", "<space>P", save_project)
         vim.keymap.set("n", "<space>u", view_undotree)
-        
+
         local fzf = require("fzf-lua")
         fzf.setup({
           winopts = {
@@ -987,7 +988,7 @@
       # TODO(later): neogit/vim-fugitive
     ];
     extraLuaConfig = ''
-      
+
       -- Get full path of path or current buffer
       vim.g.getfile = function(path)
         return vim.fn.fnamemodify(path or vim.api.nvim_buf_get_name(0), ":p")
@@ -1001,12 +1002,12 @@
         "rg", "/.", "&x", "//", "∃e",
         "#x", "{}", "ev", "++", "<>"
       }
-      
+
       -- Provide method to apply ftplugin and syntax settings to all filetypes
       -- TODO(later): still used? maybe for snippets and arista .tac syntax
       -- vim.g.myfiletypefile = vim.fn.stdpath("config").."/ftplugin/ftplugin.vim"
       -- vim.g.mysyntaxfile = vim.fn.stdpath("config").."/syntax/syntax.vim"
-      
+
       vim.opt.title = true                                   -- Update window title
       vim.opt.mouse = "a"                                    -- Enable mouse support
       vim.opt.updatetime = 100                               -- Faster refreshing
@@ -1085,7 +1086,7 @@
         vim.api.nvim_create_user_command("Aedit", "call A4edit()", {})
         vim.api.nvim_create_user_command("Arevert", "call A4revert()", {})
       end
-      
+
       -- Return the alphabetically previous and next files
       local function prev_next_file(file)
         file = (file or vim.g.getfile()):gsub("/$", "")
@@ -1098,7 +1099,7 @@
         end
         return prev, file
       end
-      
+
       vim.g.mapleader = " "
       vim.keymap.set("n", "<space>", "")
       -- Split lines at cursor, opposite of <s-j>
@@ -1144,7 +1145,7 @@
       vim.keymap.set("n", "yol", "<cmd>set list! list?<cr>")
       vim.keymap.set("n", "yoz", "<cmd>set spell! spell?<cr>")
       vim.keymap.set("n", "yod", "<cmd>if &diff | diffoff | else | diffthis | endif<cr>")
-      
+
       -- Highlight suspicious whitespace
       local function get_whitespace_pattern()
         local pattern = [[[\u00a0\u1680\u180e\u2000-\u200b\u202f\u205f\u3000\ufeff]\+\|\s\+$\|[\u0020]\+\ze[\u0009]\+]]
@@ -1162,7 +1163,7 @@
         local line, pattern = vim.fn.line("."), get_whitespace_pattern()
         apply_whitespace_pattern("\\%<"..line.."l"..pattern.."\\|\\%>"..line.."l"..pattern)
       end })
-      
+
       -- Remember last cursor position
       vim.api.nvim_create_autocmd("BufWinEnter", { callback = function()
         local no_ft = { diff=1, git=1, gitcommit=1, gitrebase=1 }
@@ -1171,14 +1172,14 @@
           vim.cmd([[normal! g`"]])
         end
       end })
-      
+
       -- Hide cursorline if not in current buffer
       vim.api.nvim_create_autocmd({ "WinLeave", "FocusLost" }, { callback = function() vim.opt.cursorline, vim.opt.cursorcolumn = false, false end })
       vim.api.nvim_create_autocmd({ "VimEnter", "WinEnter", "FocusGained" }, { callback = function() vim.opt.cursorline, vim.opt.cursorcolumn = true, true end })
-      
+
       -- Keep universal formatoptions
       vim.api.nvim_create_autocmd("Filetype", { callback = function() vim.o.formatoptions = "rqlj" end })
-      
+
       -- Swap to manual folding after loading
       vim.api.nvim_create_autocmd("BufWinEnter", { callback = function() vim.o.foldmethod = "manual" end })
     '';
@@ -1225,7 +1226,7 @@
     defaultCacheTtlSsh = 86400;
     maxCacheTtl = 2592000;
     maxCacheTtlSsh = 2592000;
-    pinentryPackage = pkgs.pinentry-curses;
+    pinentryPackage = pkgs.pinentry-bemenu;
     sshKeys = [ "613AB861624F38ECCEBBB3764CF4A761DBE24D1B" ];
   };
 
@@ -1414,7 +1415,7 @@
   programs.waybar = {
     enable = true;
     systemd.enable = true;
-    settings = let 
+    settings = let
       ramp = [
         "<span color='#00ff00'>▁</span>"
         "<span color='#00ff00'>▂</span>"
@@ -1435,7 +1436,7 @@
         spacing = 0;
         modules-left = [ "sway/workspaces" "sway/scratchpad" "sway/window" ];
         modules-center = [];
-        modules-right = [ "custom/media" "custom/caffeinated" "gamemode" "bluetooth" "cpu" "memory" "temperature" "disk" "network" "pulseaudio" "battery" "clock" ];
+        modules-right = [ "custom/media" "custom/caffeinated" "gamemode" "bluetooth" "cpu" "memory" "power-profiles-daemon" "temperature" "disk" "network" "pulseaudio" "battery" "clock" ];
         "sway/workspaces".format = "{index}";
         "sway/window".max-length = 200;
         "custom/media" = {
@@ -1448,8 +1449,8 @@
               out="$(playerctl metadata title)"
               tooltip="$out"
               [ ''${#out} -gt "$max_len" ] && {
-            		i="$(( ( $(date +%s) % ( ''${#out} + 3 ) ) + 1 ))"
-            		out="$(echo "$out   $out" | tail -c +$i)"
+                i="$(( ( $(date +%s) % ( ''${#out} + 3 ) ) + 1 ))"
+                out="$(echo "$out   $out" | tail -c +$i)"
               }
             }
             out="$(echo "$out" | head -c "$(( $max_len - 1 ))")"
@@ -1498,6 +1499,14 @@
           tooltip-format = "RAM: {used:0.1f}Gib ({percentage}%)\nSWP: {swapUsed:0.1f}Gib ({swapPercentage}%)";
           on-click = "alacritty --class floating --command btop";
         };
+        power-profiles-daemon = {
+          format-icons = {
+            default = "D";
+            performance = "P";
+            balanced = "B";
+            power-saver = "Q";
+          };
+        };
         temperature = {
           tooltip-format = "{temperatureC}°C / {temperatureF}°F\nThermal zone 6";
           thermal-zone = 6;
@@ -1518,12 +1527,6 @@
           on-click = "networkctl wifi";
           on-click-right = ''case "$(nmcli radio wifi)" in "enabled") nmcli radio wifi off;; *) nmcli radio wifi on;; esac'';
         };
-        #wireplumber = {
-        #  max-volume = 150;
-        #  states.high = 75;
-        #  on-click = "alacritty --class floating --command pulsemixer";
-        #  on-click-right = "pulsemixer --toggle-mute";
-        #};
         pulseaudio = {
           max-volume = 150;
           states.high = 75;
@@ -1577,12 +1580,10 @@
       @keyframes flash { to { background-color: #ffffff; } }
       @keyframes luminate { to { background-color: #b0b0b0; } }
 
-      /*#workspaces, #scratchpad, #window, #custom-media, #custom-caffeinated, #gamemode, #bluetooth, #cpu, #memory, #disk, #temperature, #battery, #network, #wireplumber {*/
       #workspaces, #scratchpad, #window, #custom-media, #custom-caffeinated, #gamemode, #bluetooth, #cpu, #memory, #disk, #temperature, #battery, #network, #pulseaudio {
         padding: 0 5px;
       }
-      /*#workspaces button:hover, #scratchpad:hover, #custom-caffeinated:hover, #gamemode:hover, #bluetooth:hover, #cpu:hover, #memory:hover, #disk:hover, #temperature:hover, #battery:hover, #network:hover, #wireplumber:hover, #clock:hover {*/
-      #workspaces button:hover, #scratchpad:hover, #custom-caffeinated:hover, #gamemode:hover, #bluetooth:hover, #cpu:hover, #memory:hover, #disk:hover, #temperature:hover, #battery:hover, #network:hover, #pulseaudio:hover, #clock:hover {
+      #workspaces button:hover, #scratchpad:hover, #custom-caffeinated:hover, #gamemode:hover, #bluetooth:hover, #cpu:hover, #memory:hover, #disk:hover, #power-profiles-daemon:hover, #temperature:hover, #battery:hover, #network:hover, #pulseaudio:hover, #clock:hover {
         background-color: #404040;
       }
 
@@ -1603,12 +1604,12 @@
 
       #temperature.critical { color: #800000; animation: pulse .5s steps(15) infinite alternate; }
 
+      #power-profiles-daemon { padding: 0 5px 0 10px; color: #c000ff; }
+
       #network.disabled { color: #ff0000; }
       #network.disconnected { color: #ff8000; }
       #network.linked, #network.ethernet, #network.wifi { color: #00ff00; }
 
-      /*#wireplumber.high { color: #ff8000; }*/
-      /*#wireplumber.muted { color: #ff0000; }*/
       /*#pulseaudio.high { color: #ff8000; }*/
       #pulseaudio.muted { color: #ff0000; }
 
@@ -1616,7 +1617,7 @@
       #battery.charging, #battery.full { color: #00ff00; }
       #battery.warning:not(.charging) { color: #800000; animation: pulse .5s steps(15) infinite alternate; }
       #battery.critical:not(.charging) { color: #000000; background-color: #800000; animation: flash .25s steps(10) infinite alternate; }
-      
+
       #clock { padding: 0 5px; }
     '';
   };
@@ -1736,7 +1737,7 @@
       input."type:touchpad".click_method = "clickfinger";
       input."type:touchpad".scroll_method = "two_finger";
       modes = {};
-      fonts = {}; 
+      fonts = {};
       startup = [
         { command = "pidof -x batteryd || batteryd"; always = true; }
         { command = "pidof -x bmbwd || bmbwd"; always = true; }
@@ -1860,7 +1861,6 @@
       keybindings."--locked Shift+XF86AudioNext"   = "exec playerctl position 10+";
       keybindings."--locked Control+XF86AudioNext" = "exec playerctl next";
       # volume
-      #wpctl set-mute/set-volume @DEFAULT_SINK@ toggle/1/1%-/1%+";
       keybindings."--locked XF86AudioMute"                = "exec pulsemixer --toggle-mute       && $send_volume_notif";
       keybindings."--locked Shift+XF86AudioMute"          = "exec                                   $send_volume_notif";
       keybindings."--locked Control+XF86AudioMute"        = "exec pulsemixer --toggle-mute       && $send_volume_notif";
@@ -1871,7 +1871,6 @@
       keybindings."--locked Shift+XF86AudioRaiseVolume"   = "exec pulsemixer --change-volume +10 && $send_volume_notif";
       keybindings."--locked Control+XF86AudioRaiseVolume" = "exec pulsemixer --set-volume    100 && $send_volume_notif";
       # microphone
-      #wpctl set-mute @DEFAULT_SOURCE@ 0/1/toggle
       keybindings."--locked --no-repeat Pause"                            = "exec pulsemixer --id $(pulsemixer --list-sources | grep 'Default' | cut -d',' -f1 | cut -d' ' -f3) --unmute";
       keybindings."--locked --no-repeat --release Pause"                  = "exec pulsemixer --id $(pulsemixer --list-sources | grep 'Default' | cut -d',' -f1 | cut -d' ' -f3) --mute";
       keybindings."--locked --no-repeat --release --whole-window button8" = "exec pulsemixer --id $(pulsemixer --list-sources | grep 'Default' | cut -d',' -f1 | cut -d' ' -f3) --toggle-mute";
@@ -1895,7 +1894,7 @@
   # https://gitlab.aristanetworks.com/jack/nixfiles/-/blob/arista/home-manager/configs/thonkpod/default.nix?ref_type=heads
   # https://gitlab.aristanetworks.com/jack/nixfiles/-/blob/arista/nixos/modules/gui.nix?ref_type=heads
   #XDG_DESKTOP_PORTAL_DIR = "${joinedPortals}/share/xdg-desktop-portal/portals"
-  
+
   #xdg = {
   #  configFile = {
   #    # Use the right portal for screen{shot,cast}ing (copied from `nixos/modules/gui.nix`)
@@ -2013,7 +2012,7 @@
 
   fonts.fontconfig.enable = true;
   fonts.fontconfig.defaultFonts = { monospace = [ "Terminess Nerd Font" ]; sansSerif = []; serif = []; emoji = []; };
-  
+
   gtk.enable = true;
   gtk.gtk2.extraConfig = ''gtk-key-theme-name = "Emacs"'';
   gtk.gtk3.extraConfig.gtk-key-theme-name = "Emacs";
