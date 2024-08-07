@@ -1,8 +1,3 @@
-# TODO(next): imports = [];
-
-# mosh+tmux
-# atools (a4c? agid, etc)
-
 {pkgs, lib, config, inputs, ...}: {
   home.username = "tedj";
   home.homeDirectory = "/home/tedj";
@@ -882,17 +877,6 @@
     #matchBlocks."bus-home".hostname = "10.244.168.5";
     #matchBlocks."bus-home".port = 22110;
   };
-
-  #services.gpg-agent = {
-  #  enable = true;
-  #  enableSshSupport = true;
-  #  defaultCacheTtl = 86400;
-  #  defaultCacheTtlSsh = 86400;
-  #  maxCacheTtl = 2592000;
-  #  maxCacheTtlSsh = 2592000;
-  #  pinentryPackage = pkgs.pinentry-tty; # TODO(gpg): fix pinentry
-  #  sshKeys = [ "613AB861624F38ECCEBBB3764CF4A761DBE24D1B" ];
-  #};
 
   programs.zsh = {
     enable = true;

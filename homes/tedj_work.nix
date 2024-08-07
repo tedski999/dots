@@ -1,7 +1,8 @@
-# TODO(next): imports = [];
-# TODO(work): basic bash config
-# TODO(work): sshfs for working locally? need to inv. homebus first
-# TODO(later): secret management in nix (oh no): gpg, bitwarden, firefox sync, syncthing
+#TODO(now): share configs with import (work is primary)
+#TODO(work): sshfs for working locally
+#TODO(work): fix fzf and agid when using git
+#TODO(work): basic bash config which should switch to zsh on interactive login
+#TODO(later): secret management in nix (oh no): gpg, bitwarden, firefox sync, syncthing
 
 {pkgs, lib, config, inputs, ...}: {
   home.username = "tedj";
@@ -26,7 +27,7 @@
     acpi
     libnotify
     mosh
-    bitwarden-cli # TODO: or programs.rbw
+    bitwarden-cli
     python3
     # gui
     nixgl.nixGLIntel
@@ -180,6 +181,9 @@
     '')
     # bemenu with bitwarden cli
     (writeShellScriptBin "bmbwd" ''
+      # TODO(later): extend to allow creation of items and choosing to copy other fields
+      # bw get template item | jq ".name=\"My Login Item\" | .login=$(bw get template item.login | jq '.username="jdoe" | .password="myp@ssword123"')" | bw encode | bw create item
+
       show() {
         [ -z "$BW_SESSION" ] \
           && export BW_SESSION="$(: | bemenu --password indicator --list 0 --width-factor 0.2 --prompt 'Bitwarden Password:' | tr -d '\n' | base64 | bw unlock --raw)" \
@@ -191,7 +195,6 @@
           && notify-send -i lock "Bitwarden" "Updating items..." \
           && items="$(bw list items)"
 
-        # TODO(later): fetch fields of index, bemenu choose field (or all)
         #echo "$items" | jq -r 'range(length) as $i | .[$i] | select(.type==1) | ($i | tostring)+" "+.name+" <"+.login.username+">"' | bemenu --width-factor 0.2 | cut -d' ' -f1
         echo "$items" | jq -r '.[] | select(.type==1) | .name+" <"+.login.username+"> "+.login.password' | bemenu --width-factor 0.4 | rev | cut -d' ' -f1 | rev | wl-copy --trim-newline
       }
@@ -1268,7 +1271,7 @@
     defaultCacheTtlSsh = 86400;
     maxCacheTtl = 2592000;
     maxCacheTtlSsh = 2592000;
-    pinentryPackage = pkgs.pinentry-bemenu; # TODO(gpg): fix pinentry
+    pinentryPackage = pkgs.pinentry-bemenu; # TODO(gpg): fix pinentry (use curses everywhere)
     sshKeys = [ "613AB861624F38ECCEBBB3764CF4A761DBE24D1B" ];
   };
 
@@ -1373,7 +1376,8 @@
       cht() { cht.sh "$@?style=paraiso-dark"; }
       _cht() { compadd $commands:t; }; compdef _cht cht
 
-      #ash() { eval 2>/dev/null mosh -a -o --experimental-remote-ip=remote us260 -- tmux new ''${@:+-c -- a4c shell $@}; }
+      #ash() { eval 2>/dev/null mosh --predict=always --predict-overwrite --experimental-remote-ip=remote bus-home -- tmux new ''${@:+-c -- a4c shell $@}; }
+      ash() { mosh --predict=always --predict-overwrite --experimental-remote-ip=remote bus-home -- tmux new ''${@:+-c -- a4c shell $@}; }
       #_ash() { compadd "$(ssh us260 -- a4c ps -N)"; }; compdef _ash ash
     '';
   };
@@ -1387,6 +1391,7 @@
       fixed-height = true;
       width-factor = 0.8;
       grab = true;
+      ignore-case = true;
       border = 1;
       bdr = "#ffffff";
       tb = "#000000";
@@ -1675,7 +1680,7 @@
 
   programs.tmux = {
   enable = true;
-  # TODO(work): update this
+  # TODO(work): reconfigure minimal tmux
   # TODO(later): migrate config
   extraConfig = ''
     set -g mouse on
@@ -1815,6 +1820,7 @@
         { criteria.app_id = ".*"; command = "border pixel 1"; }
         { criteria.app_id = "floating.*"; command = "floating enable"; }
       ]; };
+      gaps.inner = 5;
       colors.focused         = { border = "#202020"; background = "#ffffff"; text = "#000000"; indicator = "#ff0000"; childBorder = "#ffffff"; };
       colors.focusedInactive = { border = "#202020"; background = "#202020"; text = "#ffffff"; indicator = "#202020"; childBorder = "#202020"; };
       colors.unfocused       = { border = "#202020"; background = "#202020"; text = "#808080"; indicator = "#202020"; childBorder = "#202020"; };
@@ -1854,9 +1860,8 @@
       keybindings."Mod4+n"         = "exec networkctl";
       keybindings."Mod4+Shift+n"   = "exec networkctl wifi";
       keybindings."Mod4+Control+n" = "exec networkctl bluetooth";
-      # TODO(later): persistent floating btop
+      # TODO(later): persistent floating btop: "exec swaymsg '[class=\"floating-btop\"] scratchpad show'";
       keybindings."Mod4+u" = "exec alacritty --class floating-btop --command btop";
-      keybindings."Mod4+Control+u" = "exec swaymsg '[class=\"floating-btop\"] scratchpad show'";
       keybindings."Mod4+b"         = "exec pkill -USR1 bmbwd";
       keybindings."Mod4+Shift+b"   = "exec pkill -USR2 bmbwd";
       keybindings."Mod4+Control+b" = "exec pkill -TERM bmbwd";
