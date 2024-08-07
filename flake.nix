@@ -13,7 +13,7 @@
     lib = nixpkgs.lib // home-manager.lib;
   in {
 
-    # `nix --extra-experimental-features 'nix-command flakes' develop github:tedski999/dots --command home-manager switch --flake .config/nix#<name>` shell to bootstap any system
+    # `nix --extra-experimental-features 'nix-command flakes' develop github:tedski999/dots --command home-manager switch --flake github:tedski999/dots#<name>` shell to bootstap any system
     devShells = lib.genAttrs [ "aarch64-linux" "x86_64-linux" ] (system: let
       pkgs = (import nixpkgs) { inherit system; };
     in {
@@ -30,12 +30,12 @@
         pkgs = (import nixpkgs) { system = "x86_64-linux"; };
       };
       "tedj@tedj" = lib.homeManagerConfiguration {
-        modules = [ ./homes/tedj_tedj.nix ];
+        modules = [ ./homes/tedj_work.nix ];
         pkgs = (import nixpkgs) { system = "x86_64-linux"; overlays = [ nur.overlay nixgl.overlay ]; };
       };
-      "tedj@us256" = lib.homeManagerConfiguration {
-        modules = [ ./homes/tedj_us256.nix ];
-        pkgs = (import nixpkgs) { system = "aarch64-linux"; };
+      "tedj@tedj-home-xrxhs" = lib.homeManagerConfiguration {
+        modules = [ ./homes/tedj_homebus.nix ];
+        pkgs = (import nixpkgs) { system = "x86_64-linux"; };
       };
     };
 

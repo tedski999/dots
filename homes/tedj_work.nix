@@ -1,4 +1,5 @@
 # TODO(next): imports = [];
+# TODO(work): basic bash config
 # TODO(work): sshfs for working locally? need to inv. homebus first
 # TODO(later): secret management in nix (oh no): gpg, bitwarden, firefox sync, syncthing
 
@@ -9,31 +10,6 @@
   home.preferXdgDirectories = true;
   home.keyboard = { layout = "ie"; options = [ "caps:escape" ]; };
   home.sessionPath = [ "$HOME/.local/bin" ];
-
-  home.sessionVariables.PYTHONSTARTUP = "${config.xdg.configHome}/python/pythonrc";
-  xdg.configFile."python/pythonrc" = {
-    text = ''
-      import atexit, readline
-
-      try:
-          readline.read_history_file("${config.xdg.dataHome}/python_history")
-      except OSError as e:
-          pass
-      if readline.get_current_history_length() == 0:
-          readline.add_history("# history created")
-
-      def write_history(path):
-          try:
-              import os, readline
-              os.makedirs(os.path.dirname(path), mode=0o700, exist_ok=True)
-              readline.write_history_file(path)
-          except OSError:
-              pass
-
-      atexit.register(write_history, "${config.xdg.dataHome}/python_history")
-      del (atexit, readline, write_history)
-    '';
-  };
 
   home.packages = with pkgs; [
     nixgl.nixGLIntel
@@ -47,14 +23,13 @@
     procps
     file
     # bonus cli
-    eza
-    btop
     cht-sh
     openconnect
     acpi
     libnotify
     mosh
-    bitwarden-cli
+    bitwarden-cli # TODO: or programs.rbw
+    python3
     # gui
     wl-clipboard
 
@@ -124,22 +99,33 @@
       done
     '')
     # display menu
-    # TODO(later): bemenu menu
+    # TODO(later): fix race conditions
     (writeShellScriptBin "displayctl" ''
-      swaymsg output \"AOC 2270W GNKJ1HA001311\" disable
-      swaymsg output \"AU Optronics 0xD291 Unknown\" disable
-      sleep 1
-      swaymsg output \"Pixio USA Pixio PXC348C Unknown\" enable pos 1080 $((1920/2 - 1440/2)) transform 0 mode 3440x1440@100Hz
-      sleep 1
-      swaymsg output \"AU Optronics 0xD291 Unknown\" enable pos $((3440/2 - 1920/2 + 1080)) $((1440 + 1920/2 - 1440/2)) transform 0 mode 1920x1200@60Hz
-      sleep 1
-      swaymsg output \"AOC 2270W GNKJ1HA001311\" enable pos 0 0 transform 90 mode 1920x1080@60Hz
-      sleep 1
-      swaymsg output \"AOC 2270W GNKJ1HA001311\" enable pos 0 0 transform 270 mode 1920x1080@60Hz
-      sleep 1
-      swaymsg "focus output \"AU Optronics 0xD291 Unknown\"" && swaymsg "workspace 1:AU Optronics 0xD291 Unknown"
-      swaymsg "focus output \"AOC 2270W GNKJ1HA001311\"" && swaymsg "workspace 1:AOC 2270W GNKJ1HA001311"
-      swaymsg "focus output \"Pixio USA Pixio PXC348C Unknown\"" && swaymsg "workspace 1:Pixio USA Pixio PXC348C Unknown"
+      case "$(printf "Home\nWork" | bemenu --list 10 --width-factor 0.2)" in
+        "Home")
+          swaymsg output \"AOC 2270W GNKJ1HA001311\" disable
+          swaymsg output \"AU Optronics 0xD291 Unknown\" disable
+          sleep 1
+          swaymsg output \"Pixio USA Pixio PXC348C Unknown\" enable pos 1080 $((1920/2 - 1440/2)) transform 0 mode 3440x1440@100Hz
+          sleep 1
+          swaymsg output \"AU Optronics 0xD291 Unknown\" enable pos $((3440/2 - 1920/2 + 1080)) $((1440 + 1920/2 - 1440/2)) transform 0 mode 1920x1200@60Hz
+          sleep 1
+          swaymsg output \"AOC 2270W GNKJ1HA001311\" enable pos 0 0 transform 90 mode 1920x1080@60Hz
+          sleep 1
+          swaymsg output \"AOC 2270W GNKJ1HA001311\" enable pos 0 0 transform 270 mode 1920x1080@60Hz
+          sleep 1
+          swaymsg "focus output \"AU Optronics 0xD291 Unknown\"" && swaymsg "workspace 1:AU Optronics 0xD291 Unknown"
+          swaymsg "focus output \"AOC 2270W GNKJ1HA001311\"" && swaymsg "workspace 1:AOC 2270W GNKJ1HA001311"
+          swaymsg "focus output \"Pixio USA Pixio PXC348C Unknown\"" && swaymsg "workspace 1:Pixio USA Pixio PXC348C Unknown"
+          ;;
+        "Work")
+          swaymsg output \"Lenovo Group Limited P24q-30 V90CP3VM\" enable pos 0 0 transform 0 mode 2560x1440@74.780Hz
+          swaymsg output \"AU Optronics 0xD291 Unknown\" enable pos $((2560/2 - 1920/2)) 1440 transform 0 mode 1920x1200@60Hz
+          sleep 1
+          swaymsg "focus output \"AU Optronics 0xD291 Unknown\"" && swaymsg "workspace 1:AU Optronics 0xD291 Unknown"
+          swaymsg "focus output \"Lenovo Group Limited P24q-30 V90CP3VM\"" && swaymsg "workspace 1:Lenovo Group Limited P24q-30 V90CP3VM"
+          ;;
+      esac
     '')
     # power menu
     (writeShellScriptBin "powerctl" ''
@@ -220,8 +206,53 @@
     (writeShellScriptBin "avpn" ''sudo ${openconnect}/bin/openconnect --protocol=gp gp-ie.arista.com -u tedj -c $HOME/Documents/keys/tedj@arista.com.crt -k $HOME/Documents/keys/tedj@arista.com.pem'')
   ];
 
+  home.sessionVariables.PYTHONSTARTUP = "${config.xdg.configHome}/python/pythonrc";
+  xdg.configFile."python/pythonrc" = {
+    text = ''
+      import atexit, readline
+
+      try:
+          readline.read_history_file("${config.xdg.dataHome}/python_history")
+      except OSError as e:
+          pass
+      if readline.get_current_history_length() == 0:
+          readline.add_history("# history created")
+
+      def write_history(path):
+          try:
+              import os, readline
+              os.makedirs(os.path.dirname(path), mode=0o700, exist_ok=True)
+              readline.write_history_file(path)
+          except OSError:
+              pass
+
+      atexit.register(write_history, "${config.xdg.dataHome}/python_history")
+      del (atexit, readline, write_history)
+    '';
+  };
+
   programs.home-manager = {
     enable = true;
+  };
+
+  programs.eza = {
+    enable = true;
+    extraOptions = [ "--header" "--sort=name" "--group-directories-first" ];
+    git = true;
+  };
+
+  programs.btop = {
+    enable = true;
+    settings = {
+      theme_background = false;
+      vim_keys = true;
+      rounded_corners = false;
+      update_ms = 500;
+      proc_sorting = "cpu lazy";
+      proc_tree = false;
+      proc_filter_kernel = true;
+      proc_aggregate = true;
+    };
   };
 
   programs.bat = {
@@ -410,6 +441,7 @@
                 { name = "acronyms"; url = "https://docs.google.com/spreadsheets/d/1J_GKEgq9_6HKCRfdU0Wnz8RAwe8SRfYSPNPN-F8P9Rs/preview"; }
                 { name = "releases"; url = "https://docs.google.com/spreadsheets/d/1UBmNOcXXV3s73qA_208TMEi5gN0mKsmB5dT70HxOUhw/preview"; }
                 { name = "features"; url = "https://docs.google.com/spreadsheets/d/1HU0KOeneu1WqiL5jAiVuQbhBaHLoOMhPAnQc_Cp3VvY/preview#gid=1532911302"; }
+                { name = "escape gaps"; url = "https://docs.google.com/spreadsheets/d/1IIH7rDyLKq_pqYEwTTFvhm6O41OraaC0pVBm9k4CYJA/preview?gid=1672554111#gid=118303530"; }
                 { name = "quality"; url = "https://aid.infra.corp.arista.io/17/"; }
                 { name = "eos manual"; url = "https://www.arista.com/assets/data/pdf/user-manual/um-books/EOS-User-Manual.pdf"; }
                 { name = "eos sdk wiki"; url = "https://github.com/aristanetworks/EosSdk/wiki"; }
@@ -1207,6 +1239,17 @@
     controlPersist = "12h";
     serverAliveCountMax = 3;
     serverAliveInterval = 5;
+    matchBlocks."bus".host = "bus-*";
+    matchBlocks."bus".user = "tedj";
+    matchBlocks."bus".forwardAgent = true;
+    matchBlocks."bus".extraOptions = {
+      StrictHostKeyChecking = "false";
+      UserKnownHostsFile = "/dev/null";
+      RemoteForward = "/bus/gnupg/S.gpg-agent $HOME/.gnupg/S.gpg-agent.extra";
+    };
+    matchBlocks."bus-home".host = "bus-home";
+    matchBlocks."bus-home".hostname = "10.244.168.5";
+    matchBlocks."bus-home".port = 22110;
   };
 
   programs.gpg = {
@@ -1226,7 +1269,7 @@
     defaultCacheTtlSsh = 86400;
     maxCacheTtl = 2592000;
     maxCacheTtlSsh = 2592000;
-    pinentryPackage = pkgs.pinentry-bemenu;
+    pinentryPackage = pkgs.pinentry-bemenu; # TODO(gpg): fix pinentry
     sshKeys = [ "613AB861624F38ECCEBBB3764CF4A761DBE24D1B" ];
   };
 
@@ -1246,7 +1289,7 @@
     shellAliases.c = "cargo ";
     shellAliases.g = "git ";
     shellAliases.rm = "2>&1 echo rm disabled, use del; return 1 && ";
-    shellAliases.ls = "eza -hs=name --group-directories-first ";
+    shellAliases.ls = "eza ";
     shellAliases.ll = "ls -la ";
     shellAliases.lt = "ll -T ";
     shellAliases.ip = "ip --color ";
@@ -1323,7 +1366,7 @@
       zstyle ":completion:*:warnings" format " %F{red}-- no matches --%f"
 
       # gpg+ssh
-      # TODO(work): this should probably be done in gpg-agent config
+      # TODO(gpg): this should probably be done in gpg-agent config
       # export SSH_AGENT_PID=""
       # export SSH_AUTH_SOCK="$(gpgconf --list-dirs agent-ssh-socket)"
       # (gpgconf --launch gpg-agent &)
@@ -1626,7 +1669,56 @@
     enable = true;
   };
 
-  # TODO(work): programs.tmux
+  programs.fastfetch = {
+    enable = true;
+    settings = {};
+  };
+
+  programs.tmux = {
+  enable = true;
+  # TODO(work): update this
+  # TODO(later): migrate config
+  extraConfig = ''
+    set -g mouse on
+    set -g focus-events on
+    set -g set-clipboard on
+    set -s escape-time 10
+    set -g history-limit 50000
+    # Copying
+    setw -g mode-keys vi
+    setw -g mode-style bg=colour8,fg=terminal
+    bind -T copy-mode-vi v send -X begin-selection
+    bind -T copy-mode-vi C-v send -X rectangle-toggle
+    bind -T copy-mode-vi y send -X copy-selection
+    bind -T copy-mode-vi Y send -X copy-end-of-line
+    bind -T copy-mode-vi C-y send -X copy-line
+    # Terminal
+    set -g set-titles on
+    set -g set-titles-string "#W"
+    set -g default-terminal "screen-256color"
+    set -ga terminal-overrides ",xterm-256color:RGB,xterm-256color:Ms=\\E]52;c;%p2%s\\7"
+    # Sessions
+    bind S new-session
+    # Windows
+    set -g base-index 1
+    set -g renumber-windows on
+    set -g allow-rename off
+    # Panes
+    setw -g pane-base-index 1
+    set -g pane-border-style fg=colour8,dim,overline
+    set -g pane-active-border-style fg=terminal,bold
+    # Status
+    set -g status off
+    set -g status-fg white
+    set -g status-bg colour235
+    set -g status-position top
+    #set -g status-left ' #(a dt ls -au tedj | tail -n +3 | cut -d" " -f1)'
+    set -g status-right '#(TZ=Europe/Dublin date "+%%H:%%M IST") | #(TZ=US/Pacific date "+%%H:%%M PDT") | #(TZ=Australia/Sydney date "+%%H:%%M AEST") '
+    setw -g window-status-format ""
+    setw -g window-status-current-format ""
+    bind t set-option status
+  '';
+  };
 
   services.syncthing = {
     enable = true;
@@ -1875,6 +1967,7 @@
       keybindings."--locked --no-repeat Pause"                            = "exec pulsemixer --id $(pulsemixer --list-sources | grep 'Default' | cut -d',' -f1 | cut -d' ' -f3) --unmute";
       keybindings."--locked --no-repeat --release Pause"                  = "exec pulsemixer --id $(pulsemixer --list-sources | grep 'Default' | cut -d',' -f1 | cut -d' ' -f3) --mute";
       keybindings."--locked --no-repeat --release --whole-window button8" = "exec pulsemixer --id $(pulsemixer --list-sources | grep 'Default' | cut -d',' -f1 | cut -d' ' -f3) --toggle-mute";
+      keybindings."--locked XF86AudioMicMute"                             = "exec pulsemixer --id $(pulsemixer --list-sources | grep 'Default' | cut -d',' -f1 | cut -d' ' -f3) --toggle-mute";
       # backlight
       keybindings."--locked XF86MonBrightnessDown"         = "exec brightnessctl set 1%-  && $send_brightness_notif";
       keybindings."--locked Shift+XF86MonBrightnessDown"   = "exec brightnessctl set 10%- && $send_brightness_notif";

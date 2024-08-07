@@ -39,3 +39,9 @@ Import GPG key
 ```sh
 gpg --import Documents/keys/ski@h8c.de.gpg
 ```
+
+Install arista-ssh-agent:
+https://docs.google.com/document/d/12-lH_pGsDEyKQnIMy2eERjbW--biAkBGr2cnkeHOMg4/edit#heading=h.gppl0c9scge6
+
+Install b5:
+curl -fS "https://barney-api.infra.corp.arista.io/download/client?system=$(uname -s | tr A-Z a-z)&arch=$(uname -m | sed -e s/x86_64/amd64/ -e s/aarch64/arm64/)" > $HOME/.local/bin/b5
