@@ -1649,12 +1649,13 @@
     #extraInput = {};
   };
 
+  xdg.configFile."swaylock/img.png".source = ./img.png;
   programs.swaylock = {
     enable = true;
     package = pkgs.runCommandWith { name = "swaylock-dummy"; } "mkdir $out";
     settings = {
       ignore-empty-password = true;
-      image = "eDP-1:~/lock.png";
+      image = "eDP-1:${config.xdg.configHome}/swaylock/img.png";
       scaling = "center";
       color = "000000";
       indicator-radius = 25;
