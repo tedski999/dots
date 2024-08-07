@@ -12,7 +12,6 @@
   home.sessionPath = [ "$HOME/.local/bin" ];
 
   home.packages = with pkgs; [
-    nix
     # core cli
     coreutils
     diffutils
@@ -190,7 +189,7 @@
     enable = true;
   };
 
-  home.sessionVariables.LESS="--incsearch --ignore-case --tabs=4 --chop-long-lines --LONG-PROMPT";
+  home.sessionVariables.LESS="--incsearch --ignore-case --tabs=4 --chop-long-lines --LONG-PROMPT --RAW-CONTROL-CHARS";
   programs.less = {
     enable = true;
     keys = "h left-scroll\nl right-scroll";

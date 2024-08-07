@@ -12,8 +12,6 @@
   home.sessionPath = [ "$HOME/.local/bin" ];
 
   home.packages = with pkgs; [
-    nixgl.nixGLIntel
-    nix
     # core cli
     coreutils
     diffutils
@@ -31,6 +29,7 @@
     bitwarden-cli # TODO: or programs.rbw
     python3
     # gui
+    nixgl.nixGLIntel
     wl-clipboard
 
     # TODO(pipewire): fix these
@@ -558,7 +557,7 @@
     };
   };
 
-  home.sessionVariables.LESS="--incsearch --ignore-case --tabs=4 --chop-long-lines --LONG-PROMPT";
+  home.sessionVariables.LESS="--incsearch --ignore-case --tabs=4 --chop-long-lines --LONG-PROMPT --RAW-CONTROL-CHARS";
   programs.less = {
     enable = true;
     keys = "h left-scroll\nl right-scroll";
