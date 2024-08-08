@@ -8,7 +8,7 @@
     nixgl.inputs.nixpkgs.follows = "nixpkgs";
   };
 
-  outputs = { self, nixpkgs, nur, home-manager, nixgl, ...  }@inputs:
+  outputs = { self, nixpkgs, nur, home-manager, nixgl, ...  } @ inputs:
   let
     lib = nixpkgs.lib // home-manager.lib;
   in {

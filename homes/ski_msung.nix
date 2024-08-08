@@ -1,18 +1,13 @@
-# TODO(later): disable nvidia (investigate random crashes)
-# TODO(later): secret management in nix (oh no): gpg, bitwarden, firefox sync, syncthing, avpn
-# TODO(later): programs.lf/nnn/yazi keychain? newsboat? obs-studio?
+# TODO(later): programs.beets
 { pkgs, ... }: {
-  home.username = "tedj";
-  home.homeDirectory = "/home/tedj";
+  home.username = "ski";
+  home.homeDirectory = "/home/ski";
   targets.genericLinux.enable = true;
   systemd.user.startServices = "sd-switch";
   imports = [
     ./common.nix
     ./modules/0x0.nix
     ./modules/alacritty.nix
-    ./modules/ash.nix
-    ./modules/asrc.nix
-    ./modules/avpn.nix
     ./modules/bat.nix
     ./modules/batteryd.nix
     ./modules/bemenu.nix
@@ -48,22 +43,9 @@
     ./modules/sway.nix
     ./modules/swaylock.nix
     ./modules/syncthing.nix
-    ./modules/tmux.nix
     ./modules/un.nix
     ./modules/waybar.nix
     ./modules/xdg.nix
     ./modules/zsh.nix
   ];
-  programs.bat.config.map-syntax = [ "*.tin:C++" "*.tac:C++" ];
-  programs.ssh.matchBlocks."bus-home".host = "bus-home";
-  programs.ssh.matchBlocks."bus-home".hostname = "10.244.168.5";
-  programs.ssh.matchBlocks."bus-home".port = 22110;
-  programs.ssh.matchBlocks."bus".host = "bus-*";
-  programs.ssh.matchBlocks."bus".user = "tedj";
-  programs.ssh.matchBlocks."bus".forwardAgent = true;
-  programs.ssh.matchBlocks."bus".extraOptions = {
-    StrictHostKeyChecking = "false";
-    UserKnownHostsFile = "/dev/null";
-    RemoteForward = "/bus/gnupg/S.gpg-agent $HOME/.gnupg/S.gpg-agent.extra";
-  };
 }

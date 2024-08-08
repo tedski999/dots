@@ -24,15 +24,6 @@ Install swaylock systemd-wide due to PAM integration stuff.
 sudo apt install swaylock
 ```
 
-Skip username when logging in
-# TODO: not working
-```sh
-mkdir /etc/systemd/system/getty@tty1.service.d
-echo '[Service]
-ExecStart=
-ExecStart=-/sbin/agetty -o '-p -- tedj' --noclear --skip-login - $TERM' | sudo tee /etc/systemd/system/getty@tty1.service.d/skip-username.conf
-```
-
 Setup syncthing at 127.0.0.1:8384
 
 Import GPG key
