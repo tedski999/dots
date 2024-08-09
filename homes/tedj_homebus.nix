@@ -28,6 +28,6 @@
     ./modules/zsh.nix
   ];
 
-  home.sessionVariables.PYTHONPATH=/usr/lib/python3.9/site-packages;
+  home.sessionVariables.PYTHONPATH="/usr/lib/python3.9/site-packages";
   programs.bat.config.map-syntax = [ "*.tin:C++" "*.tac:C++" ];
 }
