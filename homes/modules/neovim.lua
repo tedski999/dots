@@ -294,6 +294,13 @@ vim.api.nvim_create_autocmd("Filetype", { callback = function() vim.o.formatopti
 -- Swap to manual folding after loading
 vim.api.nvim_create_autocmd("BufWinEnter", { callback = function() vim.o.foldmethod = "manual" end })
 
+-- Use OSC-52 to copy
+vim.api.nvim_create_autocmd("TextYankPost", { callback = function()
+  if vim.v.event.operator == "y" and vim.v.event.regname == "" then
+    require("osc52").copy_register("")
+  end
+end })
+
 -- PLUGIN INITIALISATION --
 
 local fzf = require("fzf-lua")
@@ -458,12 +465,7 @@ require("mini.cursorword").setup({ delay = 0 })
 
 require("mini.splitjoin").setup({ mappings = { toggle = "", join = "<leader>j", split = "<leader>J" } })
 
-require("osc52").setup({ silent = true, tmux_passthrough = true })
-vim.api.nvim_create_autocmd("TextYankPost", { callback = function()
-  if vim.v.event.operator == "y" and vim.v.event.regname == "" then
-    require("osc52").copy_register("")
-  end
-end })
+require("osc52").setup({ silent = true })
 
 require("satellite").setup({
   winblend = 0,

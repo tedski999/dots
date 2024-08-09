@@ -21,14 +21,14 @@
     ./modules/eza.nix
     ./modules/fastfetch.nix
     ./modules/fd.nix
-    ./modules/imv.nix
     ./modules/firefox.nix
     ./modules/fontconfig.nix
     ./modules/fzf.nix
     ./modules/git.nix
-    ./modules/gpg.nix
     ./modules/gpg-agent.nix
+    ./modules/gpg.nix
     ./modules/gtk.nix
+    ./modules/imv.nix
     ./modules/less.nix
     ./modules/mako.nix
     ./modules/man.nix
