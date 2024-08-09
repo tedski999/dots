@@ -29,6 +29,7 @@
     ./modules/imv.nix
     ./modules/firefox.nix
     ./modules/fontconfig.nix
+    ./modules/mosh.nix
     ./modules/fzf.nix
     ./modules/git.nix
     ./modules/gpg.nix

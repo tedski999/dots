@@ -19,6 +19,7 @@
     ./modules/git.nix
     ./modules/less.nix
     ./modules/man.nix
+    ./modules/mosh.nix
     ./modules/neovim.nix
     ./modules/python3.nix
     ./modules/rg.nix
