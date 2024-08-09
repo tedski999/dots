@@ -9,6 +9,6 @@
   programs.neovim.vimAlias = true;
   programs.neovim.vimdiffAlias = true;
   # TODO(later): neogit/vim-fugitive
-  programs.neovim.plugins = with pkgs.vimPlugins; [ fzf-lua lualine-nvim nightfox-nvim nvim-surround mini-nvim satellite-nvim vim-rsi vim-signify ];
+  programs.neovim.plugins = with pkgs.vimPlugins; [ fzf-lua lualine-nvim nightfox-nvim nvim-surround mini-nvim satellite-nvim vim-rsi vim-signify nvim-osc52 ];
   programs.neovim.extraLuaConfig = builtins.readFile ./neovim.lua;
 }

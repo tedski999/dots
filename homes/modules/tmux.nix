@@ -15,6 +15,7 @@
     set -g set-titles on
     set -g set-titles-string "#W"
     set -g focus-events on
+    set -g allow-passthrough
     #setw -g mode-style bg=colour8,fg=terminal
     #bind -T copy-mode-vi v send -X begin-selection
     #bind -T copy-mode-vi C-v send -X rectangle-toggle

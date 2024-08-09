@@ -6,6 +6,9 @@ if vim.loop.fs_stat("/usr/share/vim/vimfiles/arista.vim") and vim.fn.getcwd():fi
   vim.fn.chdir("/src")
 end
 
+-- Spaceman
+vim.g.mapleader = " "
+
 -- Consistent aesthetics
 vim.lsp.protocol.CompletionItemKind = {
   '""', ".f", "fn", "()", ".x",
@@ -453,7 +456,14 @@ require("mini.completion").setup({
 
 require("mini.cursorword").setup({ delay = 0 })
 
-require("mini.splitjoin").setup({ mappings = { toggle = "", join = "<space>j", split = "<space>J" } })
+require("mini.splitjoin").setup({ mappings = { toggle = "", join = "<leader>j", split = "<leader>J" } })
+
+require("osc52").setup({ silent = true, tmux_passthrough = true })
+vim.api.nvim_create_autocmd("TextYankPost", { callback = function()
+  if vim.v.event.operator == "y" and vim.v.event.regname == "" then
+    require("osc52").copy_register("")
+  end
+end })
 
 require("satellite").setup({
   winblend = 0,
@@ -469,26 +479,25 @@ require("satellite").setup({
 
 -- KEYBINDINGS --
 
-vim.g.mapleader = " "
-vim.keymap.set("n", "<space>", "")
+vim.keymap.set("n", "<leader>", "")
 -- Split lines at cursor, opposite of <s-j>
 vim.keymap.set("n", "<c-j>", "m`i<cr><esc>``")
 -- Terminal shortcuts
-vim.keymap.set("n", "<space><return>", "<cmd>belowright split | terminal<cr>")
+vim.keymap.set("n", "<leader><return>", "<cmd>belowright split | terminal<cr>")
 vim.keymap.set("t", "<esc>", "(&filetype == 'fzf') ? '<esc>' : '<c-\\><c-n>'", { expr = true })
 -- Open notes
-vim.keymap.set("n", "<space>n", "<cmd>lcd ~/Documents/notes | enew | set filetype=markdown<cr>")
-vim.keymap.set("n", "<space>N", "<cmd>lcd ~/Documents/notes | edit `=strftime('./journal/%Y/%m/%d.md')` | call mkdir(expand('%:h'), 'p')<cr>")
+vim.keymap.set("n", "<leader>n", "<cmd>lcd ~/Documents/notes | enew | set filetype=markdown<cr>")
+vim.keymap.set("n", "<leader>N", "<cmd>lcd ~/Documents/notes | edit `=strftime('./journal/%Y/%m/%d.md')` | call mkdir(expand('%:h'), 'p')<cr>")
 -- LSP
-vim.keymap.set("n", "<space><space>", "<cmd>lua vim.lsp.buf.hover()<cr>")
-vim.keymap.set("n", "<space>k",        "<cmd>lua vim.lsp.buf.code_action()<cr>")
+vim.keymap.set("n", "<leader><leader>", "<cmd>lua vim.lsp.buf.hover()<cr>")
+vim.keymap.set("n", "<leader>k",        "<cmd>lua vim.lsp.buf.code_action()<cr>")
 vim.keymap.set("n", "]e",               "<cmd>lua vim.diagnostic.goto_next()<cr>")
 vim.keymap.set("n", "[e",               "<cmd>lua vim.diagnostic.goto_prev()<cr>")
-vim.keymap.set("n", "<space>e",        "<cmd>lua vim.diagnostic.open_float()<cr>")
-vim.keymap.set("n", "<space>E",        "<cmd>lua vim.diagnostic.setqflist()<cr>")
-vim.keymap.set("n", "<space>d",        "<cmd>lua vim.lsp.buf.definition()<cr>")
-vim.keymap.set("n", "<space>t",        "<cmd>lua vim.lsp.buf.type_definition()<cr>")
-vim.keymap.set("n", "<space>r",        "<cmd>lua vim.lsp.buf.references()<cr>")
+vim.keymap.set("n", "<leader>e",        "<cmd>lua vim.diagnostic.open_float()<cr>")
+vim.keymap.set("n", "<leader>E",        "<cmd>lua vim.diagnostic.setqflist()<cr>")
+vim.keymap.set("n", "<leader>d",        "<cmd>lua vim.lsp.buf.definition()<cr>")
+vim.keymap.set("n", "<leader>t",        "<cmd>lua vim.lsp.buf.type_definition()<cr>")
+vim.keymap.set("n", "<leader>r",        "<cmd>lua vim.lsp.buf.references()<cr>")
 -- Buffers
 vim.keymap.set("n", "[b", "<cmd>bprevious<cr>")
 vim.keymap.set("n", "]b", "<cmd>bnext<cr>")
@@ -519,48 +528,48 @@ vim.keymap.set("n", "[d", "<plug>(signify-prev-hunk)")
 vim.keymap.set("n", "]d", "<plug>(signify-next-hunk)")
 vim.keymap.set("n", "[D", "9999<plug>(signify-prev-hunk)")
 vim.keymap.set("n", "]D", "9999<plug>(signify-next-hunk)")
-vim.keymap.set("n", "<space>gd", "<cmd>SignifyHunkDiff<cr>")
-vim.keymap.set("n", "<space>gD", "<cmd>SignifyDiff!<cr>")
-vim.keymap.set("n", "<space>gr", "<cmd>SignifyHunkUndo<cr>")
+vim.keymap.set("n", "<leader>gd", "<cmd>SignifyHunkDiff<cr>")
+vim.keymap.set("n", "<leader>gD", "<cmd>SignifyDiff!<cr>")
+vim.keymap.set("n", "<leader>gr", "<cmd>SignifyHunkUndo<cr>")
 -- Fzf
 vim.keymap.set("n", "z=", "<cmd>FzfLua spell_suggest<cr>")
-vim.keymap.set("n", "<space>b", "<cmd>FzfLua buffers cwd=%:p:h cwd_only=true<cr>")
-vim.keymap.set("n", "<space>B", "<cmd>FzfLua buffers<cr>")
-vim.keymap.set("n", "<space>t", "<cmd>FzfLua tabs<cr>")
-vim.keymap.set("n", "<space>T", "<cmd>FzfLua tags<cr>")
-vim.keymap.set("n", "<space>l", "<cmd>FzfLua blines<cr>")
-vim.keymap.set("n", "<space>L", "<cmd>FzfLua lines<cr>")
-vim.keymap.set("n", "<space>f", function() fzf_explore_files(fullpath():match(".*/")) end)
-vim.keymap.set("n", "<space>F", function() fzf_explore_files(vim.fn.getcwd()) end)
-vim.keymap.set("n", "<space>o", "<cmd>FzfLua oldfiles cwd=%:p:h cwd_only=true<cr>")
-vim.keymap.set("n", "<space>O", "<cmd>FzfLua oldfiles<cr>")
-vim.keymap.set("n", "<space>s", "<cmd>FzfLua grep_project cwd=%:p:h cwd_only=true<cr>")
-vim.keymap.set("n", "<space>S", "<cmd>FzfLua grep_project<cr>")
-vim.keymap.set("n", "<space>m", "<cmd>FzfLua marks cwd=%:p:h cwd_only=true<cr>")
-vim.keymap.set("n", "<space>M", "<cmd>FzfLua marks<cr>")
-vim.keymap.set("n", "<space>gg", "<cmd>lua require('fzf-lua').git_status({ cwd='%:p:h', file_ignore_patterns={ '^../' } })<cr>")
-vim.keymap.set("n", "<space>gG", "<cmd>FzfLua git_status<cr>")
-vim.keymap.set("n", "<space>gf", "<cmd>FzfLua git_files cwd_only=true cwd=%:p:h<cr>")
-vim.keymap.set("n", "<space>gF", "<cmd>FzfLua git_files<cr>")
-vim.keymap.set("n", "<space>gl", "<cmd>FzfLua git_bcommits<cr>")
-vim.keymap.set("n", "<space>gL", "<cmd>FzfLua git_commits<cr>")
-vim.keymap.set("n", "<space>gb", "<cmd>lua require('fzf-lua').git_branches({ preview='b={1}; git log --graph --pretty=oneline --abbrev-commit --color HEAD..$b; git diff HEAD $b | delta' })<cr>")
-vim.keymap.set("n", "<space>gB", "<cmd>lua require('fzf-lua').git_branches({ preview='b={1}; git log --graph --pretty=oneline --abbrev-commit --color origin/HEAD..$b; git diff origin/HEAD $b | delta' })<cr>")
-vim.keymap.set("n", "<space>gs", "<cmd>FzfLua git_stash<cr>")
-vim.keymap.set("n", "<space>k", "<cmd>FzfLua help_tags<cr>")
-vim.keymap.set("n", "<space>K", "<cmd>FzfLua man_pages<cr>")
-vim.keymap.set("n", "<space>E", "<cmd>FzfLua diagnostics_document<cr>")
-vim.keymap.set("n", "<space>d", "<cmd>FzfLua lsp_definitions<cr>")
-vim.keymap.set("n", "<space>D", "<cmd>FzfLua lsp_typedefs<cr>")
-vim.keymap.set("n", "<space>r", "<cmd>FzfLua lsp_finder<cr>")
-vim.keymap.set("n", "<space>R", "<cmd>FzfLua lsp_document_symbols<cr>")
-vim.keymap.set("n", "<space>A", "<cmd>FzfLua lsp_code_actions<cr>")
-vim.keymap.set("n", "<space>c", "<cmd>FzfLua quickfix<cr>")
-vim.keymap.set("n", "<space>C", "<cmd>FzfLua quickfix_stack<cr>")
-vim.keymap.set("n", "<space>a", fzf_find_altfiles)
-vim.keymap.set("n", "<space>p", fzf_find_projects)
-vim.keymap.set("n", "<space>P", fzf_save_project)
-vim.keymap.set("n", "<space>u", fzf_view_undotree)
+vim.keymap.set("n", "<leader>b", "<cmd>FzfLua buffers cwd=%:p:h cwd_only=true<cr>")
+vim.keymap.set("n", "<leader>B", "<cmd>FzfLua buffers<cr>")
+vim.keymap.set("n", "<leader>t", "<cmd>FzfLua tabs<cr>")
+vim.keymap.set("n", "<leader>T", "<cmd>FzfLua tags<cr>")
+vim.keymap.set("n", "<leader>l", "<cmd>FzfLua blines<cr>")
+vim.keymap.set("n", "<leader>L", "<cmd>FzfLua lines<cr>")
+vim.keymap.set("n", "<leader>f", function() fzf_explore_files(fullpath():match(".*/")) end)
+vim.keymap.set("n", "<leader>F", function() fzf_explore_files(vim.fn.getcwd()) end)
+vim.keymap.set("n", "<leader>o", "<cmd>FzfLua oldfiles cwd=%:p:h cwd_only=true<cr>")
+vim.keymap.set("n", "<leader>O", "<cmd>FzfLua oldfiles<cr>")
+vim.keymap.set("n", "<leader>s", "<cmd>FzfLua grep_project cwd=%:p:h cwd_only=true<cr>")
+vim.keymap.set("n", "<leader>S", "<cmd>FzfLua grep_project<cr>")
+vim.keymap.set("n", "<leader>m", "<cmd>FzfLua marks cwd=%:p:h cwd_only=true<cr>")
+vim.keymap.set("n", "<leader>M", "<cmd>FzfLua marks<cr>")
+vim.keymap.set("n", "<leader>gg", "<cmd>lua require('fzf-lua').git_status({ cwd='%:p:h', file_ignore_patterns={ '^../' } })<cr>")
+vim.keymap.set("n", "<leader>gG", "<cmd>FzfLua git_status<cr>")
+vim.keymap.set("n", "<leader>gf", "<cmd>FzfLua git_files cwd_only=true cwd=%:p:h<cr>")
+vim.keymap.set("n", "<leader>gF", "<cmd>FzfLua git_files<cr>")
+vim.keymap.set("n", "<leader>gl", "<cmd>FzfLua git_bcommits<cr>")
+vim.keymap.set("n", "<leader>gL", "<cmd>FzfLua git_commits<cr>")
+vim.keymap.set("n", "<leader>gb", "<cmd>lua require('fzf-lua').git_branches({ preview='b={1}; git log --graph --pretty=oneline --abbrev-commit --color HEAD..$b; git diff HEAD $b | delta' })<cr>")
+vim.keymap.set("n", "<leader>gB", "<cmd>lua require('fzf-lua').git_branches({ preview='b={1}; git log --graph --pretty=oneline --abbrev-commit --color origin/HEAD..$b; git diff origin/HEAD $b | delta' })<cr>")
+vim.keymap.set("n", "<leader>gs", "<cmd>FzfLua git_stash<cr>")
+vim.keymap.set("n", "<leader>k", "<cmd>FzfLua help_tags<cr>")
+vim.keymap.set("n", "<leader>K", "<cmd>FzfLua man_pages<cr>")
+vim.keymap.set("n", "<leader>E", "<cmd>FzfLua diagnostics_document<cr>")
+vim.keymap.set("n", "<leader>d", "<cmd>FzfLua lsp_definitions<cr>")
+vim.keymap.set("n", "<leader>D", "<cmd>FzfLua lsp_typedefs<cr>")
+vim.keymap.set("n", "<leader>r", "<cmd>FzfLua lsp_finder<cr>")
+vim.keymap.set("n", "<leader>R", "<cmd>FzfLua lsp_document_symbols<cr>")
+vim.keymap.set("n", "<leader>A", "<cmd>FzfLua lsp_code_actions<cr>")
+vim.keymap.set("n", "<leader>c", "<cmd>FzfLua quickfix<cr>")
+vim.keymap.set("n", "<leader>C", "<cmd>FzfLua quickfix_stack<cr>")
+vim.keymap.set("n", "<leader>a", fzf_find_altfiles)
+vim.keymap.set("n", "<leader>p", fzf_find_projects)
+vim.keymap.set("n", "<leader>P", fzf_save_project)
+vim.keymap.set("n", "<leader>u", fzf_view_undotree)
 
 vim.cmd("colorscheme carbonfox")
 
@@ -574,8 +583,8 @@ vim.cmd("colorscheme carbonfox")
 --   -- Perforce
 --   vim.api.nvim_create_user_command("Achanged", function() fzf.fzf_exec([[a p4 diff --summary | sed s/^/\\//]],                                              { actions = fzf.config.globals.actions.files, previewer = "builtin" }) end, {})
 --   vim.api.nvim_create_user_command("Aopened",  function() fzf.fzf_exec([[a p4 opened | sed -n "s/\/\(\/[^\/]\+\/[^\/]\+\/\)[^\/]\+\/\([^#]\+\).*/\1\2/p"]], { actions = fzf.config.globals.actions.files, previewer = "builtin" }) end, {})
---   vim.keymap.set("n", "<space>gs", "<cmd>Achanged<cr>")
---   vim.keymap.set("n", "<space>go", "<cmd>Aopened<cr>")
+--   vim.keymap.set("n", "<leader>gs", "<cmd>Achanged<cr>")
+--   vim.keymap.set("n", "<leader>go", "<cmd>Aopened<cr>")
 --   -- Opengrok
 --   vim.api.nvim_create_user_command("Agrok",  function(p) fzf.fzf_exec("a grok -em 99 "..p.args.." | grep '^/src/.*'",                                                      { actions = fzf.config.globals.actions.files, previewer = "builtin" }) end, { nargs = 1 })
 --   vim.api.nvim_create_user_command("Agrokp", function(p) fzf.fzf_exec("a grok -em 99 -f "..(fullpath():match("^/src/.-/") or "/").." "..p.args.." | grep '^/src/.*'", { actions = fzf.config.globals.actions.files, previewer = "builtin" }) end, { nargs = 1 })
@@ -583,10 +592,10 @@ vim.cmd("colorscheme carbonfox")
 --   vim.api.nvim_create_user_command("Amkid", "belowright split | terminal echo 'Generating ID file...' && a ws mkid", {})
 --   vim.api.nvim_create_user_command("Agid",  function(p) fzf.fzf_exec("a ws gid -cq "..p.args,                                                      { actions = fzf.config.globals.actions.files, previewer = "builtin" }) end, { nargs = 1 })
 --   vim.api.nvim_create_user_command("Agidp", function(p) fzf.fzf_exec("a ws gid -cqp "..(fullpath():match("^/src/(.-)/") or "/").." "..p.args, { actions = fzf.config.globals.actions.files, previewer = "builtin" }) end, { nargs = 1 })
---   vim.keymap.set("n", "<space>r", "<cmd>exec 'Agidp    '.expand('<cword>')<cr>", { silent = true })
---   vim.keymap.set("n", "<space>R", "<cmd>exec 'Agid     '.expand('<cword>')<cr>", { silent = true })
---   vim.keymap.set("n", "<space>d", "<cmd>exec 'Agidp -D '.expand('<cword>')<cr>", { silent = true })
---   vim.keymap.set("n", "<space>D", "<cmd>exec 'Agid  -D '.expand('<cword>')<cr>", { silent = true })
+--   vim.keymap.set("n", "<leader>r", "<cmd>exec 'Agidp    '.expand('<cword>')<cr>", { silent = true })
+--   vim.keymap.set("n", "<leader>R", "<cmd>exec 'Agid     '.expand('<cword>')<cr>", { silent = true })
+--   vim.keymap.set("n", "<leader>d", "<cmd>exec 'Agidp -D '.expand('<cword>')<cr>", { silent = true })
+--   vim.keymap.set("n", "<leader>D", "<cmd>exec 'Agid  -D '.expand('<cword>')<cr>", { silent = true })
 
 --   local vcs_cmds = vim.g.signify_vcs_cmds or {}
 --   local vcs_cmds_diffmode = vim.g.signify_vcs_cmds_diffmode or {}
