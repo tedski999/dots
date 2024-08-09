@@ -1,6 +1,6 @@
 # python2 but better
 { pkgs, config, ... }: {
-  home.packages = with pkgs; [ python3 ];
+  home.packages = with pkgs; [ python39 ];
   home.sessionVariables.PYTHONSTARTUP = "${config.xdg.configHome}/python/pythonrc";
   xdg.configFile."python/pythonrc".text = ''
     import atexit, readline

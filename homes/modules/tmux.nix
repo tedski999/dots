@@ -2,36 +2,33 @@
 { ... }: {
   programs.tmux.enable = true;
   # TODO(tmux): reconfigure minimal tmux
+  programs.tmux.baseIndex = 1;
+  programs.tmux.escapeTime = 10;
+  programs.tmux.historyLimit = 50000;
+  programs.tmux.keyMode = "vi";
+  programs.tmux.mouse = true;
+  programs.tmux.terminal = "screen-256color";
   # TODO(later): migrate config
   programs.tmux.extraConfig = ''
-    set -g mouse on
-    set -g focus-events on
-    set -g set-clipboard on
-    set -s escape-time 10
-    set -g history-limit 50000
-    # Copying
-    setw -g mode-keys vi
-    setw -g mode-style bg=colour8,fg=terminal
-    bind -T copy-mode-vi v send -X begin-selection
-    bind -T copy-mode-vi C-v send -X rectangle-toggle
-    bind -T copy-mode-vi y send -X copy-selection
-    bind -T copy-mode-vi Y send -X copy-end-of-line
-    bind -T copy-mode-vi C-y send -X copy-line
-    # Terminal
     set -g set-titles on
     set -g set-titles-string "#W"
-    set -g default-terminal "screen-256color"
-    set -ga terminal-overrides ",xterm-256color:RGB,xterm-256color:Ms=\\E]52;c;%p2%s\\7"
+    set -g focus-events on
+    set -g set-clipboard on
+    #setw -g mode-style bg=colour8,fg=terminal
+    #bind -T copy-mode-vi v send -X begin-selection
+    #bind -T copy-mode-vi C-v send -X rectangle-toggle
+    #bind -T copy-mode-vi y send -X copy-selection
+    #bind -T copy-mode-vi Y send -X copy-end-of-line
+    #bind -T copy-mode-vi C-y send -X copy-line
+    #set -ga terminal-overrides ",xterm-256color:RGB,xterm-256color:Ms=\\E]52;c;%p2%s\\7"
     # Sessions
     bind S new-session
     # Windows
-    set -g base-index 1
-    set -g renumber-windows on
-    set -g allow-rename off
+    #set -g renumber-windows on
+    #set -g allow-rename off
     # Panes
-    setw -g pane-base-index 1
-    set -g pane-border-style fg=colour8,dim,overline
-    set -g pane-active-border-style fg=terminal,bold
+    #set -g pane-border-style fg=colour8,dim,overline
+    #set -g pane-active-border-style fg=terminal,bold
     # Status
     set -g status off
     set -g status-fg white
