@@ -56,6 +56,10 @@
     ./modules/zsh.nix
   ];
 
+  programs.git.userName = "tedski999";
+  programs.git.userEmail = "ski@h8c.de";
+  programs.git.signing.key = "00ADEF0A!";
+  programs.git.signing.signByDefault = true;
   programs.bat.config.map-syntax = [ "*.tin:C++" "*.tac:C++" ];
   programs.ssh.matchBlocks."bus-home".host = "bus-home";
   programs.ssh.matchBlocks."bus-home".hostname = "10.244.168.5";

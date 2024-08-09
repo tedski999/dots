@@ -9,9 +9,9 @@
     font = { size = 13.5; normal.family = "Terminess Nerd Font"; };
     selection.save_to_clipboard = true;
     keyboard.bindings = [
-        { key = "Return"; mods = "Shift|Control"; action = "SpawnNewInstance"; }
-        { key = "Escape"; mods = "Shift|Control"; action = "ToggleViMode"; }
-        { key = "Escape"; mode = "Vi"; action = "ToggleViMode"; }
+      { key = "Return"; mods = "Shift|Control"; action = "SpawnNewInstance"; }
+      { key = "Escape"; mods = "Shift|Control"; action = "ToggleViMode"; }
+      { key = "Escape"; mode = "Vi"; action = "ToggleViMode"; }
     ];
     colors.draw_bold_text_with_bright_colors = true;
     colors.primary = { background = "#000000"; foreground = "#dddddd"; };

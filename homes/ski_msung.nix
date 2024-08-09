@@ -49,4 +49,9 @@
     ./modules/xdg.nix
     ./modules/zsh.nix
   ];
+
+  programs.git.userName = "tedski999";
+  programs.git.userEmail = "ski@h8c.de";
+  programs.git.signing.key = "00ADEF0A!";
+  programs.git.signing.signByDefault = true;
 }

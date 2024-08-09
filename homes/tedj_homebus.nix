@@ -29,6 +29,8 @@
     ./modules/zsh.nix
   ];
 
+  programs.git.userName = "tedj";
+  programs.git.userEmail = "tedj@arista.com";
   programs.bat.config.map-syntax = [ "*.tin:C++" "*.tac:C++" ];
   programs.zsh.sessionVariables.PYTHONPATH = "/usr/lib/python3.9/site-packages";
 }
