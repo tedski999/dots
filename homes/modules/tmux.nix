@@ -1,26 +1,26 @@
 # screen but better
+# TODO(work): scrolling
 { ... }: {
   programs.tmux.enable = true;
-  # TODO(tmux): reconfigure minimal tmux
+  programs.tmux.sensibleOnTop = false;
+  programs.tmux.prefix = "M-a";
   programs.tmux.baseIndex = 1;
   programs.tmux.escapeTime = 10;
   programs.tmux.historyLimit = 50000;
-  programs.tmux.keyMode = "vi";
-  programs.tmux.mouse = true;
+  #programs.tmux.keyMode = "vi";
+  programs.tmux.aggressiveResize = true;
   programs.tmux.terminal = "screen-256color";
   # TODO(later): migrate config
   programs.tmux.extraConfig = ''
     set -g set-titles on
     set -g set-titles-string "#W"
     set -g focus-events on
-    set -g set-clipboard on
     #setw -g mode-style bg=colour8,fg=terminal
     #bind -T copy-mode-vi v send -X begin-selection
     #bind -T copy-mode-vi C-v send -X rectangle-toggle
     #bind -T copy-mode-vi y send -X copy-selection
     #bind -T copy-mode-vi Y send -X copy-end-of-line
     #bind -T copy-mode-vi C-y send -X copy-line
-    #set -ga terminal-overrides ",xterm-256color:RGB,xterm-256color:Ms=\\E]52;c;%p2%s\\7"
     # Sessions
     bind S new-session
     # Windows
