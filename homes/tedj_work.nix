@@ -50,7 +50,6 @@
     ./modules/sway.nix
     ./modules/swaylock.nix
     ./modules/syncthing.nix
-    ./modules/tmux.nix
     ./modules/un.nix
     ./modules/waybar.nix
     ./modules/xdg.nix
