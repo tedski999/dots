@@ -19,7 +19,7 @@
     ./modules/less.nix
     ./modules/man.nix
     ./modules/neovim.nix
-    ./modules/python3.nix
+    ./modules/python.nix
     ./modules/rg.nix
     ./modules/ssh.nix
     ./modules/tmux.nix
