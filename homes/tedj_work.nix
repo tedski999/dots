@@ -41,7 +41,6 @@
     ./modules/networkctl.nix
     ./modules/playerctl.nix
     ./modules/powerctl.nix
-    ./modules/python.nix
     ./modules/python3.nix
     ./modules/rg.nix
     ./modules/scratch.nix
