@@ -6,6 +6,7 @@
   home.homeDirectory = "/home/tedj";
   targets.genericLinux.enable = true;
   systemd.user.startServices = "sd-switch";
+
   imports = [
     ./common.nix
     ./modules/0x0.nix
@@ -54,6 +55,7 @@
     ./modules/xdg.nix
     ./modules/zsh.nix
   ];
+
   programs.bat.config.map-syntax = [ "*.tin:C++" "*.tac:C++" ];
   programs.ssh.matchBlocks."bus-home".host = "bus-home";
   programs.ssh.matchBlocks."bus-home".hostname = "10.244.168.5";

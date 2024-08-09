@@ -4,6 +4,7 @@
   home.homeDirectory = "/home/ski";
   targets.genericLinux.enable = true;
   systemd.user.startServices = "sd-switch";
+
   imports = [
     ./common.nix
     ./modules/0x0.nix

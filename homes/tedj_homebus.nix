@@ -2,6 +2,7 @@
   home.username = "tedj";
   home.homeDirectory = "/home/tedj";
   targets.genericLinux.enable = true;
+
   imports = [
     ./common.nix
     ./modules/0x0.nix
@@ -26,5 +27,7 @@
     ./modules/un.nix
     ./modules/zsh.nix
   ];
+
+  home.sessionVariables.PYTHONPATH=/usr/lib/python3.9/site-packages;
   programs.bat.config.map-syntax = [ "*.tin:C++" "*.tac:C++" ];
 }
