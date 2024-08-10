@@ -29,6 +29,8 @@
     ./modules/zsh.nix
   ];
 
+  programs.bash.initExtra = ''shopt -q login_shell && exec zsh --login $@'';
+  programs.zsh.initExtraFirst = ''[[ -o interactive && -o login && -z "$TMUX" && -n "$SSH_TTY" ]] && exec tmux new'';
   programs.git.userName = "tedj";
   programs.git.userEmail = "tedj@arista.com";
   programs.bat.config.map-syntax = [ "*.tin:C++" "*.tac:C++" ];

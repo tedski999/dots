@@ -202,6 +202,4 @@
     keybindings."Shift+Print"   = ''exec swaymsg -t get_tree | jq -r '.. | select(.pid? and .visible?) | .rect | "\(.x),\(.y) \(.width)x\(.height)"' | slurp -B '#ffffff20' | grim -g - - | wl-copy --type image/png'';
     keybindings."Control+Print" = ''exec slurp -oB '#ffffff20' | grim -g - - | wl-copy --type image/png'';
   };
-
-  programs.zsh.initExtraFirst = ''[[ -o interactive && -o login && -z "$WAYLAND_DISPLAY" && "$(tty)" = "/dev/tty1" ]] && exec nixGLIntel sway'';
 }

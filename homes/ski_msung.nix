@@ -50,6 +50,7 @@
     ./modules/zsh.nix
   ];
 
+  programs.zsh.initExtraFirst = ''[[ -o interactive && -o login && -z "$WAYLAND_DISPLAY" && "$(tty)" = "/dev/tty1" ]] && exec nixGLIntel sway'';
   programs.git.userName = "tedski999";
   programs.git.userEmail = "ski@h8c.de";
   programs.git.signing.key = "00ADEF0A!";
