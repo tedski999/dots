@@ -13,4 +13,5 @@
     "--type-add=tin:*.tin"
     "--type-add=itin:*.itin"
   ];
+  programs.zsh.shellGlobalAliases.grep = "rg ";
 }

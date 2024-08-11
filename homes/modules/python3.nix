@@ -24,4 +24,5 @@
     atexit.register(write_history, "${config.xdg.dataHome}/python_history")
     del (atexit, readline, write_history)
   '';
+  programs.zsh.shellAliases.p = "python3 ";
 }

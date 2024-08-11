@@ -41,4 +41,5 @@
   #[push] default = current
   #[merge] conflictstyle = diff3
   #[diff] colorMoved = default
+  programs.zsh.shellAliases.g = "git ";
 }
