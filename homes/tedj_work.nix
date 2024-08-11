@@ -54,6 +54,7 @@
     ./modules/un.nix
     ./modules/waybar.nix
     ./modules/xdg.nix
+    ./modules/yazi.nix
     ./modules/zsh.nix
   ];
 

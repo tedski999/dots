@@ -26,6 +26,7 @@
     ./modules/ssh.nix
     ./modules/tmux.nix
     ./modules/un.nix
+    ./modules/yazi.nix
     ./modules/zsh.nix
   ];
 

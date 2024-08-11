@@ -10,9 +10,9 @@
       position = "top";
       height = 30;
       spacing = 0;
-      modules-left = [ "sway/workspaces" "sway/scratchpad" "sway/window" ];
+      modules-left = [ "sway/workspaces" "sway/window" ];
       modules-center = [];
-      modules-right = [ "custom/media" "custom/caffeinated" "gamemode" "bluetooth" "cpu" "memory" "power-profiles-daemon" "temperature" "disk" "network" "pulseaudio" "battery" "clock" ];
+      modules-right = [ "custom/media" "sway/scratchpad" "custom/caffeinated" "gamemode" "bluetooth" "cpu" "memory" "power-profiles-daemon" "temperature" "disk" "network" "pulseaudio" "battery" "clock" ];
       "sway/workspaces".format = "{index}";
       "sway/window".max-length = 200;
       "custom/media" = {
@@ -161,7 +161,7 @@
       position = "top";
       height = 30;
       spacing = 0;
-      modules-left = [ "sway/workspaces" "sway/scratchpad" "sway/window" ];
+      modules-left = [ "sway/workspaces" "sway/window" ];
       modules-center = [];
       modules-right = [];
       "sway/workspaces".format = "{index}";

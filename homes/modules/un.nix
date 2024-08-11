@@ -1,6 +1,5 @@
 # decompression utility
-# TODO(later): gzip gunzip instead?
-# TODO(later): 7zip, unrar, etc
+# TODO(later): gzip gunzip instead? 7zip, unrar, etc... maybe just use ouch?
 { pkgs, ... }: {
   home.packages = with pkgs; [
     (writeShellScriptBin "un" ''

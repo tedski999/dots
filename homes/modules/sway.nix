@@ -149,6 +149,7 @@
     keybindings."Mod4+Control+z"       = ''exec '$get_output && $get_empty_workspace && swaymsg "move container workspace $w:$o"' '';
     keybindings."Mod4+Control+Shift+z" = ''exec '$group && $get_output && $get_workspaces && i=1; for w in $ws; do swaymsg rename workspace $w:$o to $i:$o; i=$(( $i + 1 )); done && $ungroup' '';
     # outputs
+    # TODO(now): fix output naming
     keybindings."Mod4+equal"         = ''exec $get_output && swaymsg output $(swaymsg -rt get_outputs | jq -r '.[] | select(.name == "'$o'") | "\(.name) scale \(.scale * 1.1)"')'';
     keybindings."Mod4+minus"         = ''exec $get_output && swaymsg output $(swaymsg -rt get_outputs | jq -r '.[] | select(.name == "'$o'") | "\(.name) scale \(.scale / 1.1)"')'';
     keybindings."Mod4+Shift+equal"   = ''exec $get_output && swaymsg output $(swaymsg -rt get_outputs | jq -r '.[] | select(.name == "'$o'") | "\(.name) scale \(.scale * 1.5)"')'';
