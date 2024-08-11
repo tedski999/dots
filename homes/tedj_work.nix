@@ -11,7 +11,6 @@
   imports = [
     ./common.nix
     ./modules/0x0.nix
-    ./modules/alacritty.nix
     ./modules/ash.nix
     ./modules/asrc.nix
     ./modules/avpn.nix
@@ -29,6 +28,7 @@
     ./modules/fd.nix
     ./modules/firefox.nix
     ./modules/fontconfig.nix
+    ./modules/foot.nix
     ./modules/fzf.nix
     ./modules/git.nix
     ./modules/gpg-agent.nix

@@ -1,4 +1,3 @@
-# TODO(later): replace with foot
 { ... }: {
   home.sessionVariables.TERMINAL = "alacritty";
   programs.alacritty.enable = true;
