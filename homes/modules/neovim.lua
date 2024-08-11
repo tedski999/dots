@@ -1,4 +1,3 @@
-
 -- Arista-specifics switch
 if vim.loop.fs_stat("/usr/share/vim/vimfiles/arista.vim") and vim.fn.getcwd():find("^/src") then
   vim.api.nvim_echo({ { "Note: Arista-specifics have been enabled for this Neovim instance", "MoreMsg" } }, false, {})
@@ -23,9 +22,7 @@ vim.lsp.protocol.CompletionItemKind = {
 -- vim.g.myfiletypefile = vim.fn.stdpath("config").."/ftplugin/ftplugin.vim"
 -- vim.g.mysyntaxfile = vim.fn.stdpath("config").."/syntax/syntax.vim"
 
--- We don't need no netrw where we're going
-vim.g.loaded_netrw = 1
-vim.g.loaded_netrwPlugin = 1
+vim.filetype.add({ pattern = { [vim.fn.stdpath("data").."/projects/.*"] = "vim" } })
 
 -- Better signify highlighting
 vim.g.signify_number_highlight = 1
@@ -84,6 +81,14 @@ vim.opt.wildignorecase = true                          -- Don't care about wildm
 
 -- LOCAL FUNCTIONS --
 
+local ts_pickers = require("telescope.pickers")
+local ts_finders = require("telescope.finders")
+local ts_conf = require("telescope.config").values
+local ts_actions = require("telescope.actions")
+local ts_actions_set = require("telescope.actions.set")
+local ts_actions_state = require("telescope.actions.state")
+local ts_actions_layout = require("telescope.actions.layout")
+
 local function fullpath(path)
   return vim.fn.fnamemodify(path or vim.api.nvim_buf_get_name(0), ":p")
 end
@@ -101,158 +106,48 @@ local function prev_next_file(file)
   return prev, file
 end
 
--- Yank selected entries
-local function fzf_yank_selection(selected)
-  for i = 1, #selected do
-    vim.fn.setreg("+", selected[i])
-  end
-end
-
---- File explorer to replace netrw
-local function fzf_explore_files(root)
-  root = vim.fn.resolve(fullpath(root)):gsub("/$", "").."/"
-  local fzf = require("fzf-lua")
-  fzf.fzf_exec("echo .. && fd --base-directory "..root.." --hidden --exclude '**/.git/' --exclude '**/node_modules/'", {
-    prompt = root,
-    cwd = root,
-    fzf_opts = { ["--header"] = "<ctrl-x> to exec|<ctrl-s> to grep|<ctrl-r> to cwd" },
-    previewer = "builtin",
-    actions = {
-      ["default"] = function(s, opts)
-        for i = 1, #s do s[i] = vim.fn.resolve(root..s[i]) end
-        if #s > 1 then
-          fzf.actions.file_sel_to_qf(s, opts)
-        elseif (vim.loop.fs_stat(s[1]) or {}).type == "directory" then
-          fzf_explore_files(s[1])
-        else
-          vim.cmd("edit "..s[1])
-        end
-      end,
-      ["ctrl-x"] = function(s)
-        local k = ": " for i = 1, #s do k = k.." "..root..s[i] end
-        vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes(k.."<home>", false, false, true), "n", {})
-      end,
-      ["ctrl-s"] = function() fzf.grep_project({ cwd=root, cwd_only=true }) end,
-      ["ctrl-r"] = { function() vim.fn.chdir(root) end, fzf.actions.resume },
-      ["ctrl-v"] = fzf.actions.file_vsplit,
-      ["ctrl-t"] = fzf.actions.file_tabedit,
-      ["ctrl-y"] = function(s) for i = 1, #s do s[i] = root..s[i] end fzf_yank_selection(s) end,
-    },
-    fn_transform = function(x)
-      local dir = x:match(".*/") or ""
-      local file = x:sub(#dir+1)
-      return fzf.utils.ansi_codes.blue(dir)..fzf.utils.ansi_codes.white(file)
-    end,
-  })
-end
-
--- Switch to an alternative file based on extension
-local function fzf_find_altfiles()
-  local altfile_map = {
-    [".c"] = { ".h", ".hpp", ".tin" },
-    [".h"] = { ".c", ".cpp", ".tac" },
-    [".cpp"] = { ".hpp", ".h", ".tin" },
-    [".hpp"] = { ".cpp", ".c", ".tac" },
-    [".vert.glsl"] = { ".frag.glsl" },
-    [".frag.glsl"] = { ".vert.glsl" },
-    [".tac"] = { ".tin", ".cpp", ".c" },
-    [".tin"] = { ".tac", ".hpp", ".h" }
-  }
-  local fzf = require("fzf-lua")
-  local dir = fullpath():match(".*/")
-  local file = fullpath():sub(#dir+1)
-  local possible, existing = {}, {}
-  for ext, altexts in pairs(altfile_map) do
-    if file:sub(-#ext) == ext then
-      for _, altext in ipairs(altexts) do
-        local altfile = file:sub(1, -#ext-1)..altext
-        table.insert(possible, altfile)
-        if vim.loop.fs_stat(dir..altfile) then
-          table.insert(existing, altfile)
-        end
-      end
-    end
-  end
-  if #existing == 1 then
-    vim.cmd("edit "..dir..existing[1])
-  elseif #existing ~= 0 then
-    fzf.fzf_exec(existing, { actions = fzf.config.globals.actions.files, cwd = dir, previewer = "builtin" })
-  elseif #possible ~= 0 then
-    fzf.fzf_exec(possible, { actions = fzf.config.globals.actions.files, cwd = dir, fzf_opts = { ["--header"] = "No altfiles found" } })
-  else
-    vim.api.nvim_echo({ { "Error: No altfiles configured", "Error" } }, false, {})
-  end
-end
-
--- Save and load projects using mksession
-local function fzf_find_projects()
-  local fzf = require("fzf-lua")
+-- Load projects using mksession
+local function ts_projects(opts)
   local projects = {}
-  local projects_dir = vim.fn.stdpath("data").."/projects/"
-  for path in vim.fn.glob(projects_dir.."*"):gmatch("[^\n]+") do
-    table.insert(projects, path:match("[^/]*$"))
+  for path in vim.fn.glob(vim.fn.stdpath("data").."/projects/*"):gmatch("[^\n]+") do
+    projects[#projects + 1] = path
   end
-  fzf.fzf_exec(projects, {
-    prompt = "Project>",
-    fzf_opts = { ["--no-multi"] = "", ["--header"] = "<ctrl-x> to delete|<ctrl-e> to edit" },
-    actions = {
-      ["default"] = function(s) vim.cmd("source "..vim.fn.fnameescape(projects_dir..s[1])) end,
-      ["ctrl-e"] = function(s) vim.cmd("edit "..projects_dir..s[1].." | setf vim") end,
-      ["ctrl-x"] = function(s) for i = 1, #s do vim.fn.delete(vim.fn.fnameescape(projects_dir..s[i])) end end
-    }
-  })
-end
-local function fzf_save_project()
-  local project = vim.fn.input("Save project: ", vim.v.this_session:match("[^/]*$") or "")
-  local projects_dir = vim.fn.stdpath("data").."/projects/"
-  if project == "" then return end
-  vim.fn.mkdir(projects_dir, "p")
-  vim.cmd("mksession! "..vim.fn.fnameescape(projects_dir..project))
+  ts_pickers.new(opts or {}, {
+    prompt_title = "Projects",
+    finder = ts_finders.new_table({
+      results = projects,
+      entry_maker = function(line) return { value = line, display = line:match("[^/]*$"), ordinal = line } end
+    }),
+    sorter = ts_conf.generic_sorter(opts or {}),
+    previewer = ts_conf.file_previewer(opts or {}),
+    attach_mappings = function(prompt_bufnr, map)
+      ts_actions_set.select:replace(function()
+        ts_actions.close(prompt_bufnr)
+        vim.cmd("source "..ts_actions_state.get_selected_entry().value)
+      end)
+      map("i", "<C-e>", ts_actions.file_edit)
+      map("i", "<C-x>", function() end) --  TODO(later): function(s) for i = 1, #s do vim.fn.delete(s[i]) end end
+      return true
+    end,
+  }):find()
 end
 
--- Visualise and select from the branched undotree
-local function fzf_view_undotree()
-  local fzf = require("fzf-lua")
-  local undotree = vim.fn.undotree()
-  local function build_entries(tree, depth)
-    local entries = {}
-    for i = #tree, 1, -1  do
-      local cs = { "magenta", "blue", "yellow", "green", "red" }
-      local c = fzf.utils.ansi_codes[cs[math.fmod(depth, #cs) + 1]]
-      local e = tree[i].seq..""
-      if tree[i].save then e = e.."*" end
-      local t = os.time() - tree[i].time
-      if t > 86400 then t = math.floor(t/86400).."d" elseif t > 3600 then t = math.floor(t/3600).."h" elseif t > 60 then t = math.floor(t/60).."m" else t = t.."s" end
-      if tree[i].seq == undotree.seq_cur then t = fzf.utils.ansi_codes.white(t.." <") else t = fzf.utils.ansi_codes.grey(t) end
-      table.insert(entries, c(e).." "..t)
-      if tree[i].alt then
-        local subentries = build_entries(tree[i].alt, depth + 1)
-        for j = 1, #subentries do table.insert(entries, " "..subentries[j]) end
-      end
-    end
-    return entries
-  end
-  local curbuf = vim.api.nvim_get_current_buf()
-  local curfile = fullpath()
-  fzf.fzf_exec(build_entries(undotree.entries, 0), {
-    prompt = "Undotree>",
-    fzf_opts = { ["--no-multi"] = "" },
-    actions = { ["default"] = function(s) vim.cmd("undo "..s[1]:match("%d+")) end },
-    previewer = false,
-    preview = fzf.shell.raw_preview_action_cmd(function(s)
-      if #s == 0 then return end
-      local newbuf = vim.api.nvim_get_current_buf()
-      local tmpfile = vim.fn.tempname()
-      local change = s[1]:match("%d+")
-      vim.api.nvim_set_current_buf(curbuf)
-      vim.cmd("undo "..change)
-      local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
-      vim.cmd("undo "..undotree.seq_cur)
-      vim.fn.writefile(lines, tmpfile)
-      vim.api.nvim_set_current_buf(newbuf)
-      return "delta --file-modified-label '' --hunk-header-style '' --file-transformation 's/tmp.*//' "..curfile.." "..tmpfile
-    end)
-  })
+local function ts_toggle_fullscreen(prompt_bufnr)
+  local height = { padding = 0 }
+  local picker = ts_actions_state.get_current_picker(prompt_bufnr)
+  if picker.layout_config[picker.__flex_strategy].height ~= 15 then height = 15 end
+  picker.layout_config.horizontal.height = height
+  picker.layout_config.vertical.height = height
+  picker:full_layout_update()
+end
+
+local function ts_yank_values(prompt_bufnr)
+  local picker = ts_actions_state.get_current_picker(prompt_bufnr)
+  local entries = picker:get_multi_selection()
+  if #entries == 0 then entries[1] = picker:get_selection() end
+  for k, v in pairs(entries) do entries[k] = v.value end
+  vim.fn.setreg("+", table.concat(entries, "\n"))
+  print("Values yanked: "..tostring(#entries))
 end
 
 -- AUTOCMDS --
@@ -302,54 +197,6 @@ vim.api.nvim_create_autocmd("TextYankPost", { callback = function()
 end })
 
 -- PLUGIN INITIALISATION --
-
-local fzf = require("fzf-lua")
-fzf.setup({
-  winopts = {
-    fullscreen = false,
-    height = 0.33, width = 1.0, row = 1.0, col = 0.5,
-    border = { "─", "─", "─", " ", "", "", "", " " },
-    hl = { normal = "Normal", border = "NormalBorder", preview_border = "NormalBorder" },
-    preview = { flip_columns = 100, scrollchars = { "│", "" }, winopts = { list = true } }
-  },
-  keymap = {
-    builtin = {
-      ["<c-_>"] = "toggle-preview",
-      ["<c-o>"] = "toggle-fullscreen",
-      ["<m-n>"] = "preview-page-down",
-      ["<m-p>"] = "preview-page-up",
-    },
-    fzf = {
-      ["ctrl-d"] = "half-page-down",
-      ["ctrl-u"] = "half-page-up",
-      ["alt-n"] = "preview-page-down",
-      ["alt-p"] = "preview-page-up",
-    },
-  },
-  actions = {
-    files = {
-      ["default"] = fzf.actions.file_edit_or_qf,
-      ["ctrl-s"] = fzf.actions.file_split,
-      ["ctrl-v"] = fzf.actions.file_vsplit,
-      ["ctrl-t"] = fzf.actions.file_tabedit,
-      ["ctrl-y"] = fzf_yank_selection
-    },
-    buffers = {
-      ["default"] = fzf.actions.buf_edit_or_qf,
-      ["ctrl-s"] = fzf.actions.buf_split,
-      ["ctrl-v"] = fzf.actions.buf_vsplit,
-      ["ctrl-t"] = fzf.actions.buf_tabedit,
-      ["ctrl-y"] = fzf_yank_selection
-    }
-  },
-  fzf_opts = { ["--separator=''"] = "", ["--preview-window"] = "border-none" },
-  previewers = { man = { cmd = "man %s | col -bx" } },
-  defaults = { preview_pager = "delta --width=$FZF_PREVIEW_COLUMNS", file_icons = false, git_icons = true, color_icons = true, cwd_header = false, copen = function() fzf.quickfix() end },
-  grep = { RIPGREP_CONFIG_PATH = vim.env.RIPGREP_CONFIG_PATH },
-  oldfiles = { include_current_session = true },
-  quickfix_stack = { actions = { ["default"] = function() fzf.quickfix() end } },
-  git = { status = { actions = { ["right"] = false, ["left"] = false, ["ctrl-s"] = { fzf.actions.git_stage_unstage, fzf.actions.resume } } } }
-})
 
 require("nightfox").setup({
   options = {
@@ -437,6 +284,8 @@ require("lualine").setup({
   }
 })
 
+-- TODO(later): neogit
+
 require("nvim-surround").setup({ move_cursor = false })
 
 require("mini.align").setup({})
@@ -478,6 +327,54 @@ require("satellite").setup({
   }
 })
 
+require("telescope").setup({
+  defaults = {
+    sorting_strategy = "ascending",
+    scroll_strategy = "limit",
+    path_display = { "truncate" },
+    dynamic_preview_title = true,
+    borderchars = { " ", " ", " ", " ", " ", " ", " ", " " },
+    cache_picker = { num_pickers = 3, ignore_empty_prompt = true },
+    layout_strategy = "flex",
+    layout_config = {
+        anchor = "S",
+        anchor_padding = -1,
+        prompt_position = "top",
+        height = 15,
+        width = { padding = 0 },
+        flex = { flip_columns = 100 },
+        vertical = { mirror = true, preview_cutoff = 20 },
+        horizontal = { preview_cutoff = 20 },
+    },
+    mappings = {
+      i = {
+        ["<esc>"] = ts_actions.close,
+        ["<C-j>"] = ts_actions.select_default,
+        ["<M-o>"] = ts_actions_layout.toggle_preview,
+        ["<C-o>"] = ts_toggle_fullscreen,
+        ["<C-y>"] = ts_yank_values,
+      }
+    },
+    preview = { filesize_limit = 1.0 },
+  },
+  extensions = {
+    file_browser = {
+      hijack_netrw = true,
+      dir_icon = "",
+      hidden = { file_browser = true, folder_browser = true },
+    },
+    undo = {
+      side_by_side = true,
+      layout_strategy = "vertical",
+      layout_config = { height = { padding = 0 } },
+    },
+  },
+})
+
+require("telescope").load_extension("file_browser")
+require("telescope").load_extension("fzf")
+require("telescope").load_extension("ui-select")
+require("telescope").load_extension("undo")
 
 -- KEYBINDINGS --
 
@@ -486,7 +383,6 @@ vim.keymap.set("n", "<leader>", "")
 vim.keymap.set("n", "<c-j>", "m`i<cr><esc>``")
 -- Terminal shortcuts
 vim.keymap.set("n", "<leader><return>", "<cmd>belowright split | terminal<cr>")
-vim.keymap.set("t", "<esc>", "(&filetype == 'fzf') ? '<esc>' : '<c-\\><c-n>'", { expr = true })
 -- Open notes
 vim.keymap.set("n", "<leader>n", "<cmd>lcd ~/Documents/notes | enew | set filetype=markdown<cr>")
 vim.keymap.set("n", "<leader>N", "<cmd>lcd ~/Documents/notes | edit `=strftime('./journal/%Y/%m/%d.md')` | call mkdir(expand('%:h'), 'p')<cr>")
@@ -533,54 +429,70 @@ vim.keymap.set("n", "]D", "9999<plug>(signify-next-hunk)")
 vim.keymap.set("n", "<leader>gd", "<cmd>SignifyHunkDiff<cr>")
 vim.keymap.set("n", "<leader>gD", "<cmd>SignifyDiff!<cr>")
 vim.keymap.set("n", "<leader>gr", "<cmd>SignifyHunkUndo<cr>")
--- Fzf
-vim.keymap.set("n", "z=", "<cmd>FzfLua spell_suggest<cr>")
-vim.keymap.set("n", "<leader>b", "<cmd>FzfLua buffers cwd=%:p:h cwd_only=true<cr>")
-vim.keymap.set("n", "<leader>B", "<cmd>FzfLua buffers<cr>")
-vim.keymap.set("n", "<leader>t", "<cmd>FzfLua tabs<cr>")
-vim.keymap.set("n", "<leader>T", "<cmd>FzfLua tags<cr>")
-vim.keymap.set("n", "<leader>l", "<cmd>FzfLua blines<cr>")
-vim.keymap.set("n", "<leader>L", "<cmd>FzfLua lines<cr>")
-vim.keymap.set("n", "<leader>f", function() fzf_explore_files(fullpath():match(".*/")) end)
-vim.keymap.set("n", "<leader>F", function() fzf_explore_files(vim.fn.getcwd()) end)
-vim.keymap.set("n", "<leader>o", "<cmd>FzfLua oldfiles cwd=%:p:h cwd_only=true<cr>")
-vim.keymap.set("n", "<leader>O", "<cmd>FzfLua oldfiles<cr>")
-vim.keymap.set("n", "<leader>s", "<cmd>FzfLua grep_project cwd=%:p:h cwd_only=true<cr>")
-vim.keymap.set("n", "<leader>S", "<cmd>FzfLua grep_project<cr>")
-vim.keymap.set("n", "<leader>m", "<cmd>FzfLua marks cwd=%:p:h cwd_only=true<cr>")
-vim.keymap.set("n", "<leader>M", "<cmd>FzfLua marks<cr>")
-vim.keymap.set("n", "<leader>gg", "<cmd>lua require('fzf-lua').git_status({ cwd='%:p:h', file_ignore_patterns={ '^../' } })<cr>")
-vim.keymap.set("n", "<leader>gG", "<cmd>FzfLua git_status<cr>")
-vim.keymap.set("n", "<leader>gf", "<cmd>FzfLua git_files cwd_only=true cwd=%:p:h<cr>")
-vim.keymap.set("n", "<leader>gF", "<cmd>FzfLua git_files<cr>")
-vim.keymap.set("n", "<leader>gl", "<cmd>FzfLua git_bcommits<cr>")
-vim.keymap.set("n", "<leader>gL", "<cmd>FzfLua git_commits<cr>")
-vim.keymap.set("n", "<leader>gb", "<cmd>lua require('fzf-lua').git_branches({ preview='b={1}; git log --graph --pretty=oneline --abbrev-commit --color HEAD..$b; git diff HEAD $b | delta' })<cr>")
-vim.keymap.set("n", "<leader>gB", "<cmd>lua require('fzf-lua').git_branches({ preview='b={1}; git log --graph --pretty=oneline --abbrev-commit --color origin/HEAD..$b; git diff origin/HEAD $b | delta' })<cr>")
-vim.keymap.set("n", "<leader>gs", "<cmd>FzfLua git_stash<cr>")
-vim.keymap.set("n", "<leader>k", "<cmd>FzfLua help_tags<cr>")
-vim.keymap.set("n", "<leader>K", "<cmd>FzfLua man_pages<cr>")
-vim.keymap.set("n", "<leader>E", "<cmd>FzfLua diagnostics_document<cr>")
-vim.keymap.set("n", "<leader>d", "<cmd>FzfLua lsp_definitions<cr>")
-vim.keymap.set("n", "<leader>D", "<cmd>FzfLua lsp_typedefs<cr>")
-vim.keymap.set("n", "<leader>r", "<cmd>FzfLua lsp_finder<cr>")
-vim.keymap.set("n", "<leader>R", "<cmd>FzfLua lsp_document_symbols<cr>")
-vim.keymap.set("n", "<leader>A", "<cmd>FzfLua lsp_code_actions<cr>")
-vim.keymap.set("n", "<leader>c", "<cmd>FzfLua quickfix<cr>")
-vim.keymap.set("n", "<leader>C", "<cmd>FzfLua quickfix_stack<cr>")
-vim.keymap.set("n", "<leader>a", fzf_find_altfiles)
-vim.keymap.set("n", "<leader>p", fzf_find_projects)
-vim.keymap.set("n", "<leader>P", fzf_save_project)
-vim.keymap.set("n", "<leader>u", fzf_view_undotree)
+-- Telescope
+vim.keymap.set("n", "z=", "<cmd>Telescope spell_suggest<cr>")
+vim.keymap.set("n", "-", "<cmd>Telescope file_browser<cr>")
+vim.keymap.set("n", "<leader>f", "<cmd>Telescope find_files cwd=%:p:h hidden=true<cr>")
+vim.keymap.set("n", "<leader>F", "<cmd>Telescope find_files hidden=true<cr>")
+vim.keymap.set("n", "<leader>o", "<cmd>Telescope oldfiles cwd=%:p:h only_cwd=true<cr>")
+vim.keymap.set("n", "<leader>O", "<cmd>Telescope oldfiles<cr>")
+vim.keymap.set("n", "<leader>s", "<cmd>Telescope live_grep cwd=%:p:h<cr>")
+vim.keymap.set("n", "<leader>S", "<cmd>Telescope live_grep<cr>")
+vim.keymap.set("n", "<leader>b", "<cmd>Telescope buffers<cr>")
+vim.keymap.set("n", "<leader>t", "<cmd>Telescope tags<cr>")
+vim.keymap.set("n", "<leader>l", "<cmd>Telescope current_buffer_fuzzy_find<cr>")
+vim.keymap.set("n", "<leader>L", "<cmd>Telescope live_grep cwd=%:p:h grep_open_files=true<cr>")
+vim.keymap.set("n", "<leader>:", "<cmd>Telescope command_history<cr>")
+vim.keymap.set("n", "<leader>m", "<cmd>Telescope marks")
+vim.keymap.set("n", "<leader>\"", "<cmd>Telescope registers<cr>")
+vim.keymap.set("n", "<leader>gg", "<cmd>Telescope git_status cwd=%:p:h use_git_root=false<cr>")
+vim.keymap.set("n", "<leader>gG", "<cmd>Telescope git_status<cr>")
+vim.keymap.set("n", "<leader>gf", "<cmd>Telescope git_files cwd=%:p:h use_git_root=false<cr>")
+vim.keymap.set("n", "<leader>gF", "<cmd>Telescope git_files<cr>")
+vim.keymap.set("n", "<leader>gl", "<cmd>Telescope git_bcommits cwd=%:p:h use_git_root=false<cr>")
+vim.keymap.set("n", "<leader>gL", "<cmd>Telescope git_commits<cr>")
+vim.keymap.set("n", "<leader>gb", "<cmd>Telescope git_branches<cr>")
+vim.keymap.set("n", "<leader>gs", "<cmd>Telescope git_stash<cr>")
+vim.keymap.set("n", "<leader>k", "<cmd>Telescope help_tags<cr>")
+vim.keymap.set("n", "<leader>K", "<cmd>Telescope man_pages sections=ALL<cr>")
+vim.keymap.set("n", "<leader>E", "<cmd>Telescope diagnostics<cr>")
+vim.keymap.set("n", "<leader>d", "<cmd>Telescope lsp_definitions<cr>")
+vim.keymap.set("n", "<leader>D", "<cmd>Telescope lsp_type_definitions<cr>")
+vim.keymap.set("n", "<leader>r", "<cmd>Telescope lsp_references<cr>")
+vim.keymap.set("n", "<leader>R", "<cmd>Telescope lsp_document_symbols<cr>") -- TODO(lsp): {dynamic_}workspace_symbols
+vim.keymap.set("n", "<leader>c", "<cmd>Telescope quickfix<cr>")
+vim.keymap.set("n", "<leader>C", "<cmd>Telescope quickfixhistory<cr>")
+vim.keymap.set("n", "<leader>/", "<cmd>Telescope search_history<cr>")
+-- TODO
+--vim.keymap.set("n", "<leader>A", "LinArcX/telescope-changes.nvim"
+--vim.keymap.set("n", "<leader>a", fzf_find_altfiles) "otavioschwanck/telescope-alternate"
+-- local altfile_map = {
+--   [".c"] = { ".h", ".hpp", ".tin" },
+--   [".h"] = { ".c", ".cpp", ".tac" },
+--   [".cpp"] = { ".hpp", ".h", ".tin" },
+--   [".hpp"] = { ".cpp", ".c", ".tac" },
+--   [".vert.glsl"] = { ".frag.glsl" },
+--   [".frag.glsl"] = { ".vert.glsl" },
+--   [".tac"] = { ".tin", ".cpp", ".c" },
+--   [".tin"] = { ".tac", ".hpp", ".h" }
+-- }
+vim.keymap.set("n", "<leader>p", ts_projects)
+vim.keymap.set("n", "<leader>P", function()
+  local project = vim.fn.input("Save project: ", vim.v.this_session:match("[^/]*$") or "")
+  if project == "" then return end
+  vim.fn.mkdir(vim.fn.stdpath("data").."/projects/", "p")
+  vim.cmd("mksession! "..vim.fn.fnameescape(vim.fn.stdpath("data").."/projects/"..project))
+end)
+vim.keymap.set("n", "<leader><esc>", "<cmd>Telescope resume<cr>")
+vim.keymap.set("n", "<leader><s-esc>", "<cmd>Telescope pickers<cr>")
 
 vim.cmd("colorscheme carbonfox")
 
 
+-- TODO(work): cached find_files
+-- TODO(work): agid/agrok? or just supercharged grep
+-- TODO(work): arista.vim needed?
 
-
-
-
---TODO(work): fix all of this
 -- if vim.g.arista then
 --   -- Perforce
 --   vim.api.nvim_create_user_command("Achanged", function() fzf.fzf_exec([[a p4 diff --summary | sed s/^/\\//]],                                              { actions = fzf.config.globals.actions.files, previewer = "builtin" }) end, {})
