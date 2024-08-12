@@ -63,8 +63,8 @@
     bars = [ { command = "waybar"; mode = "hide"; } ];
     # shortcuts
     keybindings."Mod4+space" = "exec bemenu-run";
-    keybindings."Mod4+Return" = "exec footclient";
-    keybindings."Mod4+t" = "exec footclient";
+    keybindings."Mod4+Return" = "exec alacritty";
+    keybindings."Mod4+t" = "exec alacritty";
     keybindings."Mod4+w" = "exec firefox";
     keybindings."Mod4+d" = "exec firefox 'https://discord.com/app'";
     keybindings."Mod4+Escape"                        = "exec powerctl";

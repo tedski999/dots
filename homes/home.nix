@@ -8,6 +8,7 @@
   imports = [
     ./common.nix
     ./modules/0x0.nix
+    ./modules/alacritty.nix
     ./modules/bat.nix
     ./modules/batteryd.nix
     ./modules/bemenu.nix
@@ -22,7 +23,6 @@
     ./modules/fd.nix
     ./modules/firefox.nix
     ./modules/fontconfig.nix
-    ./modules/foot.nix
     ./modules/fzf.nix
     ./modules/git.nix
     ./modules/gpg-agent.nix

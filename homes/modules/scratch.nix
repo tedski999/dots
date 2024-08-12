@@ -7,7 +7,7 @@
       swaymsg -t get_tree | jq -re "recurse(.nodes[]?, .floating_nodes[]?) | select(.focused == true).app_id == \"$id\"" \
         && swaymsg "move scratchpad" \
         || swaymsg "[app_id=\"^$id$\"] focus" \
-        || foot --app-id "$id" $@
+        || alacritty --class "$id" $@
     '')
   ];
 }
