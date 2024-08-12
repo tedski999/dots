@@ -109,19 +109,19 @@ local function fzf_yank_selection(selected)
   print("Yanked "..#x.." bytes")
 end
 
--- Crude method to change to or temporally access different directories
-local function fzf_reroot(root)
+-- Crude method to change to or temporally access directories
+local function fzf_directories(root)
   root = vim.fn.resolve(root or fullpath():gsub("[^/]*$", ""))
+  vim.cmd("edit "..root)
   fzf.fzf_exec("fd --type directory --absolute-path --follow --hidden --exclude '**/.git/' --exclude '**/node_modules/'", {
     prompt = root.."/",
     cwd = root,
-    fzf_opts = { ["--no-multi"] = true, ["--header"] = "<ctrl-r> to root|<ctrl-e> to drop" },
+    fzf_opts = { ["--no-multi"] = true, ["--header"] = "<ctrl-r> to reroot" },
     fn_transform = function(x) return fzf.utils.ansi_codes.blue(x:sub(0, #x-1)) end,
     actions = {
-      ["default"] = function(sel) fzf_reroot(sel[1]) end,
-      ["-"] = function() fzf_reroot(root.."/..") end,
-      ["ctrl-e"] = function() vim.cmd("edit "..root) end,
-      ["ctrl-r"] = { function() vim.fn.chdir(root) print("cwd="..root) end, fzf.actions.resume },
+      ["default"] = function(sel) fzf_directories(sel[1]) end,
+      ["-"] = function() fzf_directories(root.."/..") end,
+      ["ctrl-r"] = { function() vim.fn.chdir(root) print("cd "..root) end, fzf.actions.resume },
       ["ctrl-y"] = { fzf_yank_selection, fzf.actions.resume },
     },
   })
@@ -557,7 +557,7 @@ vim.keymap.set("n", "<leader>U", "<cmd>FzfLua changes<cr>")
 vim.keymap.set("n", "<leader>p", fzf_projects)
 vim.keymap.set("n", "<leader>P", fzf_projects_save)
 vim.keymap.set("n", "z=", "<cmd>FzfLua spell_suggest<cr>")
-vim.keymap.set("n", "-", fzf_reroot)
+vim.keymap.set("n", "-", fzf_directories)
 
 if vim.g.arista then
   vim.opt.shiftwidth = 3
