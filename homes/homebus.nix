@@ -23,7 +23,7 @@
     ./modules/man.nix
     ./modules/mosh.nix
     ./modules/neovim.nix
-    ./modules/python3.nix
+    ./modules/python.nix
     ./modules/rg.nix
     ./modules/ssh.nix
     ./modules/tmux.nix

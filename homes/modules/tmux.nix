@@ -5,7 +5,6 @@
   programs.tmux.baseIndex = 1;
   programs.tmux.historyLimit = 100000;
   programs.tmux.extraConfig = ''
-    set -g mouse on
     set -g escape-time 250
     set -g repeat-time 250
     set -g status off
@@ -111,19 +110,11 @@
     bind -T copy-mode WheelUpPane   select-pane \; send-keys -X -N 2 scroll-up
     bind -T copy-mode WheelDownPane select-pane \; send-keys -X -N 2 scroll-down
 
-    # copy-mode mouse selection
+    # copy-mode selection
     bind -T copy-mode v                send-keys -X begin-selection
     bind -T copy-mode V                send-keys -X select-line
     bind -T copy-mode C-v              if-shell -F "#{selection_present}" { send-keys -X rectangle-toggle } { send-keys -X begin-selection; if-shell -F "#{rectangle_toggle}" {} { send-keys -X rectangle-toggle } }
     bind -T copy-mode o                send-keys -X other-end
-    bind -T root      MouseDrag1Pane   copy-mode \; send-keys -X begin-selection
-    bind -T copy-mode MouseDrag1Pane   select-pane \; send-keys -X begin-selection
-    bind -T root      MouseDown1Pane   copy-mode \; send-keys -X clear-selection
-    bind -T copy-mode MouseDown1Pane   select-pane \; send-keys -X clear-selection
-    bind -T root      DoubleClick1Pane copy-mode \; send-keys -X select-word
-    bind -T copy-mode DoubleClick1Pane select-pane \; send-keys -X select-word
-    bind -T root      TripleClick1Pane copy-mode \; send-keys -X select-line
-    bind -T copy-mode TripleClick1Pane select-pane \; send-keys -X select-line
 
     # copy-mode repeats
     bind -T copy-mode 1                 command-prompt -N -I 1 -p (repeat) { send-keys -N "%%" }
