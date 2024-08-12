@@ -17,6 +17,7 @@
     ./modules/fd.nix
     ./modules/fzf.nix
     ./modules/git.nix
+    ./modules/gpg-agent.nix
     ./modules/gpg.nix
     ./modules/less.nix
     ./modules/man.nix

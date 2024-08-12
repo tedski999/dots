@@ -1,6 +1,6 @@
 # TODO(work): "arista-ssh login" seems to require .ssh/config to be writable? need to investigate further
 # TODO(later): disable nvidia (investigate random crashes)
-# TODO(later): secret management in nix (oh no): gpg, bitwarden, firefox sync, syncthing, avpn
+# TODO(later): secret management in nix (oh no): gpg (work+homebus and personal), bitwarden, firefox sync, syncthing, avpn
 # TODO(later): programs.lf/nnn/yazi keychain? newsboat? obs-studio?
 { pkgs, ... }: {
   home.username = "tedj";
@@ -63,16 +63,18 @@
   programs.git.userEmail = "ski@h8c.de";
   programs.git.signing.key = "00ADEF0A!";
   programs.git.signing.signByDefault = true;
+  services.gpg-agent.enableSshSupport = true;
+  services.gpg-agent.sshKeys = [ "613AB861624F38ECCEBBB3764CF4A761DBE24D1B" ];
   programs.bat.config.map-syntax = [ "*.tin:C++" "*.tac:C++" ];
   programs.ssh.matchBlocks."bus-home".host = "bus-home";
   programs.ssh.matchBlocks."bus-home".hostname = "10.244.168.5";
-  programs.ssh.matchBlocks."bus-home".port = 22110;
+  programs.ssh.matchBlocks."bus-home".port = 22118;
   programs.ssh.matchBlocks."bus".host = "bus-*";
   programs.ssh.matchBlocks."bus".user = "tedj";
   programs.ssh.matchBlocks."bus".forwardAgent = true;
   programs.ssh.matchBlocks."bus".extraOptions = {
     StrictHostKeyChecking = "false";
     UserKnownHostsFile = "/dev/null";
-    RemoteForward = "/bus/gnupg/S.gpg-agent $HOME/.gnupg/S.gpg-agent.extra";
+    RemoteForward = "/bus/gnupg/S.gpg-agent \${XDG_RUNTIME_DIR}/gnupg/S.gpg-agent.extra";
   };
 }

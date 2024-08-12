@@ -33,8 +33,8 @@
     bind s  choose-tree -s
 
     # copy-mode
-    bind b   copy-mode
-    bind M-b copy-mode
+    bind a   copy-mode
+    bind M-a copy-mode
     bind -T copy-mode r      send-keys -X refresh-from-pane
     bind -T copy-mode y      send-keys -X copy-pipe
     bind -T copy-mode q      if-shell -F "#{selection_present}" { send-keys -X clear-selection } { send-keys -X cancel }

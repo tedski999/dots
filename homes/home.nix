@@ -56,4 +56,6 @@
   programs.git.userEmail = "ski@h8c.de";
   programs.git.signing.key = "00ADEF0A!";
   programs.git.signing.signByDefault = true;
+  services.gpg-agent.enableSshSupport = true;
+  services.gpg-agent.sshKeys = [ "613AB861624F38ECCEBBB3764CF4A761DBE24D1B" ];
 }
