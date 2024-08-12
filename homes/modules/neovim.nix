@@ -18,11 +18,6 @@
     nvim-osc52
     nvim-surround
     satellite-nvim
-    telescope-file-browser-nvim
-    telescope-fzf-native-nvim
-    telescope-nvim
-    telescope-ui-select-nvim
-    telescope-undo-nvim
     vim-rsi
     vim-signify
   ];
