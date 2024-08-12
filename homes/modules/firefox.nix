@@ -86,6 +86,7 @@
               { name = "dashboard"; url = "https://dashboard.infra.corp.arista.io/"; }
               { name = "bugsby"; url = "https://bb.infra.corp.arista.io/board/user/table/tedj"; }
               { name = "reviewboard"; url = "https://reviewboard.infra.corp.arista.io/dashboard/"; }
+              { name = "reviewboard"; url = "https://gerrit.corp.arista.io/dashboard/self"; }
               { name = "intranet"; url = "https://intranet.arista.com/"; }
               { name = "workday"; url = "https://wd5.myworkday.com/arista/d/home.htmld"; }
               { name = "portal"; url = "https://arista.onelogin.com/portal"; }

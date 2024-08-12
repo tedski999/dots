@@ -17,6 +17,7 @@
     ./modules/fd.nix
     ./modules/fzf.nix
     ./modules/git.nix
+    ./modules/gpg.nix
     ./modules/less.nix
     ./modules/man.nix
     ./modules/mosh.nix
@@ -34,6 +35,10 @@
   programs.zsh.initExtraFirst = ''[[ -o interactive && -o login && -z "$TMUX" && -n "$SSH_TTY" ]] && exec tmux new'';
   programs.git.userName = "tedj";
   programs.git.userEmail = "tedj@arista.com";
+  programs.git.signing.key = "1AC8F610!";
+  programs.git.signing.signByDefault = true;
+  programs.git.extraConfig.safe.directory = "/src/GitarBandMutDb";
+  programs.git.extraConfig.gitar.configured = "true";
   programs.bat.config.map-syntax = [ "*.tin:C++" "*.tac:C++" ];
-  programs.zsh.sessionVariables.PYTHONPATH = "/usr/lib/python3.9/site-packages";
+  programs.zsh.sessionVariables.PYTHONPATH = "/usr/lib/python3.9/site-packages:/usr/lib64/python3.9/site-packages";
 }

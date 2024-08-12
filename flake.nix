@@ -26,15 +26,15 @@
     # `home-manager switch --flake .#<name>` for declarative home management
     homeConfigurations = {
       "ski@msung" = lib.homeManagerConfiguration {
-        modules = [ ./homes/ski_msung.nix ];
+        modules = [ ./homes/home.nix ];
         pkgs = (import nixpkgs) { system = "x86_64-linux"; };
       };
       "tedj@tedj" = lib.homeManagerConfiguration {
-        modules = [ ./homes/tedj_work.nix ];
+        modules = [ ./homes/work.nix ];
         pkgs = (import nixpkgs) { system = "x86_64-linux"; overlays = [ nur.overlay nixgl.overlay ]; };
       };
       "tedj@tedj-home-xrxhs" = lib.homeManagerConfiguration {
-        modules = [ ./homes/tedj_homebus.nix ];
+        modules = [ ./homes/homebus.nix ];
         pkgs = (import nixpkgs) { system = "x86_64-linux"; };
       };
     };

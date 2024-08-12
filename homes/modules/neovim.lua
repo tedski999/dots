@@ -470,7 +470,7 @@ vim.keymap.set("n", "<c-j>", "m`i<cr><esc>``")
 -- Terminal shortcuts
 vim.keymap.set("n", "<leader><return>", "<cmd>belowright split | terminal<cr>")
 -- Open notes
-vim.keymap.set("n", "<leader>n", "<cmd>lcd ~/Documents/notes | enew | set filetype=markdown<cr>")
+vim.keymap.set("n", "<leader>n", "<cmd>lcd ~/Documents/notes | edit todo.txt<cr>")
 vim.keymap.set("n", "<leader>N", "<cmd>lcd ~/Documents/notes | edit `=strftime('./journal/%Y/%m/%d.md')` | call mkdir(expand('%:h'), 'p')<cr>")
 -- LSP
 vim.keymap.set("n", "<leader><leader>", "<cmd>lua vim.lsp.buf.hover()<cr>")
