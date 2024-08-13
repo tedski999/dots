@@ -25,11 +25,11 @@
 
     # `home-manager switch --flake .#<name>` for declarative home management
     homeConfigurations = {
-      "ski@msung" = lib.homeManagerConfiguration {
+      "home" = lib.homeManagerConfiguration {
         modules = [ ./homes/home.nix ];
         pkgs = (import nixpkgs) { system = "x86_64-linux"; };
       };
-      "tedj@tedj" = lib.homeManagerConfiguration {
+      "work" = lib.homeManagerConfiguration {
         modules = [ ./homes/work.nix ];
         pkgs = (import nixpkgs) { system = "x86_64-linux"; overlays = [ nur.overlay nixgl.overlay ]; };
       };

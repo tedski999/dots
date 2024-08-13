@@ -41,7 +41,11 @@
   programs.git.userEmail = "tedj@arista.com";
   programs.git.signing.key = "1AC8F610!";
   programs.git.signing.signByDefault = true;
-  programs.git.extraConfig.safe.directory = "/src/GitarBandMutDb"; # TODO: kinda breaks "a git"
+  # TODO(later): using \n string is deprecated but using attributes puts quotes around path which breaks atools
+  programs.git.extraConfig = ''
+    [safe]
+      directory = /src/GitarBandMutDb;
+  '';
   programs.git.extraConfig.gitar.configured = "true";
   programs.bat.config.map-syntax = [ "*.tin:C++" "*.tac:C++" ];
 }
