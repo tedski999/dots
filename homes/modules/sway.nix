@@ -4,6 +4,7 @@
   home.sessionVariables.LIBSEAT_BACKEND = "logind";
   home.packages = with pkgs; [ nixgl.nixGLIntel wl-clipboard brightnessctl grim slurp pulsemixer ];
   services.cliphist.enable = true;
+  programs.zsh.initExtraFirst = ''[[ -o interactive && -o login && -z "$WAYLAND_DISPLAY" && "$(tty)" = "/dev/tty1" ]] && exec nixGLIntel sway'';
   wayland.windowManager.sway.enable = true;
   wayland.windowManager.sway.wrapperFeatures.gtk = true;
   wayland.windowManager.sway.systemd.enable = true;
@@ -52,6 +53,7 @@
     input."type:touchpad".scroll_method = "two_finger";
     modes = {};
     fonts = {};
+    bars = [ { command = "waybar"; mode = "hide"; } ];
     startup = [
       { command = "pidof -x batteryd || batteryd"; always = true; }
       { command = "pidof -x bmbwd || bmbwd"; always = true; }
@@ -60,7 +62,6 @@
       #{ command = "scratch floating-btop btop"; }
       #{ command = "scratch floating-pulsemixer pulsemixer"; }
     ];
-    bars = [ { command = "waybar"; mode = "hide"; } ];
     # shortcuts
     keybindings."Mod4+space" = "exec bemenu-run";
     keybindings."Mod4+Return" = "exec alacritty";

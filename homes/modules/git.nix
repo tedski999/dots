@@ -1,6 +1,10 @@
 # bitkeeper but better
 { ... }: {
   programs.git.enable = true;
+  programs.git.userName = "tedski999";
+  programs.git.userEmail = "ski@h8c.de";
+  programs.git.signing.key = "00ADEF0A!";
+  programs.git.signing.signByDefault = true;
   programs.git.aliases.l = "log";
   programs.git.aliases.s = "status";
   programs.git.aliases.a = "add";

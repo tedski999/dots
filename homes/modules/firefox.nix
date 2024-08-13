@@ -126,6 +126,7 @@
               { name = "pcie eu meet"; url = "https://docs.google.com/document/d/1u-zkMTatgeRljZDvX7HGA_ALB8xQ-y9kMDDlqPAIi_M/preview"; }
               { name = "bricklayers meet"; url = " https://docs.google.com/document/d/12xqw_-eMyqJU3p16ErqKpq9UVGonoK4Bboz7bE-bK4c/preview"; }
               { name = "dmamem+picasso meet"; url = "https://docs.google.com/document/d/1LIfn_-WS0485rVL6axiGGt2waY-Zrzl7DKf6Agg4xB8/preview"; }
+              { name = "r&d"; url = "https://docs.google.com/spreadsheets/d/1l82reZVrIH3hbX99ExMyoZsTYb_ZLOObGM4i4US4Krg/edit?gid=377679536#gid=377679536"; }
             ];
           }
           {

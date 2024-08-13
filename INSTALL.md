@@ -61,61 +61,11 @@ nix --use-xdg-base-directories --extra-experimental-features 'nix-command flakes
 ```
 
 ### atools
-Running `a git setup` and co won't work with `.config/git/config` being readonly (lots of atools are very particular about it) so need to manually install this. Plus atools override git anyway so whatever. TODO(later): maybe there's a way to do this somewhat declaratively...
-```sh
-mkdir -p "$HOME/.config/git"
-cat > "$HOME/.config/git/config" <<EOL
-[alias]
-  a = "add"
-  b = "branch"
-  c = "commit"
-  cm = "commit --message"
-  d = "diff"
-  ds = "diff --staged"
-  l = "log"
-  pl = "pull"
-  ps = "push"
-  rs = "restore --staged"
-  s = "status"
-  un = "reset --soft HEAD~"
-[commit]
-  gpgSign = true
-[core]
-  pager = "/nix/store/6bipvrfa9aq947zim1nbz6wqk17wk2qw-delta-0.17.0/bin/delta"
-[delta]
-  blame-palette = "#101010 #282828"
-  blame-separator-format = "{n:^5}"
-  features = "navigate"
-  file-added-label = "+"
-  file-copied-label = "="
-  file-decoration-style = "omit"
-  file-modified-label = "!"
-  file-removed-label = "-"
-  file-renamed-label = ">"
-  file-style = "brightyellow"
-  hunk-header-decoration-style = "omit"
-  hunk-header-file-style = "blue"
-  hunk-header-line-number-style = "grey"
-  hunk-header-style = "file line-number"
-  hunk-label = "#"
-  line-numbers = true
-  line-numbers-left-format = ""
-  line-numbers-right-format = "{np:>4} "
-  navigate-regex = "^[-+=!>]"
-  paging = "always"
-  relative-paths = true
-  width = "variable"
-[gpg]
-  program = "/nix/store/35r5l02cwhprbakyn5lraij0lifkm0s5-gnupg-2.4.5/bin/gpg2"
-[interactive]
-  diffFilter = "/nix/store/6bipvrfa9aq947zim1nbz6wqk17wk2qw-delta-0.17.0/bin/delta --color-only"
-[tag]
-  gpgSign = true
-[user]
-  email = "tedj@arista.com"
-  name = "tedj"
-  signingKey = "1AC8F610!"
-EOL
-```
+Running `a git setup` and co won't work with `.config/git/config` being readonly (lots of atools are very particular about it) so need to manually install this. Plus atools override git anyway so whatever. There's a hack in homes/bus.nix to get this working.
 
-This (having effectively two nix stores and home managers write to the same home directory due to NFS) seems like a really bad idea... but it *does* work
+### ...and then throw a4c into the mix
+Following homebus "Install nix" instructions again inside the container seems to work. This (having effectively two nix stores and home-managers write to the same home directory due to NFS) is probably a really bad idea... but it *does* work. Mostly. Sometimes (not sure when), the home-managers get out of sync and complain but this has been easily fixable following the output's instructions and doing a fresh update like this:
+```sh
+. $HOME/.local/state/nix/profile/etc/profile.d/nix.sh
+nix --use-xdg-base-directories --extra-experimental-features 'nix-command flakes' develop github:tedski999/dots --command home-manager switch --flake github:tedski999/dots#bus
+``
