@@ -16,7 +16,6 @@
     ./modules/fastfetch.nix
     ./modules/fd.nix
     ./modules/fzf.nix
-    ./modules/git.nix
     ./modules/gpg-agent.nix
     ./modules/gpg.nix
     ./modules/less.nix
@@ -37,15 +36,5 @@
     export PATH="$(echo ''${PATH} | awk -v RS=: -v ORS=: '/\/nix\// {next} {print}' | sed 's/:*$//'):$HOME/.local/state/nix/profile/bin:/nix/var/nix/profiles/default/bin"
     shopt -q login_shell && exec zsh --login $@
   '';
-  programs.git.userName = "tedj";
-  programs.git.userEmail = "tedj@arista.com";
-  programs.git.signing.key = "1AC8F610!";
-  programs.git.signing.signByDefault = true;
-  # TODO(later): using \n string is deprecated but using attributes puts quotes around path which breaks atools
-  programs.git.extraConfig = ''
-    [safe]
-      directory = /src/GitarBandMutDb;
-  '';
-  programs.git.extraConfig.gitar.configured = "true";
   programs.bat.config.map-syntax = [ "*.tin:C++" "*.tac:C++" ];
 }
