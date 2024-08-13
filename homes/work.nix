@@ -68,8 +68,8 @@
   services.gpg-agent.sshKeys = [ "613AB861624F38ECCEBBB3764CF4A761DBE24D1B" ];
   programs.bat.config.map-syntax = [ "*.tin:C++" "*.tac:C++" ];
   programs.ssh.matchBlocks."bus-home".host = "bus-home";
-  programs.ssh.matchBlocks."bus-home".hostname = "10.244.168.5";
-  programs.ssh.matchBlocks."bus-home".port = 22118;
+  programs.ssh.matchBlocks."bus-home".hostname = "10.247.176.6";
+  programs.ssh.matchBlocks."bus-home".port = 22251;
   programs.ssh.matchBlocks."bus".host = "bus-*";
   programs.ssh.matchBlocks."bus".user = "tedj";
   programs.ssh.matchBlocks."bus".forwardAgent = true;

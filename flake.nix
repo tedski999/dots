@@ -33,8 +33,8 @@
         modules = [ ./homes/work.nix ];
         pkgs = (import nixpkgs) { system = "x86_64-linux"; overlays = [ nur.overlay nixgl.overlay ]; };
       };
-      "tedj@tedj-home-xrxhs" = lib.homeManagerConfiguration {
-        modules = [ ./homes/homebus.nix ];
+      "bus" = lib.homeManagerConfiguration {
+        modules = [ ./homes/bus.nix ];
         pkgs = (import nixpkgs) { system = "x86_64-linux"; };
       };
     };
