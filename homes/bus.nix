@@ -32,12 +32,11 @@
     ./modules/zsh.nix
   ];
 
-  #programs.bash.initExtra = ''
-  #  sudo ln -fs $HOME/nix /nix
-  #  export PATH="$(echo ''${PATH} | awk -v RS=: -v ORS=: '/\/nix\// {next} {print}' | sed 's/:*$//'):$HOME/.local/state/nix/profile/bin:/nix/var/nix/profiles/default/bin"
-  #  shopt -q login_shell && exec zsh --login $@
-  #'';
-  #programs.zsh.initExtraFirst = ''[[ -o interactive && -o login && -z "$TMUX" && -n "$SSH_TTY" ]] && exec tmux new'';
+  programs.bash.initExtra = ''
+    # TODO: protect the build
+    export PATH="$(echo ''${PATH} | awk -v RS=: -v ORS=: '/\/nix\// {next} {print}' | sed 's/:*$//'):$HOME/.local/state/nix/profile/bin:/nix/var/nix/profiles/default/bin"
+    shopt -q login_shell && exec zsh --login $@
+  '';
   programs.git.userName = "tedj";
   programs.git.userEmail = "tedj@arista.com";
   programs.git.signing.key = "1AC8F610!";
