@@ -64,7 +64,7 @@ nix --use-xdg-base-directories --extra-experimental-features 'nix-command flakes
 Running `a git setup` and co won't work with `.config/git/config` being readonly (lots of atools are very particular about it) so need to manually install this. Plus atools override git anyway so whatever. TODO(later): maybe there's a way to do this somewhat declaratively...
 ```sh
 mkdir -p "$HOME/.config/git"
-cat > ~/.config/git/config <<EOL
+cat > "$HOME/.config/git/config" <<EOL
 [alias]
   a = "add"
   b = "branch"

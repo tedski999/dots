@@ -32,9 +32,12 @@
   ];
 
   programs.bash.initExtra = ''
-    # TODO: protect the build
-    export PATH="$(echo ''${PATH} | awk -v RS=: -v ORS=: '/\/nix\// {next} {print}' | sed 's/:*$//'):$HOME/.local/state/nix/profile/bin:/nix/var/nix/profiles/default/bin"
-    shopt -q login_shell && exec zsh --login $@
+    shopt -q login_shell && [[ $- == *i* ]] && exec zsh --login $@
+    [[ $- == *i* ]] && exec zsh $@
+  '';
+  programs.zsh.initExtraFirst = ''
+    export PATH="$(echo ''${PATH} | awk -v RS=: -v ORS=: '/\/nix\// {next} {print}' | sed 's/:*$//')"
+    [[ -o interactive ]] && export PATH="''${PATH}:$HOME/.local/state/nix/profile/bin:/nix/var/nix/profiles/default/bin"
   '';
   programs.bat.config.map-syntax = [ "*.tin:C++" "*.tac:C++" ];
 }
