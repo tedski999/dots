@@ -62,8 +62,6 @@
       rs = "restore --staged"
       s = "status"
       un = "reset --soft HEAD~"
-    [commit]
-      gpgSign = true
     [core]
       pager = "delta"
     [delta]
@@ -93,12 +91,9 @@
       program = "gpg2"
     [interactive]
       diffFilter = "delta --color-only"
-    [tag]
-      gpgSign = true
     [user]
       email = "tedj@arista.com"
       name = "tedj"
-      signingKey = "1AC8F610!"
     [gitar]
       configured = true
     [safe]

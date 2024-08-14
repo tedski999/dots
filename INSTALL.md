@@ -68,6 +68,9 @@ Following homebus "Install nix" instructions again inside the container seems to
 ```sh
 export NIX_CONFIG=$'use-xdg-base-directories = true\nextra-experimental-features = nix-command flakes'
 . /nix/store/b9kk9p6ankg080wh70smhg44dyan78kn-nix-2.24.2/etc/profile.d/nix.sh
-nix --use-xdg-base-directories --extra-experimental-features 'nix-command flakes' develop github:tedski999/dots --command home-manager switch --flake github:tedski999/dots#bus
+home-manager switch --flake ~/dots#bus
 unset NIX_CONFIG
-``
+```
+
+### git commit signing within a4c
+I haven't been able to get this to work yet. There is some problem related to GPG agent forwarding from `homebus:${XDG_RUNTIME_DIR}/gnupg/S.gpg-agent.extra` to `a4c:${HOME}/.gnupg/S.gpg-agent` but it's probably related to the NFS home or some more arcane restriction with a4c/Docker.

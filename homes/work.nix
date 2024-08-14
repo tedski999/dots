@@ -1,4 +1,3 @@
-# TODO(work): "arista-ssh login" seems to require .ssh/config to be writable? need to investigate further
 # TODO(later): disable nvidia (investigate random crashes)
 # TODO(later): secret management in nix (oh no): gpg (work->homebus->git and personal), ssh keys (homebus->gitar and personal), bitwarden, firefox sync, syncthing, avpn
 # TODO(later): keychain? newsboat? obs-studio?
