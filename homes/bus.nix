@@ -16,8 +16,6 @@
     ./modules/fastfetch.nix
     ./modules/fd.nix
     ./modules/fzf.nix
-    ./modules/gpg-agent.nix
-    ./modules/gpg.nix
     ./modules/less.nix
     ./modules/man.nix
     ./modules/neovim.nix
@@ -87,8 +85,6 @@
       paging = "always"
       relative-paths = true
       width = "variable"
-    [gpg]
-      program = "gpg2"
     [interactive]
       diffFilter = "delta --color-only"
     [user]

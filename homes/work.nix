@@ -67,10 +67,8 @@
   programs.ssh.matchBlocks."bus-home".port = 22251;
   programs.ssh.matchBlocks."bus".host = "bus-*";
   programs.ssh.matchBlocks."bus".user = "tedj";
-  programs.ssh.matchBlocks."bus".forwardAgent = true;
   programs.ssh.matchBlocks."bus".extraOptions = {
     StrictHostKeyChecking = "false";
     UserKnownHostsFile = "/dev/null";
-    RemoteForward = "/bus/gnupg/S.gpg-agent \${XDG_RUNTIME_DIR}/gnupg/S.gpg-agent.extra";
   };
 }
