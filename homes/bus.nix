@@ -99,6 +99,10 @@
       email = "tedj@arista.com"
       name = "tedj"
       signingKey = "1AC8F610!"
+    [gitar]
+      configured = true
+    [safe]
+      directory = /src/GitarBandMutDb
     EOL
   '';
 }
