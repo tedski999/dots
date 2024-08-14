@@ -9,7 +9,19 @@
     id = 0;
     name = "Work";
     isDefault = true;
-    search = { default = "DuckDuckGo"; privateDefault = "DuckDuckGo"; force = true; };
+    search.default = "DuckDuckGo";
+    search.privateDefault = "DuckDuckGo";
+    search.force = true;
+    search.engines."aid".urls = [{template = "https://aid.infra.corp.arista.io/{searchTerms}";}];
+    search.engines."aid".definedAliases = ["@a" "@aid"];
+    search.engines."go".urls = [{template = "https://go.infra.corp.arista.io/{searchTerms}";}];
+    search.engines."go".definedAliases = ["@g" "@go"];
+    search.engines."bb".urls = [{template = "https://bb.infra.corp.arista.io/bug/{searchTerms}";}];
+    search.engines."bb".definedAliases = ["@b" "@bb" "@bug"];
+    search.engines."Wikipedia (en)".metaData.alias = "@wiki";
+    search.engines."Amazon.com".metaData.hidden = true;
+    search.engines."Bing".metaData.hidden = true;
+    search.engines."eBay".metaData.hidden = true;
     extensions = with pkgs.nur.repos.rycee.firefox-addons; [ ublock-origin vimium ];
     settings = {
       "accessibility.typeaheadfind.flashBar" = 0;
@@ -210,6 +222,8 @@
           { name = "Source Code Navigation at Arista (AID/1270)"; url = "https://aid.infra.corp.arista.io/1270/cached.html"; }
           { name = "Tracking Hours for Irish R&D Tax Credits - Google Docs"; url = "https://docs.google.com/document/d/1-VsNiTTlXNwj69IGbKtAqdNA7Ve84RVfAnv-aJGCQO0/preview"; }
           { name = "jack nixfiles"; url = "https://gitlab.aristanetworks.com/jack/nixfiles/-/tree/arista/home-manager?ref_type=heads"; }
+          { name = "build system tut"; url = "https://docs.google.com/document/d/1p1za-FlFtolBSsWnPlr0pwdVZDA4xDlYJW299_fPKg0/edit"; }
+          { name = "getting started"; url = "https://docs.google.com/document/d/1jCgbJrvKmJypgGa-VPK_qvyn52_0JOWaGFA-dmz1Kjk/preview"; }
         ];
       }
     ];
