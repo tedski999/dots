@@ -16,6 +16,8 @@
     ./modules/fastfetch.nix
     ./modules/fd.nix
     ./modules/fzf.nix
+    ./modules/gpg-agent.nix
+    ./modules/gpg.nix
     ./modules/less.nix
     ./modules/man.nix
     ./modules/neovim.nix

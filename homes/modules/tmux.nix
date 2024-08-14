@@ -8,6 +8,7 @@
     set -g escape-time 250
     set -g repeat-time 250
     set -g status off
+    set -g set-clipboard on
     set -g set-titles on
     set -g set-titles-string "#S:#W"
     # https://gist.github.com/yudai/95b20e3da66df1b066531997f982b57b

@@ -67,10 +67,12 @@ Running `a git setup` and co won't work with `.config/git/config` being readonly
 Following homebus "Install nix" instructions again inside the container seems to work. This (having effectively two nix stores and home-managers write to the same home directory due to NFS) is probably a really bad idea... but it *does* work. Mostly. Sometimes (not sure when), the home-managers get out of sync and complain but this has been easily fixable following the output's instructions and doing a fresh update like this:
 ```sh
 export NIX_CONFIG=$'use-xdg-base-directories = true\nextra-experimental-features = nix-command flakes'
-. /nix/store/b9kk9p6ankg080wh70smhg44dyan78kn-nix-2.24.2/etc/profile.d/nix.sh
-home-manager switch --flake ~/dots#bus
+sh <(curl -L https://nixos.org/nix/install) --no-daemon
+. $HOME/.local/state/nix/profile/etc/profile.d/nix.sh
+nix develop github:tedski999/dots --command home-manager switch --flake ~/dots#bus
 unset NIX_CONFIG
 ```
+TODO(later): automatically do above?
 
 ### git commit signing within a4c
 I haven't been able to get this to work yet. There is some problem related to GPG agent forwarding from `homebus:${XDG_RUNTIME_DIR}/gnupg/S.gpg-agent.extra` to `a4c:${HOME}/.gnupg/S.gpg-agent` but it's probably related to the NFS home or some more arcane restriction with a4c/Docker.
