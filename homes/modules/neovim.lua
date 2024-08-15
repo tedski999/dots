@@ -1,10 +1,3 @@
--- Arista-specifics switch
-if vim.loop.fs_stat("/usr/share/vim/vimfiles/arista.vim") and vim.fn.getcwd():find("^/src") then
-	vim.api.nvim_echo({ { "Note: Arista-specifics have been enabled for this Neovim instance", "MoreMsg" } }, false, {})
-	vim.g.arista = true
-	vim.fn.chdir("/src")
-end
-
 -- Spaceman
 vim.g.mapleader = " "
 
@@ -16,11 +9,6 @@ vim.lsp.protocol.CompletionItemKind = {
 	"rg", "/.", "&x", "//", "∃e",
 	"#x", "{}", "ev", "++", "<>"
 }
-
--- Provide method to apply ftplugin and syntax settings to all filetypes
--- TODO(later): still used? maybe for snippets and arista .tac syntax
--- vim.g.myfiletypefile = vim.fn.stdpath("config").."/ftplugin/ftplugin.vim"
--- vim.g.mysyntaxfile = vim.fn.stdpath("config").."/syntax/syntax.vim"
 
 -- We don't need netrw where we're going
 vim.g.loaded_netrw = 1
@@ -247,6 +235,11 @@ vim.api.nvim_create_autocmd({ "InsertEnter", "CursorMovedI" }, { callback = func
 	apply_whitespace_pattern("\\%<"..line.."l"..pattern.."\\|\\%>"..line.."l"..pattern)
 end })
 
+-- If I can read it I can edit it (even if I can't write it)
+vim.api.nvim_create_autocmd("BufEnter", { callback = function()
+	vim.o.readonly = false
+end })
+
 -- Remember last cursor position
 vim.api.nvim_create_autocmd("BufWinEnter", { callback = function()
 	local no_ft = { diff=1, git=1, gitcommit=1, gitrebase=1 }
@@ -275,6 +268,7 @@ end })
 
 -- Per filetype config
 vim.api.nvim_create_autocmd("FileType", { pattern = "nix", command = "setlocal tabstop=2 shiftwidth=2 expandtab" })
+vim.api.nvim_create_autocmd("FileType", { pattern = { "c", "cpp", "tac" }, command = "setlocal commentstring=//\\ %s" })
 
 -- PLUGIN INITIALISATION --
 
@@ -524,12 +518,12 @@ vim.keymap.set("n", "<leader>f", "<cmd>FzfLua files cwd=%:p:h<cr>")
 vim.keymap.set("n", "<leader>F", "<cmd>FzfLua files hidden=true<cr>")
 vim.keymap.set("n", "<leader>o", "<cmd>FzfLua oldfiles cwd=%:p:h cwd_only=true<cr>")
 vim.keymap.set("n", "<leader>O", "<cmd>FzfLua oldfiles<cr>")
-vim.keymap.set("n", "<leader>s", "<cmd>FzfLua live_grep cwd=%:p:h<cr>")
-vim.keymap.set("n", "<leader>S", "<cmd>FzfLua live_grep<cr>")
+vim.keymap.set("n", "<leader>s", "<cmd>FzfLua live_grep_native cwd=%:p:h<cr>")
+vim.keymap.set("n", "<leader>S", "<cmd>FzfLua live_grep_native<cr>")
 vim.keymap.set("n", "<leader>b", "<cmd>FzfLua buffers cwd=%:p:h cwd_only=true<cr>")
 vim.keymap.set("n", "<leader>B", "<cmd>FzfLua buffers<cr>")
-vim.keymap.set("n", "<leader>t", "<cmd>FzfLua btags<cr>")
-vim.keymap.set("n", "<leader>T", "<cmd>FzfLua tags<cr>")
+vim.keymap.set("n", "<leader>t", "<cmd>FzfLua grep cwd=%:p:h no_esc=true search=\\b(TODO|FIX(ME)?|BUG|TBD|XXX)(\\([^\\)]*\\))?:?<cr>")
+vim.keymap.set("n", "<leader>T", "<cmd>FzfLua grep no_esc=true search=\\b(TODO|FIX(ME)?|BUG|TBD|XXX)(\\([^\\)]*\\))?:?<cr>")
 vim.keymap.set("n", "<leader>l", "<cmd>FzfLua blines<cr>")
 vim.keymap.set("n", "<leader>L", "<cmd>FzfLua lines<cr>")
 vim.keymap.set("n", "<leader>:", "<cmd>FzfLua command_history<cr>")
@@ -562,29 +556,28 @@ vim.keymap.set("n", "<leader>P", fzf_projects_save)
 vim.keymap.set("n", "z=", "<cmd>FzfLua spell_suggest<cr>")
 vim.keymap.set("n", "-", fzf_directories)
 
-if vim.g.arista then
+-- Arista-specifics switch
+if vim.loop.fs_stat("/usr/share/vim/vimfiles/arista.vim") and vim.fn.getcwd():find("^/src") then
+	vim.api.nvim_echo({ { "Note: Arista-specifics have been enabled for this Neovim instance", "MoreMsg" } }, false, {})
+	vim.fn.chdir("/src")
 	vim.opt.shiftwidth = 3
 	vim.opt.tabstop = 3
 	vim.opt.expandtab = true
 	vim.opt.colorcolumn = "86"
+	vim.cmd[[%:p:h
+	let a4_auto_edit = 0
+	source /usr/share/vim/vimfiles/arista.vim
+	function! TaccIndentOverrides()
+		let prevLine = getline(SkipTaccBlanksAndComments(v:lnum - 1))
+		if prevLine =~# 'Tac::Namespace\s*{\s*$' | return 0 | endif
+		return GetTaccIndent()
+	endfunction
+	augroup vimrc
+	autocmd BufNewFile,BufRead *.tac setlocal indentexpr=TaccIndentOverrides()
+	]]
 	-- File search
 	vim.keymap.set("n", "<leader>f", "<cmd>FzfLua files cwd=%:p:h<cr>")
 	vim.keymap.set("n", "<leader>F", "<cmd>FzfLua files hidden=true<cr>")
-	-- TODO(work): cached files search
-	-- command! Afiles  call fzf#run(fzf#vim#with_preview(fzf#wrap({'source': 'rg -F "'.join(split(expand('%:p:h'), '/')[:0], '/').'" '.AfilesCache()})))
-	-- command! AfilesP call fzf#run(fzf#vim#with_preview(fzf#wrap({'source': 'rg -F "'.join(split(expand('%:p:h'), '/')[:1], '/').'" '.AfilesCache()})))
-	-- command! AfilesCache call AfilesCache()
-	-- function! AfilesCache()
-	--   let cache = stdpath('cache').'/afiles'
-	--   if !filereadable(cache)
-	--     echo 'Generating Afiles cache at 'a:cache'...' | redraw
-	--     let res = systemlist(s:ssh.'find /src -type f')
-	--     if v:shell_error | echohl ErrorMsg | echomsg res | echohl None | return | endif
-	--     if res == [] | echohl ErrorMsg | echo 'No files found for Afiles' | echohl None | return | endif
-	--     call writefile(res, a:cache)
-	--   endif
-	--   return cache
-	-- endfunction
 	-- Agrok
 	vim.api.nvim_create_user_command("Agrok",  function(p) fzf.fzf_exec("a grok -em 99 "..p.args.." | grep '^/src/.*'",                                                 { actions = fzf.config.globals.actions.files, previewer = "builtin" }) end, { nargs = 1 })
 	vim.api.nvim_create_user_command("Agrokp", function(p) fzf.fzf_exec("a grok -em 99 -f "..(fullpath():match("^/src/.-/") or "/").." "..p.args.." | grep '^/src/.*'", { actions = fzf.config.globals.actions.files, previewer = "builtin" }) end, { nargs = 1 })
@@ -596,56 +589,4 @@ if vim.g.arista then
 	vim.keymap.set("n", "<leader>R", "<cmd>exec 'Agid     '.expand('<cword>')<cr>", { silent = true })
 	vim.keymap.set("n", "<leader>d", "<cmd>exec 'Agidp -D '.expand('<cword>')<cr>", { silent = true })
 	vim.keymap.set("n", "<leader>D", "<cmd>exec 'Agid  -D '.expand('<cword>')<cr>", { silent = true })
-	-- TODO(work): dominiks supercharged grep - wouldnt work in sshfs context
-	-- TODO(work): arista.vim needed?
-	-- -- Perforce
-	-- vim.api.nvim_create_user_command("Achanged", function() fzf.fzf_exec([[a p4 diff --summary | sed s/^/\\//]],                                              { actions = fzf.config.globals.actions.files, previewer = "builtin" }) end, {})
-	-- vim.api.nvim_create_user_command("Aopened",  function() fzf.fzf_exec([[a p4 opened | sed -n "s/\/\(\/[^\/]\+\/[^\/]\+\/\)[^\/]\+\/\([^#]\+\).*/\1\2/p"]], { actions = fzf.config.globals.actions.files, previewer = "builtin" }) end, {})
-	-- vim.keymap.set("n", "<leader>gs", "<cmd>Achanged<cr>")
-	-- vim.keymap.set("n", "<leader>go", "<cmd>Aopened<cr>")
-	-- local vcs_cmds = vim.g.signify_vcs_cmds or {}
-	-- local vcs_cmds_diffmode = vim.g.signify_vcs_cmds_diffmode or {}
-	-- vcs_cmds.perforce = "env P4DIFF= P4COLORS= a p4 diff -du 0 %f"
-	-- vcs_cmds_diffmode.perforce = "a p4 print %f"
-	-- vim.g.signify_vcs_cmds = vcs_cmds
-	-- vim.g.signify_vcs_cmds_diffmode = vcs_cmds_diffmode
-	-- -- Source arista.vim but override A4edit and A4revert
-	-- vim.cmd([[
-	--   let g:a4_auto_edit = 0
-	--   source /usr/share/vim/vimfiles/arista.vim
-	--   function! A4edit()
-	--     if strlen(glob(expand('%')))
-	--       belowright split
-	--       exec 'terminal a p4 login && a p4 edit '.shellescape(expand('%:p'))
-	--     endif
-	--   endfunction
-	--   function! A4revert()
-	--     if strlen(glob(expand('%'))) && confirm('Revert Perforce file changes?', '&Yes\n&No', 1) == 1
-	--       exec 'terminal a p4 login && a p4 revert '.shellescape(expand('%:p'))
-	--       set readonly
-	--     endif
-	--   endfunction
-	-- ]])
-	-- vim.api.nvim_create_user_command("Aedit", "call A4edit()", {})
-	-- vim.api.nvim_create_user_command("Arevert", "call A4revert()", {})
 end
-
-
---# Shorthand for un/mounting MUTs using SSHFS
---function m {
---  fusermount -uq /src
---  M >/dev/null 2>&1 && { >&2 echo "Unable to unmount"; return 1 }
---  [ -z "$1" ] && return 0
---  sshfs "$1:/src" "/src" \
---    -o reconnect -o kernel_cache -o idmap=user -o compression=yes -o ServerAliveInterval=15 -o max_conns=8 \
---    -o cache_timeout=600 -o cache_stat_timeout=600 -o cache_dir_timeout=600 -o cache_link_timeout=600 \
---    -o dcache_timeout=600 -o dcache_stat_timeout=600 -o dcache_dir_timeout=600 -o dcache_link_timeout=600 \
---    -o entry_timeout=600 -o negative_timeout=600 -o attr_timeout=600
---}
---
---# Print current mounted MUT hostname
---function M {
---  mut="$(findmnt -no SOURCE /src | cut -d: -f1)"
---  [ -z "$mut" ] && { >&2 echo "No MUT mounted"; return 1 }
---  echo "$mut"
---}
