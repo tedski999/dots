@@ -19,7 +19,7 @@
     in {
       default = pkgs.mkShell {
         NIX_CONFIG = "extra-experimental-features = nix-command flakes\nuse-xdg-base-directories = true";
-        buildInputs = [ pkgs.home-manager ];
+        buildInputs = [ pkgs.nix pkgs.home-manager ];
       };
     });
 
