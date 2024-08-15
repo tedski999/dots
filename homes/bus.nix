@@ -29,6 +29,7 @@
     ./modules/zsh.nix
     # arista-specifics
     ./modules/bash.nix
+    ./modules/mosh.nix
     ./modules/tmux.nix
   ];
 

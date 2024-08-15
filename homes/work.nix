@@ -56,7 +56,6 @@
     ./modules/xdg.nix
     # arista-specifics
     ./modules/ash.nix
-    ./modules/asrc.nix
     ./modules/avpn.nix
     ./modules/mosh.nix
   ];
