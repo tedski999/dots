@@ -87,7 +87,6 @@
 
     # copy-mode scroll
     bind -T root      PPage   copy-mode \; send-keys -X page-up
-    bind -T root      Up      copy-mode \; send-keys -X -N 2 scroll-up
     bind -T copy-mode C-b     send-keys -X page-up
     bind -T copy-mode PPage   send-keys -X page-up
     bind -T copy-mode C-f     send-keys -X page-down
