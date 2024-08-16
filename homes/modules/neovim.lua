@@ -564,7 +564,7 @@ if vim.loop.fs_stat("/usr/share/vim/vimfiles/arista.vim") and vim.fn.getcwd():fi
 	vim.opt.tabstop = 3
 	vim.opt.expandtab = true
 	vim.opt.colorcolumn = "86"
-	vim.cmd[[%:p:h
+	vim.cmd[[
 	let a4_auto_edit = 0
 	source /usr/share/vim/vimfiles/arista.vim
 	function! TaccIndentOverrides()

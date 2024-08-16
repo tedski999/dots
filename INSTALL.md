@@ -66,7 +66,7 @@ Running `a git setup` and co won't work with `.config/git/config` being readonly
 ### ...and then throw a4c into the mix
 Following homebus "Install nix" instructions again inside the container seems to work. This (having effectively two nix stores and home-managers write to the same home directory due to NFS) is probably a really bad idea... but it *does* work. Mostly. Sometimes (not sure when), the home-managers get out of sync and complain but this has been easily fixable following the output's instructions and doing a fresh update like this:
 ```sh
-NIX_SSL_CERT_FILE=/etc/ssl/certs/ca-bundle.crt /nix/store/b9kk9p6ankg080wh70smhg44dyan78kn-nix-2.24.2/bin/nix --use-xdg-base-directories --extra-experimental-features 'nix-command flakes' develop ~/dots --command home-manager switch --flake ~/dots#bus
+NIX_SSL_CERT_FILE=/etc/ssl/certs/ca-bundle.crt /nix/store/b9kk9p6ankg080wh70smhg44dyan78kn-nix-2.24.2/bin/nix --use-xdg-base-directories --extra-experimental-features 'nix-command flakes' develop ~/dots --command home-manager switch --flake ~/dots#bus && exec bash
 ```
 
 ### git commit signing within a4c

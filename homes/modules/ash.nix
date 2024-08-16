@@ -5,7 +5,7 @@
       LC_ALL= mosh \
         --predict=always --predict-overwrite \
         --experimental-remote-ip=remote \
-        bus-home -- tmux new ''${@:+-c -- a4c shell $@}
+        bus-home -- ~/.local/state/nix/profile/bin/tmux new ''${@:+-c -- a4c shell $@}
     '')
     (writeShellScriptBin "asl" "arista-ssh check-auth || arista-ssh login")
   ];
