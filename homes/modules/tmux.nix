@@ -40,16 +40,12 @@
     # copy-mode cursor
     bind -T copy-mode k     send-keys -X cursor-up
     bind -T copy-mode C-p   send-keys -X cursor-up
-    bind -T copy-mode Up    send-keys -X cursor-up
     bind -T copy-mode j     send-keys -X cursor-down
     bind -T copy-mode C-n   send-keys -X cursor-down
-    bind -T copy-mode Down  send-keys -X cursor-down
     bind -T copy-mode h     send-keys -X cursor-left
     bind -T copy-mode C-b   send-keys -X cursor-left
-    bind -T copy-mode Left  send-keys -X cursor-left
     bind -T copy-mode l     send-keys -X cursor-right
     bind -T copy-mode C-f   send-keys -X cursor-right
-    bind -T copy-mode Right send-keys -X cursor-right
     bind -T copy-mode ^     send-keys -X back-to-indentation
     bind -T copy-mode 0     send-keys -X start-of-line
     bind -T copy-mode C-a   send-keys -X start-of-line
@@ -90,21 +86,21 @@
     bind -T copy-mode N     send-keys -X search-reverse
 
     # copy-mode scroll
-    bind -T root      PPage         copy-mode \; send-keys -X page-up
-    bind -T copy-mode C-b           send-keys -X page-up
-    bind -T copy-mode PPage         send-keys -X page-up
-    bind -T copy-mode C-f           send-keys -X page-down
-    bind -T copy-mode NPage         send-keys -X page-down
-    bind -T copy-mode C-u           send-keys -X halfpage-up
-    bind -T copy-mode C-d           send-keys -X halfpage-down
-    bind -T copy-mode C-y           send-keys -X scroll-up
-    bind -T copy-mode C-Up          send-keys -X scroll-up
-    bind -T copy-mode C-e           send-keys -X scroll-down
-    bind -T copy-mode C-Down        send-keys -X scroll-down
-    bind -T copy-mode z             send-keys -X scroll-middle
-    bind -T root WheelUpPane        copy-mode \; send-keys -X -N 2 scroll-up
-    bind -T copy-mode WheelUpPane   select-pane \; send-keys -X -N 2 scroll-up
-    bind -T copy-mode WheelDownPane select-pane \; send-keys -X -N 2 scroll-down
+    bind -T root      PPage   copy-mode \; send-keys -X page-up
+    bind -T root      Up      copy-mode \; send-keys -X -N 2 scroll-up
+    bind -T copy-mode C-b     send-keys -X page-up
+    bind -T copy-mode PPage   send-keys -X page-up
+    bind -T copy-mode C-f     send-keys -X page-down
+    bind -T copy-mode NPage   send-keys -X page-down
+    bind -T copy-mode C-u     send-keys -X halfpage-up
+    bind -T copy-mode C-d     send-keys -X halfpage-down
+    bind -T copy-mode C-y     send-keys -X scroll-up
+    bind -T copy-mode C-e     send-keys -X scroll-down
+    bind -T copy-mode z       send-keys -X scroll-middle
+    bind -T copy-mode Up      send-keys -X -N 2 scroll-up
+    bind -T copy-mode Down    send-keys -X -N 2 scroll-down
+    bind -T copy-mode Left    send-keys -X -N 2 scroll-left
+    bind -T copy-mode Right   send-keys -X -N 2 scroll-right
 
     # copy-mode selection
     bind -T copy-mode v                send-keys -X begin-selection
