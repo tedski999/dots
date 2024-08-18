@@ -1,5 +1,4 @@
 # chrome but better
-# TODO(later): https://github.com/Misterio77/nix-config/blob/main/home/gabriel/features/desktop/common/firefox.nix
 { pkgs, ... }: {
   home.sessionVariables.BROWSER = "firefox";
   home.sessionVariables.MOZ_ENABLE_WAYLAND = 1;
@@ -27,25 +26,56 @@
       "accessibility.typeaheadfind.flashBar" = 0;
       "app.shield.optoutstudies.enabled" = false;
       "browser.aboutConfig.showWarning" = false;
+      "browser.bookmarks.addedImportButton" = true;
+      "browser.bookmarks.restore_default_bookmarks" = false;
       "browser.bookmarks.showMobileBookmarks" = true;
       "browser.contentblocking.category" = "strict";
       "browser.ctrlTab.sortByRecentlyUsed" = true;
+      "browser.disableResetPrompt" = true;
       "browser.discovery.enabled" = false;
       "browser.download.always_ask_before_handling_new_types" = true;
       "browser.download.panel.shown" = true;
+      "browser.download.useDownloadDir" = false;
+      "browser.feeds.showFirstRunUI" = false;
+      "browser.messaging-system.whatsNewPanel.enabled" = false;
       "browser.newtabpage.activity-stream.feeds.section.topstories" = false;
+      "browser.newtabpage.activity-stream.feeds.telemetry" = false;
       "browser.newtabpage.activity-stream.feeds.topsites" = false;
+      "browser.newtabpage.activity-stream.improvesearch.topSiteSearchShortcuts" = false;
       "browser.newtabpage.activity-stream.showSponsored" = false;
       "browser.newtabpage.activity-stream.showSponsoredTopSites" = false;
+      "browser.newtabpage.activity-stream.telemetry" = false;
+      "browser.ping-centre.telemetry" = false;
+      "browser.rights.3.shown" = true;
       "browser.search.isUS" = false;
       "browser.search.region" = "GB";
+      "browser.shell.checkDefaultBrowser" = false;
+      "browser.shell.defaultBrowserCheckCount" = 1;
+      "browser.startup.homepage_override.mstone" = "ignore";
       "browser.tabs.inTitlebar" = 1;
       "browser.tabs.warnOnClose" = true;
       "browser.toolbars.bookmarks.visibility" = "always";
-      "browser.uiCustomization.state" = ''{"placements":{"widget-overflow-fixed-list":[],"unified-extensions-area":[],"nav-bar":["back-button","forward-button","stop-reload-button","urlbar-container","downloads-button","unified-extensions-button"],"toolbar-menubar":["menubar-items"],"TabsToolbar":["tabbrowser-tabs","new-tab-button","alltabs-button"],"PersonalToolbar":["personal-bookmarks"]},"seen":["save-to-pocket-button","developer-button"],"dirtyAreaCache":["nav-bar","PersonalToolbar","toolbar-menubar","TabsToolbar","widget-overflow-fixed-list"],"currentVersion":20,"newElementCount":4}'';
-      "browser.urlbar.placeholderName" = "DuckDuckGo";
-      "browser.urlbar.placeholderName.private" = "DuckDuckGo";
+      "browser.uiCustomization.state" =  builtins.toJSON {
+        currentVersion = 20;
+        dirtyAreaCache = [ "nav-bar" "PersonalToolbar" "toolbar-menubar" "TabsToolbar" "widget-overflow-fixed-list"];
+        newElementCount = 4;
+        placements = {
+          PersonalToolbar = [ "personal-bookmarks" ];
+          TabsToolbar =  [ "tabbrowser-tabs" "new-tab-button" "alltabs-button" ];
+          nav-bar = [ "back-button" "forward-button" "stop-reload-button" "urlbar-container" "downloads-button" "unified-extensions-button"];
+          toolbar-menubar = [ "menubar-items" ];
+          unified-extensions-area = [];
+          widget-overflow-fixed-list = [];
+        };
+        seen = [ "save-to-pocket-button" "developer-button" ];
+      };
+      "browser.uitour.enabled" = false;
       "browser.urlbar.quicksuggest.scenario" = "history";
+      "datareporting.healthreport.service.enabled" = false;
+      "datareporting.healthreport.uploadEnabled" = false;
+      "datareporting.policy.dataSubmissionEnabled" = false;
+      "datareporting.sessions.current.clean" = true;
+      "devtools.onboarding.telemetry.logged" = false;
       "distribution.searchplugins.defaultLocale" = "en-GB";
       "dom.forms.autocomplete.formautofill" = true;
       "dom.private-attribution.submission.enabled" = false;
@@ -61,6 +91,7 @@
       "findbar.highlightAll" = true;
       "general.autoScroll" = true;
       "general.useragent.locale" = "en-GB";
+      "identity.fxaccounts.enabled" = false;
       "intl.locale.requested" = "en-GB,en-US";
       "layout.css.prefers-color-scheme.content-override" = 0;
       "privacy.annotate_channels.strict_list.enabled" = true;
@@ -76,6 +107,23 @@
       "privacy.trackingprotection.emailtracking.enabled" = true;
       "privacy.trackingprotection.enabled" = true;
       "privacy.trackingprotection.socialtracking.enabled" = true;
+      "signon.rememberSignons" = false;
+      "startup.homepage_override_url" = "";
+      "toolkit.telemetry.archive.enabled" = false;
+      "toolkit.telemetry.bhrPing.enabled" = false;
+      "toolkit.telemetry.enabled" = false;
+      "toolkit.telemetry.firstShutdownPing.enabled" = false;
+      "toolkit.telemetry.hybridContent.enabled" = false;
+      "toolkit.telemetry.newProfilePing.enabled" = false;
+      "toolkit.telemetry.prompted" = 2;
+      "toolkit.telemetry.rejected" = true;
+      "toolkit.telemetry.reportingpolicy.firstRun" = false;
+      "toolkit.telemetry.server" = "";
+      "toolkit.telemetry.shutdownPingSender.enabled" = false;
+      "toolkit.telemetry.unified" = false;
+      "toolkit.telemetry.unifiedIsOptIn" = false;
+      "toolkit.telemetry.updatePing.enabled" = false;
+      "trailhead.firstrun.didSeeAboutWelcome" = true;
       "widget.gtk.overlay-scrollbars.enabled" = false;
     };
     bookmarks = [
@@ -157,6 +205,14 @@
               { name = "eos manual"; url = "https://www.arista.com/assets/data/pdf/user-manual/um-books/EOS-User-Manual.pdf"; }
               { name = "eos sdk wiki"; url = "https://github.com/aristanetworks/EosSdk/wiki"; }
               {
+                name = "style";
+                bookmarks = [
+                  { name = "c++"; url = "https://docs.google.com/document/d/1AJ034fuYllwuPqWSUtmW7L2L-f6z5qGXnj08Dwh3qXY/preview"; }
+                  { name = "python"; url = "https://docs.google.com/document/d/1NPcZT4AXy0ajbrwa37jHwSYMJPWQK5WTWEp2VkWyYtY/preview"; }
+                  { name = "cli"; url = "https://docs.google.com/document/d/1fTc5A8e3GtcqcPiyMs7qLZDmocyr8pJGbGitwhCw_CQ/preview"; }
+                ];
+              }
+              {
                 name = "tacc";
                 bookmarks = [
                   { name = "index"; url = "https://docs.google.com/document/d/1wIcOuciQ8hoI4SOA55KZpb3lrqpDw8v7nTksfDUCsk8/preview"; }
@@ -215,12 +271,9 @@
             ];
           }
           { name = "guide"; url = "https://guide.infra.corp.arista.io/"; }
-          { name = "Transitioning from School to Arista - Google Docs"; url = "https://docs.google.com/document/d/1RRERZWg5eOT2QsU4P-CkFWxtkOxW36fLWY81XgLX4EE/preview"; }
           { name = "intern link list"; url = "https://docs.google.com/document/d/1XMzfZYF_ekOfsuUPBZJdZfPn9eQ7V0OrVSvTzSZMqZI/preview"; }
           { name = "AID48 Software Engineering at Arista - Google Docs"; url = "https://docs.google.com/document/d/12-MQ48Ea8SwSrOWpfoldd_KlFXTJtgwMtjFc6B3eidQ/preview"; }
           { name = "creating an agent"; url = "https://docs.google.com/document/d/1k6HmxdQTyhBuLCzNfoj6WDKhcfxxCw9VYt6LxvIymnA/preview"; }
-          { name = "Source Code Navigation at Arista (AID/1270)"; url = "https://aid.infra.corp.arista.io/1270/cached.html"; }
-          { name = "Tracking Hours for Irish R&D Tax Credits - Google Docs"; url = "https://docs.google.com/document/d/1-VsNiTTlXNwj69IGbKtAqdNA7Ve84RVfAnv-aJGCQO0/preview"; }
           { name = "jack nixfiles"; url = "https://gitlab.aristanetworks.com/jack/nixfiles/-/tree/arista/home-manager?ref_type=heads"; }
           { name = "build system tut"; url = "https://docs.google.com/document/d/1p1za-FlFtolBSsWnPlr0pwdVZDA4xDlYJW299_fPKg0/edit"; }
           { name = "getting started"; url = "https://docs.google.com/document/d/1jCgbJrvKmJypgGa-VPK_qvyn52_0JOWaGFA-dmz1Kjk/preview"; }

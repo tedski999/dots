@@ -1,6 +1,7 @@
-# TODO(later): disable nvidia (investigate random crashes)
+# TODO(next): syncthing config
+# TODO(next): disable nvidia (investigate random crashes)
 # TODO(later): secret management in nix (oh no): gpg (work->homebus->git and personal), ssh keys (homebus->gitar and personal), bitwarden, firefox sync, syncthing, avpn
-# TODO(later): keychain? newsboat? obs-studio?
+# TODO(later): obs-studio
 { pkgs, ... }: {
   home.username = "tedj";
   home.homeDirectory = "/home/tedj";
@@ -26,12 +27,12 @@
     ./modules/less.nix
     ./modules/man.nix
     ./modules/neovim.nix
-    ./modules/python.nix
+    ./modules/newsboat.nix
+    ./modules/ouch.nix
     ./modules/python3.nix
     ./modules/rg.nix
     ./modules/ssh.nix
     ./modules/syncthing.nix
-    ./modules/un.nix
     ./modules/yazi.nix
     ./modules/zsh.nix
     # desktop environment

@@ -97,24 +97,6 @@ local function fzf_yank_selection(selected)
 	print("Yanked "..#x.." bytes")
 end
 
--- Crude method to change to or temporally access directories
-local function fzf_directories(root)
-	root = vim.fn.resolve(root or fullpath():gsub("[^/]*$", ""))
-	vim.cmd("edit "..root)
-	fzf.fzf_exec("fd --type directory --absolute-path --follow --hidden --exclude '**/.git/' --exclude '**/node_modules/'", {
-		prompt = root.."/",
-		cwd = root,
-		fzf_opts = { ["--no-multi"] = true, ["--header"] = "<ctrl-r> to reroot" },
-		fn_transform = function(x) return fzf.utils.ansi_codes.blue(x:sub(0, #x-1)) end,
-		actions = {
-			["default"] = function(sel) fzf_directories(sel[1]) end,
-			["-"] = function() fzf_directories(root.."/..") end,
-			["ctrl-r"] = { function() vim.fn.chdir(root) print("cd "..root) end, fzf.actions.resume },
-			["ctrl-y"] = { fzf_yank_selection, fzf.actions.resume },
-		},
-	})
-end
-
 -- Restore vim session
 local function fzf_projects()
 	local projects = {}
@@ -322,6 +304,7 @@ fzf.setup({
 	fzf_opts = { ["--separator=''"] = "", ["--preview-window"] = "border-none" },
 	previewers = { man = { cmd = "man %s | col -bx" } },
 	defaults = { preview_pager = "delta --width=$FZF_PREVIEW_COLUMNS", file_icons = false, git_icons = true, color_icons = true, cwd_header = false, copen = function() fzf.quickfix() end },
+	files = { cmd = "fd --hidden --color=never --follow --exclude .git" },
 	grep = { RIPGREP_CONFIG_PATH = vim.env.RIPGREP_CONFIG_PATH },
 	oldfiles = { include_current_session = true },
 	quickfix_stack = { actions = { ["default"] = function() fzf.quickfix() end } },
@@ -416,7 +399,7 @@ require("lualine").setup({
 	}
 })
 
--- TODO(later): neogit
+-- TODO(next): neogit
 
 require("nvim-surround").setup({ move_cursor = false })
 
@@ -485,6 +468,7 @@ vim.keymap.set("n", "]b", "<cmd>bnext<cr>")
 vim.keymap.set("n", "[B", "<cmd>bfirst<cr>")
 vim.keymap.set("n", "]B", "<cmd>blast<cr>")
 -- Files
+vim.keymap.set("n", "-", function() vim.cmd("edit "..fullpath():gsub("/$", ""):gsub("/[^/]*$", "").."/") end)
 vim.keymap.set("n", "[f", function() vim.cmd("edit "..select(1, prev_next_file())) end)
 vim.keymap.set("n", "]f", function() vim.cmd("edit "..select(2, prev_next_file())) end)
 vim.keymap.set("n", "[F", function() local cur, old = fullpath(); while cur ~= old do old = cur; cur, _ = prev_next_file(cur) end vim.cmd("edit "..cur) end)
@@ -514,7 +498,7 @@ vim.keymap.set("n", "<leader>gD", "<cmd>SignifyDiff!<cr>")
 vim.keymap.set("n", "<leader>gr", "<cmd>SignifyHunkUndo<cr>")
 -- Fzf
 vim.keymap.set("n", "<leader><bs>", "<cmd>FzfLua resume<cr>")
-vim.keymap.set("n", "<leader>f", "<cmd>FzfLua files cwd=%:p:h<cr>")
+vim.keymap.set("n", "<leader>f", "<cmd>FzfLua files hidden=true cwd=%:p:h<cr>")
 vim.keymap.set("n", "<leader>F", "<cmd>FzfLua files hidden=true<cr>")
 vim.keymap.set("n", "<leader>o", "<cmd>FzfLua oldfiles cwd=%:p:h cwd_only=true<cr>")
 vim.keymap.set("n", "<leader>O", "<cmd>FzfLua oldfiles<cr>")
@@ -554,7 +538,6 @@ vim.keymap.set("n", "<leader>U", "<cmd>FzfLua changes<cr>")
 vim.keymap.set("n", "<leader>p", fzf_projects)
 vim.keymap.set("n", "<leader>P", fzf_projects_save)
 vim.keymap.set("n", "z=", "<cmd>FzfLua spell_suggest<cr>")
-vim.keymap.set("n", "-", fzf_directories)
 
 -- Arista-specifics switch
 if vim.loop.fs_stat("/usr/share/vim/vimfiles/arista.vim") and vim.fn.getcwd():find("^/src") then
@@ -575,9 +558,6 @@ if vim.loop.fs_stat("/usr/share/vim/vimfiles/arista.vim") and vim.fn.getcwd():fi
 	augroup vimrc
 	autocmd BufNewFile,BufRead *.tac setlocal indentexpr=TaccIndentOverrides()
 	]]
-	-- File search
-	vim.keymap.set("n", "<leader>f", "<cmd>FzfLua files cwd=%:p:h<cr>")
-	vim.keymap.set("n", "<leader>F", "<cmd>FzfLua files hidden=true<cr>")
 	-- Agrok
 	vim.api.nvim_create_user_command("Agrok",  function(p) fzf.fzf_exec("a grok -em 99 "..p.args.." | grep '^/src/.*'",                                                 { actions = fzf.config.globals.actions.files, previewer = "builtin" }) end, { nargs = 1 })
 	vim.api.nvim_create_user_command("Agrokp", function(p) fzf.fzf_exec("a grok -em 99 -f "..(fullpath():match("^/src/.-/") or "/").." "..p.args.." | grep '^/src/.*'", { actions = fzf.config.globals.actions.files, previewer = "builtin" }) end, { nargs = 1 })

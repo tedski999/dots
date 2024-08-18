@@ -1,5 +1,4 @@
 # slock but better
-# TODO(later): swaylock but better? multimonitor support is wack
 { pkgs, config, ... }: {
   programs.swaylock.enable = true;
   programs.swaylock.package = pkgs.runCommandWith { name = "swaylock-dummy"; } "mkdir $out"; # NOTE: slock must be installed on system for PAM integration

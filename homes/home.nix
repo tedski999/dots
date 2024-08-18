@@ -24,12 +24,11 @@
     ./modules/less.nix
     ./modules/man.nix
     ./modules/neovim.nix
-    ./modules/python.nix
+    ./modules/ouch.nix
     ./modules/python3.nix
     ./modules/rg.nix
     ./modules/ssh.nix
     ./modules/syncthing.nix
-    ./modules/un.nix
     ./modules/yazi.nix
     ./modules/zsh.nix
     # desktop environment

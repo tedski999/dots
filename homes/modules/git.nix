@@ -5,6 +5,8 @@
   programs.git.userEmail = "ski@h8c.de";
   programs.git.signing.key = "00ADEF0A!";
   programs.git.signing.signByDefault = true;
+  programs.git.extraConfig.pull.ff = "only"; # trying out new workflow
+  programs.git.extraConfig.push.default = "current";
   programs.git.aliases.l = "log";
   programs.git.aliases.s = "status";
   programs.git.aliases.a = "add";
@@ -40,10 +42,5 @@
   programs.git.delta.options.hunk-header-decoration-style = "omit";
   programs.git.delta.options.blame-palette = "#101010 #282828";
   programs.git.delta.options.blame-separator-format = "{n:^5}";
-  # TODO(later)
-  #[pull] rebase = false
-  #[push] default = current
-  #[merge] conflictstyle = diff3
-  #[diff] colorMoved = default
   programs.zsh.shellAliases.g = "git ";
 }

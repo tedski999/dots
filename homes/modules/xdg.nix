@@ -205,9 +205,7 @@ in {
   xdg.mimeApps.associations.removed = {};
   xdg.mimeApps.defaultApplications = associations;
 
-  # TODO(pipewire): fix pipewire+wireplumber
-
-  # TODO(pipewire): for screensharing etc
+  # TODO(next): pipewire+wireplumber for screensharing etc
   # https://gitlab.aristanetworks.com/jack/nixfiles/-/blob/arista/home-manager/configs/thonkpod/default.nix?ref_type=heads
   # https://gitlab.aristanetworks.com/jack/nixfiles/-/blob/arista/nixos/modules/gui.nix?ref_type=heads
   #XDG_DESKTOP_PORTAL_DIR = "${joinedPortals}/share/xdg-desktop-portal/portals"

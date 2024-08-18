@@ -5,8 +5,8 @@
   programs.tmux.baseIndex = 1;
   programs.tmux.historyLimit = 100000;
   programs.tmux.extraConfig = ''
-    set -g escape-time 250
-    set -g repeat-time 250
+    set -g escape-time 0
+    set -g repeat-time 0
     set -g status off
     set -g set-clipboard on
     set -g set-titles on

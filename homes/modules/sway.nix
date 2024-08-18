@@ -17,10 +17,10 @@
     set $get_views vs=$(swaymsg -rt get_tree | jq "recurse(.nodes[], .floating_nodes[]) | select(.visible).id")
     set $get_focused f=$(swaymsg -rt get_tree | jq "recurse(.nodes[], .floating_nodes[]) | first(select(.focused)).id")
     set $get_output o=$(swaymsg -rt get_outputs | jq -r '.[] | first(select(.focused)) | .make+" "+.model+" "+.serial')
-    set $get_workspaces ws=$(swaymsg -rt get_workspaces | jq -r ".[].num")
-    set $get_prev_workspace w=$(( $( swaymsg -t get_workspaces | jq -r ".[] | first(select(.focused).num)" ) - 1 )) && w=$(( $w < 1 ? 1 : ($w < 9 ? $w : 9) ))
-    set $get_next_workspace w=$(( $( swaymsg -t get_workspaces | jq -r ".[] | first(select(.focused).num)" ) + 1 )) && w=$(( $w < 1 ? 1 : ($w < 9 ? $w : 9) ))
-    set $get_empty_workspace w=$(swaymsg -rt get_workspaces | jq -r '.[] | select(.focused).num as $w | first(range(1; 9) | select(. != $w))')
+    set $get_workspaces ws=$(swaymsg -rt get_workspaces | jq -r '. as $i | $i[] | select(.focused).output as $o | $i[] | select(.output==$o).num')
+    set $get_prev_workspace w=$(( $( swaymsg -rt get_workspaces | jq -r '.[] | first(select(.focused).num)' ) - 1 )) && w=$(( $w < 1 ? 1 : ($w < 9 ? $w : 9) ))
+    set $get_next_workspace w=$(( $( swaymsg -rt get_workspaces | jq -r '.[] | first(select(.focused).num)' ) + 1 )) && w=$(( $w < 1 ? 1 : ($w < 9 ? $w : 9) ))
+    set $get_empty_workspace w=$(swaymsg -rt get_workspaces | jq -r '. as $i | first(range(1; 10) as $n | $n | select($i[] | select(.focused).output as $o | [$i[] | select(.output==$o).num] | all(. != $n))) // 9')
     # TODO(later): doesnt work well at high speeds (e.g. key held down)
     set $group swaymsg "mark --add g" || swaymsg "splitv, mark --add g"
     set $ungroup swaymsg "[con_mark=g] focus, unmark g" || swaymsg "focus parent; focus parent; focus parent; focus parent"
@@ -57,10 +57,7 @@
     startup = [
       { command = "pidof -x batteryd || batteryd"; always = true; }
       { command = "pidof -x bmbwd || bmbwd"; always = true; }
-      { command = "displayctl";  always = true; }
       { command = "powerctl decafeinate"; }
-      #{ command = "scratch floating-btop btop"; }
-      #{ command = "scratch floating-pulsemixer pulsemixer"; }
     ];
     # shortcuts
     keybindings."Mod4+space" = "exec bemenu-run";
@@ -73,9 +70,8 @@
     keybindings."--locked Mod4+Control+Escape"       = "exec powerctl suspend";
     keybindings."--locked Mod4+Control+Shift+Escape" = "exec powerctl reload";
     keybindings."Mod4+Apostrophe"               = "exec displayctl";
-    keybindings."Mod4+Shift+Apostrophe"         = "exec displayctl external";
-    keybindings."Mod4+Control+Apostrophe"       = "exec displayctl internal";
-    keybindings."Mod4+Control+Shift+Apostrophe" = "exec displayctl both";
+    keybindings."Mod4+Shift+Apostrophe"         = "exec displayctl auto";
+    keybindings."Mod4+Control+Apostrophe"       = "exec displayctl laptop";
     keybindings."Mod4+n"         = "exec networkctl";
     keybindings."Mod4+Shift+n"   = "exec networkctl wifi";
     keybindings."Mod4+Control+n" = "exec networkctl bluetooth";
@@ -101,9 +97,6 @@
     keybindings."Mod4+l"         = "focus right";
     keybindings."Mod4+Shift+l"   = "exec $group && swaymsg 'move right 50px' && $ungroup";
     keybindings."Mod4+Control+l" = "resize grow width 50px";
-    # TODO(later): doesnt really work
-    #keybindings."Mod4+Tab" = ''exec $get_views && $get_focused && n=$(printf "$vs\n$vs\n" | cat | awk "/$f/{getline; print; exit}") && swaymsg "[con_id=$n] focus"'';
-    #keybindings."Mod4+Shift+Tab" = ''exec $get_views && $get_focused && n=$(printf "$vs\n$vs\n" | tac | awk "/$f/{getline; print; exit}") && swaymsg "[con_id=$n] focus"'';
     keybindings."Mod4+f" = "focus mode_toggle";
     keybindings."Mod4+Shift+f" = "border pixel 1, floating toggle";
     keybindings."Mod4+x" = "sticky toggle";
@@ -143,20 +136,21 @@
     keybindings."Mod4+Shift+Period"         = ''exec $group && $get_output && $get_next_workspace && swaymsg "move container workspace $w:$o, workspace $w:$o" && $ungroup'';
     keybindings."Mod4+Control+Comma"        = ''exec $get_output && $get_prev_workspace && swaymsg "move container workspace $w:$o"'';
     keybindings."Mod4+Control+Period"       = ''exec $get_output && $get_next_workspace && swaymsg "move container workspace $w:$o"'';
-    keybindings."Mod4+Control+Shift+Comma"  = ''exec '$group && $get_output && $get_workspaces && ws=$(echo "$ws" | cat) && [ "$(echo "$ws" | head -1)" != "1" ] && for w in $ws; do i=$(( $w - 1 )); swaymsg "rename workspace $w:$o to $i:$o"; done && ungroup' '';
-    keybindings."Mod4+Control+Shift+Period" = ''exec '$group && $get_output && $get_workspaces && ws=$(echo "$ws" | tac) && [ "$(echo "$ws" | head -1)" != "9" ] && for w in $ws; do i=$(( $w + 1 )); swaymsg "rename workspace $w:$o to $i:$o"; done && ungroup' '';
+    keybindings."Mod4+Control+Shift+Comma"  = ''exec "o=$(swaymsg -rt get_workspaces | jq -r '.[] | select(.focused).name' | cut -d: -f2) && $get_workspaces                         && [ $(echo $ws | cut -b1) != 1 ] && for w in $ws; do i=$(( $w - 1 )); swaymsg rename workspace $w:$o to $i:$o; done" '';
+    keybindings."Mod4+Control+Shift+Period" = ''exec "o=$(swaymsg -rt get_workspaces | jq -r '.[] | select(.focused).name' | cut -d: -f2) && $get_workspaces && ws=$(echo $ws | rev) && [ $(echo $ws | cut -b1) != 9 ] && for w in $ws; do i=$(( $w + 1 )); swaymsg rename workspace $w:$o to $i:$o; done" '';
     keybindings."Mod4+z"               = ''exec $get_output && $get_empty_workspace && swaymsg "workspace $w:$o"'';
     keybindings."Mod4+Shift+z"         = ''exec $group && $get_output && $get_empty_workspace && swaymsg "move container workspace $w:$o, workspace $w:$o" && $ungroup'';
-    keybindings."Mod4+Control+z"       = ''exec '$get_output && $get_empty_workspace && swaymsg "move container workspace $w:$o"' '';
-    keybindings."Mod4+Control+Shift+z" = ''exec '$group && $get_output && $get_workspaces && i=1; for w in $ws; do swaymsg rename workspace $w:$o to $i:$o; i=$(( $i + 1 )); done && $ungroup' '';
+    keybindings."Mod4+Control+z"       = ''exec $get_output && $get_empty_workspace && swaymsg "move container workspace $w:$o"'';
+    keybindings."Mod4+Control+Shift+z" = ''exec "o=$(swaymsg -rt get_workspaces | jq -r '.[] | select(.focused).name' | cut -d: -f2) && $get_workspaces && i=1 && for w in $ws; do swaymsg rename workspace $w:$o to $i:$o; i=$(( $i + 1 )); done" '';
     # outputs
-    # TODO(now): fix output naming
-    keybindings."Mod4+equal"         = ''exec $get_output && swaymsg output $(swaymsg -rt get_outputs | jq -r '.[] | select(.name == "'$o'") | "\(.name) scale \(.scale * 1.1)"')'';
-    keybindings."Mod4+minus"         = ''exec $get_output && swaymsg output $(swaymsg -rt get_outputs | jq -r '.[] | select(.name == "'$o'") | "\(.name) scale \(.scale / 1.1)"')'';
-    keybindings."Mod4+Shift+equal"   = ''exec $get_output && swaymsg output $(swaymsg -rt get_outputs | jq -r '.[] | select(.name == "'$o'") | "\(.name) scale \(.scale * 1.5)"')'';
-    keybindings."Mod4+Shift+minus"   = ''exec $get_output && swaymsg output $(swaymsg -rt get_outputs | jq -r '.[] | select(.name == "'$o'") | "\(.name) scale \(.scale / 1.5)"')'';
-    keybindings."Mod4+Control+equal" = ''exec $get_output && swaymsg output "$o" scale 1'';
-    keybindings."Mod4+Control+minus" = ''exec $get_output && swaymsg output "$o" scale 2'';
+    keybindings."Mod4+equal"         = ''exec $get_output && swaymsg output \\'$o\\' scale $(swaymsg -rt get_outputs | jq -r '.[] | select(.make+" "+.model+" "+.serial == "'"$o"'") | .scale * 1.1')'';
+    keybindings."Mod4+minus"         = ''exec $get_output && swaymsg output \\'$o\\' scale $(swaymsg -rt get_outputs | jq -r '.[] | select(.make+" "+.model+" "+.serial == "'"$o"'") | .scale / 1.1')'';
+    keybindings."Mod4+Shift+equal"   = ''exec $get_output && swaymsg output \\'$o\\' scale $(swaymsg -rt get_outputs | jq -r '.[] | select(.make+" "+.model+" "+.serial == "'"$o"'") | .scale * 1.5')'';
+    keybindings."Mod4+Shift+minus"   = ''exec $get_output && swaymsg output \\'$o\\' scale $(swaymsg -rt get_outputs | jq -r '.[] | select(.make+" "+.model+" "+.serial == "'"$o"'") | .scale / 1.5')'';
+    keybindings."Mod4+Control+equal" = ''exec $get_output && swaymsg output \\'$o\\' scale 1'';
+    keybindings."Mod4+Control+minus" = ''exec $get_output && swaymsg output \\'$o\\' scale 2'';
+    keybindings."Mod4+Tab"       = ''exec swaymsg "workspace $(swaymsg -rt get_workspaces | jq -r '. as $i | $i[] | select(.focused) as { num: $n, name: $m } | [$i[] | select(.num==$n).name] | sort as $a | $a[[$a | index($m) + 1, ($a | length - 1)] | min]')"'';
+    keybindings."Mod4+Shift+Tab" = ''exec swaymsg "workspace $(swaymsg -rt get_workspaces | jq -r '. as $i | $i[] | select(.focused) as { num: $n, name: $m } | [$i[] | select(.num==$n).name] | sort as $a | $a[[$a | index($m) - 1, 0                ] | max]')"'';
     # layout
     keybindings."Mod4+g"       = "focus parent";
     keybindings."Mod4+Shift+g" = "focus child";

@@ -1,3 +1,4 @@
+# xterm but better
 { ... }: {
   home.sessionVariables.TERMINAL = "alacritty";
   programs.alacritty.enable = true;

@@ -10,6 +10,7 @@
   programs.zsh.localVariables.TIMEFMT = "\nreal\t%E\nuser\t%U\nsys\t%S\ncpu\t%P";
   programs.zsh.shellAliases.z = "exec zsh ";
   programs.zsh.shellAliases.c = "cargo ";
+  programs.zsh.shellAliases.d = "delta ";
   programs.zsh.shellAliases.ip = "ip --color ";
   programs.zsh.shellAliases.sudo = "sudo --preserve-env ";
   programs.zsh.autosuggestion = { enable = true; strategy = [ "history" "completion" ]; };
