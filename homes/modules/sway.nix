@@ -57,6 +57,7 @@
     startup = [
       { command = "pidof -x batteryd || batteryd"; always = true; }
       { command = "pidof -x bmbwd || bmbwd"; always = true; }
+      { command = "displayctl auto"; always = true; }
       { command = "powerctl decafeinate"; }
     ];
     # shortcuts

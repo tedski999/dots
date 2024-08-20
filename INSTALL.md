@@ -28,7 +28,6 @@ sudo apt install swaylock
 ```
 
 ### Setup syncthing at 127.0.0.1:8384
-TODO: maybe can make this declarative with secrets management
 
 ### Import GPG key
 ```sh

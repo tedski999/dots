@@ -544,19 +544,13 @@ if vim.loop.fs_stat("/usr/share/vim/vimfiles/arista.vim") and vim.fn.getcwd():fi
 	vim.api.nvim_echo({ { "Note: Arista-specifics have been enabled for this Neovim instance", "MoreMsg" } }, false, {})
 	vim.fn.chdir("/src")
 	vim.opt.shiftwidth = 3
-	vim.opt.tabstop = 3
+	vim.opt.tabstop = 8
 	vim.opt.expandtab = true
 	vim.opt.colorcolumn = "86"
 	vim.cmd[[
-	let a4_auto_edit = 0
-	source /usr/share/vim/vimfiles/arista.vim
-	function! TaccIndentOverrides()
-		let prevLine = getline(SkipTaccBlanksAndComments(v:lnum - 1))
-		if prevLine =~# 'Tac::Namespace\s*{\s*$' | return 0 | endif
-		return GetTaccIndent()
-	endfunction
-	augroup vimrc
-	autocmd BufNewFile,BufRead *.tac setlocal indentexpr=TaccIndentOverrides()
+	let a4_auto_edit = 0 | source /usr/share/vim/vimfiles/arista.vim
+	function! TaccIndentOverrides() | if getline(SkipTaccBlanksAndComments(v:lnum - 1)) =~# 'Tac::Namespace\s*{\s*$' | return 0 | else | return GetTaccIndent() | endif | endfunction
+	augroup vimrc | autocmd BufNewFile,BufRead *.tac setlocal indentexpr=TaccIndentOverrides() | augroup NONE
 	]]
 	-- Agrok
 	vim.api.nvim_create_user_command("Agrok",  function(p) fzf.fzf_exec("a grok -em 99 "..p.args.." | grep '^/src/.*'",                                                 { actions = fzf.config.globals.actions.files, previewer = "builtin" }) end, { nargs = 1 })

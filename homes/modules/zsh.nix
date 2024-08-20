@@ -8,15 +8,12 @@
   programs.zsh.history = { path = "${config.xdg.dataHome}/zsh_history"; extended = true; ignoreAllDups = true; share = true; save = 1000000; size = 1000000; };
   programs.zsh.localVariables.PROMPT = "\n%F{red}%n@%m%f %F{blue}%~%f %F{red}%(?..%?)%f\n>%f ";
   programs.zsh.localVariables.TIMEFMT = "\nreal\t%E\nuser\t%U\nsys\t%S\ncpu\t%P";
-  programs.zsh.shellAliases.z = "exec zsh ";
-  programs.zsh.shellAliases.c = "cargo ";
-  programs.zsh.shellAliases.d = "delta ";
-  programs.zsh.shellAliases.ip = "ip --color ";
   programs.zsh.shellAliases.sudo = "sudo --preserve-env ";
-  programs.zsh.autosuggestion = { enable = true; strategy = [ "history" "completion" ]; };
   programs.zsh.localVariables.ZSH_AUTOSUGGEST_BUFFER_MAX_SIZE = 100;
   programs.zsh.localVariables.ZSH_AUTOSUGGEST_ACCEPT_WIDGETS = [ "end-of-line" "vi-end-of-line" "vi-add-eol" ];
   programs.zsh.localVariables.ZSH_AUTOSUGGEST_PARTIAL_ACCEPT_WIDGETS = [ "forward-char" "vi-forward-char" "forward-word" "emacs-forward-word" "vi-forward-word" "vi-forward-word-end" "vi-forward-blank-word" "vi-forward-blank-word-end" "vi-find-next-char" "vi-find-next-char-skip" ];
+  programs.zsh.autosuggestion.enable = true;
+  programs.zsh.autosuggestion.strategy = [ "history" "completion" ];
   programs.zsh.syntaxHighlighting.enable = true;
   programs.zsh.syntaxHighlighting.styles.default = "fg=cyan";
   programs.zsh.syntaxHighlighting.styles.unknown-token = "fg=red";
