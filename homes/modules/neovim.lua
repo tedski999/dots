@@ -399,7 +399,45 @@ require("lualine").setup({
 	}
 })
 
--- TODO(next): neogit
+require("neogit").setup({
+	disable_hint = true,
+	graph_style = "unicode",
+	kind = "split",
+	commit_editor = { kind = "split" },
+	commit_select_view = { kind = "tab" },
+	commit_view = { kind = "split" },
+	log_view = { kind = "split" },
+	rebase_editor = { kind = "split" },
+	reflog_view = { kind = "split" },
+	merge_editor = { kind = "split" },
+	tag_editor = { kind = "split" },
+	preview_buffer = { kind = "split" },
+	popup = { kind = "split" },
+	integrations = { fzf_lua = true },
+	use_default_keymaps = false,
+	-- TODO(later): learn neogit
+	mappings = {
+		commit_editor = {
+			["q"] = "Close",
+		},
+		commit_editor_I = {
+		},
+		rebase_editor = {
+		},
+		rebase_editor_I = {
+		},
+		finder = {
+		},
+		popup = {
+			["?"] = "HelpPopup",
+		},
+		status = {
+			["k"] = "MoveUp",
+			["j"] = "MoveDown",
+			["q"] = "Close",
+		},
+	},
+})
 
 require("nvim-surround").setup({ move_cursor = false })
 
