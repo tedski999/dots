@@ -2,7 +2,7 @@
 { pkgs, ... }: {
   home.packages = with pkgs; [
     (writeShellScriptBin "displayctl" ''
-      choice="$([ -n "$1" ] && echo $1 || printf "%s\n" auto laptop work home | bemenu -p "Display" -l 5 -W 0.1)"
+      choice="$([ -n "$1" ] && echo $1 || printf "%s\n" auto laptop work home | bemenu -p "Display" -l 5)"
 
       [ "$choice" = "auto" ] && case "$(swaymsg -rt get_outputs | jq -r '.[] | .make+" "+.model+" "+.serial' | sort | xargs)" in
         "AOC 2270W GNKJ1HA001311 AU Optronics 0xD291 Unknown Pixio USA Pixio PXC348C Unknown") choice="home";;

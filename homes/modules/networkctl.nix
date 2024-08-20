@@ -4,7 +4,7 @@
     (writeShellScriptBin "networkctl" ''
       IFS=$'\n'
 
-      case "$([ -n "$1" ] && echo $1 || printf "%s\n" wifi bluetooth | bemenu -p "Network" -l 3 -W 0.3)" in
+      case "$([ -n "$1" ] && echo $1 || printf "%s\n" wifi bluetooth | bemenu -p "Network" -l 3)" in
 
         "wifi") while true; do
           power="enable"; rescan=""; choices=""
@@ -19,7 +19,7 @@
               echo "$id [''${sec:-None}$sav] $sig% $use"
             done)"
           }
-          choice="$(printf "%s\n" $power $rescan $choices | bemenu -p "Wifi" -l 10 -W 0.3)"
+          choice="$(printf "%s\n" $power $rescan $choices | bemenu -p "Wifi" -l 10)"
           case "$choice" in
             "") exit;;
             "rescan") nmcli --get-values "" device wifi list --rescan yes;;
@@ -31,13 +31,13 @@
                 && { connect="disconnect"; forget="forget"; } \
                 || [ -z "$(nmcli --get-values "connection.id" connection show "$id")" ] \
                 || { connect="connect"; forget="forget"; }
-              case "$(printf "%s\n" $connect $forget | bemenu -p "$id" -l 10 -W 0.3)" in
+              case "$(printf "%s\n" $connect $forget | bemenu -p "$id" -l 10)" in
                 "") exit;;
                 "disconnect") nmcli connection down "$id" || notify-send "Failed to disconnect from $id";;
                 "forget") nmcli connection delete "$id" || notify-send "Failed to forget $id";;
                 "connect") [ -n "$forget" ] \
                     && nmcli device wifi connect "$id" \
-                    || nmcli device wifi connect "$id" password "$(: | bemenu -x indicator -p "$id" -l 0 -W 0.3)" \
+                    || nmcli device wifi connect "$id" password "$(: | bemenu -x indicator -p "$id" -l 0)" \
                     || notify-send "Failed to connect to $id";;
               esac
             done;;
@@ -59,7 +59,7 @@
               echo "$device''${name:+ $name} [$pair] $use"
             done)"
           }
-          choice="$(printf "%s\n" $power $rescan $choices | bemenu -p "Bluetooth" -l 10 -W 0.3)"
+          choice="$(printf "%s\n" $power $rescan $choices | bemenu -p "Bluetooth" -l 10)"
           case "$choice" in
             "") exit;;
             "rescan") bluetoothctl --timeout 5 scan on;;
@@ -75,7 +75,7 @@
                 echo "$info" | grep --fixed-strings "Connected: yes" && connect="disconnect" || connect="connect"
                 pair="forget"
               }
-              case "$(printf "%s\n" $connect $pair $trust | bemenu -p "''${name:-$id}" -l 10 -W 0.3)" in
+              case "$(printf "%s\n" $connect $pair $trust | bemenu -p "''${name:-$id}" -l 10)" in
                 "") exit;;
                 "disconnect") bluetoothctl --timeout 5 disconnect "$id" || notify-send "Failed to disconnect from $id";;
                 "forget") bluetoothctl --timeout 5 remove "$id" || notify-send "Failed to forget $id";;

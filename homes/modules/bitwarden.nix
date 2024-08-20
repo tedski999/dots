@@ -9,7 +9,7 @@
 
       show() {
         [ -z "$BW_SESSION" ] \
-          && export BW_SESSION="$(: | bemenu --password indicator --list 0 --width-factor 0.2 --prompt 'Bitwarden Password:' | tr -d '\n' | base64 | bw unlock --raw)" \
+          && export BW_SESSION="$(: | bemenu --password indicator --list 0 --prompt 'Bitwarden Password:' | tr -d '\n' | base64 | bw unlock --raw)" \
           && [ -z "$BW_SESSION" ] \
           && notify-send -i lock -u critical "Bitwarden Failed" "Wrong password?" \
           && return 1
@@ -18,8 +18,8 @@
           && notify-send -i lock "Bitwarden" "Updating items..." \
           && items="$(bw list items)"
 
-        #echo "$items" | jq -r 'range(length) as $i | .[$i] | select(.type==1) | ($i | tostring)+" "+.name+" <"+.login.username+">"' | bemenu --width-factor 0.2 | cut -d' ' -f1
-        echo "$items" | jq -r '.[] | select(.type==1) | .name+" <"+.login.username+"> "+.login.password' | bemenu --width-factor 0.4 | rev | cut -d' ' -f1 | rev | wl-copy --trim-newline
+        #echo "$items" | jq -r 'range(length) as $i | .[$i] | select(.type==1) | ($i | tostring)+" "+.name+" <"+.login.username+">"' | bemenu | cut -d' ' -f1
+        echo "$items" | jq -r '.[] | select(.type==1) | .name+" <"+.login.username+"> "+.login.password' | bemenu | rev | cut -d' ' -f1 | rev | wl-copy --trim-newline
       }
 
       trap "show" USR1

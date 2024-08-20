@@ -6,7 +6,7 @@
     list = 32;
     center = true;
     fixed-height = true;
-    width-factor = 0.8;
+    width-factor = 0.5;
     grab = true;
     ignorecase = true;
     border = 1;

@@ -3,7 +3,7 @@
   home.packages = with pkgs; [
     swayidle
     (writeShellScriptBin "powerctl" ''
-      case "$([ -n "$1" ] && echo $1 || printf "%s\n" lock suspend $(pidof -q swayidle && echo caffeinate || echo decafeinate) reload logout reboot shutdown | bemenu -p "Power" -l 9 -W 0.2)" in
+      case "$([ -n "$1" ] && echo $1 || printf "%s\n" lock suspend $(pidof -q swayidle && echo caffeinate || echo decafeinate) reload logout reboot shutdown | bemenu -p "Power" -l 9)" in
         "lock") loginctl lock-session;;
         "suspend") systemctl suspend;;
         "reload") swaymsg reload;;
