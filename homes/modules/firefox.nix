@@ -146,7 +146,7 @@
               { name = "dashboard"; url = "https://dashboard.infra.corp.arista.io/"; }
               { name = "bugsby"; url = "https://bb.infra.corp.arista.io/board/user/table/tedj"; }
               { name = "reviewboard"; url = "https://reviewboard.infra.corp.arista.io/dashboard/"; }
-              { name = "reviewboard"; url = "https://gerrit.corp.arista.io/dashboard/self"; }
+              { name = "gerrit"; url = "https://gitarband-gerrit.infra.corp.arista.io/dashboard/self"; }
               { name = "intranet"; url = "https://intranet.arista.com/"; }
               { name = "workday"; url = "https://wd5.myworkday.com/arista/d/home.htmld"; }
               { name = "portal"; url = "https://arista.onelogin.com/portal"; }
@@ -156,7 +156,9 @@
             name = "tools";
             bookmarks = [
               { name = "grok"; url = "https://opengrok.infra.corp.arista.io/source/?project=eos-trunk"; }
+              { name = "ksrc"; url = "https://elixir.bootlin.com/linux/v4.19.241/source"; }
               { name = "eosdoc"; url = "https://eosdoc2.infra.corp.arista.io/#/"; }
+              { name = "tacnav"; url = "https://tacnav.infra.corp.arista.io/tacnav"; }
               { name = "godbolt"; url = "https://code-explorer.infra.corp.arista.io/"; }
               { name = "grep.app"; url = "https://grep.app/"; }
               { name = "explainshell"; url = "https://explainshell.com/"; }
@@ -181,12 +183,14 @@
           {
             name = "meets";
             bookmarks = [
-              { name = "pcie bugs"; url = "https://bb.infra.corp.arista.io/board/packagegroup/table/pcie"; }
-              { name = "pcie escalations"; url = "https://docs.google.com/spreadsheets/d/1i39desgeboUYcrPdAW_1RQ2oBWUlz1tluQTjL6EeCOc/preview"; }
-              { name = "pcie eu meet"; url = "https://docs.google.com/document/d/1u-zkMTatgeRljZDvX7HGA_ALB8xQ-y9kMDDlqPAIi_M/preview"; }
-              { name = "bricklayers meet"; url = " https://docs.google.com/document/d/12xqw_-eMyqJU3p16ErqKpq9UVGonoK4Bboz7bE-bK4c/preview"; }
-              { name = "dmamem+picasso meet"; url = "https://docs.google.com/document/d/1LIfn_-WS0485rVL6axiGGt2waY-Zrzl7DKf6Agg4xB8/preview"; }
-              { name = "r&d"; url = "https://docs.google.com/spreadsheets/d/1l82reZVrIH3hbX99ExMyoZsTYb_ZLOObGM4i4US4Krg/edit?gid=377679536#gid=377679536"; }
+              { name = "MON bricklayers"; url = "https://docs.google.com/document/d/12xqw_-eMyqJU3p16ErqKpq9UVGonoK4Bboz7bE-bK4c/preview"; }
+              { name = "MON modmidmon"; url = "https://www.google.com/url?q=https://docs.google.com/document/d/155TiNb5G0tMefgKxgLGqpxPdbKaoGPgtrKJnOFLHThA/preview"; }
+              { name = "WED euro pcie"; url = "https://docs.google.com/document/d/1u-zkMTatgeRljZDvX7HGA_ALB8xQ-y9kMDDlqPAIi_M/preview"; }
+              { name = "WED pcie bugs"; url = "https://bb.infra.corp.arista.io/board/packagegroup/table/pcie"; }
+              { name = "WED pcie escalations"; url = "https://docs.google.com/spreadsheets/d/1i39desgeboUYcrPdAW_1RQ2oBWUlz1tluQTjL6EeCOc/preview"; }
+              { name = "THU dma+pic+plx maint"; url = "https://docs.google.com/document/d/1LIfn_-WS0485rVL6axiGGt2waY-Zrzl7DKf6Agg4xB8/preview"; }
+              { name = "FRI r&d tracking"; url = "https://docs.google.com/spreadsheets/d/1l82reZVrIH3hbX99ExMyoZsTYb_ZLOObGM4i4US4Krg/edit?gid=377679536#gid=377679536"; }
+
             ];
           }
           {
@@ -207,7 +211,8 @@
               {
                 name = "style";
                 bookmarks = [
-                  { name = "c++"; url = "https://docs.google.com/document/d/1AJ034fuYllwuPqWSUtmW7L2L-f6z5qGXnj08Dwh3qXY/preview"; }
+                  { name = "kernel"; url = "https://www.kernel.org/doc/html/v4.10/process/coding-style.html"; }
+                  { name = "tac+c++"; url = "https://docs.google.com/document/d/1AJ034fuYllwuPqWSUtmW7L2L-f6z5qGXnj08Dwh3qXY/preview"; }
                   { name = "python"; url = "https://docs.google.com/document/d/1NPcZT4AXy0ajbrwa37jHwSYMJPWQK5WTWEp2VkWyYtY/preview"; }
                   { name = "cli"; url = "https://docs.google.com/document/d/1fTc5A8e3GtcqcPiyMs7qLZDmocyr8pJGbGitwhCw_CQ/preview"; }
                 ];
