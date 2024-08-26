@@ -1,10 +1,20 @@
-{ pkgs, ... }: {
+{ pkgs, lib, config, ... }: {
   home.username = "tedj";
   home.homeDirectory = "/home/tedj";
   targets.genericLinux.enable = true;
 
   imports = [
     ./features/devtools
+  ];
+
+  # arista shell+rehome
+  home.packages = with pkgs; [
+    mosh
+    (writeShellScriptBin "ahome" ''
+      # TODO(now):
+      # only inside homebus
+      # autofix all a4c containers
+    '')
   ];
 
   # autostart zsh and put nix paths at the end of PATH
@@ -25,8 +35,8 @@
   home.packages = with pkgs; [ git delta ];
   programs.git.enable = lib.mkForce false;
   programs.zsh.initExtra = ''
-    mkdir -p "$HOME/.config/git"
-    cat >"$HOME/.config/git/config" <<EOL
+    mkdir -p "${config.xdg.configHome}/git"
+    cat >"${config.xdg.configHome}/git/config" <<EOL
     [alias]
       a = "add"
       b = "branch"

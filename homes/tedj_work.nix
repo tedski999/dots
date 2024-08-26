@@ -25,13 +25,13 @@
       arista-ssh check-auth || arista-ssh login
     '')
     (writeShellScriptBin "ash" ''
+      h="''${1:+tedj-$1}"
       LC_ALL= mosh \
-        --predict=always --predict-overwrite \
-        --experimental-remote-ip=remote \
-        bus-home -- ~/.local/state/nix/profile/bin/tmux new ''${@:+-c -- a4c shell $@}
+        --predict=always --predict-overwrite --experimental-remote-ip=remote \
+        "''${h:-bus-home}" -- ~/.local/state/nix/profile/bin/tmux new
     '')
   ];
-  programs.zsh.initExtra = "compdef 'compadd $(ssh bus-home -- a4c ps -N)' ash";
+  programs.zsh.initExtra = "compdef 'compadd $(cat /tmp/ashcache 2>/dev/null || ssh bus-home -- a4c ps -N | tee /tmp/ashcache)' ash";
 
   # install homebus ssh configuration
   programs.ssh.matchBlocks."bus-home".host = "bus-home";

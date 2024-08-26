@@ -6,9 +6,11 @@
 
 ### Install nix
 ```sh
+export NIX_CONFIG=$'use-xdg-base-directories = true\nextra-experimental-features = nix-command flakes'
 sh <(curl -L https://nixos.org/nix/install) --daemon
 echo 'trusted-users = tedj' | sudo tee --append /etc/nix/nix.conf
-nix --use-xdg-base-directories --extra-experimental-features 'nix-command flakes' develop github:tedski999/dots --command home-manager switch --flake github:tedski999/dots#tedj@work
+nix develop github:tedski999/dots --command home-manager switch --flake github:tedski999/dots#tedj@work
+unset NIX_CONFIG
 ```
 
 ### Set user shell
@@ -66,11 +68,10 @@ unset NIX_CONFIG
 Running `a git setup` and co won't work with `.config/git/config` being readonly (lots of atools are very particular about it) so need to manually install this. Plus atools override git anyway so whatever. There's a hack in homes/bus.nix to get this working.
 
 ### ...and then throw a4c into the mix
-Following homebus "Install nix" instructions again inside the container seems to work. This (having effectively two nix stores and home-managers write to the same home directory due to NFS) is probably a really bad idea... but it *does* work. Mostly. Sometimes (not sure when), the home-managers get out of sync and complain but this has been easily fixable following the output's instructions and doing a fresh update like this:
+Following homebus "Install nix" instructions again inside the container seems to work. This (having effectively two nix stores and home-managers write to the same home directory due to NFS) is probably a really bad idea... but it *does* work. Mostly. The home-managers generation symlinks in your profile get out of sync but just run the install commands again to sync them up again. If you're feeling lucky, I have been able to speed this up with:
 ```sh
-NIX_SSL_CERT_FILE=/etc/ssl/certs/ca-bundle.crt /nix/store/5fd4yamsig98v0rdch0xbsig9f1mvfl7-nix-2.24.3/bin/nix --use-xdg-base-directories --extra-experimental-features 'nix-command flakes' develop ~/dots --command home-manager switch --flake ~/dots#tedj@wbus
+NIX_SSL_CERT_FILE=/etc/ssl/certs/ca-bundle.crt /nix/store/????????????????????????????????-$(printf "%s\n" /nix/store/????????????????????????????????-nix-?.??.*/bin/nix | cut -d- -f2- | sort | tail -1) --use-xdg-base-directories --extra-experimental-features 'nix-command flakes' develop ~/dots --command home-manager switch --flake ~/dots#tedj@wbus
 ```
-TODO(later): replace hardcoded nix path
 
 ### git commit signing within a4c
 I haven't been able to get this to work yet. There is some problem related to GPG agent forwarding from `homebus:${XDG_RUNTIME_DIR}/gnupg/S.gpg-agent.extra` to `a4c:${HOME}/.gnupg/S.gpg-agent` but it's probably related to the NFS home or some more arcane restriction with a4c/Docker.
