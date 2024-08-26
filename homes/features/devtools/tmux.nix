@@ -11,6 +11,7 @@
     set -g set-clipboard on
     set -g set-titles on
     set -g set-titles-string "#S:#W"
+    set -ga terminal-overrides ",xterm-256color:Ms=\\E]52;c;%p2%s\\7"
 
     # i'll take it from here
     unbind -aT prefix

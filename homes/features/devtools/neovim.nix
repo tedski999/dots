@@ -15,7 +15,6 @@
     mini-nvim
     neogit
     nightfox-nvim
-    nvim-osc52
     nvim-surround
     satellite-nvim
     vim-rsi

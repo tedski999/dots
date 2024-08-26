@@ -17,6 +17,19 @@ vim.g.loaded_netrwPlugin = 1
 -- Better signify highlighting
 vim.g.signify_number_highlight = 1
 
+-- Use OSC-52 to copy
+vim.g.clipboard = {
+	name = "OSC 52",
+	copy = {
+		["+"] = require("vim.ui.clipboard.osc52").copy("+"),
+		["*"] = require("vim.ui.clipboard.osc52").copy("*"),
+	},
+	paste = {
+		["+"] = function() return { vim.fn.split(vim.fn.getreg(""), "\n"), vim.fn.getregtype("") } end,
+		["*"] = function() return { vim.fn.split(vim.fn.getreg(""), "\n"), vim.fn.getregtype("") } end,
+	},
+}
+
 -- OPTIONS --
 
 vim.opt.title = true                                   -- Update window title
@@ -241,13 +254,6 @@ vim.api.nvim_create_autocmd("Filetype", { callback = function() vim.o.formatopti
 -- Swap to manual folding after loading
 vim.api.nvim_create_autocmd("BufWinEnter", { callback = function() vim.o.foldmethod = "manual" end })
 
--- Use OSC-52 to copy
-vim.api.nvim_create_autocmd("TextYankPost", { callback = function()
-	if vim.v.event.operator == "y" and vim.v.event.regname == "" then
-		require("osc52").copy_register("")
-	end
-end })
-
 -- Per filetype config
 vim.api.nvim_create_autocmd("FileType", { pattern = "nix", command = "setlocal tabstop=2 shiftwidth=2 expandtab" })
 vim.api.nvim_create_autocmd("FileType", { pattern = { "c", "cpp", "tac" }, command = "setlocal commentstring=//\\ %s" })
@@ -466,8 +472,6 @@ require("mini.completion").setup({
 require("mini.cursorword").setup({ delay = 0 })
 
 require("mini.splitjoin").setup({ mappings = { toggle = "", join = "<leader>j", split = "<leader>J" } })
-
-require("osc52").setup({ silent = true })
 
 require("satellite").setup({
 	winblend = 0,
