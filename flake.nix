@@ -1,4 +1,3 @@
-# TODO(now): conflict between installer nix and home-manager nix
 # TODO(next): disable nvidia (investigate random crashes)
 # TODO(next): ragenix: gpg key, ssh keys (homebus->gitar and personal), bitwarden login, firefox sync, syncthing keys, arista keys
 # TODO(later): obs-studio
