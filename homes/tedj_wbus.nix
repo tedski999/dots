@@ -15,36 +15,30 @@
       home-manager switch --flake ~/dots#tedj@wbus || exit 1
       for n in $(a4c ps -N); do
         echo; echo "Rehoming $n..."
-        a4c shell $n sh -c 'NIX_SSL_CERT_FILE=/etc/ssl/certs/ca-bundle.crt /nix/store/????????????????????????????????-$(printf "%s\n" /nix/store/????????????????????????????????-nix-?.??.*/bin/nix | cut -d- -f2- | sort | tail -1) --use-xdg-base-directories --extra-experimental-features "nix-command flakes" develop ~/dots --command home-manager switch --flake ~/dots#tedj@wbus'
+        # TODO: nix-daemon
+        a4c shell $n sh -c 'NIX_SSL_CERT_FILE=/etc/ssl/certs/ca-bundle.crt /nix/var/nix/profiles/default/bin/nix "nix-command flakes" develop ~/dots --command home-manager switch --flake ~/dots#tedj@wbus'
       done
     '')
   ];
 
   # populate new containers with agid and nix
-  home.file.".a4c/create".enable = true;
+  home.file.".a4c/create".enable = false;
   home.file.".a4c/create".executable = true;
   home.file.".a4c/create".text = ''
-    cd /src \
-    && a ws mkid \
-    && export NIX_CONFIG=$'use-xdg-base-directories = true\nextra-experimental-features = nix-command flakes' \
-    && sh <(curl -L https://nixos.org/nix/install) --no-daemon \
+    cd /src && a ws mkid
+    sh <(curl -L https://nixos.org/nix/install) --daemon --yes \
+    && echo 'trusted-users = tedj' | sudo tee --append /etc/nix/nix.conf \
     && . $HOME/.local/state/nix/profile/etc/profile.d/nix.sh \
-    && nix develop ~/dots --command home-manager switch --flake ~/dots#tedj@wbus
+    && sudo nix-daemon & sleep 1 \
+    && nix develop ~/dots --command home-manager switch --flake ~/dots#tedj@wbus \
+    && kill $!
   '';
 
-  # autostart zsh and put nix paths at the end of PATH
+  # autostart zsh
   programs.bash.enable = true;
   programs.bash.historyControl = [ "ignoreboth" ];
   programs.bash.historyFile = "${config.xdg.dataHome}/bash_history";
-  programs.bash.initExtra = ''
-    export PATH="$(echo ''${PATH} | awk -v RS=: -v ORS=: '/\/nix\// {next} {print}' | sed 's/:*$//')"
-    shopt -q login_shell && [[ $- == *i* ]] && exec zsh --login $@
-    [[ $- == *i* ]] && exec zsh $@
-  '';
-  programs.zsh.initExtraFirst = ''
-    export PATH="$(echo ''${PATH} | awk -v RS=: -v ORS=: '/\/nix\// {next} {print}' | sed 's/:*$//')"
-    [[ -o interactive ]] && export PATH="''${PATH}:$HOME/.local/state/nix/profile/bin:/nix/var/nix/profiles/default/bin"
-  '';
+  programs.bash.initExtra = ''[[ $- == *i* ]] && [ -z "$ARTEST_RANDSEED" ] && { shopt -q login_shell && exec zsh --login $@ || exec zsh $@; }'';
 
   # hack to manually use git because atools break if .config/git/config isn't writable
   programs.git.enable = lib.mkForce false;
