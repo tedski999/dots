@@ -580,7 +580,6 @@ vim.keymap.set("n", "z=", "<cmd>FzfLua spell_suggest<cr>")
 -- Arista-specifics switch
 if vim.loop.fs_stat("/usr/share/vim/vimfiles/arista.vim") and vim.fn.getcwd():find("^/src") then
 	vim.api.nvim_echo({ { "Note: Arista-specifics have been enabled for this Neovim instance", "MoreMsg" } }, false, {})
-	vim.fn.chdir("/src")
 	vim.opt.shiftwidth = 3
 	vim.opt.tabstop = 8
 	vim.opt.expandtab = true
