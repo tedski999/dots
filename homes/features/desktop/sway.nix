@@ -1,16 +1,9 @@
 # i3 but better
-{ pkgs, config, ... }: {
-  home.sessionVariables.QT_QPA_PLATFORM = "wayland";
-  home.sessionVariables.LIBSEAT_BACKEND = "logind";
-  home.packages = with pkgs; [ nixgl.nixGLIntel wl-clipboard brightnessctl grim slurp pulsemixer ];
-  services.cliphist.enable = true;
-  programs.zsh.initExtraFirst = ''[[ -o interactive && -o login && -z "$WAYLAND_DISPLAY" && "$(tty)" = "/dev/tty1" ]] && exec nixGLIntel sway'';
+{ pkgs, ... }: {
   wayland.windowManager.sway.enable = true;
   wayland.windowManager.sway.wrapperFeatures.gtk = true;
   wayland.windowManager.sway.systemd.enable = true;
   wayland.windowManager.sway.systemd.variables = [ "--all" ];
-  wayland.windowManager.sway.extraOptions = [ "--unsupported-gpu" ];
-
   wayland.windowManager.sway.extraConfigEarly = ''
     set $send_volume_notif v=$(pulsemixer --get-volume | cut -d' ' -f1) && notify-send -i audio-volume-high --category osd --hint "int:value:$v" "Volume: $v% $([ $(pulsemixer --get-mute) = 1 ] && echo '[MUTED]')"
     set $send_brightness_notif b=$(($(brightnessctl get)00/$(brightnessctl max))) && notify-send -i brightness-high --category osd --hint "int:value:$b" "Brightness: $b%"
@@ -25,7 +18,6 @@
     set $group swaymsg "mark --add g" || swaymsg "splitv, mark --add g"
     set $ungroup swaymsg "[con_mark=g] focus, unmark g" || swaymsg "focus parent; focus parent; focus parent; focus parent"
   '';
-
   wayland.windowManager.sway.config = {
     modifier = "Mod4";
     workspaceLayout = "default";

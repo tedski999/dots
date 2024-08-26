@@ -3,6 +3,7 @@
   programs.zsh.enable = true;
   programs.zsh.dotDir = ".config/zsh";
   programs.zsh.defaultKeymap = "emacs";
+  programs.zsh.autocd = true;
   programs.zsh.enableCompletion = true;
   programs.zsh.completionInit = "autoload -U compinit && compinit -d '${config.xdg.cacheHome}/zcompdump'";
   programs.zsh.history = { path = "${config.xdg.dataHome}/zsh_history"; extended = true; ignoreAllDups = true; share = true; save = 1000000; size = 1000000; };

@@ -2,7 +2,6 @@
 { pkgs, ... }: {
   home.packages = with pkgs; [
     bitwarden-cli
-    libnotify
     (writeShellScriptBin "bmbwd" ''
       # TODO(later): extend to allow creation of items and choosing to copy other fields
       # bw get template item | jq ".name=\"My Login Item\" | .login=$(bw get template item.login | jq '.username="jdoe" | .password="myp@ssword123"')" | bw encode | bw create item
@@ -23,7 +22,7 @@
       }
 
       trap "show" USR1
-      # TODO: doesnt work
+      # TODO(later): doesnt work sometimes
       trap "unset items && show" USR2
       trap "unset items BW_SESSION && show" TERM
       while true; do sleep infinity & wait; done

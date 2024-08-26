@@ -1,5 +1,5 @@
 # xdg portals and stuff
-{ ... }: let
+{ pkgs, ... }: let
   associations = {
     "application/x-7z-compressed" = "nvim.desktop";
     "application/x-arj" = "nvim.desktop";
@@ -188,6 +188,17 @@
     "x-scheme-handler/https" = "firefox.desktop";
     "x-scheme-handler/unknown" = "firefox.desktop";
   };
+
+  # Copied from the NixOS `nixpkgs/nixos/modules/config/xdg/portal.nix`
+  joinedPortals = pkgs.buildEnv {
+    name = "xdg-portals";
+    paths = with pkgs; [
+      xdg-desktop-portal-gtk
+      xdg-desktop-portal-wlr
+    ];
+    pathsToLink = [ "/share/xdg-desktop-portal/portals" "/share/applications" ];
+  };
+
 in {
 
   xdg.enable = true;
@@ -205,10 +216,83 @@ in {
   xdg.mimeApps.associations.removed = {};
   xdg.mimeApps.defaultApplications = associations;
 
+  # home.sessionVariables.XDG_DESKTOP_PORTAL_DIR = "${joinedPortals}/share/xdg-desktop-portal/portals";
+  #
+  # programs.obs-studio = {
+  #   enable = true;
+  # };
+  #
+  # systemd.user = {
+  #   services = {
+  #     xdg-desktop-portal = {
+  #       Unit = {
+  #         Description = "Portal service";
+  #         PartOf = "graphical-session.target";
+  #         After = "graphical-session.target";
+  #       };
+  #       Service = {
+  #         Type = "dbus";
+  #         BusName = "org.freedesktop.portal.Desktop";
+  #         ExecStart = "${pkgs.nixgl.nixGLIntel}/bin/nixGLIntel ${pkgs.xdg-desktop-portal}/libexec/xdg-desktop-portal";
+  #         Restart = "on-failure";
+  #         Environment = [ "XDG_DESKTOP_PORTAL_DIR=${joinedPortals}/share/xdg-desktop-portal/portals" ];
+  #       };
+  #       Install.WantedBy = [ "graphical-session.target" ];
+  #     };
+  #
+  #     # Ubuntu 22.04 xdg-desktop-portal-wlr is broken :)
+  #     # Note we still need the package installed to get the entry in `/usr/share/xdg-desktop-portal/portals`
+  #     xdg-desktop-portal-wlr = {
+  #       Unit = {
+  #         Description = "Portal service (wlroots implementation)";
+  #         PartOf = "graphical-session.target";
+  #         After = "graphical-session.target";
+  #         ConditionEnvironment = "WAYLAND_DISPLAY";
+  #       };
+  #       Service = {
+  #         Type = "dbus";
+  #         BusName = "org.freedesktop.impl.portal.desktop.wlr";
+  #         ExecStart = "${pkgs.nixgl.nixGLIntel}/bin/nixGLIntel ${pkgs.xdg-desktop-portal-wlr}/libexec/xdg-desktop-portal-wlr";
+  #         Restart = "on-failure";
+  #       };
+  #       Install.WantedBy = [ "graphical-session.target" ];
+  #     };
+  #
+  #     xdg-desktop-portal-gtk = {
+  #       Unit = {
+  #         Description = "Portal service (GTK/GNOME implementation)";
+  #         PartOf = "graphical-session.target";
+  #         After = "graphical-session.target";
+  #       };
+  #       Service = {
+  #         Type = "dbus";
+  #         BusName = "org.freedesktop.impl.portal.desktop.gtk";
+  #         ExecStart = "${pkgs.nixgl.nixGLIntel}/bin/nixGLIntel ${pkgs.xdg-desktop-portal-gtk}/libexec/xdg-desktop-portal-gtk";
+  #         Restart = "on-failure";
+  #       };
+  #       Install.WantedBy = [ "graphical-session.target" ];
+  #     };
+  #   };
+  # };
+  #
+  # xdg = {
+  #   configFile = {
+  #     # Use the right portal for screen{shot,cast}ing (copied from `nixos/modules/gui.nix`)
+  #     "xdg-desktop-portal/sway-portals.conf".text = ''
+  #       [preferred]
+  #       default=gtk
+  #       org.freedesktop.impl.portal.Screenshot=wlr
+  #       org.freedesktop.impl.portal.ScreenCast=wlr
+  #     '';
+  #   };
+  # };
+
+
+
+
   # TODO(next): pipewire+wireplumber for screensharing etc
   # https://gitlab.aristanetworks.com/jack/nixfiles/-/blob/arista/home-manager/configs/thonkpod/default.nix?ref_type=heads
   # https://gitlab.aristanetworks.com/jack/nixfiles/-/blob/arista/nixos/modules/gui.nix?ref_type=heads
-  #XDG_DESKTOP_PORTAL_DIR = "${joinedPortals}/share/xdg-desktop-portal/portals"
 
   #    # Ubuntu 22.04 xdg-desktop-portal-wlr is broken :)
   #    # Note we still need the package installed to get the entry in `/usr/share/xdg-desktop-portal/portals`

@@ -1,4 +1,4 @@
-# global scratchpad applications
+# toggleable scratchpads
 { pkgs, ... }: {
   home.packages = with pkgs; [
     (writeShellScriptBin "scratch" ''

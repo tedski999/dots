@@ -8,7 +8,7 @@
 ```sh
 sh <(curl -L https://nixos.org/nix/install) --daemon
 echo 'trusted-users = tedj' | sudo tee --append /etc/nix/nix.conf
-nix --use-xdg-base-directories --extra-experimental-features 'nix-command flakes' develop github:tedski999/dots --command home-manager switch --flake github:tedski999/dots#work
+nix --use-xdg-base-directories --extra-experimental-features 'nix-command flakes' develop github:tedski999/dots --command home-manager switch --flake github:tedski999/dots#tedj@work
 ```
 
 ### Set user shell
@@ -58,10 +58,9 @@ See https://go/nix
 export NIX_CONFIG=$'use-xdg-base-directories = true\nextra-experimental-features = nix-command flakes'
 sh <(curl -L https://nixos.org/nix/install) --no-daemon
 . $HOME/.local/state/nix/profile/etc/profile.d/nix.sh
-nix develop github:tedski999/dots --command home-manager switch --flake github:tedski999/dots#bus
+nix develop github:tedski999/dots --command home-manager switch --flake github:tedski999/dots#tedj@wbus
 unset NIX_CONFIG
 ```
-TODO(later): conflict between installer nix and home-manager nix
 
 ### atools
 Running `a git setup` and co won't work with `.config/git/config` being readonly (lots of atools are very particular about it) so need to manually install this. Plus atools override git anyway so whatever. There's a hack in homes/bus.nix to get this working.
@@ -69,7 +68,7 @@ Running `a git setup` and co won't work with `.config/git/config` being readonly
 ### ...and then throw a4c into the mix
 Following homebus "Install nix" instructions again inside the container seems to work. This (having effectively two nix stores and home-managers write to the same home directory due to NFS) is probably a really bad idea... but it *does* work. Mostly. Sometimes (not sure when), the home-managers get out of sync and complain but this has been easily fixable following the output's instructions and doing a fresh update like this:
 ```sh
-NIX_SSL_CERT_FILE=/etc/ssl/certs/ca-bundle.crt /nix/store/5fd4yamsig98v0rdch0xbsig9f1mvfl7-nix-2.24.3/bin/nix --use-xdg-base-directories --extra-experimental-features 'nix-command flakes' develop ~/dots --command home-manager switch --flake ~/dots#bus
+NIX_SSL_CERT_FILE=/etc/ssl/certs/ca-bundle.crt /nix/store/5fd4yamsig98v0rdch0xbsig9f1mvfl7-nix-2.24.3/bin/nix --use-xdg-base-directories --extra-experimental-features 'nix-command flakes' develop ~/dots --command home-manager switch --flake ~/dots#tedj@wbus
 ```
 TODO(later): replace hardcoded nix path
 

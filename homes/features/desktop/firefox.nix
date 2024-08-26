@@ -3,7 +3,6 @@
   home.sessionVariables.BROWSER = "firefox";
   home.sessionVariables.MOZ_ENABLE_WAYLAND = 1;
   programs.firefox.enable = true;
-
   programs.firefox.profiles.work = {
     id = 0;
     name = "Work";
@@ -289,7 +288,6 @@
       }
     ];
   };
-
   # TODO(later): firefox sync?
   programs.firefox.profiles.home = {
     id = 1;

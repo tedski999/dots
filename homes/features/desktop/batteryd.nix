@@ -2,7 +2,6 @@
 { pkgs, ... }: {
   home.packages = with pkgs; [
     acpi
-    libnotify
     (writeShellScriptBin "batteryd" ''
       old_charge=100
       while true; do

@@ -1,7 +1,6 @@
 # swaybar but better
 { pkgs, config, ... }: {
   programs.waybar.enable = true;
-
   programs.waybar.settings = [
     {
       output = "eDP-1";
@@ -168,7 +167,6 @@
       "sway/window".max-length = 200;
     }
   ];
-
   programs.waybar.style = ''
     * { font-family: "Terminess Nerd Font", monospace; font-size: 16px; margin: 0; }
     window#waybar { background-color: rgba(0,0,0,0.75); }

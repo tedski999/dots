@@ -304,7 +304,7 @@ fzf.setup({
 	fzf_opts = { ["--separator=''"] = "", ["--preview-window"] = "border-none" },
 	previewers = { man = { cmd = "man %s | col -bx" } },
 	defaults = { preview_pager = "delta --width=$FZF_PREVIEW_COLUMNS", file_icons = false, git_icons = true, color_icons = true, cwd_header = false, copen = function() fzf.quickfix() end },
-	files = { cmd = "fd --hidden --color=never --follow --exclude .git" },
+	files = { cmd = "fd --hidden --color=never --follow --exclude .git --exclude flake.lock" },
 	grep = { RIPGREP_CONFIG_PATH = vim.env.RIPGREP_CONFIG_PATH },
 	oldfiles = { include_current_session = true },
 	quickfix_stack = { actions = { ["default"] = function() fzf.quickfix() end } },

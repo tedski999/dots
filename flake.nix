@@ -1,43 +1,37 @@
+# TODO(now): conflict between installer nix and home-manager nix
+# TODO(next): disable nvidia (investigate random crashes)
+# TODO(next): ragenix: gpg key, ssh keys (homebus->gitar and personal), bitwarden login, firefox sync, syncthing keys, arista keys
+# TODO(later): obs-studio
+# TODO(later): beets
+# TODO(nixos): live+instal iso
 {
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
-    nur.url = "github:nix-community/NUR";
-    home-manager.url = "github:nix-community/home-manager/master";
-    home-manager.inputs.nixpkgs.follows = "nixpkgs";
-    nixgl.url = "github:nix-community/nixGL";
-    nixgl.inputs.nixpkgs.follows = "nixpkgs";
+    nixpkgs = { url = "github:NixOS/nixpkgs/nixpkgs-unstable"; }; # TODO(nixos): nixpkgs-* vs nixos-*
+    home-manager = { url = "github:nix-community/home-manager/master"; inputs = { nixpkgs.follows = "nixpkgs"; }; };
+    nixgl = { url = "github:nix-community/nixGL"; inputs = { nixpkgs.follows = "nixpkgs"; }; };
+    nur = { url = "github:nix-community/NUR"; };
   };
 
-  outputs = { self, nixpkgs, nur, home-manager, nixgl, ...  } @ inputs:
+  outputs = { nur, nixgl, ...  } @ inputs:
   let
-    lib = nixpkgs.lib // home-manager.lib;
+    pkgs = inputs.nixpkgs.legacyPackages;
+    lib = inputs.nixpkgs.lib // inputs.home-manager.lib;
   in {
-
-    # `nix --extra-experimental-features 'nix-command flakes' develop github:tedski999/dots --command home-manager switch --flake github:tedski999/dots#<name>` shell to bootstap any system
-    devShells = lib.genAttrs [ "aarch64-linux" "x86_64-linux" ] (system: let
-      pkgs = (import nixpkgs) { inherit system; };
-    in {
-      default = pkgs.mkShell {
+    devShells = lib.genAttrs [ "aarch64-linux" "x86_64-linux" ] (system: {
+      default = with pkgs.${system}; mkShell {
         NIX_CONFIG = "extra-experimental-features = nix-command flakes\nuse-xdg-base-directories = true";
-        buildInputs = [ pkgs.nix pkgs.home-manager ];
+        buildInputs = [ nix home-manager git ];
       };
     });
-
-    # `home-manager switch --flake .#<name>` for declarative home management
-    homeConfigurations = {
-      "home" = lib.homeManagerConfiguration {
-        modules = [ ./homes/home.nix ];
-        pkgs = (import nixpkgs) { system = "x86_64-linux"; };
-      };
-      "work" = lib.homeManagerConfiguration {
-        modules = [ ./homes/work.nix ];
-        pkgs = (import nixpkgs) { system = "x86_64-linux"; overlays = [ nur.overlay nixgl.overlay ]; };
-      };
-      "bus" = lib.homeManagerConfiguration {
-        modules = [ ./homes/bus.nix ];
-        pkgs = (import nixpkgs) { system = "x86_64-linux"; };
-      };
+    nixosConfigurations = {
+      "msung" = lib.nixosSystem { modules = [ ./hosts/common.nix ./hosts/msung.nix ]; };
+      "septs" = lib.nixosSystem { modules = [ ./hosts/common.nix ./hosts/septs.nix ]; };
     };
-
+    homeConfigurations = {
+      "ski@msung" = lib.homeManagerConfiguration { modules = [ ./homes/common.nix ./homes/ski_msung.nix ]; pkgs = (pkgs.x86_64-linux.extend nur.overlay).extend nixgl.overlay; };
+      "ski@septs" = lib.homeManagerConfiguration { modules = [ ./homes/common.nix ./homes/ski_septs.nix ]; pkgs = pkgs.aarch64-linux; };
+      "tedj@work" = lib.homeManagerConfiguration { modules = [ ./homes/common.nix ./homes/tedj_work.nix ]; pkgs = (pkgs.x86_64-linux.extend nur.overlay).extend nixgl.overlay; };
+      "tedj@wbus" = lib.homeManagerConfiguration { modules = [ ./homes/common.nix ./homes/tedj_wbus.nix ]; pkgs = pkgs.x86_64-linux; };
+    };
   };
 }

@@ -4,36 +4,13 @@
   targets.genericLinux.enable = true;
 
   imports = [
-    ./common.nix
-    # cli tools
-    ./modules/0x0.nix
-    ./modules/bat.nix
-    ./modules/btop.nix
-    ./modules/cht.nix
-    ./modules/corecli.nix
-    ./modules/del.nix
-    ./modules/eza.nix
-    ./modules/fastfetch.nix
-    ./modules/fd.nix
-    ./modules/fzf.nix
-    ./modules/gpg-agent.nix
-    ./modules/gpg.nix
-    ./modules/less.nix
-    ./modules/man.nix
-    ./modules/neovim.nix
-    ./modules/ouch.nix
-    ./modules/python3.nix
-    ./modules/rg.nix
-    ./modules/ssh.nix
-    ./modules/yazi.nix
-    ./modules/zsh.nix
-    # arista-specifics
-    ./modules/bash.nix
-    ./modules/mosh.nix
-    ./modules/tmux.nix
+    ./features/devtools
   ];
 
-  # Autostart zsh and "protect the build" by putting nix paths at the end of PATH
+  # autostart zsh and put nix paths at the end of PATH
+  programs.bash.enable = true;
+  programs.bash.historyControl = [ "ignoreboth" ];
+  programs.bash.historyFile = "${config.xdg.dataHome}/bash_history";
   programs.bash.initExtra = ''
     export PATH="$(echo ''${PATH} | awk -v RS=: -v ORS=: '/\/nix\// {next} {print}' | sed 's/:*$//')"
     shopt -q login_shell && [[ $- == *i* ]] && exec zsh --login $@
@@ -44,12 +21,12 @@
     [[ -o interactive ]] && export PATH="''${PATH}:$HOME/.local/state/nix/profile/bin:/nix/var/nix/profiles/default/bin"
   '';
 
-  # Hack to manually use git because atools break if .config/git/config isn't writable
+  # hack to manually use git because atools break if .config/git/config isn't writable
   home.packages = with pkgs; [ git delta ];
-  programs.zsh.shellAliases.g = "git ";
+  programs.git.enable = lib.mkForce false;
   programs.zsh.initExtra = ''
     mkdir -p "$HOME/.config/git"
-    cat > "$HOME/.config/git/config" <<EOL
+    cat >"$HOME/.config/git/config" <<EOL
     [alias]
       a = "add"
       b = "branch"
@@ -98,5 +75,17 @@
     [safe]
       directory = /src/GitarBandMutDb
     EOL
+    ag() {
+      if   [ "$1" = "a"  ]; then shift; a git add $@
+      elif [ "$1" = "c"  ]; then shift; a git commit $@
+      elif [ "$1" = "cm" ]; then shift; a git commit --message $@
+      elif [ "$1" = "d"  ]; then shift; a git diff $@
+      elif [ "$1" = "ds" ]; then shift; a git diff --staged $@
+      elif [ "$1" = "l"  ]; then shift; a git log $@
+      elif [ "$1" = "ps" ]; then shift; a git ps $@
+      elif [ "$1" = "s"  ]; then shift; a git status $@
+      else a git $@
+      fi
+    }
   '';
 }

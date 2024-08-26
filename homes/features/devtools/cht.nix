@@ -4,5 +4,5 @@
     cht-sh
     (writeShellScriptBin "cht" ''cht.sh "$@?style=paraiso-dark"'')
   ];
-  programs.zsh.initExtra = "_cht() { compadd $commands:t; }; compdef _cht cht";
+  programs.zsh.initExtra = "compdef 'compadd $commands:t' cht";
 }
