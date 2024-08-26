@@ -150,6 +150,8 @@
               { name = "intranet"; url = "https://intranet.arista.com/"; }
               { name = "workday"; url = "https://wd5.myworkday.com/arista/d/home.htmld"; }
               { name = "portal"; url = "https://arista.onelogin.com/portal"; }
+              { name = "zurich life"; url = "https://www.zurichlife.ie/bgsi//index.jsp"; }
+              { name = "etrade espp"; url = "https://us.etrade.com/etx/hw/v2/accountshome"; }
             ];
           }
           {
@@ -177,6 +179,7 @@
               { name = "src"; url = "https://src.infra.corp.arista.io/"; }
               { name = "aid"; url = "https://aid.infra.corp.arista.io/1/"; }
               { name = "go"; url = "https://go.infra.corp.arista.io/admin/"; }
+              { name = "pb"; url = "https://pb.infra.corp.arista.io/"; }
               { name = "map"; url = "https://intranet.arista.com/directory/floor-plan-map?location=Dublin2GD"; }
             ];
           }
@@ -189,8 +192,8 @@
               { name = "WED pcie bugs"; url = "https://bb.infra.corp.arista.io/board/packagegroup/table/pcie"; }
               { name = "WED pcie escalations"; url = "https://docs.google.com/spreadsheets/d/1i39desgeboUYcrPdAW_1RQ2oBWUlz1tluQTjL6EeCOc/preview"; }
               { name = "THU dma+pic+plx maint"; url = "https://docs.google.com/document/d/1LIfn_-WS0485rVL6axiGGt2waY-Zrzl7DKf6Agg4xB8/preview"; }
+              { name = "THU dma+pic+plx dashboard"; url = "https://dashboard.infra.corp.arista.io/autotests/bugs?type=autotest&package=dmamem%2Cdmamem-kmod%2CPicasso%2Cplx-pcie-drivers%2CPlxTests%2CmDmaTest"; }
               { name = "FRI r&d tracking"; url = "https://docs.google.com/spreadsheets/d/1l82reZVrIH3hbX99ExMyoZsTYb_ZLOObGM4i4US4Krg/edit?gid=377679536#gid=377679536"; }
-
             ];
           }
           {
@@ -199,6 +202,7 @@
               { name = "links"; url = "https://docs.google.com/document/d/1EC3rGgvN1T90W-gXwgXl3XaiDUb7pD86QnqXxp1Yk1I/preview"; }
               { name = "how to software"; url = "https://docs.google.com/document/d/1xPFv1zf_Mw1JWXq5ZX5HvCyudTJOyn6XGnuQXOhCGAE/preview"; }
               { name = "how to maintenance"; url = "https://docs.google.com/document/d/1HioJSk5D7SzGl6KxOrSr4kSUVco1CoXr0BPBYcojKUM/preview"; }
+              { name = "how to auto test"; url = "https://docs.google.com/document/d/1aomEVxOSAYZ-QsMIrpCY915qtH2RUDGTTTufgdNRUGo/preview"; }
               { name = "sand"; url = "https://docs.google.com/document/d/1yfP0Qc03wk-cp87hEGp9RWQiMy_s6nErBNou3cYDR24/preview"; }
               { name = "areview"; url = "https://docs.google.com/document/d/1-jm1mkHcS5PaFrn0M_FE6484FSGL5xuRguRhRZ2oavM/preview"; }
               { name = "acronyms"; url = "https://docs.google.com/spreadsheets/d/1J_GKEgq9_6HKCRfdU0Wnz8RAwe8SRfYSPNPN-F8P9Rs/preview"; }
@@ -223,6 +227,7 @@
                   { name = "index"; url = "https://docs.google.com/document/d/1wIcOuciQ8hoI4SOA55KZpb3lrqpDw8v7nTksfDUCsk8/preview"; }
                   { name = "faq"; url = "https://docs.google.com/document/d/1nToUB4wWoGaRkf33IRiPEut7XQZLDtHq1wtEOgOL79s/preview"; }
                   { name = "book"; url = "https://tacc-book.infra.corp.arista.io/"; }
+                  { name = "python integration"; url = "https://aid.infra.corp.arista.io/38/"; }
                   { name = "data models and state apis"; url = "https://docs.google.com/presentation/d/1e-ezvJVAw17oB-GwrzNk-FyFOV_wBlGr1qX3fQ1tWr8/preview"; }
                   { name = "programming with tacc"; url = "https://docs.google.com/presentation/d/1te_vTh4KUkQQmDB52IMepSXmVLyFo40VVlAGKjlFMD8/preview"; }
                 ];
@@ -253,6 +258,7 @@
                       { name = "workflows"; url = "https://docs.google.com/document/d/1VWY8QxaekdnLHJ8eBPltRDPL9DT3c7iYQOGtakTuBB8/preview"; }
                     ];
                   }
+                  { name = "qube"; url = "https://qube-doc.infra.corp.arista.io"; }
                   { name = "tracing"; url = "https://aid.infra.corp.arista.io/86/index.html"; }
                   { name = "artools background"; url = "https://docs.google.com/document/d/1TjQf5D97URdBZu_GfPpIEizMnZfQ5OoNVm7FJvffP84/preview"; }
                   { name = "[dep] build system"; url = "https://docs.google.com/document/d/1jCgbJrvKmJypgGa-VPK_qvyn52_0JOWaGFA-dmz1Kjk/preview"; }
@@ -275,13 +281,10 @@
               { name = "C++ Exceptions ACCU 24"; url = "https://www.youtube.com/watch?v=BGmzMuSDt-Y"; }
             ];
           }
-          { name = "guide"; url = "https://guide.infra.corp.arista.io/"; }
-          { name = "intern link list"; url = "https://docs.google.com/document/d/1XMzfZYF_ekOfsuUPBZJdZfPn9eQ7V0OrVSvTzSZMqZI/preview"; }
-          { name = "AID48 Software Engineering at Arista - Google Docs"; url = "https://docs.google.com/document/d/12-MQ48Ea8SwSrOWpfoldd_KlFXTJtgwMtjFc6B3eidQ/preview"; }
-          { name = "creating an agent"; url = "https://docs.google.com/document/d/1k6HmxdQTyhBuLCzNfoj6WDKhcfxxCw9VYt6LxvIymnA/preview"; }
           { name = "jack nixfiles"; url = "https://gitlab.aristanetworks.com/jack/nixfiles/-/tree/arista/home-manager?ref_type=heads"; }
-          { name = "build system tut"; url = "https://docs.google.com/document/d/1p1za-FlFtolBSsWnPlr0pwdVZDA4xDlYJW299_fPKg0/edit"; }
-          { name = "getting started"; url = "https://docs.google.com/document/d/1jCgbJrvKmJypgGa-VPK_qvyn52_0JOWaGFA-dmz1Kjk/preview"; }
+          { name = "creating an agent"; url = "https://docs.google.com/document/d/1k6HmxdQTyhBuLCzNfoj6WDKhcfxxCw9VYt6LxvIymnA/preview"; }
+          { name = "build system tut"; url = "https://docs.google.com/document/d/1jCgbJrvKmJypgGa-VPK_qvyn52_0JOWaGFA-dmz1Kjk/preview"; }
+          { name = "eos bootcamp"; url = "https://github.com/aristanetworks/bootcamp"; }
         ];
       }
     ];
