@@ -1,3 +1,4 @@
+TODO: install fixed nix version?
 
 # Ubuntu 22.04 notes
 
@@ -6,11 +7,10 @@
 
 ### Install nix
 ```sh
-export NIX_CONFIG=$'use-xdg-base-directories = true\nextra-experimental-features = nix-command flakes'
 sh <(curl -L https://nixos.org/nix/install) --daemon
 echo 'trusted-users = tedj' | sudo tee --append /etc/nix/nix.conf
-nix develop github:tedski999/dots --command home-manager switch --flake github:tedski999/dots#tedj@work
-unset NIX_CONFIG
+. $HOME/.local/state/nix/profile/etc/profile.d/nix.sh
+nix --use-xdg-base-directories --extra-experimental-features develop github:tedski999/dots --command home-manager switch --flake github:tedski999/dots#tedj@work
 ```
 
 ### Set user shell

@@ -22,23 +22,27 @@
   ];
 
   # populate new containers with agid and nix
-  home.file.".a4c/create".enable = false;
+  home.file.".a4c/create".enable = true;
   home.file.".a4c/create".executable = true;
   home.file.".a4c/create".text = ''
     cd /src && a ws mkid
-    sh <(curl -L https://nixos.org/nix/install) --daemon --yes \
-    && echo 'trusted-users = tedj' | sudo tee --append /etc/nix/nix.conf \
+    sh <(curl -L https://nixos.org/nix/install) --no-daemon --yes \
+    && export NIX_CONFIG=$'use-xdg-base-directories = true\nextra-experimental-features = nix-command flakes' \
     && . $HOME/.local/state/nix/profile/etc/profile.d/nix.sh \
-    && sudo nix-daemon & sleep 1 \
-    && nix develop ~/dots --command home-manager switch --flake ~/dots#tedj@wbus \
-    && kill $!
+    && nix develop ~/dots --command home-manager switch --flake ~/dots#tedj@wbus
   '';
 
   # autostart zsh
   programs.bash.enable = true;
   programs.bash.historyControl = [ "ignoreboth" ];
   programs.bash.historyFile = "${config.xdg.dataHome}/bash_history";
-  programs.bash.initExtra = ''[[ $- == *i* ]] && [ -z "$ARTEST_RANDSEED" ] && { shopt -q login_shell && exec zsh --login $@ || exec zsh $@; }'';
+  programs.bash.initExtra = ''
+    [[ $- == *i* ]] && [ -z "$ARTEST_RANDSEED" ] && { shopt -q login_shell && exec zsh --login $@ || exec zsh $@; }
+    export PATH="$(echo $PATH | awk -v RS=: -v ORS=: '/\/nix\// {print >"/tmp/anixpath"; next} {print}' | sed 's/:*$//'):$(sed 's/:*$//' /tmp/anixpath)"
+  '';
+  programs.zsh.initExtraFirst = ''
+    export PATH="$(echo $PATH | awk -v RS=: -v ORS=: '/\/nix\// {print >"/tmp/anixpath"; next} {print}' | sed 's/:*$//'):$(sed 's/:*$//' /tmp/anixpath)"
+  '';
 
   # hack to manually use git because atools break if .config/git/config isn't writable
   programs.git.enable = lib.mkForce false;
