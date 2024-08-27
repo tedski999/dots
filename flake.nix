@@ -19,7 +19,7 @@
     devShells = lib.genAttrs [ "aarch64-linux" "x86_64-linux" ] (system: {
       default = with pkgs.${system}; mkShell {
         NIX_CONFIG = "extra-experimental-features = nix-command flakes\nuse-xdg-base-directories = true";
-        buildInputs = [ home-manager git ];
+        buildInputs = [ nix home-manager git ];
       };
     });
     nixosConfigurations = {
