@@ -15,8 +15,7 @@
       home-manager switch --flake ~/dots#tedj@wbus || exit 1
       for n in $(a4c ps -N); do
         echo; echo "Rehoming $n..."
-        # TODO: nix-daemon
-        a4c shell $n sh -c 'NIX_SSL_CERT_FILE=/etc/ssl/certs/ca-bundle.crt /nix/var/nix/profiles/default/bin/nix "nix-command flakes" develop ~/dots --command home-manager switch --flake ~/dots#tedj@wbus'
+        a4c shell $n sh -c 'NIX_SSL_CERT_FILE=/etc/ssl/certs/ca-bundle.crt $(printf "%s\n" /nix/store/????????????????????????????????-nix-*/bin/nix | tail -1) --use-xdg-base-directories --extra-experimental-features "nix-command flakes" develop ~/dots --command home-manager switch --flake ~/dots#tedj@wbus'
       done
     '')
   ];
@@ -25,6 +24,7 @@
   home.file.".a4c/create".enable = true;
   home.file.".a4c/create".executable = true;
   home.file.".a4c/create".text = ''
+    #!${pkgs.bash}/bin/bash
     cd /src && a ws mkid
     sh <(curl -L https://nixos.org/nix/install) --no-daemon --yes \
     && export NIX_CONFIG=$'use-xdg-base-directories = true\nextra-experimental-features = nix-command flakes' \

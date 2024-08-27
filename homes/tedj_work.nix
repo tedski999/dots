@@ -37,7 +37,7 @@
   programs.ssh.matchBlocks."bus-home".host = "bus-home";
   programs.ssh.matchBlocks."bus-home".hostname = "10.247.176.6";
   programs.ssh.matchBlocks."bus-home".port = 22251;
-  programs.ssh.matchBlocks."bus".host = "bus-*";
+  programs.ssh.matchBlocks."bus".host = "bus-* tedj-*";
   programs.ssh.matchBlocks."bus".user = "tedj";
   programs.ssh.matchBlocks."bus".forwardAgent = true;
   programs.ssh.matchBlocks."bus".extraOptions = {
