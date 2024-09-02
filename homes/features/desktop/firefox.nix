@@ -149,8 +149,9 @@
               { name = "intranet"; url = "https://intranet.arista.com/"; }
               { name = "workday"; url = "https://wd5.myworkday.com/arista/d/home.htmld"; }
               { name = "portal"; url = "https://arista.onelogin.com/portal"; }
-              { name = "zurich life"; url = "https://www.zurichlife.ie/bgsi//index.jsp"; }
-              { name = "etrade espp"; url = "https://us.etrade.com/etx/hw/v2/accountshome"; }
+              { name = "laya"; url = "https://www.layahealthcare.ie/login/#/memberlogin/login"; }
+              { name = "zurich"; url = "https://www.zurichlife.ie/bgsi/log_on/login.jsp"; }
+              { name = "espp"; url = "https://us.etrade.com/etx/hw/v2/accountshome"; }
             ];
           }
           {
