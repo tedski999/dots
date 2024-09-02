@@ -510,7 +510,7 @@ vim.keymap.set("n", "]b", "<cmd>bnext<cr>")
 vim.keymap.set("n", "[B", "<cmd>bfirst<cr>")
 vim.keymap.set("n", "]B", "<cmd>blast<cr>")
 -- Files
-vim.keymap.set("n", "-", function() vim.cmd("edit "..fullpath():gsub("/$", ""):gsub("/[^/]*$", "").."/") end)
+vim.keymap.set("n", "<leader>-", function() vim.cmd("edit "..fullpath():gsub("/$", ""):gsub("/[^/]*$", "").."/") end)
 vim.keymap.set("n", "[f", function() vim.cmd("edit "..select(1, prev_next_file())) end)
 vim.keymap.set("n", "]f", function() vim.cmd("edit "..select(2, prev_next_file())) end)
 vim.keymap.set("n", "[F", function() local cur, old = fullpath(); while cur ~= old do old = cur; cur, _ = prev_next_file(cur) end vim.cmd("edit "..cur) end)

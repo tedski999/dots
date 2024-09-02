@@ -15,9 +15,9 @@
           lock 'swaylock --daemonize' \
           unlock 'pkill -USR1 swaylock' \
           before-sleep 'loginctl lock-session' \
-          timeout 590 'notify-send -i clock "Idle Warning" "Locking in 10 seconds..."' \
-          timeout 600 'loginctl lock-session' \
-          timeout 900 'systemctl suspend' &;;
+          timeout 590  'notify-send -i clock "Idle Warning" "Locking in 10 seconds..."' \
+          timeout 600  'loginctl lock-session' \
+          timeout 3600 'systemctl suspend' &;;
         *) exit 1;;
       esac
     '')
