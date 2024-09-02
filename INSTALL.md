@@ -1,5 +1,3 @@
-TODO: install fixed nix version?
-
 # Ubuntu 22.04 notes
 
 ### Fix `sudo $@`

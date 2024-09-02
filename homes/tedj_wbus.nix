@@ -12,7 +12,7 @@
     git delta mosh
     (writeShellScriptBin "ahome" ''
       [ "$(hostname | cut -d- -f-2)" = "tedj-home" ] || exit 1
-      home-manager switch --flake ~/dots#tedj@wbus || exit 1
+      NIX_SSL_CERT_FILE=/etc/ssl/certs/ca-bundle.crt $(printf "%s\n" /nix/store/????????????????????????????????-nix-*/bin/nix | tail -1) --use-xdg-base-directories --extra-experimental-features "nix-command flakes" develop ~/dots --command home-manager switch --flake ~/dots#tedj@wbus
       for n in $(a4c ps -N); do
         echo; echo "Rehoming $n..."
         a4c shell $n sh -c 'NIX_SSL_CERT_FILE=/etc/ssl/certs/ca-bundle.crt $(printf "%s\n" /nix/store/????????????????????????????????-nix-*/bin/nix | tail -1) --use-xdg-base-directories --extra-experimental-features "nix-command flakes" develop ~/dots --command home-manager switch --flake ~/dots#tedj@wbus'
