@@ -91,20 +91,6 @@
       else a git $@
       fi
     }
-
-    # manually write .a4c/create to populate new containers with agid and nix
-    mkdir -p "$HOME/.a4c"
-    cat >"$HOME/.a4c/create" <<EOL
-    #!/bin/env bash
-    cd /src && a ws mkid
-    export NIX_CONFIG=$'use-xdg-base-directories = true\nextra-experimental-features = nix-command flakes'
-    sh <(curl -L https://nixos.org/nix/install) --no-daemon --yes || exit 1
-    . $HOME/.local/state/nix/profile/etc/profile.d/nix.sh || exit 1
-    nix-env -e nix || exit 1
-    sleep 1
-    NIX_SSL_CERT_FILE=/etc/ssl/certs/ca-bundle.crt $(printf "%s\n" /nix/store/????????????????????????????????-nix-*/bin/nix | tail -1) develop ~/dots --command home-manager switch --flake ~/dots#tedj@wbus
-    EOL
-    chmod +x "$HOME/.a4c/create"
   '';
 
   # disable programs.git because we manually write .config/git/config
@@ -118,11 +104,15 @@
     # update nix in bus and all containers to keep nix stores consistent
     (writeShellScriptBin "ahome" ''
       [ "$(hostname | cut -d- -f-2)" = "tedj-home" ] || exit 1
-      NIX_SSL_CERT_FILE=/etc/ssl/certs/ca-bundle.crt $(printf "%s\n" /nix/store/????????????????????????????????-nix-*/bin/nix | tail -1) --use-xdg-base-directories --extra-experimental-features "nix-command flakes" develop ~/dots --command home-manager switch --flake ~/dots#tedj@wbus
       for n in $(a4c ps -N); do
         echo; echo "Rehoming $n..."
-        a4c shell $n sh -c 'NIX_SSL_CERT_FILE=/etc/ssl/certs/ca-bundle.crt $(printf "%s\n" /nix/store/????????????????????????????????-nix-*/bin/nix | tail -1) --use-xdg-base-directories --extra-experimental-features "nix-command flakes" develop ~/dots --command home-manager switch --flake ~/dots#tedj@wbus'
+        a4c shell $n sh -c '
+          export NIX_CONFIG="use-xdg-base-directories = true" NIX_SSL_CERT_FILE=/etc/ssl/certs/ca-bundle.crt
+          [ -d /nix ] || { sh <(curl -L https://nixos.org/nix/install) --no-daemon --yes; $(printf "%s\n" /nix/store/????????????????????????????????-nix-*/bin/nix-env | tail -1) -e nix; }
+          $(printf "%s\n" /nix/store/????????????????????????????????-nix-*/bin/nix | tail -1) --extra-experimental-features "nix-command flakes" develop ~/dots --command home-manager switch --flake ~/dots#tedj@wbus'
       done
+      echo; echo "Rehoming bus.."
+      NIX_CONFIG="use-xdg-base-directories = true" NIX_SSL_CERT_FILE=/etc/ssl/certs/ca-bundle.crt $(printf "%s\n" /nix/store/????????????????????????????????-nix-*/bin/nix | tail -1) --extra-experimental-features "nix-command flakes" develop ~/dots --command home-manager switch --flake ~/dots#tedj@wbus
     '')
   ];
 }
