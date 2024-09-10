@@ -93,7 +93,7 @@
     }
 
     # manually write .a4c/create to populate new containers with agid and nix
-    mkdir -p "$HOME/.a4c/create"
+    mkdir -p "$HOME/.a4c"
     cat >"$HOME/.a4c/create" <<EOL
     #!/bin/env bash
     cd /src && a ws mkid
