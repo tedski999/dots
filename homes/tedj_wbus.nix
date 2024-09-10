@@ -98,10 +98,11 @@
     #!/bin/env bash
     cd /src && a ws mkid
     export NIX_CONFIG=$'use-xdg-base-directories = true\nextra-experimental-features = nix-command flakes'
-    sh <(curl -L https://nixos.org/nix/install) --no-daemon --yes \
-    && . $HOME/.local/state/nix/profile/etc/profile.d/nix.sh \
-    && nix-env -e nix \
-    && NIX_SSL_CERT_FILE=/etc/ssl/certs/ca-bundle.crt $(printf "%s\n" /nix/store/????????????????????????????????-nix-*/bin/nix | tail -1) develop ~/dots --command home-manager switch --flake ~/dots#tedj@wbus
+    sh <(curl -L https://nixos.org/nix/install) --no-daemon --yes || exit 1
+    . $HOME/.local/state/nix/profile/etc/profile.d/nix.sh || exit 1
+    nix-env -e nix || exit 1
+    sleep 1
+    NIX_SSL_CERT_FILE=/etc/ssl/certs/ca-bundle.crt $(printf "%s\n" /nix/store/????????????????????????????????-nix-*/bin/nix | tail -1) develop ~/dots --command home-manager switch --flake ~/dots#tedj@wbus
     EOL
     chmod +x "$HOME/.a4c/create"
   '';
