@@ -97,10 +97,11 @@
     cat >"$HOME/.a4c/create" <<EOL
     #!/bin/env bash
     cd /src && a ws mkid
+    export NIX_CONFIG=$'use-xdg-base-directories = true\nextra-experimental-features = nix-command flakes'
     sh <(curl -L https://nixos.org/nix/install) --no-daemon --yes \
-    && export NIX_CONFIG=$'use-xdg-base-directories = true\nextra-experimental-features = nix-command flakes' \
     && . $HOME/.local/state/nix/profile/etc/profile.d/nix.sh \
-    && nix develop ~/dots --command home-manager switch --flake ~/dots#tedj@wbus
+    && nix-env -e nix \
+    && NIX_SSL_CERT_FILE=/etc/ssl/certs/ca-bundle.crt $(printf "%s\n" /nix/store/????????????????????????????????-nix-*/bin/nix | tail -1) develop ~/dots --command home-manager switch --flake ~/dots#tedj@wbus
     EOL
     chmod +x "$HOME/.a4c/create"
   '';
