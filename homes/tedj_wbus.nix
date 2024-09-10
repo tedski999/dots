@@ -24,7 +24,7 @@
   home.file.".a4c/create".enable = true;
   home.file.".a4c/create".executable = true;
   home.file.".a4c/create".text = ''
-    #!${pkgs.bash}/bin/bash
+    #!/bin/env bash
     cd /src && a ws mkid
     sh <(curl -L https://nixos.org/nix/install) --no-daemon --yes \
     && export NIX_CONFIG=$'use-xdg-base-directories = true\nextra-experimental-features = nix-command flakes' \
