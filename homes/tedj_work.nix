@@ -1,39 +1,89 @@
 { pkgs, ... }: {
+
   home.username = "tedj";
   home.homeDirectory = "/home/tedj";
   targets.genericLinux.enable = true;
   systemd.user.startServices = "sd-switch";
 
   imports = [
-    ./features/devtools
-    ./features/desktop
-    ./features/syncthing
+    ./pkgs/0x0.nix
+    ./pkgs/acpi.nix
+    ./pkgs/alacritty.nix
+    ./pkgs/ash.nix
+    ./pkgs/asl.nix
+    ./pkgs/avpn.nix
+    ./pkgs/awk.nix
+    ./pkgs/bash.nix
+    ./pkgs/bat.nix
+    ./pkgs/batteryd.nix
+    ./pkgs/bemenu.nix
+    ./pkgs/bitwarden-cli.nix
+    ./pkgs/bmbwd.nix
+    ./pkgs/brightnessctl.nix
+    ./pkgs/btop.nix
+    ./pkgs/cht.nix
+    ./pkgs/cliphist.nix
+    ./pkgs/coreutils.nix
+    ./pkgs/curl.nix
+    ./pkgs/del.nix
+    ./pkgs/diff.nix
+    ./pkgs/displayctl.nix
+    ./pkgs/eza.nix
+    ./pkgs/fastfetch.nix
+    ./pkgs/fd.nix
+    ./pkgs/file.nix
+    ./pkgs/find.nix
+    ./pkgs/fontconfig.nix
+    ./pkgs/fzf.nix
+    ./pkgs/git.nix
+    ./pkgs/gpg-agent.nix
+    ./pkgs/gpg.nix
+    ./pkgs/grim.nix
+    ./pkgs/gtk.nix
+    ./pkgs/imv.nix
+    ./pkgs/jq.nix
+    ./pkgs/less.nix
+    ./pkgs/libnotify.nix
+    ./pkgs/mako.nix
+    ./pkgs/man.nix
+    ./pkgs/mosh.nix
+    ./pkgs/mpv.nix
+    ./pkgs/neovim.nix
+    ./pkgs/networkctl.nix
+    ./pkgs/openconnect.nix
+    ./pkgs/ouch.nix
+    ./pkgs/playerctl.nix
+    ./pkgs/powerctl.nix
+    ./pkgs/procps.nix
+    ./pkgs/pulsemixer.nix
+    ./pkgs/python3.nix
+    ./pkgs/rg.nix
+    ./pkgs/sed.nix
+    ./pkgs/slurp.nix
+    ./pkgs/ssh.nix
+    ./pkgs/sway.nix
+    ./pkgs/swaylock.nix
+    ./pkgs/syncthing.nix
+    ./pkgs/waybar.nix
+    ./pkgs/wl-clipboard.nix
+    ./pkgs/xdg.nix
+    ./pkgs/yazi.nix
+    ./pkgs/zsh.nix
   ];
 
-  # arista vpn+shelllogin+shell
-  home.packages = with pkgs; [
-    mosh
-    openconnect
-    (writeShellScriptBin "avpn" ''
-      sudo openconnect \
-        --protocol=gp gp-ie.arista.com \
-        -u tedj \
-        -c $HOME/Documents/keys/tedj@arista.com.crt \
-        -k $HOME/Documents/keys/tedj@arista.com.pem
-    '')
-    (writeShellScriptBin "asl" ''
-      arista-ssh check-auth || arista-ssh login
-    '')
-    (writeShellScriptBin "ash" ''
-      h="''${1:+tedj-$1}"
-      LC_ALL= mosh \
-        --predict=always --predict-overwrite --experimental-remote-ip=remote \
-        "''${h:-bus-home}" -- ~/.local/state/nix/profile/bin/tmux new
-    '')
-  ];
-  programs.zsh.initExtra = "compdef 'compadd $(cat /tmp/ashcache 2>/dev/null || ssh bus-home -- a4c ps -N | tee /tmp/ashcache)' ash";
 
-  # install homebus ssh configuration
+  # autostart sway with hardware rendering
+  # TODO: wrap with wayland.windowManager.sway.package
+  home.packages = with pkgs; [ nixgl.nixGLIntel ];
+  programs.zsh.initExtraFirst = ''[[ -o interactive && -o login && -z "$WAYLAND_DISPLAY" && "$(tty)" = "/dev/tty1" ]] && exec nixGLIntel sway'';
+
+  # fuck you nvidia
+  wayland.windowManager.sway.extraOptions = [ "--unsupported-gpu" ];
+
+  # slock must be installed on system for PAM integration
+  programs.swaylock.package = pkgs.runCommandWith { name = "swaylock-dummy"; } "mkdir $out";
+
+  # homebus ssh configuration
   programs.ssh.matchBlocks."bus-home".host = "bus-home";
   programs.ssh.matchBlocks."bus-home".hostname = "10.247.176.6";
   programs.ssh.matchBlocks."bus-home".port = 22251;
@@ -45,4 +95,5 @@
     UserKnownHostsFile = "/dev/null";
     RemoteForward = "/bus/gnupg/S.gpg-agent \${XDG_RUNTIME_DIR}/gnupg/S.gpg-agent.extra";
   };
+
 }

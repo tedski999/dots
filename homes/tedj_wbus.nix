@@ -1,118 +1,47 @@
 { pkgs, lib, config, ... }: {
+
   home.username = "tedj";
   home.homeDirectory = "/home/tedj";
   targets.genericLinux.enable = true;
 
   imports = [
-    ./features/devtools
+    ./pkgs/0x0.nix
+    ./pkgs/agit.nix
+    ./pkgs/ahome.nix
+    ./pkgs/awk.nix
+    ./pkgs/bash.nix
+    ./pkgs/bat.nix
+    ./pkgs/btop.nix
+    ./pkgs/cht.nix
+    ./pkgs/coreutils.nix
+    ./pkgs/curl.nix
+    ./pkgs/del.nix
+    ./pkgs/diff.nix
+    ./pkgs/eza.nix
+    ./pkgs/fastfetch.nix
+    ./pkgs/fd.nix
+    ./pkgs/file.nix
+    ./pkgs/find.nix
+    ./pkgs/fzf.nix
+    ./pkgs/gpg-agent.nix
+    ./pkgs/gpg.nix
+    ./pkgs/jq.nix
+    ./pkgs/less.nix
+    ./pkgs/man.nix
+    ./pkgs/mosh.nix
+    ./pkgs/neovim.nix
+    ./pkgs/ouch.nix
+    ./pkgs/procps.nix
+    ./pkgs/python3.nix
+    ./pkgs/rg.nix
+    ./pkgs/sed.nix
+    ./pkgs/ssh.nix
+    ./pkgs/yazi.nix
+    ./pkgs/zsh.nix
   ];
-
-  # minimal bash config
-  programs.bash.enable = true;
-  programs.bash.historyControl = [ "ignoreboth" ];
-  programs.bash.historyFile = "${config.xdg.dataHome}/bash_history";
-
-  # autostart zsh if interactive
-  programs.bash.initExtra = ''
-    [[ $- == *i* ]] && [ -z "$ARTEST_RANDSEED" ] && { shopt -q login_shell && exec zsh --login $@ || exec zsh $@; }
-    export PATH="$(echo $PATH | awk -v RS=: -v ORS=: '/\/nix\// {print >"/tmp/anixpath"; next} {print}' | sed 's/:*$//'):$(sed 's/:*$//' /tmp/anixpath)"
-  '';
 
   # move nix paths to end of PATH to protect the build
-  programs.zsh.initExtraFirst = ''
-    export PATH="$(echo $PATH | awk -v RS=: -v ORS=: '/\/nix\// {print >"/tmp/anixpath"; next} {print}' | sed 's/:*$//'):$(sed 's/:*$//' /tmp/anixpath)"
-  '';
+  programs.bash.initExtra = ''export PATH="$(echo $PATH | awk -v RS=: -v ORS=: '/\/nix\// {print >"/tmp/anixpath"; next} {print}' | sed 's/:*$//'):$(sed 's/:*$//' /tmp/anixpath)"'';
+  programs.zsh.initExtraFirst = ''export PATH="$(echo $PATH | awk -v RS=: -v ORS=: '/\/nix\// {print >"/tmp/anixpath"; next} {print}' | sed 's/:*$//'):$(sed 's/:*$//' /tmp/anixpath)"'';
 
-  programs.zsh.initExtra = ''
-    # manually write .config/git/config because atools break if it isn't writable
-    mkdir -p "${config.xdg.configHome}/git"
-    cat >"${config.xdg.configHome}/git/config" <<EOL
-    [alias]
-      a = "add"
-      b = "branch"
-      c = "commit"
-      cm = "commit --message"
-      d = "diff"
-      ds = "diff --staged"
-      l = "log"
-      pl = "pull"
-      ps = "push"
-      rs = "restore --staged"
-      s = "status"
-      un = "reset --soft HEAD~"
-    [core]
-      pager = "delta"
-    [delta]
-      blame-palette = "#101010 #282828"
-      blame-separator-format = "{n:^5}"
-      features = "navigate"
-      file-added-label = "+"
-      file-copied-label = "="
-      file-decoration-style = "omit"
-      file-modified-label = "!"
-      file-removed-label = "-"
-      file-renamed-label = ">"
-      file-style = "brightyellow"
-      hunk-header-decoration-style = "omit"
-      hunk-header-file-style = "blue"
-      hunk-header-line-number-style = "grey"
-      hunk-header-style = "file line-number"
-      hunk-label = "#"
-      line-numbers = true
-      line-numbers-left-format = ""
-      line-numbers-right-format = "{np:>4} "
-      navigate-regex = "^[-+=!>]"
-      paging = "always"
-      relative-paths = true
-      width = "variable"
-    [interactive]
-      diffFilter = "delta --color-only"
-    [user]
-      email = "tedj@arista.com"
-      name = "tedj"
-    [gitar]
-      configured = true
-    [safe]
-      directory = /src/GitarBandMutDb
-    EOL
-
-    # 'a git' shortcut
-    ag() {
-      if   [ "$1" = "a"  ]; then shift; a git add $@
-      elif [ "$1" = "c"  ]; then shift; a git commit $@
-      elif [ "$1" = "cm" ]; then shift; a git commit --message $@
-      elif [ "$1" = "ca" ]; then shift; a git commit --amend $@
-      elif [ "$1" = "d"  ]; then shift; a git diff $@
-      elif [ "$1" = "ds" ]; then shift; a git diff --staged $@
-      elif [ "$1" = "l"  ]; then shift; a git log $@
-      elif [ "$1" = "ps" ]; then shift; a git ps $@
-      elif [ "$1" = "s"  ]; then shift; a git status $@
-      elif [ "$1" = "ch" ]; then shift; a git checkout $@
-      else a git $@
-      fi
-    }
-  '';
-
-  # disable programs.git because we manually write .config/git/config
-  programs.git.enable = lib.mkForce false;
-
-  home.packages = with pkgs; [
-    # manually install git+delta because we disable programs.git
-    git delta
-    # server-side of arista shell
-    mosh
-    # update nix in bus and all containers to keep nix stores consistent
-    (writeShellScriptBin "ahome" ''
-      [ "$(hostname | cut -d- -f-2)" = "tedj-home" ] || exit 1
-      for n in $(a4c ps -N); do
-        echo; echo "Rehoming $n..."
-        a4c shell $n sh -c '
-          export NIX_CONFIG="use-xdg-base-directories = true" NIX_SSL_CERT_FILE=/etc/ssl/certs/ca-bundle.crt
-          [ -d /nix ] || { sh <(curl -L https://nixos.org/nix/install) --no-daemon --yes; $(printf "%s\n" /nix/store/????????????????????????????????-nix-*/bin/nix-env | tail -1) -e nix; }
-          $(printf "%s\n" /nix/store/????????????????????????????????-nix-*/bin/nix | tail -1) --extra-experimental-features "nix-command flakes" develop ~/dots --command home-manager switch --flake ~/dots#tedj@wbus'
-      done
-      echo; echo "Rehoming bus.."
-      NIX_CONFIG="use-xdg-base-directories = true" NIX_SSL_CERT_FILE=/etc/ssl/certs/ca-bundle.crt $(printf "%s\n" /nix/store/????????????????????????????????-nix-*/bin/nix | tail -1) --extra-experimental-features "nix-command flakes" develop ~/dots --command home-manager switch --flake ~/dots#tedj@wbus
-    '')
-  ];
 }

@@ -1,4 +1,5 @@
 { pkgs, ... }: {
+
   home.username = "ski";
   home.homeDirectory = "/home/ski";
   systemd.user.startServices = "sd-switch";
@@ -7,4 +8,5 @@
     ./features/devtools
     ./features/syncthing
   ];
+
 }

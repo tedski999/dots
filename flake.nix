@@ -4,14 +4,14 @@
 # TODO(later): beets
 # TODO(nixos): live+instal iso
 {
+
   inputs = {
     nixpkgs = { url = "github:NixOS/nixpkgs/nixpkgs-unstable"; }; # TODO(nixos): nixpkgs-* vs nixos-*
     home-manager = { url = "github:nix-community/home-manager/master"; inputs = { nixpkgs.follows = "nixpkgs"; }; };
     nixgl = { url = "github:nix-community/nixGL"; inputs = { nixpkgs.follows = "nixpkgs"; }; };
-    nur = { url = "github:nix-community/NUR"; };
   };
 
-  outputs = { nur, nixgl, ...  } @ inputs:
+  outputs = { nixgl, ...  } @ inputs:
   let
     pkgs = inputs.nixpkgs.legacyPackages;
     lib = inputs.nixpkgs.lib // inputs.home-manager.lib;
@@ -27,10 +27,11 @@
       "septs" = lib.nixosSystem { modules = [ ./hosts/common.nix ./hosts/septs.nix ]; };
     };
     homeConfigurations = {
-      "ski@msung" = lib.homeManagerConfiguration { modules = [ ./homes/common.nix ./homes/ski_msung.nix ]; pkgs = (pkgs.x86_64-linux.extend nur.overlay).extend nixgl.overlay; };
+      "ski@msung" = lib.homeManagerConfiguration { modules = [ ./homes/common.nix ./homes/ski_msung.nix ]; pkgs = pkgs.x86_64-linux.extend nixgl.overlay; };
       "ski@septs" = lib.homeManagerConfiguration { modules = [ ./homes/common.nix ./homes/ski_septs.nix ]; pkgs = pkgs.aarch64-linux; };
-      "tedj@work" = lib.homeManagerConfiguration { modules = [ ./homes/common.nix ./homes/tedj_work.nix ]; pkgs = (pkgs.x86_64-linux.extend nur.overlay).extend nixgl.overlay; };
+      "tedj@work" = lib.homeManagerConfiguration { modules = [ ./homes/common.nix ./homes/tedj_work.nix ]; pkgs = pkgs.x86_64-linux.extend nixgl.overlay; };
       "tedj@wbus" = lib.homeManagerConfiguration { modules = [ ./homes/common.nix ./homes/tedj_wbus.nix ]; pkgs = pkgs.x86_64-linux; };
     };
   };
+
 }
