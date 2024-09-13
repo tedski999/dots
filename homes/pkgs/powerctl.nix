@@ -1,7 +1,7 @@
 # power menu
 { pkgs, ... }: {
 
-  imports = [ ./bemenu.nix ./libnotify.nix ./procps.nix ./sway.nix ./swaylock.nix ];
+  imports = [ ./bemenu.nix ./libnotify.nix ./procps.nix ./sway.nix ./swayidle.nix ./swaylock.nix ];
 
   home.packages = with pkgs; [
     (writeShellScriptBin "powerctl" ''

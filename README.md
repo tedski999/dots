@@ -5,6 +5,11 @@ Instructions for setting up environments on various non-NixOS devices.
 
 ### Work Laptop - Ubuntu 22.04
 
+Import agenix key:
+```
+cp /mnt/tedj@work.agenix.key ~/.ssh/
+```
+
 Install nix:
 ```
 export NIX_CONFIG=$'use-xdg-base-directories = true\nextra-experimental-features = nix-command flakes'
@@ -21,10 +26,7 @@ Disable `sudo` env_reset:
 printf 'Defaults !env_reset\nDefaults !secure_path\n' | sudo tee /etc/sudoers.d/keep_env
 ```
 
-Install IT security tools:
-```sh
-TODO
-```
+Install IT security tools (give helpdesk@ a head-up): https://intranet.arista.com/it/ubuntu-22-04lts-security-tools-help Note google-chrome is pushed once enrolled into WS1, you can sign into the browser with Arista credentials.
 
 xdg-desktop-portal-wlr on 22.04 is broken but we still need the package installed to get the entry in `/usr/share/xdg-desktop-portal/portals`:
 ```sh
@@ -36,24 +38,50 @@ swaylock must be installed systemd-wide for PAM integration:
 sudo apt install swaylock
 ```
 
-TODO: secrets stuff
-
-Setup syncthing at 127.0.0.1:8384
-
 Import GPG key:
 ```sh
-gpg --import Documents/keys/ski@h8c.de.gpg
+gpg --import $XDG_RUNTIME_DIR/ski@h8c.de.gpg
 ```
 
-Install arista-ssh-agent: https://docs.google.com/document/d/12-lH_pGsDEyKQnIMy2eERjbW--biAkBGr2cnkeHOMg4/edit#heading=h.gppl0c9scge6
-
-Throw out unneeded software:
+Login to Bitwarden:
 ```sh
-sudo systemctl disable gdm
+bw login
+```
+
+Connect to corporate Wi-Fi:
+```sh
 TODO
 ```
 
-Reboot
+Install arista-ssh-agent: https://docs.google.com/document/d/12-lH_pGsDEyKQnIMy2eERjbW--biAkBGr2cnkeHOMg4/edit#heading=h.gppl0c9scge6 You should also comment out "GSSAPIAuthentication yes" in `/etc/ssh/ssh_config`.
+
+Disable some unneeded software:
+```sh
+sudo snap remove --purge firefox
+sudo snap remove --purge gtk-common-themes
+sudo snap remove --purge gnome-42-2204
+sudo snap remove --purge snapd-desktop-integration
+sudo snap remove --purge snap-store
+sudo snap remove --purge core22
+sudo snap remove --purge bare
+sudo snap remove --purge snapd
+sudo systemctl stop snapd
+sudo systemctl stop snapd.socket
+sudo apt purge snapd -y
+sudo apt-mark hold snapd
+sudo apt-get purge --auto-remove 'gnome*'
+del ~/snap
+sudo systemctl disable gdm
+printf 'blacklist nouveau\noptions nouveau modeset=0\n' | sudo tee /etc/modprobe.d/blacklist-nouveau.conf
+printf '
+ACTION=="add", SUBSYSTEM=="pci", ATTR{vendor}=="0x10de", ATTR{class}=="0x0c0330", ATTR{power/control}="auto", ATTR{remove}="1"
+ACTION=="add", SUBSYSTEM=="pci", ATTR{vendor}=="0x10de", ATTR{class}=="0x0c8000", ATTR{power/control}="auto", ATTR{remove}="1"
+ACTION=="add", SUBSYSTEM=="pci", ATTR{vendor}=="0x10de", ATTR{class}=="0x040300", ATTR{power/control}="auto", ATTR{remove}="1"
+ACTION=="add", SUBSYSTEM=="pci", ATTR{vendor}=="0x10de", ATTR{class}=="0x03[0-9]*", ATTR{power/control}="auto", ATTR{remove}="1"
+' | sudo tee /etc/udev/rules.d/00-remove-nvidia.rules
+```
+
+`sudo apt-get update && sudo apt-get update` and reboot
 
 ### Homebus
 
