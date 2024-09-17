@@ -5,13 +5,15 @@ Instructions for setting up environments on various non-NixOS devices.
 
 ### Work Laptop - Ubuntu 22.04
 
+Assuming fresh laptop provisioned with IT security tools.
+
 Import agenix key:
-```
+```sh
 cp /mnt/tedj@work.agenix.key ~/.ssh/
 ```
 
 Install nix:
-```
+```sh
 export NIX_CONFIG=$'use-xdg-base-directories = true\nextra-experimental-features = nix-command flakes'
 sh <(curl -L https://nixos.org/nix/install) --daemon
 echo 'trusted-users = tedj' | sudo tee --append /etc/nix/nix.conf
@@ -21,8 +23,9 @@ nix develop github:tedski999/dots --command home-manager switch --flake github:t
 unset NIX_CONFIG
 ```
 
-Disable `sudo` env_reset:
+Disable `sudo` password for tedj, admin_flag, env_reset and secure_path:
 ```sh
+printf 'Defaults !admin_flag\ntedj ALL=(ALL) NOPASSWD: ALL\n' | sudo tee /etc/sudoers.d/qol
 printf 'Defaults !env_reset\nDefaults !secure_path\n' | sudo tee /etc/sudoers.d/keep_env
 ```
 
@@ -38,9 +41,9 @@ swaylock must be installed systemd-wide for PAM integration:
 sudo apt install swaylock
 ```
 
-Import GPG key:
+Import GPG subkeys:
 ```sh
-gpg --import $XDG_RUNTIME_DIR/ski@h8c.de.gpg
+gpg --import $XDG_RUNTIME_DIR/agenix/ski@h8c.de.gpg
 ```
 
 Login to Bitwarden:
@@ -53,7 +56,7 @@ Connect to corporate Wi-Fi:
 TODO
 ```
 
-Install arista-ssh-agent: https://docs.google.com/document/d/12-lH_pGsDEyKQnIMy2eERjbW--biAkBGr2cnkeHOMg4/edit#heading=h.gppl0c9scge6 You should also comment out "GSSAPIAuthentication yes" in `/etc/ssh/ssh_config`.
+Install arista-ssh-agent: https://docs.google.com/document/d/12-lH_pGsDEyKQnIMy2eERjbW--biAkBGr2cnkeHOMg4/edit#heading=h.gppl0c9scge6 You should also comment out `GSSAPIAuthentication yes` in `/etc/ssh/ssh_config`.
 
 Disable some unneeded software:
 ```sh
@@ -83,9 +86,9 @@ ACTION=="add", SUBSYSTEM=="pci", ATTR{vendor}=="0x10de", ATTR{class}=="0x03[0-9]
 
 `sudo apt-get update && sudo apt-get update` and reboot
 
-### Homebus
+### Work Server - AlmaLinux 9.3
 
-See https://go/nix
+Assuming fresh homebus instance.
 
 Install nix:
 ```sh

@@ -81,6 +81,9 @@
   # fuck you nvidia
   wayland.windowManager.sway.extraOptions = [ "--unsupported-gpu" ];
 
+  # .hushlogin
+  home.file.".hushlogin".text = "";
+
   # slock must be installed on system for PAM integration
   programs.swaylock.package = pkgs.runCommandWith { name = "swaylock-dummy"; } "mkdir $out";
 
@@ -98,13 +101,11 @@
   # secrets
   home.sessionVariables.AGENIX_KEY = "/home/tedj/.ssh/tedj@work.agenix.key";
   age.identityPaths = [ "/home/tedj/.ssh/tedj@work.agenix.key" ];
-  age.secrets."ski@h8c.de.gpg"           = { file = ../secrets/ski_h8c.de.gpg.age;      };
-  age.secrets."tedj@arista.com.cer"      = { file = ../secrets/tedj_arista.com.cer.age; };
-  age.secrets."tedj@arista.com.crt"      = { file = ../secrets/tedj_arista.com.crt.age; };
-  age.secrets."tedj@arista.com.csr"      = { file = ../secrets/tedj_arista.com.csr.age; };
-  age.secrets."tedj@arista.com.pem"      = { file = ../secrets/tedj_arista.com.pem.age; };
-
-  # syncthing node
+  age.secrets."ski@h8c.de.gpg"           = { file = ../secrets/ski_h8c.de/subkey.age; };
+  age.secrets."tedj@arista.com.cer"      = { file = ../secrets/arista/work_cer.age; };
+  age.secrets."tedj@arista.com.crt"      = { file = ../secrets/arista/work_crt.age; };
+  age.secrets."tedj@arista.com.csr"      = { file = ../secrets/arista/work_csr.age; };
+  age.secrets."tedj@arista.com.pem"      = { file = ../secrets/arista/work_pem.age; };
   age.secrets."syncthing/config.xml"     = { file = ../secrets/syncthing/tedj_work/config.xml.age;     path = "${config.xdg.configHome}/syncthing/config.xml";     };
   age.secrets."syncthing/cert.pem"       = { file = ../secrets/syncthing/tedj_work/cert.pem.age;       path = "${config.xdg.configHome}/syncthing/cert.pem";       };
   age.secrets."syncthing/key.pem"        = { file = ../secrets/syncthing/tedj_work/key.pem.age;        path = "${config.xdg.configHome}/syncthing/key.pem";        };
