@@ -53,7 +53,11 @@ bw login
 
 Connect to corporate Wi-Fi:
 ```sh
-TODO
+nmcli connection add type wifi con-name ARISTA-Corp ssid ARISTA-Corp -- \
+    wifi-sec.key-mgmt wpa-eap 802-1x.eap tls 802-1x.identity tedj \
+    802-1x.client-cert $XDG_RUNTIME_DIR/agenix/tedj@arista.com.cer \
+    802-1x.private-key $XDG_RUNTIME_DIR/agenix/tedj@arista.com.pem \
+    802-1x.private-key-password <...>
 ```
 
 Install arista-ssh-agent: https://docs.google.com/document/d/12-lH_pGsDEyKQnIMy2eERjbW--biAkBGr2cnkeHOMg4/edit#heading=h.gppl0c9scge6 You should also comment out `GSSAPIAuthentication yes` in `/etc/ssh/ssh_config`.
