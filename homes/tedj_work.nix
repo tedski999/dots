@@ -119,12 +119,8 @@
   programs.firefox.profiles.work.isDefault = true;
   programs.firefox.profiles.work.userContent = ''
     @-moz-document url-prefix("https://bb.infra.corp.arista.io/") {
-      .app-content {
-        justify-content: center;
-      }
-      .bug-page-wrapper {
-        max-width: 1200px;
-      }
+      .app-content { justify-content: center; }
+      .bug-page-wrapper { max-width: 1200px; }
     }
   '';
   # TODO(later): separate firefox syncs for home and work instead: https://github.com/mozilla-services/syncstorage-rs
@@ -259,7 +255,7 @@
             bookmarks = [
               { name = "gmail"; url = "https://mail.google.com/mail/u/0/#inbox"; }
               { name = "chat"; url = "https://mail.google.com/chat/u/0/#chat/home"; }
-              { name = "calender"; url = "https://calendar.google.com/calendar/u/0/r?pli=1"; }
+              { name = "calendar"; url = "https://calendar.google.com/calendar/u/0/r?pli=1"; }
             ];
           }
           {
@@ -270,6 +266,7 @@
               { name = "bugsby"; url = "https://bb.infra.corp.arista.io/board/user/table/tedj"; }
               { name = "reviewboard"; url = "https://reviewboard.infra.corp.arista.io/dashboard/"; }
               { name = "gerrit"; url = "https://gitarband-gerrit.infra.corp.arista.io/dashboard/self"; }
+              { name = "wdw"; url = "https://coda.io/d/WhoDoWhat_dSoB-58Lz69/WhoDoWhat_suECC#_luNIH"; }
               { name = "intranet"; url = "https://intranet.arista.com/"; }
               { name = "workday"; url = "https://wd5.myworkday.com/arista/d/home.htmld"; }
               { name = "portal"; url = "https://arista.onelogin.com/portal"; }
@@ -289,6 +286,7 @@
               { name = "grep.app"; url = "https://grep.app/"; }
               { name = "explainshell"; url = "https://explainshell.com/"; }
               { name = "shellcheck"; url = "https://www.shellcheck.net/"; }
+              { name = "regex101"; url = "https://regex101.com/"; }
             ];
           }
           {
@@ -326,14 +324,17 @@
               { name = "links"; url = "https://docs.google.com/document/d/1EC3rGgvN1T90W-gXwgXl3XaiDUb7pD86QnqXxp1Yk1I/preview"; }
               { name = "how to software"; url = "https://docs.google.com/document/d/1xPFv1zf_Mw1JWXq5ZX5HvCyudTJOyn6XGnuQXOhCGAE/preview"; }
               { name = "how to maintenance"; url = "https://docs.google.com/document/d/1HioJSk5D7SzGl6KxOrSr4kSUVco1CoXr0BPBYcojKUM/preview"; }
-              { name = "how to auto test"; url = "https://docs.google.com/document/d/1aomEVxOSAYZ-QsMIrpCY915qtH2RUDGTTTufgdNRUGo/preview"; }
+              { name = "how to autotest"; url = "https://docs.google.com/document/d/1aomEVxOSAYZ-QsMIrpCY915qtH2RUDGTTTufgdNRUGo/preview"; }
+              { name = "how to bug"; url = "https://docs.google.com/document/d/1A0p52ySWvKM50w-Tz0To7DEzdwNEwhzefUjV5F_ePho/preview"; }
+              { name = "how to areview"; url = "https://docs.google.com/document/d/1-jm1mkHcS5PaFrn0M_FE6484FSGL5xuRguRhRZ2oavM/preview"; }
+              { name = "platform prep talk"; url = "https://docs.google.com/presentation/d/1JZcl5UDe4DdgGMNMOwOR4dCLF-xSgq6eE7RbqNLUek0/preview"; }
               { name = "sand"; url = "https://docs.google.com/document/d/1yfP0Qc03wk-cp87hEGp9RWQiMy_s6nErBNou3cYDR24/preview"; }
-              { name = "areview"; url = "https://docs.google.com/document/d/1-jm1mkHcS5PaFrn0M_FE6484FSGL5xuRguRhRZ2oavM/preview"; }
               { name = "acronyms"; url = "https://docs.google.com/spreadsheets/d/1J_GKEgq9_6HKCRfdU0Wnz8RAwe8SRfYSPNPN-F8P9Rs/preview"; }
               { name = "releases"; url = "https://docs.google.com/spreadsheets/d/1UBmNOcXXV3s73qA_208TMEi5gN0mKsmB5dT70HxOUhw/preview"; }
-              { name = "features"; url = "https://docs.google.com/spreadsheets/d/1HU0KOeneu1WqiL5jAiVuQbhBaHLoOMhPAnQc_Cp3VvY/preview#gid=1532911302"; }
-              { name = "escape gaps"; url = "https://docs.google.com/spreadsheets/d/1IIH7rDyLKq_pqYEwTTFvhm6O41OraaC0pVBm9k4CYJA/preview?gid=1672554111#gid=118303530"; }
+              { name = "features"; url = "https://docs.google.com/spreadsheets/d/1HU0KOeneu1WqiL5jAiVuQbhBaHLoOMhPAnQc_Cp3VvY/preview"; }
+              { name = "escape gaps"; url = "https://docs.google.com/spreadsheets/d/1IIH7rDyLKq_pqYEwTTFvhm6O41OraaC0pVBm9k4CYJA/preview"; }
               { name = "quality"; url = "https://aid.infra.corp.arista.io/17/"; }
+              { name = "design doc"; url = "https://docs.google.com/document/d/1DpW0HvRSeuc-m5SD9DogDcypX7GHM18EKgOtbkIBeVo/preview"; }
               { name = "eos manual"; url = "https://www.arista.com/assets/data/pdf/user-manual/um-books/EOS-User-Manual.pdf"; }
               { name = "eos sdk wiki"; url = "https://github.com/aristanetworks/EosSdk/wiki"; }
               {
@@ -400,15 +401,22 @@
               { name = "sand ama"; url = "https://sites.google.com/arista.com/modular-sw/sand-ama/"; }
               { name = "j2 deep dive"; url = "https://drive.google.com/drive/folders/1Z1r3qHi1zihGcFcWVFLMzKQTsN_JwVVH"; }
               { name = "EvolutionOfEthernet.pdf"; url = "https://aid.infra.corp.arista.io/137/EvolutionOfEthernet.pdf"; }
-              { name = "An overview of direct memory access"; url = "https://geidav.wordpress.com/2014/04/27/an-overview-of-direct-memory-access/"; }
-              { name = "IOMMU introduction"; url = "https://terenceli.github.io/%E6%8A%80%E6%9C%AF/2019/08/04/iommu-introduction"; }
               { name = "C++ Exceptions ACCU 24"; url = "https://www.youtube.com/watch?v=BGmzMuSDt-Y"; }
+              { name = "Systems Approach"; url = "https://book.systemsapproach.org/preface.html#what-is-a-systems-approach"; }
+            ];
+          }
+          {
+            name = "next";
+            bookmarks = [
+              { name = "creating an agent"; url = "https://docs.google.com/document/d/1k6HmxdQTyhBuLCzNfoj6WDKhcfxxCw9VYt6LxvIymnA/preview"; }
+              { name = "build system tut"; url = "https://docs.google.com/document/d/1jCgbJrvKmJypgGa-VPK_qvyn52_0JOWaGFA-dmz1Kjk/preview"; }
+              { name = "packet proc"; url = "https://guide.infra.corp.arista.io/sand-101/pipeline-walkthrough/pp/"; }
+              { name = "aboot talk"; url = "https://drive.google.com/file/d/1UmB9c0WTEO1GC6L22oS9Yxcb6qVYQlMG/view"; }
+              { name = "dma"; url = "https://geidav.wordpress.com/2014/04/27/an-overview-of-direct-memory-access/"; }
+              { name = "iommu"; url = "https://terenceli.github.io/%E6%8A%80%E6%9C%AF/2019/08/04/iommu-introduction"; }
             ];
           }
           { name = "jack nixfiles"; url = "https://gitlab.aristanetworks.com/jack/nixfiles/-/tree/arista/home-manager?ref_type=heads"; }
-          { name = "creating an agent"; url = "https://docs.google.com/document/d/1k6HmxdQTyhBuLCzNfoj6WDKhcfxxCw9VYt6LxvIymnA/preview"; }
-          { name = "build system tut"; url = "https://docs.google.com/document/d/1jCgbJrvKmJypgGa-VPK_qvyn52_0JOWaGFA-dmz1Kjk/preview"; }
-          { name = "eos bootcamp"; url = "https://github.com/aristanetworks/bootcamp"; }
         ];
       }
     ];
