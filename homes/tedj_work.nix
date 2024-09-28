@@ -21,6 +21,7 @@
     ./pkgs/bmbwd.nix
     ./pkgs/brightnessctl.nix
     ./pkgs/btop.nix
+    ./pkgs/chrome.nix
     ./pkgs/cht.nix
     ./pkgs/cliphist.nix
     ./pkgs/coreutils.nix

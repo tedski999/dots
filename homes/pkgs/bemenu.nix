@@ -3,6 +3,8 @@
 
   imports = [ ./fontconfig.nix ];
 
+  home.sessionVariables.LAUNCHER = "bemenu-run";
+
   programs.bemenu.enable = true;
   programs.bemenu.settings.single-instance = true;
   programs.bemenu.settings.list = 32;
@@ -30,7 +32,5 @@
   programs.bemenu.settings.ab = "#000000";
   programs.bemenu.settings.af = "#ffffff";
   programs.bemenu.settings.fn = "Terminess Nerd Font";
-
-  wayland.windowManager.sway.config.keybindings."Mod4+space" = "exec bemenu-run";
 
 }

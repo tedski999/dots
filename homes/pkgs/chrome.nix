@@ -1,7 +1,7 @@
 # firefox but worse
-{ pkgs, ... }: {
+{ pkgs, lib, ... }: {
 
-  home.sessionVariables.BROWSER = "chromium";
+  home.sessionVariables.BROWSER = lib.mkDefault "chromium";
 
   programs.chromium.enable = true;
   programs.chromium.package = (pkgs.chromium.override { enableWideVine = true; }).overrideAttrs (old: {
@@ -14,7 +14,5 @@
         --append-flags "--enable-blink-features=MiddleClickAutoscroll"
     '';
   });
-
-  wayland.windowManager.sway.config.keybindings."Mod4+w" = "exec chromium";
 
 }

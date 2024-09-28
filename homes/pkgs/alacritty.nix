@@ -3,6 +3,8 @@
 
   imports = [ ./fontconfig.nix ];
 
+  home.sessionVariables.TERMINAL = "alacritty";
+
   programs.alacritty.enable = true;
   programs.alacritty.settings.live_config_reload = false;
   programs.alacritty.settings.scrolling = { history = 10000; multiplier = 5; };
@@ -24,8 +26,5 @@
   programs.alacritty.settings.colors.footer_bar = { background = "#000000"; foreground = "#ffffff"; };
   programs.alacritty.settings.colors.line_indicator = { background = "#000000"; foreground = "#ffffff"; };
   programs.alacritty.settings.colors.selection = { background = "#fffacd"; text = "#000000"; };
-
-  wayland.windowManager.sway.config.keybindings."Mod4+Return" = "exec alacritty";
-  wayland.windowManager.sway.config.keybindings."Mod4+t"      = "exec alacritty";
 
 }

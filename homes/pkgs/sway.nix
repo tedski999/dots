@@ -58,6 +58,11 @@
   wayland.windowManager.sway.config.input."type:touchpad".click_method = "clickfinger";
   wayland.windowManager.sway.config.input."type:touchpad".scroll_method = "two_finger";
 
+  wayland.windowManager.sway.config.keybindings."Mod4+space"  = "exec $LAUNCHER";
+  wayland.windowManager.sway.config.keybindings."Mod4+Return" = "exec $TERMINAL";
+  wayland.windowManager.sway.config.keybindings."Mod4+t"      = "exec $TERMINAL";
+  wayland.windowManager.sway.config.keybindings."Mod4+w"      = "exec $BROWSER";
+
   wayland.windowManager.sway.config.keybindings."Mod4+g"       = "focus parent";
   wayland.windowManager.sway.config.keybindings."Mod4+Shift+g" = "focus child";
   wayland.windowManager.sway.config.keybindings."Mod4+f"       = "focus mode_toggle";

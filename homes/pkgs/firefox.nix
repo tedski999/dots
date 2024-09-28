@@ -6,6 +6,4 @@
 
   programs.firefox.enable = true;
 
-  wayland.windowManager.sway.config.keybindings."Mod4+w" = "exec firefox";
-
 }
