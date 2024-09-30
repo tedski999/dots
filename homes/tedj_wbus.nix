@@ -36,6 +36,7 @@
     ./pkgs/rg.nix
     ./pkgs/sed.nix
     ./pkgs/ssh.nix
+    ./pkgs/tmux.nix
     ./pkgs/yazi.nix
     ./pkgs/zsh.nix
   ];
