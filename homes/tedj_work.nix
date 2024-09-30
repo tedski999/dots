@@ -75,6 +75,9 @@
     ./pkgs/zsh.nix
   ];
 
+  # autostart zsh
+  programs.bash.initExtra = ''[[ $- == *i* ]] && { shopt -q login_shell && exec zsh --login $@ || exec zsh $@; }'';
+
   # autostart sway with hardware rendering
   # TODO(later): wrap with wayland.windowManager.sway.package
   programs.zsh.initExtraFirst = ''[[ -o interactive && -o login && -z "$WAYLAND_DISPLAY" && "$(tty)" = "/dev/tty1" ]] && exec nixGLIntel sway'';

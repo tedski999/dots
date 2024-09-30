@@ -40,8 +40,13 @@
     ./pkgs/zsh.nix
   ];
 
-  # move nix paths to end of PATH to protect the build
-  programs.bash.initExtra = ''export PATH="$(echo $PATH | awk -v RS=: -v ORS=: '/\/nix\// {print >"/tmp/anixpath"; next} {print}' | sed 's/:*$//'):$(sed 's/:*$//' /tmp/anixpath)"'';
-  programs.zsh.initExtraFirst = ''export PATH="$(echo $PATH | awk -v RS=: -v ORS=: '/\/nix\// {print >"/tmp/anixpath"; next} {print}' | sed 's/:*$//'):$(sed 's/:*$//' /tmp/anixpath)"'';
+  # autostart zsh and move nix paths to end of PATH to protect the build
+  programs.bash.initExtra = ''
+    [[ $- == *i* ]] && [ -z "$ARTEST_RANDSEED" ] && { shopt -q login_shell && exec zsh --login $@ || exec zsh $@; }
+    export PATH="$(echo $PATH | awk -v RS=: -v ORS=: '/\/nix\// {print >"/tmp/anixpath"; next} {print}' | sed 's/:*$//'):$(sed 's/:*$//' /tmp/anixpath)"
+  '';
+  programs.zsh.initExtraFirst = ''
+    export PATH="$(echo $PATH | awk -v RS=: -v ORS=: '/\/nix\// {print >"/tmp/anixpath"; next} {print}' | sed 's/:*$//'):$(sed 's/:*$//' /tmp/anixpath)"
+  '';
 
 }
