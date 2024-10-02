@@ -3,20 +3,18 @@
   home.packages = with pkgs; [
     git delta
     (writeShellScriptBin "ag" ''
-      ag() {
-        if   [ "$1" = "a"  ]; then shift; a git add $@
-        elif [ "$1" = "c"  ]; then shift; a git commit $@
-        elif [ "$1" = "cm" ]; then shift; a git commit --message $@
-        elif [ "$1" = "ca" ]; then shift; a git commit --amend $@
-        elif [ "$1" = "d"  ]; then shift; a git diff $@
-        elif [ "$1" = "ds" ]; then shift; a git diff --staged $@
-        elif [ "$1" = "l"  ]; then shift; a git log $@
-        elif [ "$1" = "ps" ]; then shift; a git ps $@
-        elif [ "$1" = "s"  ]; then shift; a git status $@
-        elif [ "$1" = "ch" ]; then shift; a git checkout $@
-        else a git $@
-        fi
-      }
+      if   [ "$1" = "a"  ]; then shift; a git add $@
+      elif [ "$1" = "c"  ]; then shift; a git commit $@
+      elif [ "$1" = "cm" ]; then shift; a git commit --message $@
+      elif [ "$1" = "ca" ]; then shift; a git commit --amend $@
+      elif [ "$1" = "d"  ]; then shift; a git diff $@
+      elif [ "$1" = "ds" ]; then shift; a git diff --staged $@
+      elif [ "$1" = "l"  ]; then shift; a git log $@
+      elif [ "$1" = "ps" ]; then shift; a git ps $@
+      elif [ "$1" = "s"  ]; then shift; a git status $@
+      elif [ "$1" = "ch" ]; then shift; a git checkout $@
+      else a git $@
+      fi
     '')
   ];
 
@@ -72,5 +70,7 @@
       directory = /src/GitarBandMutDb
     EOL
   '';
+
+  programs.zsh.shellAliases.g = "git ";
 
 }
