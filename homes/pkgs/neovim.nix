@@ -285,6 +285,9 @@
     vim.api.nvim_create_autocmd("FileType", { pattern = "nix", command = "setlocal tabstop=2 shiftwidth=2 expandtab" })
     vim.api.nvim_create_autocmd("FileType", { pattern = { "c", "cpp", "tac" }, command = "setlocal commentstring=//\\ %s" })
 
+    -- Disable satellite on long files (search highlighting causes stuttering)
+    vim.api.nvim_create_autocmd("BufWinEnter", { callback = function() if vim.api.nvim_buf_line_count(0) > 10000 then vim.cmd("SatelliteDisable") end end })
+
     -- PLUGIN INITIALISATION --
 
     fzf.register_ui_select()
@@ -403,7 +406,6 @@
         icons_enabled = false,
         section_separators = "",
         component_separators = "",
-        refresh = { statusline = 100, tabline = 100, winbar = 100 },
         theme = {
           normal =   { a = { bg = p.black.bright, fg = p.fg1, gui = "bold" }, b = { bg = p.bg4, fg = p.fg2 }, c = { bg = p.bg3, fg = p.fg3 } },
           insert =   { a = { bg = p.green.base,   fg = p.fg1, gui = "bold" }, b = { bg = p.bg4, fg = p.fg2 }, c = { bg = p.bg3, fg = p.fg3 } },
@@ -557,6 +559,7 @@
     vim.keymap.set("n", "yol", "<cmd>set list! list?<cr>")
     vim.keymap.set("n", "yoz", "<cmd>set spell! spell?<cr>")
     vim.keymap.set("n", "yod", "<cmd>if &diff | diffoff | else | diffthis | endif<cr>")
+    vim.keymap.set("n", "yos", function() if next(vim.api.nvim_get_autocmds({ group = "satellite" })) then vim.cmd("SatelliteDisable") else vim.cmd("SatelliteEnable") end end)
     -- Signify
     vim.keymap.set("n", "[d", "<plug>(signify-prev-hunk)")
     vim.keymap.set("n", "]d", "<plug>(signify-next-hunk)")

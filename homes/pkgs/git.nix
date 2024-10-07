@@ -7,6 +7,7 @@
   programs.git.signing.key = "00ADEF0A!";
   programs.git.signing.signByDefault = true;
 
+  programs.git.extraConfig.init.defaultBranch = "main";
   programs.git.extraConfig.pull.ff = "only"; # trying out new workflow
   programs.git.extraConfig.push.default = "current";
 

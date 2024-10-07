@@ -137,7 +137,7 @@
         on-scroll-down = "brightnessctl set 1%+";
       };
       clock = {
-        format = "{:%H:%M}";
+        format = "{:%m-%d %H:%M}";
         tooltip-format = "{calendar}";
         on-click = ''notify-send -i clock "$(date)" "$(date "+Day %j, Week %V, %Z (%:z)")"'';
         actions.on-click-right = "mode";
