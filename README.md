@@ -94,6 +94,11 @@ ACTION=="add", SUBSYSTEM=="pci", ATTR{vendor}=="0x10de", ATTR{class}=="0x03[0-9]
 
 Assuming fresh homebus instance.
 
+Import agenix key:
+```sh
+cp /mnt/tedj@wbus.agenix.key ~/.ssh/
+```
+
 Install nix:
 ```sh
 export NIX_CONFIG=$'use-xdg-base-directories = true\nextra-experimental-features = nix-command flakes'
@@ -112,6 +117,73 @@ After you create a new container or if you want to update your home-manager prof
 ```sh
 ahome
 ```
+
+### Home Desktop - Windows 11 IoT Enterprise LTSC
+
+Assuming fresh install using custom unattend.xml and activated using appropriate key.
+
+Connect to Internet. This will likely initiate installations of drivers in the background and require rebooting at a later stage.
+
+Import agenix key:
+```ps
+Copy-Item "ski@skic.agenix.key" -Destination $env:LOCALAPPDATA
+```
+
+Download dots:
+```ps
+$t = "$((gi $env:temp).fullname)\dots"
+New-Item -ItemType Directory -Force -Path $t
+New-Item -ItemType Directory -Force -Path "$($env:LOCALAPPDATA)\Programs"
+Invoke-WebRequest -Uri "https://github.com/tedski999/dots/archive/refs/heads/main.zip" -OutFile "$($t)\dots.zip"
+Expand-Archive -Path "$($t)\dots.zip" -DestinationPath "$($t)"
+```
+
+Install age:
+```ps
+Invoke-WebRequest -Uri "https://github.com/FiloSottile/age/releases/download/v1.2.0/age-v1.2.0-windows-amd64.zip" -OutFile "$($t)\age.zip"
+Expand-Archive -Path "$($t)\age.zip" -DestinationPath "$($t)"
+Copy-Item "$($t)\age\age.exe" -Destination "$($env:LOCALAPPDATA)\Programs"
+Copy-Item "$($t)\age\age-keygen.exe" -Destination "$($env:LOCALAPPDATA)\Programs"
+```
+
+TODO: import Preferences and User Data like settings and registry entries (bitkeeper pin)
+
+Install, configure and autostart syncthing:
+```ps
+Invoke-WebRequest -Uri "https://github.com/syncthing/syncthing/releases/download/v1.27.12/syncthing-windows-amd64-v1.27.12.zip" -OutFile "$($t)\syncthing.zip"
+Expand-Archive -Path "$($t)\syncthing.zip" -DestinationPath "$($t)"
+Copy-Item "$($t)\syncthing-windows-amd64-v1.27.12\syncthing.exe" -Destination "$($env:LOCALAPPDATA)\Programs"
+New-Item -ItemType Directory -Force -Path "$($env:LOCALAPPDATA)\Syncthing"
+"$($env:LOCALAPPDATA)\Programs\age.exe" --decrypt --identity "$($env:LOCALAPPDATA)\ski@skic.agenix.key" --output "$($env:LOCALAPPDATA)\Syncthing\cert.pem" "$($t)\dots-main\secrets\syncthing\ski_skic\cert.pem.age"
+"$($env:LOCALAPPDATA)\Programs\age.exe" --decrypt --identity "$($env:LOCALAPPDATA)\ski@skic.agenix.key" --output "$($env:LOCALAPPDATA)\Syncthing\config.xml" "$($t)\dots-main\secrets\syncthing\ski_skic\config.xml.age"
+"$($env:LOCALAPPDATA)\Programs\age.exe" --decrypt --identity "$($env:LOCALAPPDATA)\ski@skic.agenix.key" --output "$($env:LOCALAPPDATA)\Syncthing\https-cert.pem" "$($t)\dots-main\secrets\syncthing\ski_skic\https-cert.pem.age"
+"$($env:LOCALAPPDATA)\Programs\age.exe" --decrypt --identity "$($env:LOCALAPPDATA)\ski@skic.agenix.key" --output "$($env:LOCALAPPDATA)\Syncthing\https-key.pem" "$($t)\dots-main\secrets\syncthing\ski_skic\https-key.pem.age"
+"$($env:LOCALAPPDATA)\Programs\age.exe" --decrypt --identity "$($env:LOCALAPPDATA)\ski@skic.agenix.key" --output "$($env:LOCALAPPDATA)\Syncthing\key.pem" "$($t)\dots-main\secrets\syncthing\ski_skic\key.pem.age"
+$SyncthingLnk = (New-Object -comObject WScript.Shell).CreateShortcut("$($env:APPDATA)\Microsoft\Windows\Start Menu\Programs\Startup\syncthing.lnk")
+$SyncthingLnk.TargetPath = "$($env:LOCALAPPDATA)\Programs\syncthing.exe"
+$SyncthingLnk.Arguments = "serve --no-console --no-browser --no-default-folder"
+$SyncthingLnk.Save()
+```
+
+Install ckan (requires [.NET 4.8](https://dotnet.microsoft.com/en-us/download/dotnet-framework/net48) or later):
+```ps
+Invoke-WebRequest -Uri "https://github.com/KSP-CKAN/CKAN/releases/download/v1.35.2/ckan.exe" -OutFile "$($env:LOCALAPPDATA)\Programs"
+$CkanLnk = (New-Object -comObject WScript.Shell).CreateShortcut("$($env:APPDATA)\Microsoft\Windows\Start Menu\Programs\ckan.lnk")
+$CkanLnk.TargetPath = "$($env:LOCALAPPDATA)\Programs\ckan.exe"
+$CkanLnk.Save()
+```
+
+Install OpenTTD jgrpp:
+```ps
+Invoke-WebRequest -Uri "https://github.com/JGRennison/OpenTTD-patches/releases/download/jgrpp-0.62.0/openttd-jgrpp-0.62.0-windows-win64.zip" -OutFile "$($t)\openttd.zip"
+Expand-Archive -Path "$($t)\openttd.zip" -DestinationPath "$($t)"
+Copy-Item -Recurse "$($t)\openttd\openttd-jgrpp-0.62.0-windows-win64" -Destination "$($env:LOCALAPPDATA)\Programs"
+$SyncthingLnk = (New-Object -comObject WScript.Shell).CreateShortcut("$($env:APPDATA)\Microsoft\Windows\Start Menu\Programs\Startup\OpenTTD.lnk")
+$SyncthingLnk.TargetPath = "$($env:LOCALAPPDATA)\Programs\openttd-jgrpp-0.62.0-windows-win64\openttd.exe"
+$SyncthingLnk.Save()
+```
+
+Install Firefox, Steam, Discord, Prism, etc...
 
 ## Configuration notes
 
