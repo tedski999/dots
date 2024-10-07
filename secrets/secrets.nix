@@ -19,6 +19,7 @@ in {
   "arista/work_crt.age".publicKeys = [ tedj_work ];
   "arista/work_csr.age".publicKeys = [ tedj_work ];
   "arista/work_pem.age".publicKeys = [ tedj_work ];
+  "arista/mailfilters.age".publicKeys = [ tedj_work ];
 
   "syncthing/ski_msung/config.xml.age".publicKeys = [ ski_msung ];
   "syncthing/ski_msung/cert.pem.age".publicKeys = [ ski_msung ];

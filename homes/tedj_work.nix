@@ -110,6 +110,7 @@
   age.secrets."tedj@arista.com.crt"      = { file = ../secrets/arista/work_crt.age; };
   age.secrets."tedj@arista.com.csr"      = { file = ../secrets/arista/work_csr.age; };
   age.secrets."tedj@arista.com.pem"      = { file = ../secrets/arista/work_pem.age; };
+  age.secrets."mailfilters.xml"          = { file = ../secrets/arista/mailfilters.age; };
   age.secrets."syncthing/config.xml"     = { file = ../secrets/syncthing/tedj_work/config.xml.age;     path = "${config.xdg.configHome}/syncthing/config.xml";     };
   age.secrets."syncthing/cert.pem"       = { file = ../secrets/syncthing/tedj_work/cert.pem.age;       path = "${config.xdg.configHome}/syncthing/cert.pem";       };
   age.secrets."syncthing/key.pem"        = { file = ../secrets/syncthing/tedj_work/key.pem.age;        path = "${config.xdg.configHome}/syncthing/key.pem";        };
