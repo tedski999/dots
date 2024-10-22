@@ -48,7 +48,7 @@
   '';
   programs.zsh.initExtraFirst = ''
     [ -d /src/EngTeam ] && [[ -o interactive ]] && [[ -o login ]] && cd /src
-    [[ $- == *i* ]] && [ -z "$ARTEST_RANDSEED" ] && { shopt -q login_shell && exec zsh --login $@ || exec zsh $@; }
+    export PATH="$(echo $PATH | awk -v RS=: -v ORS=: '/\/nix\// {print >"/tmp/anixpath"; next} {print}' | sed 's/:*$//'):$(sed 's/:*$//' /tmp/anixpath)"
   '';
 
 }
