@@ -139,7 +139,7 @@
     search.engines."bb".urls = [{template = "https://bb.infra.corp.arista.io/bug/{searchTerms}";}];
     search.engines."bb".definedAliases = ["b" "bb" "bug"];
     search.engines."cl".urls = [{template = "https://change.infra.corp.arista.io/{searchTerms}";}];
-    search.engines."cl".definedAliases = ["c" "cl" "change"];
+    search.engines."cl".definedAliases = ["c" "cl"];
     search.engines."Wikipedia (en)".metaData.alias = "@wiki";
     search.engines."Amazon.com".metaData.hidden = true;
     search.engines."Bing".metaData.hidden = true;
@@ -302,6 +302,7 @@
               { name = "google search"; url = "https://cloudsearch.google.com/cloudsearch"; }
               { name = "bug search"; url = "https://bugsearch.infra.corp.arista.io/"; }
               { name = "codenames"; url = "https://aboard.infra.corp.arista.io/skus"; }
+              { name = "contacts"; url = "https://contacts.google.com"; }
               { name = "src"; url = "https://src.infra.corp.arista.io/"; }
               { name = "aid"; url = "https://aid.infra.corp.arista.io/1/"; }
               { name = "go"; url = "https://go.infra.corp.arista.io/admin/"; }
@@ -413,7 +414,6 @@
             name = "next";
             bookmarks = [
               { name = "creating an agent"; url = "https://docs.google.com/document/d/1k6HmxdQTyhBuLCzNfoj6WDKhcfxxCw9VYt6LxvIymnA/preview"; }
-              { name = "build system tut"; url = "https://docs.google.com/document/d/1jCgbJrvKmJypgGa-VPK_qvyn52_0JOWaGFA-dmz1Kjk/preview"; }
               { name = "packet proc"; url = "https://guide.infra.corp.arista.io/sand-101/pipeline-walkthrough/pp/"; }
               { name = "aboot talk"; url = "https://drive.google.com/file/d/1UmB9c0WTEO1GC6L22oS9Yxcb6qVYQlMG/view"; }
               { name = "dma"; url = "https://geidav.wordpress.com/2014/04/27/an-overview-of-direct-memory-access/"; }
