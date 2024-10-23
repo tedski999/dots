@@ -29,14 +29,8 @@
     -- Arista-specifics
     local a = vim.loop.fs_stat("/usr/share/vim/vimfiles/arista.vim") and not vim.fn.getcwd():find("^/home")
     if a then
-      vim.api.nvim_echo({ { "Note: Arista-specifics have been enabled for this Neovim instance", "MoreMsg" } }, false, {})
-      vim.cmd[[
-        let a4_auto_edit = 0 | source /usr/share/vim/vimfiles/arista.vim
-        function! TaccIndentOverrides()
-          if getline(SkipTaccBlanksAndComments(v:lnum - 1)) =~# 'Tac::Namespace\s*{\s*$' | return 0 | else | return GetTaccIndent() | endif
-        endfunction
-        augroup vimrc | autocmd BufNewFile,BufRead *.tac setlocal indentexpr=TaccIndentOverrides() | augroup NONE
-      ]]
+      vim.api.nvim_echo({ { "Note: Arista-specifics enabled for this Neovim instance", "MoreMsg" } }, false, {})
+      vim.cmd[[ let a4_auto_edit = 0 | source /usr/share/vim/vimfiles/arista.vim ]]
     end
 
     -- Spaceman
@@ -232,7 +226,7 @@
         [".tac"] = { ".tin", ".cpp", ".c" },
         [".tin"] = { ".tac", ".hpp", ".h" }
       }
-      local file = fullpath()
+      local file = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(0), ":.")
       local hits, more = {}, {}
       for ext, altexts in pairs(ext_altexts) do
         if file:sub(-#ext) == ext then
@@ -247,8 +241,8 @@
 
     -- Switch to an alternative file
     local function fzf_altfiles(hits, more)
-      for i=1,#hits do hits[i] = fzf.utils.ansi_codes.green(hits[i]:match("[^/]*$")) end
-      for i=1,#more do hits[#hits+1] = fzf.utils.ansi_codes.red(more[i]:match("[^/]*$")) end
+      for i=1,#hits do hits[i] = fzf.utils.ansi_codes.green(hits[i]) end
+      for i=1,#more do hits[#hits+1] = fzf.utils.ansi_codes.red(more[i]) end
       fzf.fzf_exec(hits, { prompt = "Altfiles>", actions = fzf.config.globals.actions.files, previewer = "builtin" })
     end
 
@@ -628,6 +622,14 @@
 
     -- Arista-specifics switch
     if a then
+      -- Tacc
+      vim.cmd[[
+        function! TaccIndentOverrides()
+          if getline(SkipTaccBlanksAndComments(v:lnum - 1)) =~# 'Tac::Namespace\s*{\s*$' | return 0 | else | return GetTaccIndent() | endif
+        endfunction
+        augroup vimrc | autocmd BufNewFile,BufRead *.tac setlocal indentexpr=TaccIndentOverrides() | augroup NONE
+      ]]
+      vim.api.nvim_create_autocmd("FileType", { pattern = "tac", command = "setlocal commentstring=//\\ %s" })
       -- Agrok
       vim.api.nvim_create_user_command("Agrok",  function(p) fzf.fzf_exec("a grok -em 99 "..p.args.." | grep '^/src/.*'",                                                 { actions = fzf.config.globals.actions.files, previewer = "builtin" }) end, { nargs = 1 })
       vim.api.nvim_create_user_command("Agrokp", function(p) fzf.fzf_exec("a grok -em 99 -f "..(fullpath():match("^/src/.-/") or "/").." "..p.args.." | grep '^/src/.*'", { actions = fzf.config.globals.actions.files, previewer = "builtin" }) end, { nargs = 1 })
