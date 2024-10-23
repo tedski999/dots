@@ -22,14 +22,23 @@
   wayland.windowManager.sway.systemd.variables = [ "--all" ];
 
   wayland.windowManager.sway.extraConfigEarly = ''
-    set $get_output o=$(swaymsg -rt get_outputs | jq -r '.[] | first(select(.focused)) | .make+" "+.model+" "+.serial')
-    set $get_workspaces ws=$(swaymsg -rt get_workspaces | jq -r '. as $i | $i[] | select(.focused).output as $o | $i[] | select(.output==$o).num')
-    set $get_prev_workspace w=$(( $( swaymsg -rt get_workspaces | jq -r '.[] | first(select(.focused).num)' ) - 1 )) && w=$(( $w < 1 ? 1 : ($w < 9 ? $w : 9) ))
-    set $get_next_workspace w=$(( $( swaymsg -rt get_workspaces | jq -r '.[] | first(select(.focused).num)' ) + 1 )) && w=$(( $w < 1 ? 1 : ($w < 9 ? $w : 9) ))
-    set $get_empty_workspace w=$(swaymsg -rt get_workspaces | jq -r '. as $i | first(range(1; 10) as $n | $n | select($i[] | select(.focused).output as $o | [$i[] | select(.output==$o).num] | all(. != $n))) // 9')
+    set $number n=$(swaymsg -rt get_workspaces | jq -r '.[] | select(.focused).name' | cut -d: -f1)
+    set $output o=$(swaymsg -rt get_workspaces | jq -r '.[] | select(.focused).name' | cut -d: -f2)
+    set $outputs os=$( (swaymsg -rt get_workspaces | jq -r '.[].name' | cut -d: -f2 && swaymsg -rt get_outputs | jq -r '.[] | .make+" "+.model+" "+.serial') | sort -u)
+
+    #set $numbers ns=$(swaymsg -rt get_workspaces | jq -r '. as $i | $i[] | select(.name | split(":")[1] == '"$o"').num')
+
+    #set $numbers ns=$(swaymsg -rt get_workspaces | jq -r '.[].name' | grep cut -d: -f1)
+
     # TODO(later): doesnt work well at high speeds (e.g. key held down)
     set $group swaymsg "mark --add g" || swaymsg "splitv, mark --add g"
     set $ungroup swaymsg "[con_mark=g] focus, unmark g" || swaymsg "focus parent; focus parent; focus parent; focus parent"
+
+
+
+    set $get_hw_output o=$(swaymsg -rt get_outputs | jq -r '.[] | first(select(.focused)) | .make+" "+.model+" "+.serial')
+    set $get_workspaces ws=$(swaymsg -rt get_workspaces | jq -r '. as $i | $i[] | select(.focused).output as $o | $i[] | select(.output==$o).num')
+    set $get_empty_workspace w=$(swaymsg -rt get_workspaces | jq -r '. as $i | first(range(1; 10) as $n | $n | select($i[] | select(.focused).output as $o | [$i[] | select(.output==$o).num] | all(. != $n))) // 9')
   '';
 
   wayland.windowManager.sway.config.modifier = "Mod4";
@@ -88,56 +97,62 @@
   wayland.windowManager.sway.config.keybindings."Mod4+Shift+l"   = "exec $group && swaymsg 'move right 50px' && $ungroup";
   wayland.windowManager.sway.config.keybindings."Mod4+Control+l" = "resize grow width 50px";
 
-  wayland.windowManager.sway.config.keybindings."Mod4+1" = ''exec n=1:$(swaymsg -rt get_workspaces | jq -r '. as $i | $i[] | select(.focused) as { num: $n, name: $m } | if $n != 1 then $m else [$i[] | select(.num==$n).name] | sort as $a | ($a+$a)[$a | index($m) + 1] end | split(":")[1]') && swaymsg "workspace $n"'';
-  wayland.windowManager.sway.config.keybindings."Mod4+2" = ''exec n=2:$(swaymsg -rt get_workspaces | jq -r '. as $i | $i[] | select(.focused) as { num: $n, name: $m } | if $n != 2 then $m else [$i[] | select(.num==$n).name] | sort as $a | ($a+$a)[$a | index($m) + 1] end | split(":")[1]') && swaymsg "workspace $n"'';
-  wayland.windowManager.sway.config.keybindings."Mod4+3" = ''exec n=3:$(swaymsg -rt get_workspaces | jq -r '. as $i | $i[] | select(.focused) as { num: $n, name: $m } | if $n != 3 then $m else [$i[] | select(.num==$n).name] | sort as $a | ($a+$a)[$a | index($m) + 1] end | split(":")[1]') && swaymsg "workspace $n"'';
-  wayland.windowManager.sway.config.keybindings."Mod4+4" = ''exec n=4:$(swaymsg -rt get_workspaces | jq -r '. as $i | $i[] | select(.focused) as { num: $n, name: $m } | if $n != 4 then $m else [$i[] | select(.num==$n).name] | sort as $a | ($a+$a)[$a | index($m) + 1] end | split(":")[1]') && swaymsg "workspace $n"'';
-  wayland.windowManager.sway.config.keybindings."Mod4+5" = ''exec n=5:$(swaymsg -rt get_workspaces | jq -r '. as $i | $i[] | select(.focused) as { num: $n, name: $m } | if $n != 5 then $m else [$i[] | select(.num==$n).name] | sort as $a | ($a+$a)[$a | index($m) + 1] end | split(":")[1]') && swaymsg "workspace $n"'';
-  wayland.windowManager.sway.config.keybindings."Mod4+6" = ''exec n=6:$(swaymsg -rt get_workspaces | jq -r '. as $i | $i[] | select(.focused) as { num: $n, name: $m } | if $n != 6 then $m else [$i[] | select(.num==$n).name] | sort as $a | ($a+$a)[$a | index($m) + 1] end | split(":")[1]') && swaymsg "workspace $n"'';
-  wayland.windowManager.sway.config.keybindings."Mod4+7" = ''exec n=7:$(swaymsg -rt get_workspaces | jq -r '. as $i | $i[] | select(.focused) as { num: $n, name: $m } | if $n != 7 then $m else [$i[] | select(.num==$n).name] | sort as $a | ($a+$a)[$a | index($m) + 1] end | split(":")[1]') && swaymsg "workspace $n"'';
-  wayland.windowManager.sway.config.keybindings."Mod4+8" = ''exec n=8:$(swaymsg -rt get_workspaces | jq -r '. as $i | $i[] | select(.focused) as { num: $n, name: $m } | if $n != 8 then $m else [$i[] | select(.num==$n).name] | sort as $a | ($a+$a)[$a | index($m) + 1] end | split(":")[1]') && swaymsg "workspace $n"'';
-  wayland.windowManager.sway.config.keybindings."Mod4+9" = ''exec n=9:$(swaymsg -rt get_workspaces | jq -r '. as $i | $i[] | select(.focused) as { num: $n, name: $m } | if $n != 9 then $m else [$i[] | select(.num==$n).name] | sort as $a | ($a+$a)[$a | index($m) + 1] end | split(":")[1]') && swaymsg "workspace $n"'';
+  wayland.windowManager.sway.config.keybindings."Mod4+1" = ''exec $output && swaymsg "workspace 1:$o"'';
+  wayland.windowManager.sway.config.keybindings."Mod4+2" = ''exec $output && swaymsg "workspace 2:$o"'';
+  wayland.windowManager.sway.config.keybindings."Mod4+3" = ''exec $output && swaymsg "workspace 3:$o"'';
+  wayland.windowManager.sway.config.keybindings."Mod4+4" = ''exec $output && swaymsg "workspace 4:$o"'';
+  wayland.windowManager.sway.config.keybindings."Mod4+5" = ''exec $output && swaymsg "workspace 5:$o"'';
+  wayland.windowManager.sway.config.keybindings."Mod4+6" = ''exec $output && swaymsg "workspace 6:$o"'';
+  wayland.windowManager.sway.config.keybindings."Mod4+7" = ''exec $output && swaymsg "workspace 7:$o"'';
+  wayland.windowManager.sway.config.keybindings."Mod4+8" = ''exec $output && swaymsg "workspace 8:$o"'';
+  wayland.windowManager.sway.config.keybindings."Mod4+9" = ''exec $output && swaymsg "workspace 9:$o"'';
 
-  wayland.windowManager.sway.config.keybindings."Mod4+Shift+1" = ''exec $group && n=1:$(swaymsg -rt get_workspaces | jq -r '. as $i | $i[] | select(.focused) as { num: $n, name: $m } | if $n != 1 then $m else [$i[] | select(.num==$n).name] | sort as $a | ($a+$a)[$a | index($m) + 1] end | split(":")[1]') && swaymsg "move container workspace $n, workspace $n" && $ungroup'';
-  wayland.windowManager.sway.config.keybindings."Mod4+Shift+2" = ''exec $group && n=2:$(swaymsg -rt get_workspaces | jq -r '. as $i | $i[] | select(.focused) as { num: $n, name: $m } | if $n != 2 then $m else [$i[] | select(.num==$n).name] | sort as $a | ($a+$a)[$a | index($m) + 1] end | split(":")[1]') && swaymsg "move container workspace $n, workspace $n" && $ungroup'';
-  wayland.windowManager.sway.config.keybindings."Mod4+Shift+3" = ''exec $group && n=3:$(swaymsg -rt get_workspaces | jq -r '. as $i | $i[] | select(.focused) as { num: $n, name: $m } | if $n != 3 then $m else [$i[] | select(.num==$n).name] | sort as $a | ($a+$a)[$a | index($m) + 1] end | split(":")[1]') && swaymsg "move container workspace $n, workspace $n" && $ungroup'';
-  wayland.windowManager.sway.config.keybindings."Mod4+Shift+4" = ''exec $group && n=4:$(swaymsg -rt get_workspaces | jq -r '. as $i | $i[] | select(.focused) as { num: $n, name: $m } | if $n != 4 then $m else [$i[] | select(.num==$n).name] | sort as $a | ($a+$a)[$a | index($m) + 1] end | split(":")[1]') && swaymsg "move container workspace $n, workspace $n" && $ungroup'';
-  wayland.windowManager.sway.config.keybindings."Mod4+Shift+5" = ''exec $group && n=5:$(swaymsg -rt get_workspaces | jq -r '. as $i | $i[] | select(.focused) as { num: $n, name: $m } | if $n != 5 then $m else [$i[] | select(.num==$n).name] | sort as $a | ($a+$a)[$a | index($m) + 1] end | split(":")[1]') && swaymsg "move container workspace $n, workspace $n" && $ungroup'';
-  wayland.windowManager.sway.config.keybindings."Mod4+Shift+6" = ''exec $group && n=6:$(swaymsg -rt get_workspaces | jq -r '. as $i | $i[] | select(.focused) as { num: $n, name: $m } | if $n != 6 then $m else [$i[] | select(.num==$n).name] | sort as $a | ($a+$a)[$a | index($m) + 1] end | split(":")[1]') && swaymsg "move container workspace $n, workspace $n" && $ungroup'';
-  wayland.windowManager.sway.config.keybindings."Mod4+Shift+7" = ''exec $group && n=7:$(swaymsg -rt get_workspaces | jq -r '. as $i | $i[] | select(.focused) as { num: $n, name: $m } | if $n != 7 then $m else [$i[] | select(.num==$n).name] | sort as $a | ($a+$a)[$a | index($m) + 1] end | split(":")[1]') && swaymsg "move container workspace $n, workspace $n" && $ungroup'';
-  wayland.windowManager.sway.config.keybindings."Mod4+Shift+8" = ''exec $group && n=8:$(swaymsg -rt get_workspaces | jq -r '. as $i | $i[] | select(.focused) as { num: $n, name: $m } | if $n != 8 then $m else [$i[] | select(.num==$n).name] | sort as $a | ($a+$a)[$a | index($m) + 1] end | split(":")[1]') && swaymsg "move container workspace $n, workspace $n" && $ungroup'';
-  wayland.windowManager.sway.config.keybindings."Mod4+Shift+9" = ''exec $group && n=9:$(swaymsg -rt get_workspaces | jq -r '. as $i | $i[] | select(.focused) as { num: $n, name: $m } | if $n != 9 then $m else [$i[] | select(.num==$n).name] | sort as $a | ($a+$a)[$a | index($m) + 1] end | split(":")[1]') && swaymsg "move container workspace $n, workspace $n" && $ungroup'';
+  wayland.windowManager.sway.config.keybindings."Mod4+Shift+1" = ''exec $output && $group && swaymsg "move container workspace 1:$o, workspace 1:$o" && $ungroup'';
+  wayland.windowManager.sway.config.keybindings."Mod4+Shift+2" = ''exec $output && $group && swaymsg "move container workspace 2:$o, workspace 2:$o" && $ungroup'';
+  wayland.windowManager.sway.config.keybindings."Mod4+Shift+3" = ''exec $output && $group && swaymsg "move container workspace 3:$o, workspace 3:$o" && $ungroup'';
+  wayland.windowManager.sway.config.keybindings."Mod4+Shift+4" = ''exec $output && $group && swaymsg "move container workspace 4:$o, workspace 4:$o" && $ungroup'';
+  wayland.windowManager.sway.config.keybindings."Mod4+Shift+5" = ''exec $output && $group && swaymsg "move container workspace 5:$o, workspace 5:$o" && $ungroup'';
+  wayland.windowManager.sway.config.keybindings."Mod4+Shift+6" = ''exec $output && $group && swaymsg "move container workspace 6:$o, workspace 6:$o" && $ungroup'';
+  wayland.windowManager.sway.config.keybindings."Mod4+Shift+7" = ''exec $output && $group && swaymsg "move container workspace 7:$o, workspace 7:$o" && $ungroup'';
+  wayland.windowManager.sway.config.keybindings."Mod4+Shift+8" = ''exec $output && $group && swaymsg "move container workspace 8:$o, workspace 8:$o" && $ungroup'';
+  wayland.windowManager.sway.config.keybindings."Mod4+Shift+9" = ''exec $output && $group && swaymsg "move container workspace 9:$o, workspace 9:$o" && $ungroup'';
 
-  wayland.windowManager.sway.config.keybindings."Mod4+Control+1" = ''exec n=1:$(swaymsg -rt get_workspaces | jq -r '. as $i | $i[] | select(.focused) as { num: $n, name: $m } | if $n != 1 then $m else [$i[] | select(.num==$n).name] | sort as $a | ($a+$a)[$a | index($m) + 1] end | split(":")[1]') && swaymsg "move container workspace $n"'';
-  wayland.windowManager.sway.config.keybindings."Mod4+Control+2" = ''exec n=2:$(swaymsg -rt get_workspaces | jq -r '. as $i | $i[] | select(.focused) as { num: $n, name: $m } | if $n != 2 then $m else [$i[] | select(.num==$n).name] | sort as $a | ($a+$a)[$a | index($m) + 1] end | split(":")[1]') && swaymsg "move container workspace $n"'';
-  wayland.windowManager.sway.config.keybindings."Mod4+Control+3" = ''exec n=3:$(swaymsg -rt get_workspaces | jq -r '. as $i | $i[] | select(.focused) as { num: $n, name: $m } | if $n != 3 then $m else [$i[] | select(.num==$n).name] | sort as $a | ($a+$a)[$a | index($m) + 1] end | split(":")[1]') && swaymsg "move container workspace $n"'';
-  wayland.windowManager.sway.config.keybindings."Mod4+Control+4" = ''exec n=4:$(swaymsg -rt get_workspaces | jq -r '. as $i | $i[] | select(.focused) as { num: $n, name: $m } | if $n != 4 then $m else [$i[] | select(.num==$n).name] | sort as $a | ($a+$a)[$a | index($m) + 1] end | split(":")[1]') && swaymsg "move container workspace $n"'';
-  wayland.windowManager.sway.config.keybindings."Mod4+Control+5" = ''exec n=5:$(swaymsg -rt get_workspaces | jq -r '. as $i | $i[] | select(.focused) as { num: $n, name: $m } | if $n != 5 then $m else [$i[] | select(.num==$n).name] | sort as $a | ($a+$a)[$a | index($m) + 1] end | split(":")[1]') && swaymsg "move container workspace $n"'';
-  wayland.windowManager.sway.config.keybindings."Mod4+Control+6" = ''exec n=6:$(swaymsg -rt get_workspaces | jq -r '. as $i | $i[] | select(.focused) as { num: $n, name: $m } | if $n != 6 then $m else [$i[] | select(.num==$n).name] | sort as $a | ($a+$a)[$a | index($m) + 1] end | split(":")[1]') && swaymsg "move container workspace $n"'';
-  wayland.windowManager.sway.config.keybindings."Mod4+Control+7" = ''exec n=7:$(swaymsg -rt get_workspaces | jq -r '. as $i | $i[] | select(.focused) as { num: $n, name: $m } | if $n != 7 then $m else [$i[] | select(.num==$n).name] | sort as $a | ($a+$a)[$a | index($m) + 1] end | split(":")[1]') && swaymsg "move container workspace $n"'';
-  wayland.windowManager.sway.config.keybindings."Mod4+Control+8" = ''exec n=8:$(swaymsg -rt get_workspaces | jq -r '. as $i | $i[] | select(.focused) as { num: $n, name: $m } | if $n != 8 then $m else [$i[] | select(.num==$n).name] | sort as $a | ($a+$a)[$a | index($m) + 1] end | split(":")[1]') && swaymsg "move container workspace $n"'';
-  wayland.windowManager.sway.config.keybindings."Mod4+Control+9" = ''exec n=9:$(swaymsg -rt get_workspaces | jq -r '. as $i | $i[] | select(.focused) as { num: $n, name: $m } | if $n != 9 then $m else [$i[] | select(.num==$n).name] | sort as $a | ($a+$a)[$a | index($m) + 1] end | split(":")[1]') && swaymsg "move container workspace $n"'';
+  wayland.windowManager.sway.config.keybindings."Mod4+Control+1" = ''exec $output && swaymsg "move container workspace 1:$o"'';
+  wayland.windowManager.sway.config.keybindings."Mod4+Control+2" = ''exec $output && swaymsg "move container workspace 2:$o"'';
+  wayland.windowManager.sway.config.keybindings."Mod4+Control+3" = ''exec $output && swaymsg "move container workspace 3:$o"'';
+  wayland.windowManager.sway.config.keybindings."Mod4+Control+4" = ''exec $output && swaymsg "move container workspace 4:$o"'';
+  wayland.windowManager.sway.config.keybindings."Mod4+Control+5" = ''exec $output && swaymsg "move container workspace 5:$o"'';
+  wayland.windowManager.sway.config.keybindings."Mod4+Control+6" = ''exec $output && swaymsg "move container workspace 6:$o"'';
+  wayland.windowManager.sway.config.keybindings."Mod4+Control+7" = ''exec $output && swaymsg "move container workspace 7:$o"'';
+  wayland.windowManager.sway.config.keybindings."Mod4+Control+8" = ''exec $output && swaymsg "move container workspace 8:$o"'';
+  wayland.windowManager.sway.config.keybindings."Mod4+Control+9" = ''exec $output && swaymsg "move container workspace 9:$o"'';
 
-  wayland.windowManager.sway.config.keybindings."Mod4+Comma"                = ''exec $get_output && $get_prev_workspace && swaymsg "workspace $w:$o"'';
-  wayland.windowManager.sway.config.keybindings."Mod4+Period"               = ''exec $get_output && $get_next_workspace && swaymsg "workspace $w:$o"'';
-  wayland.windowManager.sway.config.keybindings."Mod4+Shift+Comma"          = ''exec $group && $get_output && $get_prev_workspace && swaymsg "move container workspace $w:$o, workspace $w:$o" && $ungroup'';
-  wayland.windowManager.sway.config.keybindings."Mod4+Shift+Period"         = ''exec $group && $get_output && $get_next_workspace && swaymsg "move container workspace $w:$o, workspace $w:$o" && $ungroup'';
-  wayland.windowManager.sway.config.keybindings."Mod4+Control+Comma"        = ''exec $get_output && $get_prev_workspace && swaymsg "move container workspace $w:$o"'';
-  wayland.windowManager.sway.config.keybindings."Mod4+Control+Period"       = ''exec $get_output && $get_next_workspace && swaymsg "move container workspace $w:$o"'';
-  wayland.windowManager.sway.config.keybindings."Mod4+Control+Shift+Comma"  = ''exec "o=$(swaymsg -rt get_workspaces | jq -r '.[] | select(.focused).name' | cut -d: -f2) && $get_workspaces                         && [ $(echo $ws | cut -b1) != 1 ] && for w in $ws; do i=$(( $w - 1 )); swaymsg rename workspace $w:$o to $i:$o; done" '';
-  wayland.windowManager.sway.config.keybindings."Mod4+Control+Shift+Period" = ''exec "o=$(swaymsg -rt get_workspaces | jq -r '.[] | select(.focused).name' | cut -d: -f2) && $get_workspaces && ws=$(echo $ws | rev) && [ $(echo $ws | cut -b1) != 9 ] && for w in $ws; do i=$(( $w + 1 )); swaymsg rename workspace $w:$o to $i:$o; done" '';
+  wayland.windowManager.sway.config.keybindings."Mod4+Tab"         = ''exec $number && $output && $outputs && o=$( (echo "$os" && echo "$os") | grep -FA 1 -m 1 "$o" | tail -1) && swaymsg "workspace $n:$o"'';
+  wayland.windowManager.sway.config.keybindings."Mod4+Shift+Tab"   = ''exec $number && $output && $outputs && o=$( (echo "$os" && echo "$os") | grep -FA 1 -m 1 "$o" | tail -1) && $group && swaymsg "move container workspace $n:$o, workspace $n:$o" && $ungroup'';
+  wayland.windowManager.sway.config.keybindings."Mod4+Control+Tab" = ''exec $number && $output && $outputs && o=$( (echo "$os" && echo "$os") | grep -FA 1 -m 1 "$o" | tail -1) && swaymsg "move container workspace $n:$o"'';
 
-  wayland.windowManager.sway.config.keybindings."Mod4+z"               = ''exec $get_output && $get_empty_workspace && swaymsg "workspace $w:$o"'';
-  wayland.windowManager.sway.config.keybindings."Mod4+Shift+z"         = ''exec $group && $get_output && $get_empty_workspace && swaymsg "move container workspace $w:$o, workspace $w:$o" && $ungroup'';
-  wayland.windowManager.sway.config.keybindings."Mod4+Control+z"       = ''exec $get_output && $get_empty_workspace && swaymsg "move container workspace $w:$o"'';
-  wayland.windowManager.sway.config.keybindings."Mod4+Control+Shift+z" = ''exec "o=$(swaymsg -rt get_workspaces | jq -r '.[] | select(.focused).name' | cut -d: -f2) && $get_workspaces && i=1 && for w in $ws; do swaymsg rename workspace $w:$o to $i:$o; i=$(( $i + 1 )); done" '';
+  wayland.windowManager.sway.config.keybindings."Mod4+Period"               = ''exec $number && $output && n=$(( $n >= 9 ? 9 : $n + 1 )) && swaymsg "workspace $n:$o"'';
+  wayland.windowManager.sway.config.keybindings."Mod4+Comma"                = ''exec $number && $output && n=$(( $n <= 1 ? 1 : $n - 1 )) && swaymsg "workspace $n:$o"'';
+  wayland.windowManager.sway.config.keybindings."Mod4+Shift+Period"         = ''exec $number && $output && n=$(( $n >= 9 ? 9 : $n + 1 )) && $group && swaymsg "move container workspace $n:$o, workspace $n:$o" && $ungroup'';
+  wayland.windowManager.sway.config.keybindings."Mod4+Shift+Comma"          = ''exec $number && $output && n=$(( $n <= 1 ? 1 : $n - 1 )) && $group && swaymsg "move container workspace $n:$o, workspace $n:$o" && $ungroup'';
+  wayland.windowManager.sway.config.keybindings."Mod4+Control+Period"       = ''exec $number && $output && n=$(( $n >= 9 ? 9 : $n + 1 )) && swaymsg "move container workspace $n:$o"'';
+  wayland.windowManager.sway.config.keybindings."Mod4+Control+Comma"        = ''exec $number && $output && n=$(( $n <= 1 ? 1 : $n - 1 )) && swaymsg "move container workspace $n:$o"'';
+  # TODO: fix
+  # wayland.windowManager.sway.config.keybindings."Mod4+Control+Shift+Period" = ''exec "$output && $numbers && ns=$(echo $ns | rev) && [ $(echo $ns | cut -b1) != 9 ] && for n in $ns; do i=$(( $n + 1 )); swaymsg rename workspace $n:$o to $i:$o; done" '';
+  # wayland.windowManager.sway.config.keybindings."Mod4+Control+Shift+Comma"  = ''exec "$output && $numbers                         && [ $(echo $ns | cut -b1) != 1 ] && for n in $ns; do i=$(( $n - 1 )); swaymsg rename workspace $n:$o to $i:$o; done" '';
 
-  wayland.windowManager.sway.config.keybindings."Mod4+equal"         = ''exec $get_output && swaymsg output \\'$o\\' scale $(swaymsg -rt get_outputs | jq -r '.[] | select(.make+" "+.model+" "+.serial == "'"$o"'") | .scale * 1.1')'';
-  wayland.windowManager.sway.config.keybindings."Mod4+minus"         = ''exec $get_output && swaymsg output \\'$o\\' scale $(swaymsg -rt get_outputs | jq -r '.[] | select(.make+" "+.model+" "+.serial == "'"$o"'") | .scale / 1.1')'';
-  wayland.windowManager.sway.config.keybindings."Mod4+Shift+equal"   = ''exec $get_output && swaymsg output \\'$o\\' scale $(swaymsg -rt get_outputs | jq -r '.[] | select(.make+" "+.model+" "+.serial == "'"$o"'") | .scale * 1.5')'';
-  wayland.windowManager.sway.config.keybindings."Mod4+Shift+minus"   = ''exec $get_output && swaymsg output \\'$o\\' scale $(swaymsg -rt get_outputs | jq -r '.[] | select(.make+" "+.model+" "+.serial == "'"$o"'") | .scale / 1.5')'';
-  wayland.windowManager.sway.config.keybindings."Mod4+Control+equal" = ''exec $get_output && swaymsg output \\'$o\\' scale 1'';
-  wayland.windowManager.sway.config.keybindings."Mod4+Control+minus" = ''exec $get_output && swaymsg output \\'$o\\' scale 2'';
+  # # TODO fix
+  # wayland.windowManager.sway.config.keybindings."Mod4+z"               = ''exec $output && $get_empty_workspace && swaymsg "workspace $w:$o"'';
+  # wayland.windowManager.sway.config.keybindings."Mod4+Shift+z"         = ''exec $output && $get_empty_workspace && $group && swaymsg "move container workspace $w:$o, workspace $w:$o" && $ungroup'';
+  # wayland.windowManager.sway.config.keybindings."Mod4+Control+z"       = ''exec $output && $get_empty_workspace && swaymsg "move container workspace $w:$o"'';
+  # wayland.windowManager.sway.config.keybindings."Mod4+Control+Shift+z" = ''exec "$output && $workspaces && i=1 && for w in $ws; do swaymsg rename workspace $w:$o to $i:$o; i=$(( $i + 1 )); done" '';
+
+  wayland.windowManager.sway.config.keybindings."Mod4+equal"         = ''exec o=$(swaymsg -rt get_outputs | jq -r '.[] | first(select(.focused)) | .make+" "+.model+" "+.serial') && swaymsg output \\'$o\\' scale $(swaymsg -rt get_outputs | jq -r '.[] | first(select(.focused)) | .scale * 1.1')'';
+  wayland.windowManager.sway.config.keybindings."Mod4+minus"         = ''exec o=$(swaymsg -rt get_outputs | jq -r '.[] | first(select(.focused)) | .make+" "+.model+" "+.serial') && swaymsg output \\'$o\\' scale $(swaymsg -rt get_outputs | jq -r '.[] | first(select(.focused)) | .scale / 1.1')'';
+  wayland.windowManager.sway.config.keybindings."Mod4+Shift+equal"   = ''exec o=$(swaymsg -rt get_outputs | jq -r '.[] | first(select(.focused)) | .make+" "+.model+" "+.serial') && swaymsg output \\'$o\\' scale $(swaymsg -rt get_outputs | jq -r '.[] | first(select(.focused)) | .scale * 1.5')'';
+  wayland.windowManager.sway.config.keybindings."Mod4+Shift+minus"   = ''exec o=$(swaymsg -rt get_outputs | jq -r '.[] | first(select(.focused)) | .make+" "+.model+" "+.serial') && swaymsg output \\'$o\\' scale $(swaymsg -rt get_outputs | jq -r '.[] | first(select(.focused)) | .scale / 1.5')'';
+  wayland.windowManager.sway.config.keybindings."Mod4+Control+equal" = ''exec o=$(swaymsg -rt get_outputs | jq -r '.[] | first(select(.focused)) | .make+" "+.model+" "+.serial') && swaymsg output \\'$o\\' scale 2'';
+  wayland.windowManager.sway.config.keybindings."Mod4+Control+minus" = ''exec o=$(swaymsg -rt get_outputs | jq -r '.[] | first(select(.focused)) | .make+" "+.model+" "+.serial') && swaymsg output \\'$o\\' scale 1'';
 
   wayland.windowManager.sway.config.keybindings."Mod4+0"       = "scratchpad show";
   wayland.windowManager.sway.config.keybindings."Mod4+Shift+0" = "move scratchpad";

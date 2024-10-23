@@ -187,6 +187,24 @@
     #workspaces button { border: none; border-radius: 0; padding: 0 5px; min-width: 20px; animation: none; }
     #workspaces button.focused { background-color: #ffffff; color: #000000; }
     #workspaces button.urgent { background-color: #404040; animation: luminate 1s steps(30) infinite alternate; }
+    #workspaces button#sway-workspace-1\:Lenovo\ Group\ Limited\ P24q-30\ V90CP3VM { color: #ff8080; }
+    #workspaces button#sway-workspace-2\:Lenovo\ Group\ Limited\ P24q-30\ V90CP3VM { color: #ff8080; }
+    #workspaces button#sway-workspace-3\:Lenovo\ Group\ Limited\ P24q-30\ V90CP3VM { color: #ff8080; }
+    #workspaces button#sway-workspace-4\:Lenovo\ Group\ Limited\ P24q-30\ V90CP3VM { color: #ff8080; }
+    #workspaces button#sway-workspace-5\:Lenovo\ Group\ Limited\ P24q-30\ V90CP3VM { color: #ff8080; }
+    #workspaces button#sway-workspace-6\:Lenovo\ Group\ Limited\ P24q-30\ V90CP3VM { color: #ff8080; }
+    #workspaces button#sway-workspace-7\:Lenovo\ Group\ Limited\ P24q-30\ V90CP3VM { color: #ff8080; }
+    #workspaces button#sway-workspace-8\:Lenovo\ Group\ Limited\ P24q-30\ V90CP3VM { color: #ff8080; }
+    #workspaces button#sway-workspace-9\:Lenovo\ Group\ Limited\ P24q-30\ V90CP3VM { color: #ff8080; }
+    #workspaces button#sway-workspace-1\:Lenovo\ Group\ Limited\ P24q-30\ V90CP3VM.focused { background-color: #ffcccc; color: #000000; }
+    #workspaces button#sway-workspace-2\:Lenovo\ Group\ Limited\ P24q-30\ V90CP3VM.focused { background-color: #ffcccc; color: #000000; }
+    #workspaces button#sway-workspace-3\:Lenovo\ Group\ Limited\ P24q-30\ V90CP3VM.focused { background-color: #ffcccc; color: #000000; }
+    #workspaces button#sway-workspace-4\:Lenovo\ Group\ Limited\ P24q-30\ V90CP3VM.focused { background-color: #ffcccc; color: #000000; }
+    #workspaces button#sway-workspace-5\:Lenovo\ Group\ Limited\ P24q-30\ V90CP3VM.focused { background-color: #ffcccc; color: #000000; }
+    #workspaces button#sway-workspace-6\:Lenovo\ Group\ Limited\ P24q-30\ V90CP3VM.focused { background-color: #ffcccc; color: #000000; }
+    #workspaces button#sway-workspace-7\:Lenovo\ Group\ Limited\ P24q-30\ V90CP3VM.focused { background-color: #ffcccc; color: #000000; }
+    #workspaces button#sway-workspace-8\:Lenovo\ Group\ Limited\ P24q-30\ V90CP3VM.focused { background-color: #ffcccc; color: #000000; }
+    #workspaces button#sway-workspace-9\:Lenovo\ Group\ Limited\ P24q-30\ V90CP3VM.focused { background-color: #ffcccc; color: #000000; }
 
     #scratchpad { color: #ffff00; padding: 0 10px 0 0; }
 
