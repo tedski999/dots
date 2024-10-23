@@ -25,6 +25,20 @@
   ];
 
   programs.neovim.extraLuaConfig = ''
+
+    -- Arista-specifics
+    local a = vim.loop.fs_stat("/usr/share/vim/vimfiles/arista.vim") and not vim.fn.getcwd():find("^/home")
+    if a then
+      vim.api.nvim_echo({ { "Note: Arista-specifics have been enabled for this Neovim instance", "MoreMsg" } }, false, {})
+      vim.cmd[[
+        let a4_auto_edit = 0 | source /usr/share/vim/vimfiles/arista.vim
+        function! TaccIndentOverrides()
+          if getline(SkipTaccBlanksAndComments(v:lnum - 1)) =~# 'Tac::Namespace\s*{\s*$' | return 0 | else | return GetTaccIndent() | endif
+        endfunction
+        augroup vimrc | autocmd BufNewFile,BufRead *.tac setlocal indentexpr=TaccIndentOverrides() | augroup NONE
+      ]]
+    end
+
     -- Spaceman
     vim.g.mapleader = " "
 
@@ -77,9 +91,10 @@
     vim.opt.sidescrolloff = 5                              -- Keep columns to the left/right of the cursor when scrolling
     vim.opt.signcolumn = "no"                              -- Keep the sign column closed
     vim.opt.shortmess:append("sSIcC")                      -- Be quieter
-    vim.opt.expandtab = false                              -- Tab key inserts tabs
-    vim.opt.tabstop = 2                                    -- 4-spaced tabs
-    vim.opt.shiftwidth = 0                                 -- Tab-spaced indentation
+    vim.opt.expandtab = a and true or false                -- Tab key inserts tabs
+    vim.opt.tabstop = a and 8 or 2                         -- 2-spaced tabs
+    vim.opt.shiftwidth = a and 3 or 0                      -- Tab-spaced indentation
+    vim.opt.colorcolumn = a and "86" or ""                 -- No colorcolumn
     vim.opt.cinoptions = "N-s"                             -- Don't indent C++ namespaces
     vim.opt.list = true                                    -- Enable whitespace characters below
     vim.opt.listchars="space:·,tab:› ,trail:•,precedes:<,extends:>,nbsp:␣"
@@ -283,7 +298,7 @@
 
     -- Per filetype config
     vim.api.nvim_create_autocmd("FileType", { pattern = "nix", command = "setlocal tabstop=2 shiftwidth=2 expandtab" })
-    vim.api.nvim_create_autocmd("FileType", { pattern = { "c", "cpp", "tac" }, command = "setlocal commentstring=//\\ %s" })
+    vim.api.nvim_create_autocmd("FileType", { pattern = { "c", "cpp" }, command = "setlocal commentstring=//\\ %s" })
 
     -- Disable satellite on long files (search highlighting causes stuttering)
     vim.api.nvim_create_autocmd("BufWinEnter", { callback = function() if vim.api.nvim_buf_line_count(0) > 10000 then vim.cmd("SatelliteDisable") end end })
@@ -612,19 +627,7 @@
     vim.keymap.set("n", "z=", "<cmd>FzfLua spell_suggest<cr>")
 
     -- Arista-specifics switch
-    if vim.loop.fs_stat("/usr/share/vim/vimfiles/arista.vim") and not vim.fn.getcwd():find("^/home") then
-      vim.api.nvim_echo({ { "Note: Arista-specifics have been enabled for this Neovim instance", "MoreMsg" } }, false, {})
-      vim.opt.shiftwidth = 3
-      vim.opt.tabstop = 8
-      vim.opt.expandtab = true
-      vim.opt.colorcolumn = "86"
-      vim.cmd[[
-        let a4_auto_edit = 0 | source /usr/share/vim/vimfiles/arista.vim
-        function! TaccIndentOverrides()
-          if getline(SkipTaccBlanksAndComments(v:lnum - 1)) =~# 'Tac::Namespace\s*{\s*$' | return 0 | else | return GetTaccIndent() | endif
-        endfunction
-        augroup vimrc | autocmd BufNewFile,BufRead *.tac setlocal indentexpr=TaccIndentOverrides() | augroup NONE
-      ]]
+    if a then
       -- Agrok
       vim.api.nvim_create_user_command("Agrok",  function(p) fzf.fzf_exec("a grok -em 99 "..p.args.." | grep '^/src/.*'",                                                 { actions = fzf.config.globals.actions.files, previewer = "builtin" }) end, { nargs = 1 })
       vim.api.nvim_create_user_command("Agrokp", function(p) fzf.fzf_exec("a grok -em 99 -f "..(fullpath():match("^/src/.-/") or "/").." "..p.args.." | grep '^/src/.*'", { actions = fzf.config.globals.actions.files, previewer = "builtin" }) end, { nargs = 1 })
@@ -636,6 +639,9 @@
       vim.keymap.set("n", "<leader>R", "<cmd>exec 'Agid     '.expand('<cword>')<cr>", { silent = true })
       vim.keymap.set("n", "<leader>d", "<cmd>exec 'Agidp -D '.expand('<cword>')<cr>", { silent = true })
       vim.keymap.set("n", "<leader>D", "<cmd>exec 'Agid  -D '.expand('<cword>')<cr>", { silent = true })
+      if not vim.loop.fs_stat("/src/ID") then
+        vim.api.nvim_echo({ { "Warn: /src/ID not found! Run :Amkid", "ErrorMsg" } }, false, {})
+      end
     end
   '';
 
