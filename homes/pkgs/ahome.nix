@@ -3,7 +3,6 @@
 
   imports = [ ./coreutils.nix ];
 
-  # TODO(next): $@ untested
   home.packages = with pkgs; [
     (writeShellScriptBin "ahome" ''
       [ "$(hostname | cut -d- -f-2)" = "tedj-home" ] || exit 1

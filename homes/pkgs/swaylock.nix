@@ -33,7 +33,6 @@
   programs.swaylock.settings.text-ver-color = "00000000";
   programs.swaylock.settings.text-wrong-color = "00000000";
 
-  # TODO: embed file
   xdg.configFile."swaylock/swaylock.png".source = ./swaylock.png;
 
 }

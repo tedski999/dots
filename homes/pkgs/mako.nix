@@ -8,7 +8,7 @@
   services.mako.height = 150;
   services.mako.layer = "overlay";
   services.mako.maxVisible = 10;
-  services.mako.defaultTimeout = 10000;
+  services.mako.defaultTimeout = 0;
   services.mako.backgroundColor = "#303030";
   services.mako.borderColor = "#ffffff";
   services.mako.progressColor = "#808080";
