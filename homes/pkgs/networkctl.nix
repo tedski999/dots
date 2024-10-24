@@ -11,7 +11,7 @@
       case "$([ -n "$1" ] && echo $1 || printf "%s\n" wifi bluetooth | bemenu -p "Network" -l 3)" in
 
         "wifi") while true; do
-          function n() { notify-send -i network-wireless "Wi-Fi Control" $@; }
+          function n() { notify-send -i network-wireless -t 5000 "Wi-Fi Control" $@; }
 
           power="enable"; rescan=""; choices=""
           nmcli radio wifi | grep --fixed-strings "enabled" && {
@@ -52,7 +52,7 @@
         done;;
 
         "bluetooth") while true; do
-          function n() { notify-send -i network-bluetooth "Bluetooth Control" $@; }
+          function n() { notify-send -i network-bluetooth -t 5000 "Bluetooth Control" $@; }
 
           power="enable"; rescan=""; choices=""
           bluetoothctl show | grep --fixed-strings "Powered: yes" && {

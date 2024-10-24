@@ -12,11 +12,11 @@
         [ -z "$BW_SESSION" ] \
         && export BW_SESSION="$(: | bemenu -x indicator -l 0 -p 'Bitwarden Password:' | tr -d '\n' | base64 | bw unlock --raw)" \
         && [ -z "$BW_SESSION" ] \
-        && notify-send -i lock -u critical "Bitwarden Failed" "Wrong password?" \
+        && notify-send -i lock -u critical -t 5000 "Bitwarden Failed" "Wrong password?" \
         && return 1
 
         [ -z "$items" ] \
-        && notify-send -i lock "Bitwarden" "Updating items..." \
+        && notify-send -i lock "Bitwarden" -t 5000 "Updating items..." \
         && items="$(bw list items)"
 
         #echo "$items" | jq -r 'range(length) as $i | .[$i] | select(.type==1) | ($i | tostring)+" "+.name+" <"+.login.username+">"' | bemenu | cut -d' ' -f1

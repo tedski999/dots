@@ -43,7 +43,7 @@
           ;;
       esac
 
-      notify-send --icon monitor "Set display configuration" "Profile: $choice"
+      notify-send -i monitor -t 5000 "Set display configuration" "Profile: $choice"
     '')
   ];
 
