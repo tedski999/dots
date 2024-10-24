@@ -14,7 +14,7 @@
       modules-left = [ "sway/workspaces" "sway/window" ];
       modules-center = [];
       modules-right = [ "custom/media" "sway/scratchpad" "custom/caffeinated" "gamemode" "bluetooth" "cpu" "memory" "power-profiles-daemon" "temperature" "disk" "network" "pulseaudio" "battery" "clock" ];
-      "sway/workspaces".format = "{index}";
+      "sway/workspaces".format = "{name}";
       "sway/window".max-length = 200;
       "custom/media" = {
         exec = pkgs.writeShellScript "waybar-media" ''
@@ -163,7 +163,7 @@
       modules-left = [ "sway/workspaces" "sway/window" ];
       modules-center = [];
       modules-right = [];
-      "sway/workspaces".format = "{index}";
+      "sway/workspaces".format = "{name}";
       "sway/window".max-length = 200;
     }
   ];
@@ -187,24 +187,63 @@
     #workspaces button { border: none; border-radius: 0; padding: 0 5px; min-width: 20px; animation: none; }
     #workspaces button.focused { background-color: #ffffff; color: #000000; }
     #workspaces button.urgent { background-color: #404040; animation: luminate 1s steps(30) infinite alternate; }
-    #workspaces button#sway-workspace-1\:Lenovo\ Group\ Limited\ P24q-30\ V90CP3VM { color: #ff8080; }
-    #workspaces button#sway-workspace-2\:Lenovo\ Group\ Limited\ P24q-30\ V90CP3VM { color: #ff8080; }
-    #workspaces button#sway-workspace-3\:Lenovo\ Group\ Limited\ P24q-30\ V90CP3VM { color: #ff8080; }
-    #workspaces button#sway-workspace-4\:Lenovo\ Group\ Limited\ P24q-30\ V90CP3VM { color: #ff8080; }
-    #workspaces button#sway-workspace-5\:Lenovo\ Group\ Limited\ P24q-30\ V90CP3VM { color: #ff8080; }
-    #workspaces button#sway-workspace-6\:Lenovo\ Group\ Limited\ P24q-30\ V90CP3VM { color: #ff8080; }
-    #workspaces button#sway-workspace-7\:Lenovo\ Group\ Limited\ P24q-30\ V90CP3VM { color: #ff8080; }
-    #workspaces button#sway-workspace-8\:Lenovo\ Group\ Limited\ P24q-30\ V90CP3VM { color: #ff8080; }
-    #workspaces button#sway-workspace-9\:Lenovo\ Group\ Limited\ P24q-30\ V90CP3VM { color: #ff8080; }
-    #workspaces button#sway-workspace-1\:Lenovo\ Group\ Limited\ P24q-30\ V90CP3VM.focused { background-color: #ffcccc; color: #000000; }
-    #workspaces button#sway-workspace-2\:Lenovo\ Group\ Limited\ P24q-30\ V90CP3VM.focused { background-color: #ffcccc; color: #000000; }
-    #workspaces button#sway-workspace-3\:Lenovo\ Group\ Limited\ P24q-30\ V90CP3VM.focused { background-color: #ffcccc; color: #000000; }
-    #workspaces button#sway-workspace-4\:Lenovo\ Group\ Limited\ P24q-30\ V90CP3VM.focused { background-color: #ffcccc; color: #000000; }
-    #workspaces button#sway-workspace-5\:Lenovo\ Group\ Limited\ P24q-30\ V90CP3VM.focused { background-color: #ffcccc; color: #000000; }
-    #workspaces button#sway-workspace-6\:Lenovo\ Group\ Limited\ P24q-30\ V90CP3VM.focused { background-color: #ffcccc; color: #000000; }
-    #workspaces button#sway-workspace-7\:Lenovo\ Group\ Limited\ P24q-30\ V90CP3VM.focused { background-color: #ffcccc; color: #000000; }
-    #workspaces button#sway-workspace-8\:Lenovo\ Group\ Limited\ P24q-30\ V90CP3VM.focused { background-color: #ffcccc; color: #000000; }
-    #workspaces button#sway-workspace-9\:Lenovo\ Group\ Limited\ P24q-30\ V90CP3VM.focused { background-color: #ffcccc; color: #000000; }
+
+    #workspaces button#sway-workspace-1\:1:not(.focused) { color: #ff8080; }
+    #workspaces button#sway-workspace-1\:2:not(.focused) { color: #ff8080; }
+    #workspaces button#sway-workspace-1\:3:not(.focused) { color: #ff8080; }
+    #workspaces button#sway-workspace-1\:4:not(.focused) { color: #ff8080; }
+    #workspaces button#sway-workspace-1\:5:not(.focused) { color: #ff8080; }
+    #workspaces button#sway-workspace-1\:6:not(.focused) { color: #ff8080; }
+    #workspaces button#sway-workspace-1\:7:not(.focused) { color: #ff8080; }
+    #workspaces button#sway-workspace-1\:8:not(.focused) { color: #ff8080; }
+    #workspaces button#sway-workspace-1\:9:not(.focused) { color: #ff8080; }
+    #workspaces button#sway-workspace-1\:1.focused { background-color: #ffcccc; }
+    #workspaces button#sway-workspace-1\:2.focused { background-color: #ffcccc; }
+    #workspaces button#sway-workspace-1\:3.focused { background-color: #ffcccc; }
+    #workspaces button#sway-workspace-1\:4.focused { background-color: #ffcccc; }
+    #workspaces button#sway-workspace-1\:5.focused { background-color: #ffcccc; }
+    #workspaces button#sway-workspace-1\:6.focused { background-color: #ffcccc; }
+    #workspaces button#sway-workspace-1\:7.focused { background-color: #ffcccc; }
+    #workspaces button#sway-workspace-1\:8.focused { background-color: #ffcccc; }
+    #workspaces button#sway-workspace-1\:9.focused { background-color: #ffcccc; }
+
+    #workspaces button#sway-workspace-2\:1:not(.focused) { color: #8080ff; }
+    #workspaces button#sway-workspace-2\:2:not(.focused) { color: #8080ff; }
+    #workspaces button#sway-workspace-2\:3:not(.focused) { color: #8080ff; }
+    #workspaces button#sway-workspace-2\:4:not(.focused) { color: #8080ff; }
+    #workspaces button#sway-workspace-2\:5:not(.focused) { color: #8080ff; }
+    #workspaces button#sway-workspace-2\:6:not(.focused) { color: #8080ff; }
+    #workspaces button#sway-workspace-2\:7:not(.focused) { color: #8080ff; }
+    #workspaces button#sway-workspace-2\:8:not(.focused) { color: #8080ff; }
+    #workspaces button#sway-workspace-2\:9:not(.focused) { color: #8080ff; }
+    #workspaces button#sway-workspace-2\:1.focused { background-color: #aaaaff; }
+    #workspaces button#sway-workspace-2\:2.focused { background-color: #aaaaff; }
+    #workspaces button#sway-workspace-2\:3.focused { background-color: #aaaaff; }
+    #workspaces button#sway-workspace-2\:4.focused { background-color: #aaaaff; }
+    #workspaces button#sway-workspace-2\:5.focused { background-color: #aaaaff; }
+    #workspaces button#sway-workspace-2\:6.focused { background-color: #aaaaff; }
+    #workspaces button#sway-workspace-2\:7.focused { background-color: #aaaaff; }
+    #workspaces button#sway-workspace-2\:8.focused { background-color: #aaaaff; }
+    #workspaces button#sway-workspace-2\:9.focused { background-color: #aaaaff; }
+
+    #workspaces button#sway-workspace-3\:1:not(.focused) { color: #80ff80; }
+    #workspaces button#sway-workspace-3\:2:not(.focused) { color: #80ff80; }
+    #workspaces button#sway-workspace-3\:3:not(.focused) { color: #80ff80; }
+    #workspaces button#sway-workspace-3\:4:not(.focused) { color: #80ff80; }
+    #workspaces button#sway-workspace-3\:5:not(.focused) { color: #80ff80; }
+    #workspaces button#sway-workspace-3\:6:not(.focused) { color: #80ff80; }
+    #workspaces button#sway-workspace-3\:7:not(.focused) { color: #80ff80; }
+    #workspaces button#sway-workspace-3\:8:not(.focused) { color: #80ff80; }
+    #workspaces button#sway-workspace-3\:9:not(.focused) { color: #80ff80; }
+    #workspaces button#sway-workspace-3\:1.focused { background-color: #aaffaa; }
+    #workspaces button#sway-workspace-3\:2.focused { background-color: #aaffaa; }
+    #workspaces button#sway-workspace-3\:3.focused { background-color: #aaffaa; }
+    #workspaces button#sway-workspace-3\:4.focused { background-color: #aaffaa; }
+    #workspaces button#sway-workspace-3\:5.focused { background-color: #aaffaa; }
+    #workspaces button#sway-workspace-3\:6.focused { background-color: #aaffaa; }
+    #workspaces button#sway-workspace-3\:7.focused { background-color: #aaffaa; }
+    #workspaces button#sway-workspace-3\:8.focused { background-color: #aaffaa; }
+    #workspaces button#sway-workspace-3\:9.focused { background-color: #aaffaa; }
 
     #scratchpad { color: #ffff00; padding: 0 10px 0 0; }
 
