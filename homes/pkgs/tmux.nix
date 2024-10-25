@@ -9,6 +9,13 @@
     set -g escape-time 0
     set -g repeat-time 0
     set -g status off
+    set -g status-style "bg=yellow,fg=black"
+    set -g status-right "#(a dt gr | sed 's/\(No duts grabbed\|rdam:\/\/\)//') #[fg=blue]#(ag topic show --name-only 2>/dev/null)"
+    set -g status-right-length 128
+    set -g status-left "#(uname -n) #[fg=blue]#(tmux ls -F '##{session_name}' | xargs)"
+    set -g status-left-length 128
+    set -g window-status-current-format ""
+    set -g window-status-format ""
     set -g set-clipboard on
     set -g set-titles on
     set -g set-titles-string "#S:#W"
@@ -27,7 +34,8 @@
 
     # sessions
     bind \$ command-prompt -I "#S" { rename-session "%%" }
-    bind s  choose-tree -s
+    bind s  set status
+    bind S  choose-tree -s
 
     # copy-mode
     bind a   copy-mode
