@@ -124,41 +124,106 @@ Assuming fresh install using custom unattend.xml and activated using appropriate
 
 Connect to Internet. This will likely initiate installations of drivers in the background and require rebooting at a later stage.
 
+Configure BitLocker:
+```ps
+Set-ItemProperty -Path HKLM:\SOFTWARE\Policies\Microsoft\FVE -Name UseAdvancedStartup -Value 1
+Set-ItemProperty -Path HKLM:\SOFTWARE\Policies\Microsoft\FVE -Name EnableBDEWithNoTPM -Value 1
+Set-ItemProperty -Path HKLM:\SOFTWARE\Policies\Microsoft\FVE -Name UseTPM -Value 0
+Set-ItemProperty -Path HKLM:\SOFTWARE\Policies\Microsoft\FVE -Name UseTPMPIN -Value 1
+Set-ItemProperty -Path HKLM:\SOFTWARE\Policies\Microsoft\FVE -Name UseTPMKey -Value 0
+Set-ItemProperty -Path HKLM:\SOFTWARE\Policies\Microsoft\FVE -Name UseTPMKeyPIN -Value 0
+Set-ItemProperty -Path HKLM:\SOFTWARE\Policies\Microsoft\FVE -Name UseEnhancedPin -Value 1
+```
+
+Enable BitLocker:
+- Control Panel: `System and Security\BitLocker Drive Encryption\Turn on BitLocker`
+- Enter a PIN
+- Save encryption key to file
+- Reboot
+
+Settings:
+```
+System\Display\DISPLAY 1\Use HDR: True
+System\Display\DISPLAY 1\Advanced display\Choose a refresh rate: 144 Hz
+System\Display\DISPLAY 2\Display orientation: Portrait
+System\Power\Power mode: Best Performance
+System\Power\Screen, sleep & hibernate timeout\Turn my screen off after: 10 minutes
+System\Power\Screen, sleep & hibernate timeout\Make my device sleep after: 30 minutes
+System\Power\Screen, sleep & hibernate timeout\Make my device hibernate after: never
+System\Nearby sharing\Your device is discoverable as: SkiC
+System\Multitasking\Snap windows\When I snap a window, suggest what I can snap next to it: True
+System\Multitasking\Snap windows\Show snap layouts when I hover over a window's maximize button: False
+System\Multitasking\Snap windows\Show snap layouts when I drag a window to the top of my screen: False
+System\Multitasking\Snap windows\Show my snapped windows when I hover over taskbar apps, in Task View, and when I press ALt+Tab: False
+System\Multitasking\Snap windows\When I drag a window, let me snap it without dragging all the way to the screen edge: False
+System\Multitasking\Show tabs from apps when snapping or pressing Alt+Tab: Don't show tabs
+System\For developers\File Explorer\*: True
+System\Clipboard\Clipboard history: True
+System\About\Rename this PC: SkiC
+Personalization\Background\Personalize your background: Solid color\Custom colors\More\#1c1c1c
+Personalization\Colors\Choose your mode: Dark
+Personalization\Colors\Accent color: Manual\Navy Blue
+Personalization\Lock screen\Show the lock screen background picture on the sign-in screen: False
+Personalization\Start\Show recently added apps: False
+Personalization\Start\Show recommended files in Start, recent files in File Explorer, and items in Jump Lists: False
+Personalization\Start\Show recommendations for tips, shortcuts, new apps, and more: False
+Personalization\Start\Show account-related notifications: False
+Personalization\Start\Folders\Settings: True
+Personalization\Start\Folders\File Explorer: True
+Personalization\Taskbar\Taskbar items\Search: Hide
+Personalization\Taskbar\Taskbar items\Task view: False
+Personalization\Taskbar\Taskbar behaviours\Taskbar alignment: Left
+Personalization\Taskbar\Taskbar behaviours\When using multiple displays, show my taskbar apps on: Taskbar where window is open
+Personalization\Taskbar\Taskbar behaviours\Combine taskbar buttons and hide labels: Never
+Personalization\Taskbar\Taskbar behaviours\Combine taskbar buttons and hide labels on other taskbars: Never
+Apps\Installed apps\Paint: Uninstall
+Apps\Installed apps\Remote Desktop Connection: Uninstall
+Apps\Installed apps\Snipping Tool: Uninstall
+Apps\Startup\Microsoft Edge: False
+Accounts\Sign-in options\Password
+Gaming\Game Bar\Allow your controller to open Game Bar: False
+Accessibility\Magnifier\Magnifier: False
+Accessibility\Keyboard\Sticky keys\Keyboard shortcut for Sticky keys: False
+Accessibility\Keyboard\Filter keys\Keyboard shortcut for Filter keys: False
+Privacy & security\General\Let websites show me locally relevant content by accessing my language list: False
+Privacy & security\General\Let Windows improve Start and search results by tracking app launches: False
+Privacy & security\Activity history\Activity History\Store my activity history on this device: False
+Privacy & security\Search permissions\SafeSearch: Off
+Windows Update\Advanced options\Active hours: Manually
+```
+
 Import agenix key:
 ```ps
-Copy-Item "ski@skic.agenix.key" -Destination $env:LOCALAPPDATA
+Copy-Item "D:\ski@skic.agenix.key" -Destination "$env:LOCALAPPDATA"
 ```
 
 Download dots:
 ```ps
-$t = "$((gi $env:temp).fullname)\dots"
-New-Item -ItemType Directory -Force -Path $t
+New-Item -ItemType Directory -Force -Path "$((gi $env:temp).fullname)\dots"
 New-Item -ItemType Directory -Force -Path "$($env:LOCALAPPDATA)\Programs"
-Invoke-WebRequest -Uri "https://github.com/tedski999/dots/archive/refs/heads/main.zip" -OutFile "$($t)\dots.zip"
-Expand-Archive -Path "$($t)\dots.zip" -DestinationPath "$($t)"
+Invoke-WebRequest -Uri "https://github.com/tedski999/dots/archive/refs/heads/main.zip" -OutFile "$((gi $env:temp).fullname)\dots\dots.zip"
+Expand-Archive -Path "$((gi $env:temp).fullname)\dots\dots.zip" -DestinationPath "$((gi $env:temp).fullname)\dots"
 ```
 
 Install age:
 ```ps
-Invoke-WebRequest -Uri "https://github.com/FiloSottile/age/releases/download/v1.2.0/age-v1.2.0-windows-amd64.zip" -OutFile "$($t)\age.zip"
-Expand-Archive -Path "$($t)\age.zip" -DestinationPath "$($t)"
-Copy-Item "$($t)\age\age.exe" -Destination "$($env:LOCALAPPDATA)\Programs"
-Copy-Item "$($t)\age\age-keygen.exe" -Destination "$($env:LOCALAPPDATA)\Programs"
+Invoke-WebRequest -Uri "https://github.com/FiloSottile/age/releases/download/v1.2.0/age-v1.2.0-windows-amd64.zip" -OutFile "$((gi $env:temp).fullname)\dots\age.zip"
+Expand-Archive -Path "$((gi $env:temp).fullname)\dots\age.zip" -DestinationPath "$((gi $env:temp).fullname)\dots"
+Copy-Item "$((gi $env:temp).fullname)\dots\age\age.exe" -Destination "$($env:LOCALAPPDATA)\Programs"
+Copy-Item "$((gi $env:temp).fullname)\dots\age\age-keygen.exe" -Destination "$($env:LOCALAPPDATA)\Programs"
 ```
-
-TODO: import Preferences and User Data like settings and registry entries (bitkeeper pin)
 
 Install, configure and autostart syncthing:
 ```ps
-Invoke-WebRequest -Uri "https://github.com/syncthing/syncthing/releases/download/v1.27.12/syncthing-windows-amd64-v1.27.12.zip" -OutFile "$($t)\syncthing.zip"
-Expand-Archive -Path "$($t)\syncthing.zip" -DestinationPath "$($t)"
-Copy-Item "$($t)\syncthing-windows-amd64-v1.27.12\syncthing.exe" -Destination "$($env:LOCALAPPDATA)\Programs"
+Invoke-WebRequest -Uri "https://github.com/syncthing/syncthing/releases/download/v1.27.12/syncthing-windows-amd64-v1.27.12.zip" -OutFile "$((gi $env:temp).fullname)\dots\syncthing.zip"
+Expand-Archive -Path "$((gi $env:temp).fullname)\dots\syncthing.zip" -DestinationPath "$((gi $env:temp).fullname)\dots"
+Copy-Item "$((gi $env:temp).fullname)\dots\syncthing-windows-amd64-v1.27.12\syncthing.exe" -Destination "$($env:LOCALAPPDATA)\Programs"
 New-Item -ItemType Directory -Force -Path "$($env:LOCALAPPDATA)\Syncthing"
-"$($env:LOCALAPPDATA)\Programs\age.exe" --decrypt --identity "$($env:LOCALAPPDATA)\ski@skic.agenix.key" --output "$($env:LOCALAPPDATA)\Syncthing\cert.pem" "$($t)\dots-main\secrets\syncthing\ski_skic\cert.pem.age"
-"$($env:LOCALAPPDATA)\Programs\age.exe" --decrypt --identity "$($env:LOCALAPPDATA)\ski@skic.agenix.key" --output "$($env:LOCALAPPDATA)\Syncthing\config.xml" "$($t)\dots-main\secrets\syncthing\ski_skic\config.xml.age"
-"$($env:LOCALAPPDATA)\Programs\age.exe" --decrypt --identity "$($env:LOCALAPPDATA)\ski@skic.agenix.key" --output "$($env:LOCALAPPDATA)\Syncthing\https-cert.pem" "$($t)\dots-main\secrets\syncthing\ski_skic\https-cert.pem.age"
-"$($env:LOCALAPPDATA)\Programs\age.exe" --decrypt --identity "$($env:LOCALAPPDATA)\ski@skic.agenix.key" --output "$($env:LOCALAPPDATA)\Syncthing\https-key.pem" "$($t)\dots-main\secrets\syncthing\ski_skic\https-key.pem.age"
-"$($env:LOCALAPPDATA)\Programs\age.exe" --decrypt --identity "$($env:LOCALAPPDATA)\ski@skic.agenix.key" --output "$($env:LOCALAPPDATA)\Syncthing\key.pem" "$($t)\dots-main\secrets\syncthing\ski_skic\key.pem.age"
+& "$($env:LOCALAPPDATA)\Programs\age.exe" --decrypt --identity "$($env:LOCALAPPDATA)\ski@skic.agenix.key" --output "$($env:LOCALAPPDATA)\Syncthing\cert.pem" "$((gi $env:temp).fullname)\dots\dots-main\secrets\syncthing\ski_skic\cert.pem.age"
+& "$($env:LOCALAPPDATA)\Programs\age.exe" --decrypt --identity "$($env:LOCALAPPDATA)\ski@skic.agenix.key" --output "$($env:LOCALAPPDATA)\Syncthing\config.xml" "$((gi $env:temp).fullname)\dots\dots-main\secrets\syncthing\ski_skic\config.xml.age"
+& "$($env:LOCALAPPDATA)\Programs\age.exe" --decrypt --identity "$($env:LOCALAPPDATA)\ski@skic.agenix.key" --output "$($env:LOCALAPPDATA)\Syncthing\https-cert.pem" "$((gi $env:temp).fullname)\dots\dots-main\secrets\syncthing\ski_skic\https-cert.pem.age"
+& "$($env:LOCALAPPDATA)\Programs\age.exe" --decrypt --identity "$($env:LOCALAPPDATA)\ski@skic.agenix.key" --output "$($env:LOCALAPPDATA)\Syncthing\https-key.pem" "$((gi $env:temp).fullname)\dots\dots-main\secrets\syncthing\ski_skic\https-key.pem.age"
+& "$($env:LOCALAPPDATA)\Programs\age.exe" --decrypt --identity "$($env:LOCALAPPDATA)\ski@skic.agenix.key" --output "$($env:LOCALAPPDATA)\Syncthing\key.pem" "$((gi $env:temp).fullname)\dots\dots-main\secrets\syncthing\ski_skic\key.pem.age"
 $SyncthingLnk = (New-Object -comObject WScript.Shell).CreateShortcut("$($env:APPDATA)\Microsoft\Windows\Start Menu\Programs\Startup\syncthing.lnk")
 $SyncthingLnk.TargetPath = "$($env:LOCALAPPDATA)\Programs\syncthing.exe"
 $SyncthingLnk.Arguments = "serve --no-console --no-browser --no-default-folder"
@@ -167,7 +232,7 @@ $SyncthingLnk.Save()
 
 Install ckan (requires [.NET 4.8](https://dotnet.microsoft.com/en-us/download/dotnet-framework/net48) or later):
 ```ps
-Invoke-WebRequest -Uri "https://github.com/KSP-CKAN/CKAN/releases/download/v1.35.2/ckan.exe" -OutFile "$($env:LOCALAPPDATA)\Programs"
+Invoke-WebRequest -Uri "https://github.com/KSP-CKAN/CKAN/releases/download/v1.35.2/ckan.exe" -OutFile "$($env:LOCALAPPDATA)\Programs\ckan.exe"
 $CkanLnk = (New-Object -comObject WScript.Shell).CreateShortcut("$($env:APPDATA)\Microsoft\Windows\Start Menu\Programs\ckan.lnk")
 $CkanLnk.TargetPath = "$($env:LOCALAPPDATA)\Programs\ckan.exe"
 $CkanLnk.Save()
@@ -175,13 +240,22 @@ $CkanLnk.Save()
 
 Install OpenTTD jgrpp:
 ```ps
-Invoke-WebRequest -Uri "https://github.com/JGRennison/OpenTTD-patches/releases/download/jgrpp-0.62.0/openttd-jgrpp-0.62.0-windows-win64.zip" -OutFile "$($t)\openttd.zip"
-Expand-Archive -Path "$($t)\openttd.zip" -DestinationPath "$($t)"
-Copy-Item -Recurse "$($t)\openttd\openttd-jgrpp-0.62.0-windows-win64" -Destination "$($env:LOCALAPPDATA)\Programs"
-$SyncthingLnk = (New-Object -comObject WScript.Shell).CreateShortcut("$($env:APPDATA)\Microsoft\Windows\Start Menu\Programs\Startup\OpenTTD.lnk")
-$SyncthingLnk.TargetPath = "$($env:LOCALAPPDATA)\Programs\openttd-jgrpp-0.62.0-windows-win64\openttd.exe"
-$SyncthingLnk.Save()
+Invoke-WebRequest -Uri "https://github.com/JGRennison/OpenTTD-patches/releases/download/jgrpp-0.62.0/openttd-jgrpp-0.62.0-windows-win64.zip" -OutFile "$((gi $env:temp).fullname)\dots\openttd.zip"
+Expand-Archive -Path "$((gi $env:temp).fullname)\dots\openttd.zip" -DestinationPath "$((gi $env:temp).fullname)\dots"
+Copy-Item -Recurse "$((gi $env:temp).fullname)\dots\openttd-jgrpp-0.62.0-windows-win64" -Destination "$($env:LOCALAPPDATA)\Programs\openttd"
+$OttdLnk = (New-Object -comObject WScript.Shell).CreateShortcut("$($env:APPDATA)\Microsoft\Windows\Start Menu\Programs\OpenTTD.lnk")
+$OttdLnk.TargetPath = "$($env:LOCALAPPDATA)\Programs\openttd\openttd.exe"
+$OttdLnk.Save()
 ```
+
+Configure File Explorer:
+- Unpin everything
+- Pin `C:\Users\ski`
+- Pin `C:\Users\ski\Documents\Documents`
+- Pin `C:\Users\ski\Music\Music`
+- Pin `C:\Users\ski\Pictures\Pictures`
+- Pin `C:\Users\ski\Videos\Videos`
+- Pin `C:\Users\ski\Work`
 
 Install Firefox, Steam, Discord, Prism, etc...
 
