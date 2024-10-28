@@ -124,22 +124,30 @@ Assuming fresh install using custom unattend.xml and activated using appropriate
 
 Connect to Internet. This will likely initiate installations of drivers in the background and require rebooting at a later stage.
 
-Configure BitLocker:
+Grab this README.md if you don't want to bother with Microsoft Edge:
 ```ps
-Set-ItemProperty -Path HKLM:\SOFTWARE\Policies\Microsoft\FVE -Name UseAdvancedStartup -Value 1
-Set-ItemProperty -Path HKLM:\SOFTWARE\Policies\Microsoft\FVE -Name EnableBDEWithNoTPM -Value 1
-Set-ItemProperty -Path HKLM:\SOFTWARE\Policies\Microsoft\FVE -Name UseTPM -Value 0
-Set-ItemProperty -Path HKLM:\SOFTWARE\Policies\Microsoft\FVE -Name UseTPMPIN -Value 1
-Set-ItemProperty -Path HKLM:\SOFTWARE\Policies\Microsoft\FVE -Name UseTPMKey -Value 0
-Set-ItemProperty -Path HKLM:\SOFTWARE\Policies\Microsoft\FVE -Name UseTPMKeyPIN -Value 0
-Set-ItemProperty -Path HKLM:\SOFTWARE\Policies\Microsoft\FVE -Name UseEnhancedPin -Value 1
+Invoke-WebRequest -Uri "https://raw.githubusercontent.com/tedski999/dots/refs/heads/main/README.md" -OutFile "..."
 ```
 
-Enable BitLocker:
-- Control Panel: `System and Security\BitLocker Drive Encryption\Turn on BitLocker`
-- Enter a PIN
-- Save encryption key to file
-- Reboot
+Configure BitLocker with gpedit.msc
+- `Computer Configuration\Administrative Templates\Windows Components\BitLocker Drive Encryption\Operating System Drives\Require additional authentication at startup`:
+  - Enabled
+  - Allow BitLocker without a compatible TPM: True
+  - Configure TPM startup: Do not allow TPM
+  - Configure TPM startup PIN: Require startup PIN with TPM
+  - Configure TPM startup key: Do not allow startup key with TPM
+  - Configure TPM startup key and PIN: Do not allow startup key and PIN with TPM
+- `Computer Configuration\Administrative Templates\Windows Components\BitLocker Drive Encryption\Operating System Drives\Allow enhanced PINs for startup`:
+  - Enabled
+
+Enable BitLocker with Control Panel:
+- `System and Security\BitLocker Drive Encryption\Turn on BitLocker`
+  - Enter a PIN
+  - Save encryption key to file
+  - Encrypt used disk space only
+  - New encryption mode
+  - System check
+  - Restart now
 
 Settings:
 ```
@@ -147,10 +155,6 @@ System\Display\DISPLAY 1\Use HDR: True
 System\Display\DISPLAY 1\Advanced display\Choose a refresh rate: 144 Hz
 System\Display\DISPLAY 2\Display orientation: Portrait
 System\Power\Power mode: Best Performance
-System\Power\Screen, sleep & hibernate timeout\Turn my screen off after: 10 minutes
-System\Power\Screen, sleep & hibernate timeout\Make my device sleep after: 30 minutes
-System\Power\Screen, sleep & hibernate timeout\Make my device hibernate after: never
-System\Nearby sharing\Your device is discoverable as: SkiC
 System\Multitasking\Snap windows\When I snap a window, suggest what I can snap next to it: True
 System\Multitasking\Snap windows\Show snap layouts when I hover over a window's maximize button: False
 System\Multitasking\Snap windows\Show snap layouts when I drag a window to the top of my screen: False
@@ -180,7 +184,6 @@ Apps\Installed apps\Paint: Uninstall
 Apps\Installed apps\Remote Desktop Connection: Uninstall
 Apps\Installed apps\Snipping Tool: Uninstall
 Apps\Startup\Microsoft Edge: False
-Accounts\Sign-in options\Password
 Gaming\Game Bar\Allow your controller to open Game Bar: False
 Accessibility\Magnifier\Magnifier: False
 Accessibility\Keyboard\Sticky keys\Keyboard shortcut for Sticky keys: False
@@ -230,6 +233,39 @@ $SyncthingLnk.Arguments = "serve --no-console --no-browser --no-default-folder"
 $SyncthingLnk.Save()
 ```
 
+Configure File Explorer after starting Syncthing:
+- Unpin everything
+- Pin `C:\Users\ski`
+- Pin `C:\Users\ski\Documents\Documents`
+- Pin `C:\Users\ski\Music\Music`
+- Pin `C:\Users\ski\Pictures\Pictures`
+- Pin `C:\Users\ski\Videos\Videos`
+- Pin `C:\Users\ski\Work`
+
+Install Firefox:
+```ps
+Invoke-WebRequest -Uri "https://download.mozilla.org/?product=firefox-stub&os=win&lang=en-US" -OutFile "$((gi $env:temp).fullname)\dots\firefox-installer.exe"
+& "$((gi $env:temp).fullname)\dots\firefox-installer.exe"
+```
+
+Install Steam:
+```ps
+Invoke-WebRequest -Uri "https://cdn.fastly.steamstatic.com/client/installer/SteamSetup.exe" -OutFile "$((gi $env:temp).fullname)\dots\steam-installer.exe"
+& "$((gi $env:temp).fullname)\dots\steam-installer.exe"
+```
+
+Install Discord:
+```ps
+Invoke-WebRequest -Uri "https://discord.com/api/downloads/distributions/app/installers/latest?channel=stable&platform=win&arch=x64" -OutFile "$((gi $env:temp).fullname)\dots\discord-installer.exe"
+& "$((gi $env:temp).fullname)\dots\discord-installer.exe"
+```
+
+Install Prism:
+```ps
+Invoke-WebRequest -Uri "https://github.com/PrismLauncher/PrismLauncher/releases/download/9.1/PrismLauncher-Windows-MSVC-Setup-9.1.exe" -OutFile "$((gi $env:temp).fullname)\dots\prism-installer.exe"
+& "$((gi $env:temp).fullname)\dots\prism-installer.exe"
+```
+
 Install ckan (requires [.NET 4.8](https://dotnet.microsoft.com/en-us/download/dotnet-framework/net48) or later):
 ```ps
 Invoke-WebRequest -Uri "https://github.com/KSP-CKAN/CKAN/releases/download/v1.35.2/ckan.exe" -OutFile "$($env:LOCALAPPDATA)\Programs\ckan.exe"
@@ -247,17 +283,6 @@ $OttdLnk = (New-Object -comObject WScript.Shell).CreateShortcut("$($env:APPDATA)
 $OttdLnk.TargetPath = "$($env:LOCALAPPDATA)\Programs\openttd\openttd.exe"
 $OttdLnk.Save()
 ```
-
-Configure File Explorer:
-- Unpin everything
-- Pin `C:\Users\ski`
-- Pin `C:\Users\ski\Documents\Documents`
-- Pin `C:\Users\ski\Music\Music`
-- Pin `C:\Users\ski\Pictures\Pictures`
-- Pin `C:\Users\ski\Videos\Videos`
-- Pin `C:\Users\ski\Work`
-
-Install Firefox, Steam, Discord, Prism, etc...
 
 ## Configuration notes
 
