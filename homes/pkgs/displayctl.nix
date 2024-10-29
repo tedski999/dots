@@ -6,6 +6,8 @@
   home.packages = with pkgs; [
 
     (writeShellScriptBin "displayctl" ''
+      IFS=$'\n'
+
       choice="$([ -n "$1" ] && echo $1 || printf "%s\n" auto none work home | bemenu -p "Display" -l 5)"
 
       [ "$choice" = "auto" ] && case "$(swaymsg -rt get_outputs | jq -r '.[] | .make+" "+.model+" "+.serial' | sort | xargs)" in
@@ -19,8 +21,13 @@
           swaymsg output \"\*\" disable
           swaymsg output \"AU Optronics 0xD291 Unknown\" enable pos 0 0 transform 0 mode 1920x1200@60Hz
           swaymsg "workspace 0:1 output \"AU Optronics 0xD291 Unknown\", workspace 0:2 output \"AU Optronics 0xD291 Unknown\", workspace 0:3 output \"AU Optronics 0xD291 Unknown\", workspace 0:4 output \"AU Optronics 0xD291 Unknown\", workspace 0:5 output \"AU Optronics 0xD291 Unknown\", workspace 0:6 output \"AU Optronics 0xD291 Unknown\", workspace 0:7 output \"AU Optronics 0xD291 Unknown\", workspace 0:8 output \"AU Optronics 0xD291 Unknown\", workspace 0:9 output \"AU Optronics 0xD291 Unknown\", workspace 0:1"
-          # TODO: add other outputs:
-          # swaymsg output "*" enable
+          for id_name in $(swaymsg -rt get_outputs | jq -r '.[] | (.id | tostring)+":" +.make+" "+.model+" "+.serial'); do
+            id="''${id_name%%:*}0"
+            name="''${id_name#*:}"
+            [ "$name" = "AU Optronics 0xD291 Unknown" ] && continue
+            swaymsg output \"$name\" enable
+            swaymsg "workspace $id:1 output \"$name\" \"AU Optronics 0xD291 Unknown\", workspace $id:2 output \"$name\" \"AU Optronics 0xD291 Unknown\", workspace $id:3 output \"$name\" \"AU Optronics 0xD291 Unknown\", workspace $id:4 output \"$name\" \"AU Optronics 0xD291 Unknown\", workspace $id:5 output \"$name\" \"AU Optronics 0xD291 Unknown\", workspace $id:6 output \"$name\" \"AU Optronics 0xD291 Unknown\", workspace $id:7 output \"$name\" \"AU Optronics 0xD291 Unknown\", workspace $id:8 output \"$name\" \"AU Optronics 0xD291 Unknown\", workspace $id:9 output \"$name\" \"AU Optronics 0xD291 Unknown\", workspace $id:1"
+          done
           ;;
         "work")
           swaymsg output \"\*\" disable
