@@ -53,4 +53,9 @@
     export PATH="$(echo $PATH | awk -v RS=: -v ORS=: '/\/nix\// {print >"/tmp/anixpath"; next} {print}' | sed 's/:*$//'):$(sed 's/:*$//' /tmp/anixpath)"
   '';
 
+  # arista-specific tmux status
+  programs.tmux.extraConfig = ''
+    set -g status-right "#(cat /tmp/ArosTest/.ArosTest-duts | sed \"s/\([',]\|rdam:\/\/\)//g\")"
+  '';
+
 }

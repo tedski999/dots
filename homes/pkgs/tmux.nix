@@ -1,5 +1,9 @@
 # screen but better
-{ ... }: {
+{ pkgs, ... }: {
+
+   home.packages = with pkgs; [
+     (writeShellScriptBin "tmux-status-left" ''echo ''${HOSTNAME%%.*}'')
+   ];
 
   programs.tmux.enable = true;
   programs.tmux.prefix = "M-a";
@@ -10,9 +14,9 @@
     set -g repeat-time 0
     set -g status off
     set -g status-style "bg=yellow,fg=black"
-    set -g status-right "#(a dt gr | sed 's/\(No duts grabbed\|rdam:\/\/\)//') #[fg=blue]#(ag topic show --name-only 2>/dev/null)"
+    set -g status-right ""
     set -g status-right-length 128
-    set -g status-left "#(uname -n) #[fg=blue]#(tmux ls -F '##{session_name}' | xargs)"
+    set -g status-left "#(tmux-status-left) #{session_name} #{server_sessions}"
     set -g status-left-length 128
     set -g window-status-current-format ""
     set -g window-status-format ""
