@@ -1,5 +1,5 @@
-{ pkgs, inputs, ... }: {
+{ inputs, ... }: {
 
-  home.packages = [ inputs.nixgl.packages.${pkgs.system}.nixGLIntel ];
+  nixGL.packages = inputs.nixgl.packages;
 
 }

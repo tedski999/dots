@@ -6,7 +6,7 @@
   home.sessionVariables.TERMINAL = "alacritty";
 
   programs.alacritty.enable = true;
-  programs.alacritty.settings.live_config_reload = false;
+  programs.alacritty.settings.general.live_config_reload = false;
   programs.alacritty.settings.scrolling = { history = 10000; multiplier = 5; };
   programs.alacritty.settings.window = { dynamic_padding = true; opacity = 0.85; dimensions = { columns = 120; lines = 40; }; };
   programs.alacritty.settings.font = { size = 13.5; normal.family = "Terminess Nerd Font"; };

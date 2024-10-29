@@ -118,6 +118,13 @@ After you create a new container or if you want to update your home-manager prof
 ahome
 ```
 
+#### Configuration notes
+
+Running `a git setup` and co won't work with `.config/git/config` being readonly (lots of atools are very particular about it) so need to manually install this. Plus atools override git anyway so whatever. There's a hack in `homes/tedj_wbus.nix` to get this working.
+
+I haven't been able to get git commit signing within a4c to work yet. There is some problem related to GPG agent forwarding from `homebus:${XDG_RUNTIME_DIR}/gnupg/S.gpg-agent.extra` to `a4c:${HOME}/.gnupg/S.gpg-agent` but it's probably related to the NFS home or some more arcane restriction with a4c/Docker.
+
+
 ### Home Desktop - Windows 11 IoT Enterprise LTSC
 
 Assuming fresh install using custom unattend.xml and activated using appropriate key.
@@ -129,19 +136,17 @@ Grab this README.md if you don't want to bother with Microsoft Edge:
 Invoke-WebRequest -Uri "https://raw.githubusercontent.com/tedski999/dots/refs/heads/main/README.md" -OutFile "..."
 ```
 
-Configure BitLocker with gpedit.msc
-- `Computer Configuration\Administrative Templates\Windows Components\BitLocker Drive Encryption\Operating System Drives\Require additional authentication at startup`:
+Configure and enable BitLocker:
+- gpedit.msc `Computer Configuration\Administrative Templates\Windows Components\BitLocker Drive Encryption\Operating System Drives\Require additional authentication at startup`:
   - Enabled
   - Allow BitLocker without a compatible TPM: True
   - Configure TPM startup: Do not allow TPM
   - Configure TPM startup PIN: Require startup PIN with TPM
   - Configure TPM startup key: Do not allow startup key with TPM
   - Configure TPM startup key and PIN: Do not allow startup key and PIN with TPM
-- `Computer Configuration\Administrative Templates\Windows Components\BitLocker Drive Encryption\Operating System Drives\Allow enhanced PINs for startup`:
+- gpedit.msc `Computer Configuration\Administrative Templates\Windows Components\BitLocker Drive Encryption\Operating System Drives\Allow enhanced PINs for startup`:
   - Enabled
-
-Enable BitLocker with Control Panel:
-- `System and Security\BitLocker Drive Encryption\Turn on BitLocker`
+- Control Panel `System and Security\BitLocker Drive Encryption\Turn on BitLocker`
   - Enter a PIN
   - Save encryption key to file
   - Encrypt used disk space only
@@ -283,9 +288,3 @@ $OttdLnk = (New-Object -comObject WScript.Shell).CreateShortcut("$($env:APPDATA)
 $OttdLnk.TargetPath = "$($env:LOCALAPPDATA)\Programs\openttd\openttd.exe"
 $OttdLnk.Save()
 ```
-
-## Configuration notes
-
-Running `a git setup` and co won't work with `.config/git/config` being readonly (lots of atools are very particular about it) so need to manually install this. Plus atools override git anyway so whatever. There's a hack in `homes/tedj_wbus.nix` to get this working.
-
-I haven't been able to get git commit signing within a4c to work yet. There is some problem related to GPG agent forwarding from `homebus:${XDG_RUNTIME_DIR}/gnupg/S.gpg-agent.extra` to `a4c:${HOME}/.gnupg/S.gpg-agent` but it's probably related to the NFS home or some more arcane restriction with a4c/Docker.

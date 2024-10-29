@@ -6,89 +6,88 @@
   systemd.user.startServices = "sd-switch";
 
   imports = [
+    # cli tools
     ./pkgs/0x0.nix
     ./pkgs/acpi.nix
-    ./pkgs/alacritty.nix
-    ./pkgs/ash.nix
-    ./pkgs/asl.nix
-    ./pkgs/avpn.nix
     ./pkgs/awk.nix
     ./pkgs/bash.nix
     ./pkgs/bat.nix
-    ./pkgs/batteryd.nix
-    ./pkgs/bemenu.nix
     ./pkgs/bitwarden-cli.nix
-    ./pkgs/bmbwd.nix
-    ./pkgs/brightnessctl.nix
     ./pkgs/btop.nix
-    ./pkgs/chrome.nix
     ./pkgs/cht.nix
-    ./pkgs/cliphist.nix
     ./pkgs/coreutils.nix
     ./pkgs/curl.nix
     ./pkgs/del.nix
     ./pkgs/diff.nix
-    ./pkgs/displayctl.nix
     ./pkgs/eza.nix
     ./pkgs/fastfetch.nix
     ./pkgs/fd.nix
     ./pkgs/file.nix
     ./pkgs/find.nix
-    ./pkgs/firefox.nix
-    ./pkgs/fontconfig.nix
     ./pkgs/fzf.nix
     ./pkgs/git.nix
     ./pkgs/gpg-agent.nix
     ./pkgs/gpg.nix
-    ./pkgs/grim.nix
-    ./pkgs/gtk.nix
-    ./pkgs/imv.nix
     ./pkgs/jq.nix
     ./pkgs/less.nix
-    ./pkgs/libnotify.nix
-    ./pkgs/mako.nix
     ./pkgs/man.nix
-    ./pkgs/mosh.nix
-    ./pkgs/mpv.nix
     ./pkgs/neovim.nix
-    ./pkgs/networkctl.nix
-    ./pkgs/nixgl.nix
-    ./pkgs/openconnect.nix
     ./pkgs/ouch.nix
-    ./pkgs/playerctl.nix
-    ./pkgs/powerctl.nix
     ./pkgs/procps.nix
-    ./pkgs/pulsemixer.nix
     ./pkgs/python3.nix
     ./pkgs/ragenix.nix
     ./pkgs/rg.nix
     ./pkgs/sed.nix
-    ./pkgs/slurp.nix
     ./pkgs/ssh.nix
+    ./pkgs/syncthing.nix
+    ./pkgs/yazi.nix
+    ./pkgs/zsh.nix
+    # desktop environment
+    ./pkgs/alacritty.nix
+    ./pkgs/batteryd.nix
+    ./pkgs/bemenu.nix
+    ./pkgs/bmbwd.nix
+    ./pkgs/brightnessctl.nix
+    ./pkgs/cliphist.nix
+    ./pkgs/displayctl.nix
+    ./pkgs/firefox.nix
+    ./pkgs/fontconfig.nix
+    ./pkgs/grim.nix
+    ./pkgs/gtk.nix
+    ./pkgs/imv.nix
+    ./pkgs/libnotify.nix
+    ./pkgs/mako.nix
+    ./pkgs/mpv.nix
+    ./pkgs/networkctl.nix
+    ./pkgs/nixgl.nix
+    ./pkgs/playerctl.nix
+    ./pkgs/powerctl.nix
+    ./pkgs/pulsemixer.nix
+    ./pkgs/slurp.nix
     ./pkgs/sway.nix
     ./pkgs/swaylock.nix
-    ./pkgs/syncthing.nix
     ./pkgs/waybar.nix
     ./pkgs/wl-clipboard.nix
     ./pkgs/xdg.nix
-    ./pkgs/yazi.nix
-    ./pkgs/zsh.nix
+    # arista-specifics
+    ./pkgs/ash.nix
+    ./pkgs/asl.nix
+    ./pkgs/avpn.nix
+    ./pkgs/chrome.nix
+    ./pkgs/mosh.nix
+    ./pkgs/openconnect.nix
   ];
 
-  # autostart zsh
+  # autostart zsh and sway with hardware rendering
   programs.bash.initExtra = ''[[ $- == *i* ]] && { shopt -q login_shell && exec zsh --login $@ || exec zsh $@; }'';
-
-  # autostart sway with hardware rendering
-  # TODO(later): wrap with wayland.windowManager.sway.package
-  programs.zsh.initExtraFirst = ''[[ -o interactive && -o login && -z "$WAYLAND_DISPLAY" && "$(tty)" = "/dev/tty1" ]] && exec nixGLIntel sway'';
-
-  # fuck you nvidia
+  programs.zsh.initExtraFirst = ''[[ -o interactive && -o login && -z "$WAYLAND_DISPLAY" && "$(tty)" = "/dev/tty1" ]] && exec sway'';
+  wayland.windowManager.sway.package = config.lib.nixGL.wrap pkgs.sway;
   wayland.windowManager.sway.extraOptions = [ "--unsupported-gpu" ];
 
   # .hushlogin
   home.file.".hushlogin".text = "";
 
-  # slock must be installed on system for PAM integration
+  # swaylock must be installed on system for PAM integration
   programs.swaylock.package = pkgs.runCommandWith { name = "swaylock-dummy"; } "mkdir $out";
 
   # homebus ssh configuration

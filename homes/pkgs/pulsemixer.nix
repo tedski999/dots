@@ -1,4 +1,4 @@
-#
+# volume mixer
 { pkgs, ... }: {
 
   home.packages = with pkgs; [ pulsemixer ];
@@ -18,4 +18,5 @@
   wayland.windowManager.sway.config.keybindings."--locked --no-repeat --release Pause"                  = "exec pulsemixer --id $(pulsemixer --list-sources | grep 'Default' | cut -d',' -f1 | cut -d' ' -f3) --mute";
   wayland.windowManager.sway.config.keybindings."--locked --no-repeat --release --whole-window button8" = "exec pulsemixer --id $(pulsemixer --list-sources | grep 'Default' | cut -d',' -f1 | cut -d' ' -f3) --toggle-mute";
   wayland.windowManager.sway.config.keybindings."--locked XF86AudioMicMute"                             = "exec pulsemixer --id $(pulsemixer --list-sources | grep 'Default' | cut -d',' -f1 | cut -d' ' -f3) --toggle-mute";
+
 }

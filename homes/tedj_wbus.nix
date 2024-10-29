@@ -5,9 +5,8 @@
   targets.genericLinux.enable = true;
 
   imports = [
+    # cli tools
     ./pkgs/0x0.nix
-    ./pkgs/agit.nix
-    ./pkgs/ahome.nix
     ./pkgs/awk.nix
     ./pkgs/bash.nix
     ./pkgs/bat.nix
@@ -28,7 +27,6 @@
     ./pkgs/jq.nix
     ./pkgs/less.nix
     ./pkgs/man.nix
-    ./pkgs/mosh.nix
     ./pkgs/neovim.nix
     ./pkgs/ouch.nix
     ./pkgs/procps.nix
@@ -39,6 +37,10 @@
     ./pkgs/tmux.nix
     ./pkgs/yazi.nix
     ./pkgs/zsh.nix
+    # arista-specifics
+    ./pkgs/agit.nix
+    ./pkgs/ahome.nix
+    ./pkgs/mosh.nix
   ];
 
   # autostart zsh and move nix paths to end of PATH to protect the build

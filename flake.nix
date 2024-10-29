@@ -1,11 +1,10 @@
-# TODO(next): disable nvidia (investigate random crashes)
 # TODO(later): obs-studio
 # TODO(later): beets
 # TODO(nixos): live+instal iso
 {
 
   inputs = {
-    nixpkgs = { url = "github:NixOS/nixpkgs/nixpkgs-unstable"; }; # TODO(nixos): nixpkgs-* vs nixos-*
+    nixpkgs = { url = "github:NixOS/nixpkgs/nixos-unstable"; };
     home-manager = { url = "github:nix-community/home-manager/master"; inputs = { nixpkgs.follows = "nixpkgs"; }; };
     ragenix = { url = "github:yaxitech/ragenix"; inputs = { nixpkgs.follows = "nixpkgs"; }; };
     nixgl = { url = "github:nix-community/nixGL"; inputs = { nixpkgs.follows = "nixpkgs"; }; };
