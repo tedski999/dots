@@ -297,6 +297,12 @@
     -- Disable satellite on long files (search highlighting causes stuttering)
     vim.api.nvim_create_autocmd("BufWinEnter", { callback = function() if vim.api.nvim_buf_line_count(0) > 10000 then vim.cmd("SatelliteDisable") end end })
 
+    -- Show directory listings
+    vim.api.nvim_create_autocmd("BufEnter", { command = "if isdirectory(expand('%')) | setlocal buftype=nowrite bufhidden=wipe | %delete _ | exec '.!echo '..expand('%:p')..'; echo; eza -laah '..expand('%') | end" })
+
+    -- Autodetect indentation type
+    vim.api.nvim_create_autocmd("BufReadPost", { command = "if search('^\\t\\+[^\\s]', 'nw') | setlocal noexpandtab | elseif search('^ \\+[^\\s]', 'nw') | setlocal expandtab | end" })
+
     -- PLUGIN INITIALISATION --
 
     fzf.register_ui_select()
@@ -531,7 +537,7 @@
     vim.keymap.set("n", "<leader><return>", "<cmd>belowright split | terminal<cr>")
     -- Open notes
     vim.keymap.set("n", "<leader>n", "<cmd>lcd ~/Documents/notes | edit todo.txt<cr>")
-    vim.keymap.set("n", "<leader>N", "<cmd>lcd ~/Documents/notes | edit `=strftime('./journal/%Y/%m/%d.md')` | call mkdir(expand('%:h'), 'p')<cr>")
+    vim.keymap.set("n", "<leader>N", "<cmd>lcd ~/Documents/notes | edit `=strftime('./journal/%Y/%m/%d.md', strptime('%a %W %y', strftime('Mon %W %y')))` | call mkdir(expand('%:h'), 'p')<cr>")
     -- LSP
     vim.keymap.set("n", "<leader><leader>", "<cmd>lua vim.lsp.buf.hover()<cr>")
     vim.keymap.set("n", "<leader>k",        "<cmd>lua vim.lsp.buf.code_action()<cr>")
@@ -595,7 +601,8 @@
     vim.keymap.set("n", "<leader>/", "<cmd>FzfLua search_history<cr>")
     vim.keymap.set("n", "<leader>m", "<cmd>FzfLua marks<cr>")
     vim.keymap.set("n", "<leader>\"", "<cmd>FzfLua registers<cr>")
-    vim.keymap.set("n", "<leader>gg", "<cmd>FzfLua git_status<cr>")
+    vim.keymap.set("n", "<leader>gg", "<cmd>FzfLua git_status cwd=%:p:h<cr>")
+    vim.keymap.set("n", "<leader>gG", "<cmd>FzfLua git_status<cr>")
     vim.keymap.set("n", "<leader>gf", "<cmd>FzfLua git_files cwd=%:p:h only_cwd=true<cr>")
     vim.keymap.set("n", "<leader>gF", "<cmd>FzfLua git_files<cr>")
     vim.keymap.set("n", "<leader>gl", "<cmd>FzfLua git_bcommits<cr>")
