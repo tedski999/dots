@@ -11,8 +11,6 @@ in {
   "ski_h8c.de/subkey.age".publicKeys = [ ski_msung tedj_work ];
   "ski_h8c.de/revoke.age".publicKeys = [ ski_msung tedj_work ];
 
-  # "ski_skic/TODO.age".publicKeys = [ ski_skic ];
-
   "arista/wbus_pub.age".publicKeys = [ tedj_wbus ];
   "arista/wbus_sec.age".publicKeys = [ tedj_wbus ];
   "arista/work_cer.age".publicKeys = [ tedj_work ];
