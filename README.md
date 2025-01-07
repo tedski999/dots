@@ -23,22 +23,25 @@ nix develop github:tedski999/dots --command home-manager switch --flake github:t
 unset NIX_CONFIG
 ```
 
+TODO(laptop): change disk and user passwords
+
 Disable `sudo` password for tedj, admin_flag, env_reset and secure_path:
 ```sh
 printf 'Defaults !admin_flag\ntedj ALL=(ALL) NOPASSWD: ALL\n' | sudo tee /etc/sudoers.d/qol
 printf 'Defaults !env_reset\nDefaults !secure_path\n' | sudo tee /etc/sudoers.d/keep_env
 ```
 
-Install IT security tools (give helpdesk@ a head-up): https://intranet.arista.com/it/ubuntu-22-04lts-security-tools-help Note google-chrome is pushed once enrolled into WS1, you can sign into the browser with Arista credentials.
+Install IT security tools (give helpdesk@ a heads-up): https://intranet.arista.com/it/ubuntu-22-04lts-security-tools-help Note google-chrome is pushed once enrolled into WS1, you can sign into the browser with Arista credentials.
 
-xdg-desktop-portal-wlr on 22.04 is broken but we still need the package installed to get the entry in `/usr/share/xdg-desktop-portal/portals`:
+xdg-desktop-portal-wlr on 22.04 is broken but we still need these packages installed:
 ```sh
-sudo apt install xdg-desktop-portal-wlr
+sudo apt install xdg-desktop-portal-wlr xdg-desktop-portal-gtk
 ```
 
-swaylock must be installed systemd-wide for PAM integration:
+Add PAM integration for swaylock:
 ```sh
-sudo apt install swaylock
+# TODO(swaylock) pam password authentication
+echo "auth required pam_permit.so" | sudo tee /etc/pam.d/swaylock
 ```
 
 Import GPG subkeys:
@@ -76,7 +79,7 @@ sudo systemctl stop snapd
 sudo systemctl stop snapd.socket
 sudo apt purge snapd -y
 sudo apt-mark hold snapd
-sudo apt-get purge --auto-remove 'gnome*'
+sudo apt-get purge --auto-remove 'gnome*' 'nvidia-*' 'libnvidia-*' '*-nvidia-*'
 del ~/snap
 sudo systemctl disable gdm
 printf 'blacklist nouveau\noptions nouveau modeset=0\n' | sudo tee /etc/modprobe.d/blacklist-nouveau.conf
@@ -104,7 +107,8 @@ Install nix:
 export NIX_CONFIG=$'use-xdg-base-directories = true\nextra-experimental-features = nix-command flakes'
 sh <(curl -L https://nixos.org/nix/install) --no-daemon
 . $HOME/.local/state/nix/profile/etc/profile.d/nix.sh
-nix develop github:tedski999/dots --command home-manager switch --flake github:tedski999/dots#tedj@wbus
+nix-env --set-flag priority 0 nix
+nix run home-manager/master -- switch --flake github:tedski999/dots#tedj@wbus
 unset NIX_CONFIG
 ```
 
@@ -124,8 +128,7 @@ Running `a git setup` and co won't work with `.config/git/config` being readonly
 
 I haven't been able to get git commit signing within a4c to work yet. There is some problem related to GPG agent forwarding from `homebus:${XDG_RUNTIME_DIR}/gnupg/S.gpg-agent.extra` to `a4c:${HOME}/.gnupg/S.gpg-agent` but it's probably related to the NFS home or some more arcane restriction with a4c/Docker.
 
-
-### Home Desktop - Windows 11 IoT Enterprise LTSC
+### Home Desktop - Windows 10 IoT Enterprise LTSC
 
 Assuming fresh install using custom unattend.xml and activated using appropriate key.
 
@@ -135,6 +138,11 @@ Grab this README.md if you don't want to bother with Microsoft Edge:
 ```ps
 Invoke-WebRequest -Uri "https://raw.githubusercontent.com/tedski999/dots/refs/heads/main/README.md" -OutFile "..."
 ```
+
+Install additional drivers:
+- AMD chipset driver
+- MediaTek Bluetooth driver
+- MediaTek Wireless Lan driver
 
 Configure and enable BitLocker:
 - gpedit.msc `Computer Configuration\Administrative Templates\Windows Components\BitLocker Drive Encryption\Operating System Drives\Require additional authentication at startup`:
@@ -156,48 +164,29 @@ Configure and enable BitLocker:
 
 Settings:
 ```
-System\Display\DISPLAY 1\Use HDR: True
-System\Display\DISPLAY 1\Advanced display\Choose a refresh rate: 144 Hz
-System\Display\DISPLAY 2\Display orientation: Portrait
+System\Display\DISPLAY 1\Advanced display\Choose a refresh rate: 100 Hz
 System\Power\Power mode: Best Performance
-System\Multitasking\Snap windows\When I snap a window, suggest what I can snap next to it: True
-System\Multitasking\Snap windows\Show snap layouts when I hover over a window's maximize button: False
-System\Multitasking\Snap windows\Show snap layouts when I drag a window to the top of my screen: False
-System\Multitasking\Snap windows\Show my snapped windows when I hover over taskbar apps, in Task View, and when I press ALt+Tab: False
-System\Multitasking\Snap windows\When I drag a window, let me snap it without dragging all the way to the screen edge: False
-System\Multitasking\Show tabs from apps when snapping or pressing Alt+Tab: Don't show tabs
-System\For developers\File Explorer\*: True
-System\Clipboard\Clipboard history: True
-System\About\Rename this PC: SkiC
+System\Shared experiences\Share across devices: Off
+System\Clipboard\Clipboard history: On
+System\About\Rename this PC: SkiC, restart later
 Personalization\Background\Personalize your background: Solid color\Custom colors\More\#1c1c1c
 Personalization\Colors\Choose your mode: Dark
 Personalization\Colors\Accent color: Manual\Navy Blue
-Personalization\Lock screen\Show the lock screen background picture on the sign-in screen: False
-Personalization\Start\Show recently added apps: False
-Personalization\Start\Show recommended files in Start, recent files in File Explorer, and items in Jump Lists: False
-Personalization\Start\Show recommendations for tips, shortcuts, new apps, and more: False
-Personalization\Start\Show account-related notifications: False
-Personalization\Start\Folders\Settings: True
-Personalization\Start\Folders\File Explorer: True
-Personalization\Taskbar\Taskbar items\Search: Hide
-Personalization\Taskbar\Taskbar items\Task view: False
-Personalization\Taskbar\Taskbar behaviours\Taskbar alignment: Left
-Personalization\Taskbar\Taskbar behaviours\When using multiple displays, show my taskbar apps on: Taskbar where window is open
-Personalization\Taskbar\Taskbar behaviours\Combine taskbar buttons and hide labels: Never
-Personalization\Taskbar\Taskbar behaviours\Combine taskbar buttons and hide labels on other taskbars: Never
-Apps\Installed apps\Paint: Uninstall
-Apps\Installed apps\Remote Desktop Connection: Uninstall
-Apps\Installed apps\Snipping Tool: Uninstall
-Apps\Startup\Microsoft Edge: False
-Gaming\Game Bar\Allow your controller to open Game Bar: False
-Accessibility\Magnifier\Magnifier: False
-Accessibility\Keyboard\Sticky keys\Keyboard shortcut for Sticky keys: False
-Accessibility\Keyboard\Filter keys\Keyboard shortcut for Filter keys: False
-Privacy & security\General\Let websites show me locally relevant content by accessing my language list: False
-Privacy & security\General\Let Windows improve Start and search results by tracking app launches: False
-Privacy & security\Activity history\Activity History\Store my activity history on this device: False
-Privacy & security\Search permissions\SafeSearch: Off
-Windows Update\Advanced options\Active hours: Manually
+Personalization\Start\Show recently added apps: Off
+Personalization\Start\Show recommended files in Start, recent files in File Explorer, and items in Jump Lists: Off
+Personalization\Start\Choose which folders appear on Start: File Explorer, Settings
+Personalization\Taskbar\Combine taskbar buttons: Never
+Personalization\Taskbar\Turn system icons on or off: Clock, Volume, Network, Power, Action Center
+Personalization\Taskbar\Multiple displays\Show taskbar buttons on: Taskbar where window is open
+Personalization\Taskbar\Multiple displays\Combine buttons on other taskbars: Never
+Apps\Optional features: Notepad, OpenSSH Client, Windows Media Player
+Apps\Microsoft Edge: Uninstall
+Gaming\Xbox Game Bar\ Enable Xbox Game Bar: Off
+Accessibility\Keyboard\Allow the shortcut key to start Sticky/Toggle/Filter Keys: Off
+Search\Permissions & History\SafeSearch: Off
+Search\Searching Windows\Find My Files: Enhanced
+Privacy\Activity history\Store my activity history on this device: Off
+Update & Security\For developers\File Explorer: Apply
 ```
 
 Import agenix key:
@@ -240,12 +229,7 @@ $SyncthingLnk.Save()
 
 Configure File Explorer after starting Syncthing:
 - Unpin everything
-- Pin `C:\Users\ski`
-- Pin `C:\Users\ski\Documents\Documents`
-- Pin `C:\Users\ski\Music\Music`
-- Pin `C:\Users\ski\Pictures\Pictures`
-- Pin `C:\Users\ski\Videos\Videos`
-- Pin `C:\Users\ski\Work`
+- Pin `C:\Users\ski\{.,Documents\Documents,Music\Music,Pictures\Pictures,Videos\Videos,Work}`
 
 Install Firefox:
 ```ps
@@ -271,7 +255,7 @@ Invoke-WebRequest -Uri "https://github.com/PrismLauncher/PrismLauncher/releases/
 & "$((gi $env:temp).fullname)\dots\prism-installer.exe"
 ```
 
-Install ckan (requires [.NET 4.8](https://dotnet.microsoft.com/en-us/download/dotnet-framework/net48) or later):
+Install ckan:
 ```ps
 Invoke-WebRequest -Uri "https://github.com/KSP-CKAN/CKAN/releases/download/v1.35.2/ckan.exe" -OutFile "$($env:LOCALAPPDATA)\Programs\ckan.exe"
 $CkanLnk = (New-Object -comObject WScript.Shell).CreateShortcut("$($env:APPDATA)\Microsoft\Windows\Start Menu\Programs\ckan.lnk")
