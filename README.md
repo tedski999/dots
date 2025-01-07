@@ -7,6 +7,13 @@ Instructions for setting up environments on various non-NixOS devices.
 
 Assuming fresh laptop provisioned with IT security tools.
 
+Change user and disk passwords:
+```sh
+sudo passwd tedj
+sudo cryptsetup luksChangeKey /dev/nvme0n1p3 -S 0
+sudo cryptsetup --verbose open --test-passphrase /dev/nvme0n1p3
+```
+
 Import agenix key:
 ```sh
 cp /mnt/tedj@work.agenix.key ~/.ssh/
@@ -22,8 +29,6 @@ sudo systemctl restart nix-daemon
 nix develop github:tedski999/dots --command home-manager switch --flake github:tedski999/dots#tedj@work
 unset NIX_CONFIG
 ```
-
-TODO(laptop): change disk and user passwords
 
 Disable `sudo` password for tedj, admin_flag, env_reset and secure_path:
 ```sh
@@ -122,12 +127,6 @@ After you create a new container or if you want to update your home-manager prof
 ahome
 ```
 
-#### Configuration notes
-
-Running `a git setup` and co won't work with `.config/git/config` being readonly (lots of atools are very particular about it) so need to manually install this. Plus atools override git anyway so whatever. There's a hack in `homes/tedj_wbus.nix` to get this working.
-
-I haven't been able to get git commit signing within a4c to work yet. There is some problem related to GPG agent forwarding from `homebus:${XDG_RUNTIME_DIR}/gnupg/S.gpg-agent.extra` to `a4c:${HOME}/.gnupg/S.gpg-agent` but it's probably related to the NFS home or some more arcane restriction with a4c/Docker.
-
 ### Home Desktop - Windows 10 IoT Enterprise LTSC
 
 Assuming fresh install using custom unattend.xml and activated using appropriate key.
@@ -210,7 +209,7 @@ Copy-Item "$((gi $env:temp).fullname)\dots\age\age.exe" -Destination "$($env:LOC
 Copy-Item "$((gi $env:temp).fullname)\dots\age\age-keygen.exe" -Destination "$($env:LOCALAPPDATA)\Programs"
 ```
 
-Install, configure and autostart syncthing:
+Install configure syncthing (will autostart on next login):
 ```ps
 Invoke-WebRequest -Uri "https://github.com/syncthing/syncthing/releases/download/v1.27.12/syncthing-windows-amd64-v1.27.12.zip" -OutFile "$((gi $env:temp).fullname)\dots\syncthing.zip"
 Expand-Archive -Path "$((gi $env:temp).fullname)\dots\syncthing.zip" -DestinationPath "$((gi $env:temp).fullname)\dots"
@@ -226,10 +225,6 @@ $SyncthingLnk.TargetPath = "$($env:LOCALAPPDATA)\Programs\syncthing.exe"
 $SyncthingLnk.Arguments = "serve --no-console --no-browser --no-default-folder"
 $SyncthingLnk.Save()
 ```
-
-Configure File Explorer after starting Syncthing:
-- Unpin everything
-- Pin `C:\Users\ski\{.,Documents\Documents,Music\Music,Pictures\Pictures,Videos\Videos,Work}`
 
 Install Firefox:
 ```ps
