@@ -615,6 +615,11 @@ in {
     delta.options.blame-separator-format = "{n:^5}";
   };
 
+  programs.go = lib.mkIf work {
+    enable = true;
+    goPath = "${config.xdg.dataHome}/go";
+  };
+
   programs.gpg = lib.mkIf (!wbus) {
     enable = true;
     settings.keyid-format = "LONG";
