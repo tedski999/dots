@@ -2026,7 +2026,7 @@ in {
     # TODO(later) cursorTheme = { package = pkgs.; name = ""; };
   };
 
-  xdg = {
+  xdg = lib.mkIf (!wbus) {
     enable = true;
     userDirs.enable = true;
     userDirs.createDirectories = true;
