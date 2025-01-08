@@ -26,7 +26,7 @@ sh <(curl -L https://nixos.org/nix/install) --daemon
 echo 'trusted-users = tedj' | sudo tee --append /etc/nix/nix.conf
 sudo systemctl restart nix-daemon
 . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
-nix run home-manager -- switch --flake github:tedski999/dots#tedj@work
+nix run home-manager -- switch --flake github:tedski999/dots#tedj@work --refresh
 unset NIX_CONFIG
 ```
 
@@ -113,7 +113,7 @@ export NIX_CONFIG=$'use-xdg-base-directories = true\nextra-experimental-features
 sh <(curl -L https://nixos.org/nix/install) --no-daemon
 . $HOME/.local/state/nix/profile/etc/profile.d/nix.sh
 nix-env --set-flag priority 0 nix
-nix run home-manager/master -- switch --flake github:tedski999/dots#tedj@wbus
+nix run home-manager/master -- switch --flake github:tedski999/dots#tedj@wbus --refresh
 unset NIX_CONFIG
 ```
 
