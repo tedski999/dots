@@ -330,14 +330,14 @@ in {
             . ~/.local/state/nix/profile/etc/profile.d/nix.sh
             nix-env --set-flag priority 0 nix
             rm -f ~/.local/state/nix/profiles/home-manager* ~/.local/state/home-manager/gcroots/current-home
-            nix run home-manager -- switch --flake ~/dots#tedj@wbus'
+            nix run home-manager -- switch --flake github:tedski999/dots#tedj@wbus
         done
         echo; echo "Rehoming bus.."
         sh <(curl -L https://nixos.org/nix/install) --no-daemon --yes
         . ~/.local/state/nix/profile/etc/profile.d/nix.sh
         nix-env --set-flag priority 0 nix
         rm -f ~/.local/state/nix/profiles/home-manager* ~/.local/state/home-manager/gcroots/current-home
-        nix run home-manager -- switch --flake ~/dots#tedj@wbus
+        nix run home-manager -- switch --flake github:tedski999/dots#tedj@wbus
         unset NIX_CONFIG
       '')
       (writeShellScriptBin "ag" ''

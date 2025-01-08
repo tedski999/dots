@@ -26,7 +26,7 @@ sh <(curl -L https://nixos.org/nix/install) --daemon
 echo 'trusted-users = tedj' | sudo tee --append /etc/nix/nix.conf
 sudo systemctl restart nix-daemon
 . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
-nix develop github:tedski999/dots --command home-manager switch --flake github:tedski999/dots#tedj@work
+nix run home-manager -- switch --flake github:tedski999/dots#tedj@work
 unset NIX_CONFIG
 ```
 
