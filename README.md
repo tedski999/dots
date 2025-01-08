@@ -38,9 +38,9 @@ printf 'Defaults !env_reset\nDefaults !secure_path\n' | sudo tee /etc/sudoers.d/
 
 Install IT security tools (give helpdesk@ a heads-up): https://intranet.arista.com/it/ubuntu-22-04lts-security-tools-help Note google-chrome is pushed once enrolled into WS1, you can sign into the browser with Arista credentials.
 
-xdg-desktop-portal-wlr on 22.04 is broken but we still need these packages installed:
+Install system packages:
 ```sh
-sudo apt install xdg-desktop-portal-wlr xdg-desktop-portal-gtk
+sudo apt install xdg-desktop-portal-wlr xdg-desktop-portal-gtk libspa-0.2-bluetooth
 ```
 
 Add PAM integration for swaylock:
