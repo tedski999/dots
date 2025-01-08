@@ -211,7 +211,7 @@ in {
                   "") exit;;
                   "disconnect") bluetoothctl disconnect "$id" && n "Disconnected from $id" && exit || n "Failed to disconnect from $id";;
                   "connect") bluetoothctl connect "$id" && n "Connected to $id" && exit || n "Failed to connect to $id";;
-                  # TODO(later): pairing not working here but does in cli "pair") bluetoothctl pair "$id" && n "Paired with $id" || n "Failed to pair with $id";;
+                  "pair") bluetoothctl pair "$id" && n "Paired with $id" || n "Failed to pair with $id";;
                   "forget") bluetoothctl remove "$id" && n "$id forgotten" || n "Failed to forget $id";;
                   "trust") bluetoothctl trust "$id" && n "$id trusted" || n "Failed to trust $id";;
                   "untrust") bluetoothctl untrust "$id" && n "$id untrusted" || n "Failed to untrust $id";;
@@ -259,7 +259,7 @@ in {
       (writeShellScriptBin "swaytaskset" ''
         c=$(cat /tmp/swaytask)
         swaymsg -q $(
-          for w in $(swaymsg -rt get_workspaces | jq -r '.[].name' | grep -v "^0|"); do echo "rename workspace $w to 0|$c|$(echo $w | tr ':' '|'):#, "; done
+          for w in $(swaymsg -rt get_workspaces | jq -r '.[].name' | grep -v "^\(0|\|\(14:q\|15:a\|16:z\)$\)"); do echo "rename workspace $w to 0|$c|$(echo $w | tr ':' '|'):#, "; done
           for w in $(swaymsg -rt get_workspaces | jq -r '.[].name' | grep -P "^\Q0|$1|\E"); do echo "rename workspace $w to $(echo $w | cut -d'|' -f3- | cut -d ':' -f1 | tr '|' ':'), "; done)
         notify-send -i task-complete -t 2000 "Switched to $1" "Was on $c"
         echo "$1" >/tmp/swaytask
@@ -312,7 +312,7 @@ in {
       (writeShellScriptBin "ash" ''
         host="''${1:+tedj-$1}"
         mosh \
-          --server=/home/tedj/.local/bin/mosh-server \
+          --server="~/.local/bin/zsh -c mosh-server" \
           --predict=always --predict-overwrite --experimental-remote-ip=remote \
           "''${host:-bus-home}"
       '')
