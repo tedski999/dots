@@ -320,7 +320,9 @@ in {
         export NIX_CONFIG=$'use-xdg-base-directories = true\nextra-experimental-features = nix-command flakes'
         for n in $(a4c ps -N); do
           echo; echo "Rehoming $n..."
-          a4c shell --env NIX_CONFIG $n sh -c '
+          a4c shell $n sh -c '
+            export NIX_CONFIG="use-xdg-base-directories = true\nextra-experimental-features = nix-command flakes
+        extra-experimental-features = nix-command flakes"
             sh <(curl -L https://nixos.org/nix/install) --no-daemon --yes
             . ~/.local/state/nix/profile/etc/profile.d/nix.sh
             nix-env --set-flag priority 0 nix
@@ -461,8 +463,8 @@ in {
   programs.bash = {
     enable = true;
     initExtra = if wbus
-      then ''[[ $- == *i* ]] && [ -z "$ARTEST_RANDSEED" ] && { shopt -q login_shell && exec ${pkgs.zsh}/bin/zsh --login $@ || exec ${pkgs.zsh}/bin/zsh $@; }''
-      else ''shopt -q login_shell && exec ${pkgs.zsh}/bin/zsh --login $@ || exec ${pkgs.zsh}/bin/zsh $@'';
+    then ''[[ $- == *i* ]] && [ -z "$ARTEST_RANDSEED" ] && { [ -z "$TMUX" ] && exec ${pkgs.tmux}/bin/tmux new || exec ${pkgs.zsh}/bin/zsh $@; }''
+    else ''shopt -q login_shell && exec ${pkgs.zsh}/bin/zsh --login $@ || exec ${pkgs.zsh}/bin/zsh $@'';
   };
 
   programs.bat = {
@@ -1578,7 +1580,6 @@ in {
       '')
       (lib.mkIf wbus ''
         export PATH="$HOME/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$PATH"
-        [[ -o interactive && -o login && -z "$TMUX" ]] && exec tmux new
         [ -d /src/EngTeam ] && [[ -o interactive ]] && [[ -o login ]] && cd /src
       '')
     ];
