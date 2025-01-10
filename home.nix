@@ -320,7 +320,7 @@ in {
         for n in $(a4c ps -N); do
           echo; echo "Rehoming $n..."
           a4c shell $n sh -c '
-            export NIX_CONFIG="use-xdg-base-directories = true\nextra-experimental-features = nix-command flakes
+            export NIX_CONFIG="use-xdg-base-directories = true
         extra-experimental-features = nix-command flakes"
             sh <(curl -L https://nixos.org/nix/install) --no-daemon --yes
             . ~/.local/state/nix/profile/etc/profile.d/nix.sh
