@@ -1657,7 +1657,7 @@ in {
         compdef 'compadd $(cat /tmp/ashcache 2>/dev/null || ssh bus-home -- a4c ps -N | tee /tmp/ashcache)' ash
       '')
       (lib.mkIf wbus ''
-        git config --global include.myconfig.path myconfig
+        git config --global include.path myconfig
       '')
     ];
   };
