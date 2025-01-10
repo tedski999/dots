@@ -387,7 +387,7 @@ in {
       ".local/bin/vi".source = config.lib.file.mkOutOfStoreSymlink "${pkgs.neovim}/bin/nvim";
       ".local/bin/vim".source = config.lib.file.mkOutOfStoreSymlink "${pkgs.neovim}/bin/nvim";
       ".local/bin/zsh".source = config.lib.file.mkOutOfStoreSymlink "${pkgs.zsh}/bin/zsh";
-      ".config/git/myconfig".source = ''
+      ".config/git/myconfig".text = ''
         [alias]
           a = "add"
           b = "branch"
