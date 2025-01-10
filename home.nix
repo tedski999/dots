@@ -313,6 +313,7 @@ in {
     ])
 
     (lib.mkIf wbus [
+      delta
       (writeShellScriptBin "ahome" ''
         [ "$(hostname | cut -d- -f-2)" = "tedj-home" ] || exit 1
         export NIX_CONFIG=$'use-xdg-base-directories = true\nextra-experimental-features = nix-command flakes'
