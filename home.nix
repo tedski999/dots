@@ -1,4 +1,3 @@
-# TODO(test) test git on wbus
 # TODO(sync) remove work from work
 
 { pkgs, config, lib, home, inputs, ... }:
@@ -377,7 +376,6 @@ in {
     }
 
     (lib.mkIf wbus {
-      ".local/bin/git".source = config.lib.file.mkOutOfStoreSymlink "${pkgs.git}/bin/git";
       ".local/bin/man".source = config.lib.file.mkOutOfStoreSymlink "${pkgs.man}/bin/man";
       ".local/bin/man-recode".source = config.lib.file.mkOutOfStoreSymlink "${pkgs.man}/bin/man-recode";
       ".local/bin/mandb".source = config.lib.file.mkOutOfStoreSymlink "${pkgs.man}/bin/mandb";
@@ -389,6 +387,51 @@ in {
       ".local/bin/vi".source = config.lib.file.mkOutOfStoreSymlink "${pkgs.neovim}/bin/nvim";
       ".local/bin/vim".source = config.lib.file.mkOutOfStoreSymlink "${pkgs.neovim}/bin/nvim";
       ".local/bin/zsh".source = config.lib.file.mkOutOfStoreSymlink "${pkgs.zsh}/bin/zsh";
+      ".config/git/myconfig".source = ''
+        [alias]
+          a = "add"
+          b = "branch"
+          c = "commit"
+          cm = "commit --message"
+          d = "diff"
+          ds = "diff --staged"
+          l = "log"
+          pl = "pull"
+          ps = "push"
+          rs = "restore --staged"
+          s = "status"
+          un = "reset --soft HEAD~"
+        [core]
+          pager = "delta"
+        [delta]
+          blame-palette = "#101010 #282828"
+          blame-separator-format = "{n:^5}"
+          features = "navigate"
+          file-added-label = "+"
+          file-copied-label = "="
+          file-decoration-style = "omit"
+          file-modified-label = "!"
+          file-removed-label = "-"
+          file-renamed-label = ">"
+          file-style = "brightyellow"
+          hunk-header-decoration-style = "omit"
+          hunk-header-file-style = "blue"
+          hunk-header-line-number-style = "grey"
+          hunk-header-style = "file line-number"
+          hunk-label = "#"
+          line-numbers = true
+          line-numbers-left-format = ""
+          line-numbers-right-format = "{np:>4} "
+          navigate-regex = "^[-+=!>]"
+          paging = "always"
+          relative-paths = true
+          width = "variable"
+        [interactive]
+          diffFilter = "delta --color-only"
+        [user]
+          email = "tedj@arista.com"
+          name = "tedj"
+      '';
     })
 
     (lib.mkIf work {
@@ -556,21 +599,15 @@ in {
     ];
   };
 
-  programs.git = {
+  programs.git = lib.mkIf (!wbus) {
     enable = true;
-    userName = if !wbus then "tedski999" else "tedj";
-    userEmail = if !wbus then "ski@h8c.de" else "tedj@arista.com";
-    signing = lib.mkIf (!wbus) { key = "00ADEF0A!"; signByDefault = true; };
-    extraConfig = if !wbus then {
-      init.defaultBranch = "main";
-      pull.ff = "only";
-      push.default = "current";
-    } else ''
-      [gitar]
-        configured = true
-      [safe]
-        directory = /src/GitarBandMutDb
-    '';
+    userName = "tedski999"
+    userEmail = "ski@h8c.de"
+    signing.key = "00ADEF0A!";
+    signing.signByDefault = true;
+    extraConfig.init.defaultBranch = "main";
+    extraConfig.pull.ff = "only";
+    extraConfig.push.default = "current";
     aliases.l = "log";
     aliases.s = "status";
     aliases.a = "add";
@@ -1618,6 +1655,9 @@ in {
       (lib.mkIf work ''
         compdef 'compadd gp-ie.arista.com gp-ie.arista.com gp-eu.arista.com gp.arista.com' avpn
         compdef 'compadd $(cat /tmp/ashcache 2>/dev/null || ssh bus-home -- a4c ps -N | tee /tmp/ashcache)' ash
+      '')
+      (lib.mkIf wbus ''
+        git config --global include.myconfig.path myconfig
       '')
     ];
   };
