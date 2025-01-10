@@ -309,13 +309,8 @@ in {
           -c "$XDG_RUNTIME_DIR/agenix/tedj@arista.com.crt" \
           -k "$XDG_RUNTIME_DIR/agenix/tedj@arista.com.pem"
       '')
-      (writeShellScriptBin "ash" ''
-        host="''${1:+tedj-$1}"
-        mosh \
-          --server="~/.local/bin/zsh -c mosh-server" \
-          --predict=always --predict-overwrite --experimental-remote-ip=remote \
-          "''${host:-bus-home}"
-      '')
+      # TODO(later): consistency in locale stuff between bus and containers
+      (writeShellScriptBin "ash" ''host="''${1:+tedj-$1}"; mosh --predict=always --predict-overwrite --experimental-remote-ip=remote "''${host:-bus-home}"'')
       (writeShellScriptBin "asl" "arista-ssh check-auth || arista-ssh login")
     ])
 
@@ -393,8 +388,6 @@ in {
       ".local/bin/vi".source = config.lib.file.mkOutOfStoreSymlink "${pkgs.neovim}/bin/nvim";
       ".local/bin/vim".source = config.lib.file.mkOutOfStoreSymlink "${pkgs.neovim}/bin/nvim";
       ".local/bin/zsh".source = config.lib.file.mkOutOfStoreSymlink "${pkgs.zsh}/bin/zsh";
-      ".bashrc".text = ''[[ $- == *i* ]] && [ -z "$ARTEST_RANDSEED" ] && { shopt -q login_shell && exec ${pkgs.zsh}/bin/zsh --login $@ || exec ${pkgs.zsh}/bin/zsh $@; }'';
-      ".bash_profile".text = ''. ~/.bashrc'';
     })
 
     (lib.mkIf work {
@@ -465,9 +458,11 @@ in {
     settings.colors.selection = { background = "#fffacd"; text = "#000000"; };
   };
 
-  programs.bash = lib.mkIf (!wbus) {
+  programs.bash = {
     enable = true;
-    initExtra = ''shopt -q login_shell && exec ${pkgs.zsh}/bin/zsh --login $@ || exec ${pkgs.zsh}/bin/zsh $@'';
+    initExtra = if wbus
+      then ''[[ $- == *i* ]] && [ -z "$ARTEST_RANDSEED" ] && { shopt -q login_shell && exec ${pkgs.zsh}/bin/zsh --login $@ || exec ${pkgs.zsh}/bin/zsh $@; }''
+      else ''shopt -q login_shell && exec ${pkgs.zsh}/bin/zsh --login $@ || exec ${pkgs.zsh}/bin/zsh $@'';
   };
 
   programs.bat = {
@@ -1582,8 +1577,9 @@ in {
         [[ -o interactive && -o login && -z "$WAYLAND_DISPLAY" && "$(tty)" = "/dev/tty1" ]] && exec sway
       '')
       (lib.mkIf wbus ''
-        [ -d /src/EngTeam ] && [[ -o interactive ]] && [[ -o login ]] && cd /src
         export PATH="$HOME/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$PATH"
+        [[ -o interactive && -o login && -z "$TMUX" ]] && exec tmux new
+        [ -d /src/EngTeam ] && [[ -o interactive ]] && [[ -o login ]] && cd /src
       '')
     ];
     initExtra = lib.mkMerge [
@@ -1627,9 +1623,6 @@ in {
       (lib.mkIf work ''
         compdef 'compadd gp-ie.arista.com gp-ie.arista.com gp-eu.arista.com gp.arista.com' avpn
         compdef 'compadd $(cat /tmp/ashcache 2>/dev/null || ssh bus-home -- a4c ps -N | tee /tmp/ashcache)' ash
-      '')
-      (lib.mkIf wbus ''
-        [[ -o interactive && -o login && -z "$TMUX" ]] && exec tmux new
       '')
     ];
   };
