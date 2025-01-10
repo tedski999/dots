@@ -309,7 +309,6 @@ in {
           -c "$XDG_RUNTIME_DIR/agenix/tedj@arista.com.crt" \
           -k "$XDG_RUNTIME_DIR/agenix/tedj@arista.com.pem"
       '')
-      # TODO(later): consistency in locale stuff between bus and containers
       (writeShellScriptBin "ash" ''host="''${1:+tedj-$1}"; mosh --predict=always --predict-overwrite --experimental-remote-ip=remote "''${host:-bus-home}"'')
       (writeShellScriptBin "asl" "arista-ssh check-auth || arista-ssh login")
     ])
@@ -463,8 +462,8 @@ in {
   programs.bash = {
     enable = true;
     initExtra = if wbus
-    then ''[[ $- == *i* ]] && [ -z "$ARTEST_RANDSEED" ] && { [ -z "$TMUX" ] && exec ${pkgs.tmux}/bin/tmux new || exec ${pkgs.zsh}/bin/zsh $@; }''
-    else ''shopt -q login_shell && exec ${pkgs.zsh}/bin/zsh --login $@ || exec ${pkgs.zsh}/bin/zsh $@'';
+      then ''shopt -q login_shell && [ -z "$ARTEST_RANDSEED" ] && { [ -z "$TMUX" ] && { [ -d /src/EngTeam ] && cd /src; exec ${pkgs.tmux}/bin/tmux new; } || exec ${pkgs.zsh}/bin/zsh "$@"; }''
+      else ''shopt -q login_shell && exec ${pkgs.zsh}/bin/zsh --login $@ || exec ${pkgs.zsh}/bin/zsh "$@"'';
   };
 
   programs.bat = {
@@ -1575,13 +1574,8 @@ in {
     shellAliases.deldel = "trash empty ";
     shellGlobalAliases.cat = "bat --paging=never ";
     initExtraFirst = lib.mkMerge [
-      (lib.mkIf work ''
-        [[ -o interactive && -o login && -z "$WAYLAND_DISPLAY" && "$(tty)" = "/dev/tty1" ]] && exec sway
-      '')
-      (lib.mkIf wbus ''
-        export PATH="$HOME/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$PATH"
-        [ -d /src/EngTeam ] && [[ -o interactive ]] && [[ -o login ]] && cd /src
-      '')
+      (lib.mkIf work ''[[ -o interactive && -o login && -z "$WAYLAND_DISPLAY" && "$(tty)" = "/dev/tty1" ]] && exec sway'')
+      (lib.mkIf wbus ''export PATH="$HOME/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$PATH"'')
     ];
     initExtra = lib.mkMerge [
       ''
