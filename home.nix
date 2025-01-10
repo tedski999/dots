@@ -601,8 +601,8 @@ in {
 
   programs.git = lib.mkIf (!wbus) {
     enable = true;
-    userName = "tedski999"
-    userEmail = "ski@h8c.de"
+    userName = "tedski999";
+    userEmail = "ski@h8c.de";
     signing.key = "00ADEF0A!";
     signing.signByDefault = true;
     extraConfig.init.defaultBranch = "main";
