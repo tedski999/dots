@@ -1,4 +1,4 @@
-# TODO(sync) remove work from work
+# TODO(next) remove work from work
 
 { pkgs, config, lib, home, inputs, ... }:
 let
@@ -35,6 +35,7 @@ in {
       MANWIDTH = 80;
       LESS = "--incsearch --ignore-case --tabs=4 --chop-long-lines --LONG-PROMPT --RAW-CONTROL-CHARS";
       PYTHONSTARTUP = "${config.xdg.configHome}/python/pythonrc";
+      GTRASH_ONLY_HOME_TRASH = "true";
     }
 
     (lib.mkIf (msung || work) {
@@ -59,11 +60,13 @@ in {
       gnused
       gnutar
       gzip
+      iperf
       jq
+      nmap
       p7zip
       procps
       python3
-      trashy # TODO(later): fix on wbus and other permission issues
+      gtrash # TODO(now): fix on wbus and other permission issues
       unrar
       unzip
       xz
@@ -337,7 +340,7 @@ in {
         unset NIX_CONFIG
       '')
       (writeShellScriptBin "ag" ''
-        # TODO(later) superseded by arista
+        # TODO(next) superseded by arista
         if   [ "$1" = "a"  ]; then shift; a git add $@
         elif [ "$1" = "c"  ]; then shift; a git commit $@
         elif [ "$1" = "cm" ]; then shift; a git commit --message $@
@@ -1601,15 +1604,16 @@ in {
     shellAliases.ls = "eza ";
     shellAliases.ll = "ls -la ";
     shellAliases.lt = "ll -T ";
+    shellAliases.ip = "ip --color=auto ";
     shellAliases.v = "nvim ";
     shellAliases.g = "git ";
     shellAliases.p = "python3 ";
     shellAliases.rm = "2>&1 echo rm disabled use del; false ";
-    shellAliases.trash = "trash --table never ";
-    shellAliases.del = "trash put ";
-    shellAliases.undel = "trash restore ";
-    shellAliases.lsdel = "trash list ";
-    shellAliases.deldel = "trash empty ";
+    shellAliases.del = "gtrash put -- ";
+    shellAliases.dels = "gtrash summary ";
+    # TODO(now) gtrash find --cwd --show-size --show-trashpath --reverse -- $@ | fzf --multi --select-1 --exit-0 --preview 'bat --color always "$(echo {} | awk -F"\\t" "{print \$4}")"' | awk -F'\t' '{print $3}'
+    shellAliases.undel = "gtrash restore ";
+    shellAliases.deldel = "gtrash rm ";
     shellGlobalAliases.cat = "bat --paging=never ";
     initExtraFirst = lib.mkMerge [
       (lib.mkIf work ''[[ -o interactive && -o login && -z "$WAYLAND_DISPLAY" && "$(tty)" = "/dev/tty1" ]] && exec sway'')
@@ -2057,7 +2061,7 @@ in {
     enable = true;
     theme = { package = pkgs.materia-theme; name = "Materia-dark"; };
     iconTheme = { package = pkgs.kdePackages.breeze-icons; name = "breeze-dark"; };
-    # TODO(later) cursorTheme = { package = pkgs.; name = ""; };
+    # TODO(next) cursorTheme = { package = pkgs.; name = ""; };
   };
 
   xdg = lib.mkIf (!wbus) {
