@@ -339,7 +339,7 @@ in {
         unset NIX_CONFIG
       '')
       (writeShellScriptBin "ag" ''
-        elif [ "$1" = "c"  ]; then shift; a git commit $@
+        if   [ "$1" = "c"  ]; then shift; a git commit $@
         elif [ "$1" = "ca" ]; then shift; a git commit --amend $@
         elif [ "$1" = "d"  ]; then shift; a git diff $@
         elif [ "$1" = "ds" ]; then shift; a git diff --staged $@
