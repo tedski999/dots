@@ -339,15 +339,11 @@ in {
         unset NIX_CONFIG
       '')
       (writeShellScriptBin "ag" ''
-        # TODO(next) superseded by arista
-        if   [ "$1" = "a"  ]; then shift; a git add $@
         elif [ "$1" = "c"  ]; then shift; a git commit $@
-        elif [ "$1" = "cm" ]; then shift; a git commit --message $@
         elif [ "$1" = "ca" ]; then shift; a git commit --amend $@
         elif [ "$1" = "d"  ]; then shift; a git diff $@
         elif [ "$1" = "ds" ]; then shift; a git diff --staged $@
         elif [ "$1" = "l"  ]; then shift; a git log $@
-        elif [ "$1" = "ps" ]; then shift; a git ps $@
         elif [ "$1" = "s"  ]; then shift; a git status $@
         elif [ "$1" = "ch" ]; then shift; a git checkout $@
         else a git $@
@@ -435,6 +431,9 @@ in {
           email = "tedj@arista.com"
           name = "tedj"
       '';
+      ".local/bin/git-a".source = config.lib.file.mkOutOfStoreSymlink (pkgs.writeShellScriptBin "git-a" ''
+        git add $@
+      '') + "/bin/git-a";
     })
 
     (lib.mkIf work {
@@ -1666,7 +1665,17 @@ in {
       '')
       (lib.mkIf wbus ''
         git config --global include.path myconfig
+        compdef _git-a ag
       '')
+    ];
+    plugins = lib.mkIf wbus [
+      {
+        name = "arzsh-complete";
+        src = builtins.fetchGit {
+          url = "https://gitlab.aristanetworks.com/kev/arzsh-complete.git";
+          rev = "27cd6dd3d1ef97c873397d7556ef8f46ec4f416b";
+        };
+      }
     ];
   };
 
