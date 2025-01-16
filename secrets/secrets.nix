@@ -49,4 +49,6 @@ in {
   "syncthing/tedj_work/https-cert.pem.age".publicKeys = [ tedj_work ];
   "syncthing/tedj_work/https-key.pem.age".publicKeys = [ tedj_work ];
 
+  "skic-recovery.age".publicKeys = [ ski_skic ];
+
 }
