@@ -64,7 +64,7 @@ in {
       p7zip
       procps
       python3
-      gtrash # TODO(now): fix on wbus and other permission issues
+      gtrash
       unrar
       unzip
       xz
@@ -1615,9 +1615,8 @@ in {
     shellAliases.rm = "2>&1 echo rm disabled use del; false ";
     shellAliases.del = "gtrash put -- ";
     shellAliases.dels = "gtrash summary ";
-    # TODO(now) gtrash find --cwd --show-size --show-trashpath --reverse -- $@ | fzf --multi --select-1 --exit-0 --preview 'bat --color always "$(echo {} | awk -F"\\t" "{print \$4}")"' | awk -F'\t' '{print $3}'
     shellAliases.undel = "gtrash restore ";
-    shellAliases.deldel = "gtrash rm ";
+    shellAliases.deldel = "gtrash find --rm ";
     shellGlobalAliases.cat = "bat --paging=never ";
     initExtraFirst = lib.mkMerge [
       (lib.mkIf work ''[[ -o interactive && -o login && -z "$WAYLAND_DISPLAY" && "$(tty)" = "/dev/tty1" ]] && exec sway'')
