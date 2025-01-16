@@ -1,4 +1,3 @@
-# TODO(later): obs-studio
 # TODO(later): beets
 # TODO(nixos): live+instal iso
 {

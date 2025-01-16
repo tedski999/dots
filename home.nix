@@ -519,6 +519,11 @@ in {
     config.map-syntax = [ "*.tin:C++" "*.tac:C++" ];
   };
 
+  programs.obs-studio = lib.mkIf (msung || work) {
+    enable = true;
+    plugins = with pkgs; [ obs-studio-plugins.wlrobs ];
+  };
+
   programs.bemenu = lib.mkIf (msung || work) {
     enable = true;
     settings.single-instance = true;
