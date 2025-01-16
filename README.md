@@ -19,6 +19,11 @@ Import agenix key:
 cp /mnt/tedj@work.agenix.key ~/.ssh/
 ```
 
+Clear the way:
+```sh
+rm -r .bashrc .bash_logout .profile .config/user-dirs.* .sudo_as_admin_successful Public Templates
+```
+
 Install nix:
 ```sh
 export NIX_CONFIG=$'use-xdg-base-directories = true\nextra-experimental-features = nix-command flakes'
@@ -40,7 +45,7 @@ Install IT security tools (give helpdesk@ a heads-up): https://intranet.arista.c
 
 Install system packages:
 ```sh
-sudo apt install xdg-desktop-portal-wlr xdg-desktop-portal-gtk libspa-0.2-bluetooth
+sudo apt install xdg-desktop-portal-wlr libspa-0.2-bluetooth
 ```
 
 Add PAM integration for swaylock:
@@ -64,8 +69,8 @@ Connect to corporate Wi-Fi:
 nmcli connection add type wifi con-name ARISTA-Corp ssid ARISTA-Corp -- \
     wifi-sec.key-mgmt wpa-eap 802-1x.eap tls 802-1x.identity tedj \
     802-1x.client-cert $XDG_RUNTIME_DIR/agenix/tedj@arista.com.cer \
-    802-1x.private-key $XDG_RUNTIME_DIR/agenix/tedj@arista.com.pem \
-    802-1x.private-key-password <...>
+    802-1x.private-key $XDG_RUNTIME_DIR/agenix/tedj@arista.com.pem
+nmcli connection edit ARISTA-Corp # set 802-1x.private-key-password, save, quit
 ```
 
 Install arista-ssh-agent: https://docs.google.com/document/d/12-lH_pGsDEyKQnIMy2eERjbW--biAkBGr2cnkeHOMg4/edit#heading=h.gppl0c9scge6 You should also comment out `GSSAPIAuthentication yes` in `/etc/ssh/ssh_config`.
@@ -84,16 +89,8 @@ sudo systemctl stop snapd
 sudo systemctl stop snapd.socket
 sudo apt purge snapd -y
 sudo apt-mark hold snapd
-sudo apt-get purge --auto-remove 'gnome*' 'nvidia-*' 'libnvidia-*' '*-nvidia-*'
+sudo apt-get purge --auto-remove 'gnome*'
 del ~/snap
-sudo systemctl disable gdm
-printf 'blacklist nouveau\noptions nouveau modeset=0\n' | sudo tee /etc/modprobe.d/blacklist-nouveau.conf
-printf '
-ACTION=="add", SUBSYSTEM=="pci", ATTR{vendor}=="0x10de", ATTR{class}=="0x0c0330", ATTR{power/control}="auto", ATTR{remove}="1"
-ACTION=="add", SUBSYSTEM=="pci", ATTR{vendor}=="0x10de", ATTR{class}=="0x0c8000", ATTR{power/control}="auto", ATTR{remove}="1"
-ACTION=="add", SUBSYSTEM=="pci", ATTR{vendor}=="0x10de", ATTR{class}=="0x040300", ATTR{power/control}="auto", ATTR{remove}="1"
-ACTION=="add", SUBSYSTEM=="pci", ATTR{vendor}=="0x10de", ATTR{class}=="0x03[0-9]*", ATTR{power/control}="auto", ATTR{remove}="1"
-' | sudo tee /etc/udev/rules.d/00-remove-nvidia.rules
 ```
 
 `sudo apt-get update && sudo apt-get update` and reboot

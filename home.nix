@@ -1,5 +1,3 @@
-# TODO(next) remove work from work
-
 { pkgs, config, lib, home, inputs, ... }:
 let
   msung = home == 0;
@@ -226,13 +224,14 @@ in {
         esac
       '')
 
+      # TODO(laptop): different eDP-1 settings per device
       (writeShellScriptBin "displayctl" ''
         IFS=$'\n'
         choice="$([ -n "$1" ] && echo $1 || printf "%s\n" auto none work home | bemenu -p "Display" -l 5)"
         [ "$choice" = "auto" ] && case "$(swaymsg -rt get_outputs | jq -r '.[] | .make+" "+.model+" "+.serial' | sort | xargs)" in
-          "AOC 2270W GNKJ1HA001311 AU Optronics 0xD291 Unknown Pixio USA Pixio PXC348C Unknown") choice="home";;
-          "AU Optronics 0xD291 Unknown Lenovo Group Limited P24q-30 V90CP3VM")                   choice="work";;
-          *)                                                                                     choice="none";;
+          "AOC 2270W GNKJ1HA001311 Samsung Display Corp. 0x419F Unknown Pixio USA Pixio PXC348C Unknown") choice="home";;
+          "Lenovo Group Limited P24q-30 V90CP3VM Samsung Display Corp. 0x419F Unknown")                   choice="work";;
+          *)                                                                                              choice="none";;
         esac
         case "$choice" in
           "none") swaymsg \
@@ -240,12 +239,12 @@ in {
             $(printf "output \"%s\" enable, " $(swaymsg -rt get_outputs | jq -r '.[] | .make+" "+.model+" "+.serial')) ;;
           "work") swaymsg \
             output \* disable, \
-            output \"Lenovo Group Limited P24q-30 V90CP3VM\" enable pos 0 0 transform 0 mode 2560x1440@74.780Hz, \
-            output \"AU Optronics 0xD291 Unknown\" enable pos $((2560/2 - 1920/2)) 1440 transform 0 mode 1920x1200@60Hz ;;
+            output \"Lenovo Group Limited P24q-30 V90CP3VM\" enable pos 0 0 transform 0 mode 2560x1440@59.951Hz, \
+            output \"Samsung Display Corp. 0x419F Unknown\" enable pos 320 1440 transform 0 mode 2880x1800@120Hz scale 1 ;;
           "home") swaymsg \
             output \* disable, \
-            output \"Pixio USA Pixio PXC348C Unknown\" enable pos 1080 $((1920/2 - 1440/2)) transform 0 mode 3440x1440@100Hz, \
-            output \"AU Optronics 0xD291 Unknown\" enable pos $((3440/2 - 1920/2 + 1080)) $((1440 + 1920/2 - 1440/2)) transform 0 mode 1920x1200@60Hz, \
+            output \"Pixio USA Pixio PXC348C Unknown\" enable pos TODO TODO transform 0 mode 3440x1440@100Hz, \
+            output \"Samsung Display Corp. 0x419F Unknown\" enable pos TODO TODO transform 0 mode 2880x1800@120Hz scale 1, \
             output \"AOC 2270W GNKJ1HA001311\" enable pos 0 0 transform 270 mode 1920x1080@60Hz ;;
           *) exit 1 ;;
         esac
@@ -487,7 +486,7 @@ in {
     settings.general.live_config_reload = false;
     settings.scrolling = { history = 10000; multiplier = 5; };
     settings.window = { dynamic_padding = true; opacity = 0.85; dimensions = { columns = 120; lines = 40; }; };
-    settings.font = { size = 13.5; normal.family = "Terminess Nerd Font"; };
+    settings.font = { size = 15.0; normal.family = "Terminess Nerd Font"; };
     settings.selection.save_to_clipboard = true;
     settings.keyboard.bindings = [
       { key = "Return"; mods = "Shift|Control"; action = "SpawnNewInstance"; }
@@ -1754,8 +1753,7 @@ in {
         "custom/caffeinated" = { interval = 1; exec = pkgs.writeShellScript "waybar-coffee" ''pidof -q swayidle && echo "" || echo "C"''; };
         "custom/swaytask" = { interval = 1; exec = pkgs.writeShellScript "waybar-swaytask" ''echo "$(cat /tmp/swaytask)"''; };
         bluetooth = { tooltip = false; format = ""; format-connected = "{num_connections}"; };
-        # TODO(waybar): per device cpu config?
-        cpu = { tooltip = false; interval = 1; format = "{icon0}{icon1}{icon2}{icon3}{icon4}{icon5}{icon6}{icon7}{icon8}{icon9}{icon10}{icon11}{icon12}{icon13}{icon14}{icon15}"; format-icons = rampicons; };
+        cpu = { tooltip = false; interval = 1; format = "{icon0}{icon1}{icon2}{icon3}{icon4}{icon5}{icon6}{icon7}{icon8}{icon9}{icon10}{icon11}{icon12}{icon13}"; format-icons = rampicons; }; # TODO(laptop): per device cpu config
         memory = { tooltip = false; interval = 5; format = "{icon}"; format-icons = rampicons; };
         disk = { tooltip = false; states = { warn = 5; }; format = "{used}/{total}"; };
         network = { tooltip = false; interval = 3; max-length = 10; format-wifi = "{essid}"; format-linked = "linked"; format-ethernet = "wired"; format-disconnected = "offline"; };
@@ -2061,7 +2059,7 @@ in {
     enable = true;
     theme = { package = pkgs.materia-theme; name = "Materia-dark"; };
     iconTheme = { package = pkgs.kdePackages.breeze-icons; name = "breeze-dark"; };
-    # TODO(next) cursorTheme = { package = pkgs.; name = ""; };
+    cursorTheme = { package = pkgs.vanilla-dmz; name = "Vanilla-DMZ"; };
   };
 
   xdg = lib.mkIf (!wbus) {
