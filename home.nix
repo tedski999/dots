@@ -553,6 +553,49 @@ in {
     settings.fn = "Terminess Nerd Font";
   };
 
+  # TODO(borg) encryption key?
+  # TODO(borg) checks needed?
+  # TODO(borg) one-way syncthing
+  # TODO(borg) notifications on failure?
+  # mkdir -p .local/backups && borgmatic init -e repokey
+  programs.borgmatic = lib.mkIf (work || msung || septs) {
+    enable = true;
+    backups = lib.mkMerge [
+
+      # backup-septs: /home Documents Pictures Videos Music /srv
+
+      (lib.mkIf work {
+        work = {
+          retention = { keepHourly = 2; keepDaily = 1; keepWeekly = 0; };
+          location.excludeHomeManagerSymlinks = true;
+          location.repositories = [ ".local/backups/work" ];
+          location.patterns = [ "P fm" "R /etc" "- etc" "R /home/tedj" "- home/tedj/.cache" "- home/tedj/.local/backups" "- home/tedj/.local/state" "- home/tedj/Documents" "- home/tedj/Work" ];
+          storage.encryptionPasscommand = "cat /home/tedj/.ssh/tedj@work.agenix.key";
+          #consistency.checks = [ { name = "repository"; frequency = "2 weeks"; } { name = "archives"; frequency = "4 weeks"; } { name = "data"; frequency = "6 weeks"; } { name = "extract"; frequency = "6 weeks"; } ];
+        };
+        work-local = {
+          retention = { keepHourly = 2; keepDaily = 1; keepMonthly = 0; };
+          location.excludeHomeManagerSymlinks = true;
+          location.repositories = [ ".local/backups/work-local" ];
+          location.patterns = [ "P fm" "R /etc" "R /home/tedj" "- home/tedj/.cache/" "- home/tedj/.local/backups/" "- home/tedj/.local/state/" "- home/tedj/Documents/" "- home/tedj/Work/" ];
+          storage.encryptionPasscommand = "cat /home/tedj/.ssh/tedj@work.agenix.key";
+          #consistency.checks = [ { name = "repository"; frequency = "2 weeks"; } { name = "archives"; frequency = "4 weeks"; } { name = "data"; frequency = "6 weeks"; } { name = "extract"; frequency = "6 weeks"; } ];
+        };
+      })
+
+      # backup-msung: /home excluding shared
+
+      # backup-msungie:
+
+      # backup-skic:
+    ];
+  };
+
+  services.borgmatic = lib.mkIf (work || msung || septs) {
+    enable = true;
+    frequency = "*:0/30";
+  };
+
   programs.btop = {
     enable = true;
     settings.theme_background = false;
