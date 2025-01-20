@@ -267,9 +267,6 @@ in {
       '')
 
       (writeShellScriptBin "bmbwd" ''
-        # TODO(later): extend to allow creation of items and choosing to copy other fields
-        # bw get template item | jq ".name=\"My Login Item\" | .login=$(bw get template item.login | jq '.username="jdoe" | .password="myp@ssword123"')" | bw encode | bw create item
-
         bmbw() {
           [ -z "$BW_SESSION" ] \
           && export BW_SESSION="$(: | bemenu -x indicator -l 0 -p 'Bitwarden Password:' | tr -d '\n' | base64 | bw unlock --raw)" \
@@ -281,12 +278,14 @@ in {
           && notify-send -i lock "Bitwarden" -t 5000 "Updating items..." \
           && items="$(bw list items)"
 
-          #echo "$items" | jq -r 'range(length) as $i | .[$i] | select(.type==1) | ($i | tostring)+" "+.name+" <"+.login.username+">"' | bemenu | cut -d' ' -f1
-          echo "$items" | jq -r '.[] | select(.type==1) | .name+" <"+.login.username+"> "+.login.password' | bemenu -p 'Bitwarden' | rev | cut -d' ' -f1 | rev | wl-copy --trim-newline
+          echo "$items" | jq -r '.[] |
+            if .type==1 then .name+" <"+.login.username+">	"+.login.password
+            elif .type==2 then .name+"	"+.notes
+            elif .type==3 then .name+" "+.card.brand+" <"+.card.cardholderName+" "+.card.expMonth+"/"+.card.expYear+" "+.card.code+">	"+(.card.number | gsub(" "; ""))
+            else . end' | bemenu -p 'Bitwarden' | cut -d'	' -f2- | wl-copy --trim-newline
         }
 
         trap "bmbw" USR1
-        # TODO(later): doesnt work sometimes
         trap "unset items && bmbw" USR2
         trap "unset items BW_SESSION && bmbw" TERM
         while true; do sleep infinity & wait; done
