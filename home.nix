@@ -40,6 +40,7 @@ in {
       TERMINAL = "alacritty";
       LAUNCHER = "bemenu-run";
       QT_QPA_PLATFORM = "wayland";
+      _JAVA_AWT_WM_NONREPARENTING = 1;
     })
 
     (lib.mkIf msung { BROWSER = "firefox"; MOZ_ENABLE_WAYLAND = 1; })
@@ -301,6 +302,7 @@ in {
     ])
 
     (lib.mkIf work [
+      zulu8
       openconnect
       (writeShellScriptBin "avpn" ''
         sudo openconnect \
@@ -699,7 +701,7 @@ in {
 
   programs.go = lib.mkIf work {
     enable = true;
-    goPath = "${config.xdg.dataHome}/go";
+    goPath = ".local/share/go";
   };
 
   programs.gpg = lib.mkIf (!wbus) {
@@ -1808,7 +1810,7 @@ in {
         "custom/caffeinated" = { interval = 1; exec = pkgs.writeShellScript "waybar-coffee" ''pidof -q swayidle && echo "" || echo "C"''; };
         "custom/swaytask" = { interval = 1; exec = pkgs.writeShellScript "waybar-swaytask" ''echo "$(cat /tmp/swaytask)"''; };
         bluetooth = { tooltip = false; format = ""; format-connected = "{num_connections}"; };
-        cpu = { tooltip = false; interval = 1; format = "{icon0}{icon1}{icon2}{icon3}{icon4}{icon5}{icon6}{icon7}{icon8}{icon9}{icon10}{icon11}{icon12}{icon13}"; format-icons = rampicons; }; # TODO(laptop): per device cpu config
+        cpu = { tooltip = false; interval = 1; format = if msung then "TODO" else "{icon0}{icon1}{icon2}{icon3}{icon4}{icon5}{icon6}{icon7}{icon8}{icon9}{icon10}{icon11}{icon12}{icon13}"; format-icons = rampicons; };
         memory = { tooltip = false; interval = 5; format = "{icon}"; format-icons = rampicons; };
         disk = { tooltip = false; states = { warn = 5; }; format = "{used}/{total}"; };
         network = { tooltip = false; interval = 3; max-length = 10; format-wifi = "{essid}"; format-linked = "linked"; format-ethernet = "wired"; format-disconnected = "offline"; };
