@@ -327,27 +327,16 @@ in {
       delta
       (writeShellScriptBin "ahome" ''
         [ "$(hostname | cut -d- -f-2)" = "tedj-home" ] || exit 1
-        export NIX_CONFIG=$'use-xdg-base-directories = true\nextra-experimental-features = nix-command flakes'
         for n in $(a4c ps -N); do
           echo; echo "Rehoming $n..."
-          a4c shell $n sh -c '
-            export NIX_CONFIG="use-xdg-base-directories = true
-        extra-experimental-features = nix-command flakes"
-            sh <(curl -L https://nixos.org/nix/install) --no-daemon --yes
-            . ~/.local/state/nix/profile/etc/profile.d/nix.sh
-            nix-env --set-flag priority 0 nix
-            rm -f ~/.local/state/nix/profiles/home-manager* ~/.local/state/home-manager/gcroots/current-home
-            nix run home-manager -- switch --flake github:tedski999/dots#tedj@wbus --refresh
-            a ws yum install -y ArTacLSP'
+          a4c shell $n sh -c "
+            export NIX_CONFIG=$'use-xdg-base-directories = true\nextra-experimental-features = nix-command flakes'
+            /nix/store/????????????????????????????????-nix-2.??.?/bin/nix run home-manager -- switch --flake github:tedski999/dots#tedj@wbus --refresh"
         done
         echo; echo "Rehoming bus.."
-        sh <(curl -L https://nixos.org/nix/install) --no-daemon --yes
-        . ~/.local/state/nix/profile/etc/profile.d/nix.sh
-        nix-env --set-flag priority 0 nix
-        rm -f ~/.local/state/nix/profiles/home-manager* ~/.local/state/home-manager/gcroots/current-home
-        nix run home-manager -- switch --flake github:tedski999/dots#tedj@wbus --refresh
+        export NIX_CONFIG=$'use-xdg-base-directories = true\nextra-experimental-features = nix-command flakes'
+        /nix/store/????????????????????????????????-nix-2.??.?/bin/nix run home-manager -- switch --flake github:tedski999/dots#tedj@wbus --refresh
         unset NIX_CONFIG
-        a ws yum install -y ArTacLSP
       '')
       (writeShellScriptBin "ag" ''
         if   [ "$1" = "c"  ]; then shift; a git commit $@
@@ -445,6 +434,15 @@ in {
       ".local/bin/git-a".source = config.lib.file.mkOutOfStoreSymlink (pkgs.writeShellScriptBin "git-a" ''
         git add $@
       '') + "/bin/git-a";
+      ".a4c/create".source = pkgs.writeShellScriptBin "git-a" ''
+        a ws yum install -y ArTacLSP
+        export NIX_CONFIG="use-xdg-base-directories = true
+        extra-experimental-features = nix-command flakes"
+        sh <(curl -L https://nixos.org/nix/install) --no-daemon --yes
+        . ~/.local/state/nix/profile/etc/profile.d/nix.sh
+        nix run home-manager -- switch --flake github:tedski999/dots#tedj@wbus --refresh
+        unset NIX_CONFIG
+      '';
     })
 
     (lib.mkIf work {
