@@ -1231,7 +1231,10 @@ in {
 
         local lspconfig = require("lspconfig")
         lspconfig.pyright.setup({})
-        lspconfig.clangd.setup({})
+        lspconfig.clangd.setup({
+          on_attach = function(client, bufnr) client.server_capabilities.semanticTokensProvider = nil end,
+        })
+
         -- TODO(lsp) moar
 
         require("nvim-surround").setup({ move_cursor = false })
@@ -1388,6 +1391,7 @@ in {
             callback = function() vim.lsp.start({ name = "tacc", cmd = { "/usr/bin/artaclsp" }, cmd_args = { "-I", "/bld/" }, root_dir = "/src" }) end
           })
           lspconfig.clangd.setup({
+             on_attach = function(client, bufnr) client.server_capabilities.semanticTokensProvider = nil end,
              init_options = { compilationDatabasePath = "/src" },
              root_dir = "/src",
           })
