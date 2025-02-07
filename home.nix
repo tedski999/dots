@@ -485,6 +485,7 @@ in {
   programs.alacritty = lib.mkIf (msung || work) {
     enable = true;
     settings.general.live_config_reload = false;
+    settings.terminal.osc52 = "CopyPaste";
     settings.scrolling = { history = 10000; multiplier = 5; };
     settings.window = { dynamic_padding = true; opacity = 0.85; dimensions = { columns = 120; lines = 40; }; };
     settings.font = { size = 15.0; normal.family = "Terminess Nerd Font"; };
@@ -785,7 +786,7 @@ in {
         -- Better signify highlighting
         vim.g.signify_number_highlight = 1
 
-        -- Use OSC-52 to copy
+        -- Use OSC-52 to copy through terminal+mosh+tmux
         vim.g.clipboard = {
           name = "OSC 52",
           copy = {
@@ -793,8 +794,8 @@ in {
             ["*"] = require("vim.ui.clipboard.osc52").copy("*"),
           },
           paste = {
-            ["+"] = function() return { vim.fn.split(vim.fn.getreg(""), "\n"), vim.fn.getregtype("") } end,
-            ["*"] = function() return { vim.fn.split(vim.fn.getreg(""), "\n"), vim.fn.getregtype("") } end,
+            ["+"] = require("vim.ui.clipboard.osc52").paste("+"),
+            ["*"] = require("vim.ui.clipboard.osc52").paste("*"),
           },
         }
 
