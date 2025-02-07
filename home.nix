@@ -50,6 +50,7 @@ in {
     [
       nix
 
+      clang-tools
       coreutils
       curl
       diffutils
@@ -57,26 +58,34 @@ in {
       gawk
       gnused
       gnutar
+      gtrash
       gzip
       iperf
       jq
       nmap
       p7zip
       procps
-      python3
-      gtrash
+      pyright
       unrar
       unzip
       xz
       zip
       inputs.agenix.packages.${system}.default
+
       (writeShellScriptBin "0x0" "curl -F\"file=@$1\" https://0x0.st;")
+
+      (python3.withPackages (ppkgs: with ppkgs; [ numpy ]))
+      #(python3.withPackages (ppkgs: with ppkgs; lib.mkMerge [
+      #  [ numpy ]
+      #  (lib.mkIf (msung || work) [ pillow matplotlib scipy ])
+      #]))
     ]
 
     (lib.mkIf (msung || work) [
       acpi
       bitwarden-cli
       brightnessctl
+      gimp
       grim
       libnotify
       nerd-fonts.terminess-ttf
