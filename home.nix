@@ -35,16 +35,15 @@ in {
       PYTHONSTARTUP = "${config.xdg.configHome}/python/pythonrc";
       GTRASH_ONLY_HOME_TRASH = "true";
     }
-
     (lib.mkIf (msung || work) {
       TERMINAL = "alacritty";
       LAUNCHER = "bemenu-run";
       QT_QPA_PLATFORM = "wayland";
       _JAVA_AWT_WM_NONREPARENTING = 1;
     })
-
     (lib.mkIf msung { BROWSER = "firefox"; MOZ_ENABLE_WAYLAND = 1; })
     (lib.mkIf work { BROWSER = "chromium"; })
+    (lib.mkIf wbus { AMAKE_EXPORT_COMPILE_COMMANDS = 1; })
   ];
 
   home.packages = with pkgs; lib.mkMerge [
@@ -329,7 +328,8 @@ in {
             . ~/.local/state/nix/profile/etc/profile.d/nix.sh
             nix-env --set-flag priority 0 nix
             rm -f ~/.local/state/nix/profiles/home-manager* ~/.local/state/home-manager/gcroots/current-home
-            nix run home-manager -- switch --flake github:tedski999/dots#tedj@wbus --refresh'
+            nix run home-manager -- switch --flake github:tedski999/dots#tedj@wbus --refresh
+            a ws yum install -y ArTacLSP'
         done
         echo; echo "Rehoming bus.."
         sh <(curl -L https://nixos.org/nix/install) --no-daemon --yes
@@ -338,6 +338,7 @@ in {
         rm -f ~/.local/state/nix/profiles/home-manager* ~/.local/state/home-manager/gcroots/current-home
         nix run home-manager -- switch --flake github:tedski999/dots#tedj@wbus --refresh
         unset NIX_CONFIG
+        a ws yum install -y ArTacLSP
       '')
       (writeShellScriptBin "ag" ''
         if   [ "$1" = "c"  ]; then shift; a git commit $@
@@ -750,6 +751,7 @@ in {
       mini-nvim
       neogit
       nightfox-nvim
+      nvim-lspconfig
       nvim-surround
       satellite-nvim
       vim-rsi
@@ -1219,6 +1221,11 @@ in {
           },
         })
 
+        local lspconfig = require("lspconfig")
+        lspconfig.pyright.setup({})
+        lspconfig.clangd.setup({})
+        -- TODO(lsp) moar
+
         require("nvim-surround").setup({ move_cursor = false })
 
         require("mini.align").setup({})
@@ -1266,18 +1273,13 @@ in {
         -- Terminal shortcuts
         vim.keymap.set("n", "<leader><return>", "<cmd>belowright split | terminal<cr>")
         -- Open notes
+        -- TODO(notes): tags? links? but mobile/non-vim
         vim.keymap.set("n", "<leader>n", "<cmd>lcd ~/Documents/notes | edit todo.txt<cr>")
         vim.keymap.set("n", "<leader>N", "<cmd>lcd ~/Documents/notes | edit `=strftime('./journal/%Y/%m/%d.md', strptime('%a %W %y', strftime('Mon %W %y')))` | call mkdir(expand('%:h'), 'p')<cr>")
-        -- LSP
-        vim.keymap.set("n", "<leader><leader>", "<cmd>lua vim.lsp.buf.hover()<cr>")
-        vim.keymap.set("n", "<leader>k",        "<cmd>lua vim.lsp.buf.code_action()<cr>")
-        vim.keymap.set("n", "]e",               "<cmd>lua vim.diagnostic.goto_next()<cr>")
-        vim.keymap.set("n", "[e",               "<cmd>lua vim.diagnostic.goto_prev()<cr>")
-        vim.keymap.set("n", "<leader>e",        "<cmd>lua vim.diagnostic.open_float()<cr>")
-        vim.keymap.set("n", "<leader>E",        "<cmd>lua vim.diagnostic.setqflist()<cr>")
-        vim.keymap.set("n", "<leader>d",        "<cmd>lua vim.lsp.buf.definition()<cr>")
-        vim.keymap.set("n", "<leader>t",        "<cmd>lua vim.lsp.buf.type_definition()<cr>")
-        vim.keymap.set("n", "<leader>r",        "<cmd>lua vim.lsp.buf.references()<cr>")
+        -- Diagnostics
+        vim.keymap.set("n", "]e",        "<cmd>lua vim.diagnostic.goto_next()<cr>")
+        vim.keymap.set("n", "[e",        "<cmd>lua vim.diagnostic.goto_prev()<cr>")
+        vim.keymap.set("n", "<leader>e", "<cmd>lua vim.diagnostic.open_float()<cr>")
         -- Buffers
         vim.keymap.set("n", "[b", "<cmd>bprevious<cr>")
         vim.keymap.set("n", "]b", "<cmd>bnext<cr>")
@@ -1344,9 +1346,10 @@ in {
         vim.keymap.set("n", "<leader>K", "<cmd>exe 'FzfLua manpages sections=ALL'<cr>")
         vim.keymap.set("n", "<leader>E", "<cmd>exe 'FzfLua lsp_workspace_diagnostics'<cr>")
         vim.keymap.set("n", "<leader>d", "<cmd>exe 'FzfLua lsp_definitions'<cr>")
-        vim.keymap.set("n", "<leader>D", "<cmd>exe 'FzfLua lsp_type_definitions'<cr>")
-        vim.keymap.set("n", "<leader>r", "<cmd>exe 'FzfLua lsp_finder'<cr>")
-        vim.keymap.set("n", "<leader>R", "<cmd>exe 'FzfLua lsp_document_symbols'<cr>")
+        vim.keymap.set("n", "<leader>D", "<cmd>exe 'FzfLua lsp_typedefs'<cr>")
+        vim.keymap.set("n", "<leader>r", "<cmd>exe 'FzfLua lsp_references'<cr>")
+        vim.keymap.set("n", "<leader>R", "<cmd>exe 'FzfLua lsp_finder'<cr>")
+        vim.keymap.set("n", "<leader><leader>", "<cmd>exe 'FzfLua lsp_document_symbols'<cr>")
         vim.keymap.set("n", "<leader>c", "<cmd>exe 'FzfLua quickfix'<cr>")
         vim.keymap.set("n", "<leader>C", "<cmd>exe 'FzfLua quickfix_stack'<cr>")
         vim.keymap.set("n", "<leader>a", function() local hits, more = get_altfiles() if #hits==1 then vim.cmd("edit "..hits[1]) else fzf_altfiles(hits, more) end end)
@@ -1371,26 +1374,21 @@ in {
             augroup vimrc | autocmd BufNewFile,BufRead *.tac setlocal indentexpr=TaccIndentOverrides() | augroup NONE
           ]])
           vim.api.nvim_create_autocmd("FileType", { pattern = "tac", command = "setlocal commentstring=//\\ %s" })
-          -- Agrok
-          vim.api.nvim_create_user_command("Agrok",  function(p) fzf.fzf_exec("a grok -em 99 "..p.args.." | grep '^/src/.*'",                                                 { actions = fzf.config.globals.actions.files, previewer = "builtin" }) end, { nargs = 1 })
-          vim.api.nvim_create_user_command("Agrokp", function(p) fzf.fzf_exec("a grok -em 99 -f "..(fullpath():match("^/src/.-/") or "/").." "..p.args.." | grep '^/src/.*'", { actions = fzf.config.globals.actions.files, previewer = "builtin" }) end, { nargs = 1 })
-          -- Agid
-          vim.api.nvim_create_user_command("Amkid", "belowright split | terminal echo 'Generating ID file...' && a ws mkid", {})
-          vim.api.nvim_create_user_command("Agid",  function(p) fzf.fzf_exec("a ws gid -cq "..p.args,                                                 { actions = fzf.config.globals.actions.files, previewer = "builtin" }) end, { nargs = 1 })
-          vim.api.nvim_create_user_command("Agidp", function(p) fzf.fzf_exec("a ws gid -cqp "..(fullpath():match("^/src/(.-)/") or "/").." "..p.args, { actions = fzf.config.globals.actions.files, previewer = "builtin" }) end, { nargs = 1 })
-          vim.keymap.set("n", "<leader>r", "<cmd>exec 'Agidp    '.expand('<cword>')<cr>", { silent = true })
-          vim.keymap.set("n", "<leader>R", "<cmd>exec 'Agid     '.expand('<cword>')<cr>", { silent = true })
-          vim.keymap.set("n", "<leader>d", "<cmd>exec 'Agidp -D '.expand('<cword>')<cr>", { silent = true })
-          vim.keymap.set("n", "<leader>D", "<cmd>exec 'Agid  -D '.expand('<cword>')<cr>", { silent = true })
-          if not vim.loop.fs_stat("/src/ID") then
-            vim.api.nvim_echo({ { "Warn: /src/ID not found! Run :Amkid", "ErrorMsg" } }, false, {})
-          end
+          -- LSP
+          vim.api.nvim_create_autocmd({ "BufEnter", "BufWinEnter" }, {
+            pattern = { "*.tac" },
+            callback = function() vim.lsp.start({ name = "tacc", cmd = { "/usr/bin/artaclsp" }, cmd_args = { "-I", "/bld/" }, root_dir = "/src" }) end
+          })
+          lspconfig.clangd.setup({
+             init_options = { compilationDatabasePath = "/src" },
+             root_dir = "/src",
+          })
           -- Gitarband
           function fzf_gitarband()
             fzf.fzf_exec(vim.fn.readfile("/src/.repo/project.list"), {
               prompt = "Package>",
               fzf_opts = { ["--no-multi"] = true },
-              actions = { ["default"] = function(sel) fzf.git_status({ cwd = '/src/'..sel[1] }) end }
+              actions = { ["default"] = function(sel) fzf.git_status({ cwd = "/src/"..sel[1] }) end }
             })
           end
           vim.keymap.set("n", "<leader>gG", fzf_gitarband)
