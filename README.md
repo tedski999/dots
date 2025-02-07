@@ -35,6 +35,11 @@ nix run home-manager -- switch --flake github:tedski999/dots#tedj@work --refresh
 unset NIX_CONFIG
 ```
 
+Change shell:
+```sh
+sudo chsh tedj -s /home/tedj/.local/state/nix/profile/bin/zsh
+```
+
 Disable `sudo` password for tedj, admin_flag, env_reset and secure_path:
 ```sh
 printf 'Defaults !admin_flag\ntedj ALL=(ALL) NOPASSWD: ALL\n' | sudo tee /etc/sudoers.d/qol

@@ -507,11 +507,9 @@ in {
     settings.colors.selection = { background = "#fffacd"; text = "#000000"; };
   };
 
-  programs.bash = {
+  programs.bash = lib.mkIf wbus {
     enable = true;
-    initExtra = if wbus
-      then ''shopt -q login_shell && [ -z "$ARTEST_RANDSEED" ] && { [ -z "$TMUX" ] && { [ -d /src/EngTeam ] && cd /src; exec ${pkgs.tmux}/bin/tmux new; } || exec ${pkgs.zsh}/bin/zsh "$@"; }''
-      else ''shopt -q login_shell && exec ${pkgs.zsh}/bin/zsh --login $@ || exec ${pkgs.zsh}/bin/zsh "$@"'';
+    initExtra = ''shopt -q login_shell && [ -z "$ARTEST_RANDSEED" ] && { [ -z "$TMUX" ] && { [ -d /src/EngTeam ] && cd /src; exec ${pkgs.tmux}/bin/tmux new; } || exec ${pkgs.zsh}/bin/zsh "$@"; }'';
   };
 
   programs.bat = {
