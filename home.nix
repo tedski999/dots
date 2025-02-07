@@ -326,17 +326,12 @@ in {
     (lib.mkIf wbus [
       delta
       (writeShellScriptBin "ahome" ''
-        [ "$(hostname | cut -d- -f-2)" = "tedj-home" ] || exit 1
-        for n in $(a4c ps -N); do
-          echo; echo "Rehoming $n..."
-          a4c shell $n sh -c "
-            export NIX_CONFIG=$'use-xdg-base-directories = true\nextra-experimental-features = nix-command flakes'
-            /nix/store/????????????????????????????????-nix-2.??.?/bin/nix run home-manager -- switch --flake github:tedski999/dots#tedj@wbus --refresh"
+        home-manager switch --flake github:tedski999/dots#tedj@wbus --refresh
+        # nix-collect-garbage -d
+        for n in home-gksh7 $(a4c ps -N); do
+          echo; echo "Syncing $n"
+          rsync -azh --stats /nix tedj-''${n//\./-}:/
         done
-        echo; echo "Rehoming bus.."
-        export NIX_CONFIG=$'use-xdg-base-directories = true\nextra-experimental-features = nix-command flakes'
-        /nix/store/????????????????????????????????-nix-2.??.?/bin/nix run home-manager -- switch --flake github:tedski999/dots#tedj@wbus --refresh
-        unset NIX_CONFIG
       '')
       (writeShellScriptBin "ag" ''
         if   [ "$1" = "c"  ]; then shift; a git commit $@
@@ -434,15 +429,9 @@ in {
       ".local/bin/git-a".source = config.lib.file.mkOutOfStoreSymlink (pkgs.writeShellScriptBin "git-a" ''
         git add $@
       '') + "/bin/git-a";
-      ".a4c/create".source = pkgs.writeShellScriptBin "git-a" ''
+      ".a4c/create".source = config.lib.file.mkOutOfStoreSymlink (pkgs.writeShellScriptBin "a4c-create" ''
         a ws yum install -y ArTacLSP
-        export NIX_CONFIG="use-xdg-base-directories = true
-        extra-experimental-features = nix-command flakes"
-        sh <(curl -L https://nixos.org/nix/install) --no-daemon --yes
-        . ~/.local/state/nix/profile/etc/profile.d/nix.sh
-        nix run home-manager -- switch --flake github:tedski999/dots#tedj@wbus --refresh
-        unset NIX_CONFIG
-      '';
+      '') + "/bin/a4c-create";
     })
 
     (lib.mkIf work {
