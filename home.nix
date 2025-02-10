@@ -1705,12 +1705,9 @@ in {
   programs.swaylock = lib.mkIf (msung || work) {
     enable = true;
     settings.ignore-empty-password = true;
-    settings.image = "eDP-1:${./images/swaylock.png}";
-    settings.scaling = "center";
     settings.color = "000000";
     settings.indicator-radius = 25;
     settings.indicator-thickness = 8;
-    settings.indicator-y-position = 600;
     settings.key-hl-color = "ffffff";
     settings.bs-hl-color = "000000";
     settings.separator-color = "000000";
