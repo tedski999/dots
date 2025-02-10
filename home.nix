@@ -742,15 +742,14 @@ in {
     vimdiffAlias = true;
     plugins = with pkgs.vimPlugins; [
       fzf-lua
+      gitsigns-nvim
       lualine-nvim
       mini-nvim
-      neogit
       nightfox-nvim
       nvim-lspconfig
       nvim-surround
       satellite-nvim
       vim-rsi
-      vim-signify
     ];
     extraLuaConfig = lib.mkMerge [
       (lib.mkIf (work || wbus) ''
@@ -777,22 +776,6 @@ in {
         vim.g.loaded_netrw = 1
         vim.g.loaded_netrwPlugin = 1
 
-        -- Better signify highlighting
-        vim.g.signify_number_highlight = 1
-
-        -- Use OSC-52 to copy through terminal+mosh+tmux
-        vim.g.clipboard = {
-          name = "OSC 52",
-          copy = {
-            ["+"] = require("vim.ui.clipboard.osc52").copy("+"),
-            ["*"] = require("vim.ui.clipboard.osc52").copy("*"),
-          },
-          paste = {
-            ["+"] = require("vim.ui.clipboard.osc52").paste("+"),
-            ["*"] = require("vim.ui.clipboard.osc52").paste("*"),
-          },
-        }
-
         -- OPTIONS --
 
         vim.opt.title = true                                   -- Update window title
@@ -806,7 +789,7 @@ in {
         vim.opt.virtualedit = "onemore"                        -- Allow cursor to extend one character past the end of the line
         vim.opt.grepprg = "rg --vimgrep "                      -- Use ripgrep for grepping
         vim.opt.number = true                                  -- Enable line numbers...
-        vim.opt.relativenumber = false                         -- ...and not relative line numbers
+        vim.opt.relativenumber = true                         -- ...and relative line numbers
         vim.opt.ruler = false                                  -- No need to show line/column number with lightline
         vim.opt.showmode = false                               -- No need to show current mode with lightline
         vim.opt.scrolloff = 3                                  -- Keep lines above/below the cursor when scrolling
@@ -1093,7 +1076,7 @@ in {
           options = {
             dim_inactive = true,
             module_default = false,
-            modules = { ["mini"] = true, ["signify"] = true }
+            modules = { ["mini"] = true, ["gitsigns"] = true, ["native_lsp"] = true }
           },
           palettes = {
             all = {
@@ -1176,46 +1159,6 @@ in {
           }
         })
 
-        require("neogit").setup({
-          disable_hint = true,
-          graph_style = "unicode",
-          kind = "split",
-          commit_editor = { kind = "split" },
-          commit_select_view = { kind = "tab" },
-          commit_view = { kind = "split" },
-          log_view = { kind = "split" },
-          rebase_editor = { kind = "split" },
-          reflog_view = { kind = "split" },
-          merge_editor = { kind = "split" },
-          tag_editor = { kind = "split" },
-          preview_buffer = { kind = "split" },
-          popup = { kind = "split" },
-          integrations = { fzf_lua = true },
-          use_default_keymaps = false,
-          -- TODO(later): learn neogit
-          mappings = {
-            commit_editor = {
-              ["q"] = "Close",
-            },
-            commit_editor_I = {
-            },
-            rebase_editor = {
-            },
-            rebase_editor_I = {
-            },
-            finder = {
-            },
-            popup = {
-              ["?"] = "HelpPopup",
-            },
-            status = {
-              ["k"] = "MoveUp",
-              ["j"] = "MoveDown",
-              ["q"] = "Close",
-            },
-          },
-        })
-
         local lspconfig = require("lspconfig")
         lspconfig.pyright.setup({})
         lspconfig.clangd.setup({
@@ -1263,6 +1206,13 @@ in {
           }
         })
 
+        require("gitsigns").setup({
+          signs_staged_enable = true,
+          signcolumn = false,
+          numhl = true,
+          preview_config = { border = "none", row = 1, col = 1 },
+        })
+
         -- KEYBINDINGS --
 
         vim.keymap.set("n", "<leader>", "")
@@ -1305,14 +1255,21 @@ in {
         vim.keymap.set("n", "yoz", "<cmd>set spell! spell?<cr>")
         vim.keymap.set("n", "yod", "<cmd>if &diff | diffoff | else | diffthis | endif<cr>")
         vim.keymap.set("n", "yos", function() if next(vim.api.nvim_get_autocmds({ group = "satellite" })) then vim.cmd("SatelliteDisable") else vim.cmd("SatelliteEnable") end end)
-        -- Signify
-        vim.keymap.set("n", "[d", "<plug>(signify-prev-hunk)")
-        vim.keymap.set("n", "]d", "<plug>(signify-next-hunk)")
-        vim.keymap.set("n", "[D", "9999<plug>(signify-prev-hunk)")
-        vim.keymap.set("n", "]D", "9999<plug>(signify-next-hunk)")
-        vim.keymap.set("n", "<leader>gd", "<cmd>SignifyHunkDiff<cr>")
-        vim.keymap.set("n", "<leader>gD", "<cmd>SignifyDiff!<cr>")
-        vim.keymap.set("n", "<leader>gr", "<cmd>SignifyHunkUndo<cr>")
+        -- Git
+        vim.keymap.set("n", "[d", "<cmd>Gitsigns nav_hunk prev target=all wrap=false<cr>")
+        vim.keymap.set("n", "]d", "<cmd>Gitsigns nav_hunk next target=all wrap=false<cr>")
+        vim.keymap.set("n", "[D", "<cmd>Gitsigns nav_hunk first target=all<cr>")
+        vim.keymap.set("n", "]D", "<cmd>Gitsigns nav_hunk last target=all<cr>")
+        vim.keymap.set("v", "ih", "<cmd>Gitsigns select_hunk<cr>")
+        vim.keymap.set("v", "ah", "<cmd>Gitsigns select_hunk<cr>")
+        vim.keymap.set({"n","v"}, "<leader>ga", "<cmd>Gitsigns stage_hunk<cr>")
+        vim.keymap.set("n",       "<leader>gA", "<cmd>Gitsigns stage_buffer<cr>")
+        vim.keymap.set({"n","v"}, "<leader>gr", "<cmd>Gitsigns reset_hunk<cr>")
+        vim.keymap.set("n",       "<leader>gR", "<cmd>Gitsigns reset_buffer<cr>")
+        vim.keymap.set("n",       "<leader>gb", "<cmd>Gitsigns blame_line<cr>")
+        vim.keymap.set("n",       "<leader>gB", "<cmd>Gitsigns blame<cr>")
+        vim.keymap.set("n",       "<leader>gd", "<cmd>Gitsigns preview_hunk<cr>")
+        vim.keymap.set("n",       "<leader>gD", "<cmd>Gitsigns toggle_deleted<cr>")
         -- Fzf
         vim.keymap.set("n", "<leader><bs>", "<cmd>FzfLua resume<cr>")
         vim.keymap.set("n", "<leader>f", "<cmd>exe 'FzfLua files hidden=true cwd='.expand('%:p:h')<cr>")
@@ -1337,7 +1294,6 @@ in {
         vim.keymap.set("n", "<leader>gF", "<cmd>exe 'FzfLua git_files'<cr>")
         vim.keymap.set("n", "<leader>gl", "<cmd>exe 'FzfLua git_bcommits'<cr>")
         vim.keymap.set("n", "<leader>gL", "<cmd>exe 'FzfLua git_commits'<cr>")
-        vim.keymap.set("n", "<leader>gb", "<cmd>exe 'FzfLua git_branches'<cr>")
         vim.keymap.set("n", "<leader>gt", "<cmd>exe 'FzfLua git_tags'<cr>")
         vim.keymap.set("n", "<leader>gs", "<cmd>exe 'FzfLua git_stash'<cr>")
         vim.keymap.set("n", "<leader>k", "<cmd>exe 'FzfLua helptags'<cr>")
@@ -1364,6 +1320,19 @@ in {
           vim.opt.tabstop = 8
           vim.opt.shiftwidth = 3
           vim.opt.colorcolumn = "86"
+          -- Use OSC-52 to copy through terminal+mosh+tmux
+          -- TODO(nvim): clipboard length
+          vim.g.clipboard = {
+            name = "OSC-52",
+            copy = {
+              ["+"] = require("vim.ui.clipboard.osc52").copy("+"),
+              ["*"] = require("vim.ui.clipboard.osc52").copy("*"),
+            },
+            paste = {
+              ["+"] = require("vim.ui.clipboard.osc52").paste("+"),
+              ["*"] = require("vim.ui.clipboard.osc52").paste("*"),
+            },
+          }
           -- Tacc
           vim.cmd([[
             function! TaccIndentOverrides()
