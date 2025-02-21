@@ -313,14 +313,8 @@ in {
     (lib.mkIf work [
       zulu8
       openconnect
-      (writeShellScriptBin "avpn" ''
-        sudo openconnect \
-          --protocol=gp ''${1:-gp-ie.arista.com} \
-          -u tedj \
-          -c "$XDG_RUNTIME_DIR/agenix/tedj@arista.com.crt" \
-          -k "$XDG_RUNTIME_DIR/agenix/tedj@arista.com.pem"
-      '')
-      (writeShellScriptBin "ash" ''host="''${1:+tedj-$1}"; mosh --predict=always --predict-overwrite --experimental-remote-ip=remote "''${host:-bus-home}"'')
+      (writeShellScriptBin "avpn" ''sudo openconnect --protocol=gp ''${1:-gp-ie.arista.com} -u tedj -c "$XDG_RUNTIME_DIR/agenix/tedj@arista.com.crt" -k "$XDG_RUNTIME_DIR/agenix/tedj@arista.com.pem"'')
+      (writeShellScriptBin "ash" ''host="''${1:+tedj-$1}"; host=''${host//[._]/-}; mosh --predict=always --predict-overwrite --experimental-remote-ip=remote "''${host:-bus-home}"'')
       (writeShellScriptBin "asl" "arista-ssh check-auth || arista-ssh login")
     ])
 
@@ -432,6 +426,8 @@ in {
       '') + "/bin/git-a";
       ".a4c/create".source = config.lib.file.mkOutOfStoreSymlink (pkgs.writeShellScriptBin "a4c-create" ''
         a ws yum install -y ArTacLSP
+        sudo mkdir /nix
+        sudo chown tedj: /nix
       '') + "/bin/a4c-create";
     })
 
@@ -1420,6 +1416,7 @@ in {
       host = "bus-* tedj-*";
       user = "tedj";
       forwardAgent = true;
+      extraOptions.LogLevel = "error";
       extraOptions.StrictHostKeyChecking = "false";
       extraOptions.UserKnownHostsFile = "/dev/null";
       extraOptions.RemoteForward = "/bus/gnupg/S.gpg-agent \${XDG_RUNTIME_DIR}/gnupg/S.gpg-agent.extra";
@@ -1697,7 +1694,7 @@ in {
       ''
       (lib.mkIf work ''
         compdef 'compadd gp-ie.arista.com gp-ie.arista.com gp-eu.arista.com gp.arista.com' avpn
-        compdef 'compadd $(cat /tmp/ashcache 2>/dev/null || ssh bus-home -- a4c ps -N | tee /tmp/ashcache)' ash
+        compdef 'compadd $([ $(($(date +%s) - $(date +%s -r ~/.cache/ashcache))) -lt 600 ] && cat ~/.cache/ashcache || ssh bus-home -- a4c ps -N | tee ~/.cache/ashcache)' ash
       '')
       (lib.mkIf wbus ''
         git config --global include.path myconfig
