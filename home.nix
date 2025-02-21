@@ -117,13 +117,14 @@ in {
       '')
 
       (writeShellScriptBin "powerctl" ''
-        case "$([ -n "$1" ] && echo $1 || printf "%s\n" lock suspend $(pidof -q swayidle && echo caffeinate || echo decafeinate) reload logout reboot shutdown | bemenu -p "Power" -l 9)" in
-          "lock") loginctl lock-session;;
-          "suspend") systemctl suspend;;
+        choice="$([ -n "$1" ] && echo $1 || printf "%s\n" lock suspend $(pidof -q swayidle && echo caffeinate || echo decafeinate) reload logout reboot shutdown | bemenu -p "Power" -l 9)"
+        case "$choice" in
+          "lock") pkill borgmatic && pidwait systemd-inhibit; loginctl lock-session;;
+          "suspend") pkill borgmatic && pidwait systemd-inhibit; systemctl suspend;;
           "reload") swaymsg reload;;
-          "logout") swaymsg exit;;
-          "reboot") systemctl reboot;;
-          "shutdown") systemctl poweroff;;
+          "logout") pkill borgmatic && pidwait systemd-inhibit; swaymsg exit;;
+          "reboot") pkill borgmatic && pidwait systemd-inhibit; systemctl reboot;;
+          "shutdown") pkill borgmatic && pidwait systemd-inhibit; systemctl poweroff;;
           "caffeinate") pkill swayidle;;
           "decafeinate") pidof swayidle || swayidle -w idlehint 300 \
             lock 'swaylock --daemonize' \
@@ -133,7 +134,7 @@ in {
             timeout 600  'loginctl lock-session' \
             timeout 3600 'systemctl suspend' &;;
           *) exit 1;;
-        esac
+        esac || notify-send "Unable to $choice" "Is something running?"
       '')
 
       (writeShellScriptBin "networkctl" ''
@@ -550,41 +551,66 @@ in {
     settings.fn = "Terminess Nerd Font";
   };
 
-  # TODO(borg) encryption key?
-  # TODO(borg) checks needed?
   # TODO(borg) one-way syncthing
   # TODO(borg) notifications on failure?
   # mkdir -p .local/backups && borgmatic init -e repokey
   programs.borgmatic = lib.mkIf (work || msung || septs) {
     enable = true;
     backups = lib.mkMerge [
-
-      # backup-septs: /home Documents Pictures Videos Music /srv
-
-      (lib.mkIf work {
-        work = {
-          retention = { keepHourly = 2; keepDaily = 1; keepWeekly = 0; };
+      (lib.mkIf septs {
+        septs = {
+          retention = { keepWithin = "1d"; keepDaily = 7; };
           location.excludeHomeManagerSymlinks = true;
-          location.repositories = [ ".local/backups/work" ];
-          location.patterns = [ "P fm" "R /etc" "- etc" "R /home/tedj" "- home/tedj/.cache" "- home/tedj/.local/backups" "- home/tedj/.local/state" "- home/tedj/Documents" "- home/tedj/Work" ];
-          storage.encryptionPasscommand = "cat /home/tedj/.ssh/tedj@work.agenix.key";
-          #consistency.checks = [ { name = "repository"; frequency = "2 weeks"; } { name = "archives"; frequency = "4 weeks"; } { name = "data"; frequency = "6 weeks"; } { name = "extract"; frequency = "6 weeks"; } ];
+          location.repositories = [ ".local/backups/septs" ];
+          location.patterns = [ "P fm" "R /home/ski" "- home/ski/.cache" "- home/ski/.local/backups" "- home/ski/.local/state" ];
+          storage.encryptionPasscommand = "cat /home/ski/.ssh/ski@septs.agenix.key";
+          consistency.checks = [ { name = "repository"; frequency = "2 weeks"; } { name = "archives"; frequency = "4 weeks"; } { name = "data"; frequency = "6 weeks"; } { name = "extract"; frequency = "6 weeks"; } ];
         };
-        work-local = {
-          retention = { keepHourly = 2; keepDaily = 1; keepMonthly = 0; };
+        septs-local = {
+          retention = { keepWithin = "1d"; keepDaily = 7; keepWeekly = 4; };
           location.excludeHomeManagerSymlinks = true;
-          location.repositories = [ ".local/backups/work-local" ];
-          location.patterns = [ "P fm" "R /etc" "R /home/tedj" "- home/tedj/.cache/" "- home/tedj/.local/backups/" "- home/tedj/.local/state/" "- home/tedj/Documents/" "- home/tedj/Work/" ];
-          storage.encryptionPasscommand = "cat /home/tedj/.ssh/tedj@work.agenix.key";
-          #consistency.checks = [ { name = "repository"; frequency = "2 weeks"; } { name = "archives"; frequency = "4 weeks"; } { name = "data"; frequency = "6 weeks"; } { name = "extract"; frequency = "6 weeks"; } ];
+          location.repositories = [ ".local/backups/septs-local" ];
+          location.patterns = [ "P fm" "R /home/ski" "- home/ski/.cache" "- home/ski/.local/backups" "- home/ski/.local/state" ];
+          storage.encryptionPasscommand = "cat /home/ski/.ssh/ski@septs.agenix.key";
+          consistency.checks = [ { name = "repository"; frequency = "2 weeks"; } { name = "archives"; frequency = "4 weeks"; } { name = "data"; frequency = "6 weeks"; } { name = "extract"; frequency = "6 weeks"; } ];
         };
       })
-
-      # backup-msung: /home excluding shared
-
-      # backup-msungie:
-
-      # backup-skic:
+      (lib.mkIf msung {
+        msung = {
+          retention = { keepWithin = "1d"; keepDaily = 7; };
+          location.excludeHomeManagerSymlinks = true;
+          location.repositories = [ ".local/backups/msung" ];
+          location.patterns = [ "P fm" "R /home/ski" "- home/ski/.cache" "- home/ski/.local/backups" "- home/ski/.local/state" "- home/ski/Documents" "home/ski/Music" "home/ski/Pictures" "home/ski/Videos" "- home/ski/Work" ];
+          storage.encryptionPasscommand = "cat /home/ski/.ssh/ski@msung.agenix.key";
+          consistency.checks = [ { name = "repository"; frequency = "2 weeks"; } { name = "archives"; frequency = "4 weeks"; } { name = "data"; frequency = "6 weeks"; } { name = "extract"; frequency = "6 weeks"; } ];
+        };
+        msung-local = {
+          retention = { keepWithin = "1d"; keepDaily = 7; keepWeekly = 4; };
+          location.excludeHomeManagerSymlinks = true;
+          location.repositories = [ ".local/backups/msung-local" ];
+          location.patterns = [ "P fm" "R /home/ski" "- home/ski/.cache" "- home/ski/.local/backups" "- home/ski/.local/state" "- home/ski/Documents" "home/ski/Music" "home/ski/Pictures" "home/ski/Videos" "- home/ski/Work" ];
+          storage.encryptionPasscommand = "cat /home/ski/.ssh/ski@msung.agenix.key";
+          consistency.checks = [ { name = "repository"; frequency = "2 weeks"; } { name = "archives"; frequency = "4 weeks"; } { name = "data"; frequency = "6 weeks"; } { name = "extract"; frequency = "6 weeks"; } ];
+        };
+      })
+      (lib.mkIf work {
+        work = {
+          retention = { keepWithin = "1d"; keepDaily = 7; };
+          location.excludeHomeManagerSymlinks = true;
+          location.repositories = [ ".local/backups/work" ];
+          location.patterns = [ "P fm" "R /etc" "R /home/tedj" "- home/tedj/.cache" "- home/tedj/.local/backups" "- home/tedj/.local/state" "- home/tedj/Documents" "- home/tedj/Work" ];
+          storage.encryptionPasscommand = "cat /home/tedj/.ssh/tedj@work.agenix.key";
+          consistency.checks = [ { name = "repository"; frequency = "2 weeks"; } { name = "archives"; frequency = "4 weeks"; } { name = "data"; frequency = "6 weeks"; } { name = "extract"; frequency = "6 weeks"; } ];
+        };
+        work-local = {
+          retention = { keepWithin = "1d"; keepDaily = 7; keepWeekly = 4; };
+          location.excludeHomeManagerSymlinks = true;
+          location.repositories = [ ".local/backups/work-local" ];
+          location.patterns = [ "P fm" "R /etc" "R /home/tedj" "- home/tedj/.cache" "- home/tedj/.local/backups" "- home/tedj/.local/state" "- home/tedj/Documents" "- home/tedj/Work" ];
+          storage.encryptionPasscommand = "cat /home/tedj/.ssh/tedj@work.agenix.key";
+          consistency.checks = [ { name = "repository"; frequency = "2 weeks"; } { name = "archives"; frequency = "4 weeks"; } { name = "data"; frequency = "6 weeks"; } { name = "extract"; frequency = "6 weeks"; } ];
+        };
+      })
     ];
   };
 
