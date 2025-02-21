@@ -263,14 +263,14 @@ in {
 
       (writeShellScriptBin "swaytaskinput" ''
         c=$(cat /tmp/swaytask)
-        t=$({ echo $c; swaymsg -rt get_workspaces | jq -r '.[].name' | grep "^0|" | cut -d'|' -f2; } | sort -u | bemenu -l 10 -p "Task")
+        t=$({ echo $c; swaymsg -rt get_workspaces | jq -r '.[].name' | grep "^0|" | cut -d'|' -f2 | sort -u; } | bemenu -l 10 -p "Task")
         case "$t" in *\|*|*:*|*\ *|""|"$c") echo $c; exit 1;; *) echo $t;; esac
       '')
 
       (writeShellScriptBin "swaytaskset" ''
         c=$(cat /tmp/swaytask)
         swaymsg -q $(
-          for w in $(swaymsg -rt get_workspaces | jq -r '.[].name' | grep -v "^\(0|\|\(14:q\|15:a\|16:z\)$\)"); do echo "rename workspace $w to 0|$c|$(echo $w | tr ':' '|'):#, "; done
+          for w in $(swaymsg -rt get_workspaces | jq -r '.[].name' | grep -v "^\(0|\|\(0:q\|0:a\|0:z\)$\)"); do echo "rename workspace $w to 0|$c|$(echo $w | tr ':' '|'):#, "; done
           for w in $(swaymsg -rt get_workspaces | jq -r '.[].name' | grep -P "^\Q0|$1|\E"); do echo "rename workspace $w to $(echo $w | cut -d'|' -f3- | cut -d ':' -f1 | tr '|' ':'), "; done)
         notify-send -i task-complete -t 2000 "Switched to $1" "Was on $c"
         echo "$1" >/tmp/swaytask
@@ -1820,12 +1820,12 @@ in {
       #workspaces button.focused { background-color: #ffffff; color: #000000; }
       #workspaces button.urgent { background-color: #404040; animation: luminate 1s steps(30) infinite alternate; }
 
-      #workspaces button#sway-workspace-14\:q:not(.focused),
-      #workspaces button#sway-workspace-15\:a:not(.focused),
-      #workspaces button#sway-workspace-16\:z:not(.focused) { color: #ff8080; }
-      #workspaces button#sway-workspace-14\:q.focused,
-      #workspaces button#sway-workspace-15\:a.focused,
-      #workspaces button#sway-workspace-16\:z.focused { background-color: #ffcccc; }
+      #workspaces button#sway-workspace-0\:q:not(.focused),
+      #workspaces button#sway-workspace-0\:a:not(.focused),
+      #workspaces button#sway-workspace-0\:z:not(.focused) { color: #ff8080; }
+      #workspaces button#sway-workspace-0\:q.focused,
+      #workspaces button#sway-workspace-0\:a.focused,
+      #workspaces button#sway-workspace-0\:z.focused { background-color: #ffcccc; }
 
       #custom-media.Paused { color: #606060; }
       #custom-caffeinated { color: #ff8000; }
@@ -1937,9 +1937,9 @@ in {
     config.keybindings."Mod4+e" = ''exec a="$(swaymsg -rt get_workspaces | jq -r '.[] | select(.focused) | .output')" && swaymsg "workspace 11:e, move workspace to \"$a\""'';
     config.keybindings."Mod4+r" = ''exec a="$(swaymsg -rt get_workspaces | jq -r '.[] | select(.focused) | .output')" && swaymsg "workspace 12:r, move workspace to \"$a\""'';
     config.keybindings."Mod4+t" = ''exec a="$(swaymsg -rt get_workspaces | jq -r '.[] | select(.focused) | .output')" && swaymsg "workspace 13:t, move workspace to \"$a\""'';
-    config.keybindings."Mod4+q" = ''exec a="$(swaymsg -rt get_workspaces | jq -r '.[] | select(.focused) | .output')" && swaymsg "workspace 14:q, move workspace to \"$a\""'';
-    config.keybindings."Mod4+a" = ''exec a="$(swaymsg -rt get_workspaces | jq -r '.[] | select(.focused) | .output')" && swaymsg "workspace 15:a, move workspace to \"$a\""'';
-    config.keybindings."Mod4+z" = ''exec a="$(swaymsg -rt get_workspaces | jq -r '.[] | select(.focused) | .output')" && swaymsg "workspace 16:z, move workspace to \"$a\""'';
+    config.keybindings."Mod4+q" = ''exec a="$(swaymsg -rt get_workspaces | jq -r '.[] | select(.focused) | .output')" && swaymsg "workspace 0:q, move workspace to \"$a\""'';
+    config.keybindings."Mod4+a" = ''exec a="$(swaymsg -rt get_workspaces | jq -r '.[] | select(.focused) | .output')" && swaymsg "workspace 0:a, move workspace to \"$a\""'';
+    config.keybindings."Mod4+z" = ''exec a="$(swaymsg -rt get_workspaces | jq -r '.[] | select(.focused) | .output')" && swaymsg "workspace 0:z, move workspace to \"$a\""'';
     config.keybindings."Mod4+Shift+1" = ''exec a="$(swaymsg -rt get_workspaces | jq -r '.[] | select(.focused) | .output')" && swaymsg "move container workspace 1,    workspace 1, move workspace to \"$a\""'';
     config.keybindings."Mod4+Shift+2" = ''exec a="$(swaymsg -rt get_workspaces | jq -r '.[] | select(.focused) | .output')" && swaymsg "move container workspace 2,    workspace 2, move workspace to \"$a\""'';
     config.keybindings."Mod4+Shift+3" = ''exec a="$(swaymsg -rt get_workspaces | jq -r '.[] | select(.focused) | .output')" && swaymsg "move container workspace 3,    workspace 3, move workspace to \"$a\""'';
@@ -1953,9 +1953,9 @@ in {
     config.keybindings."Mod4+Shift+e" = ''exec a="$(swaymsg -rt get_workspaces | jq -r '.[] | select(.focused) | .output')" && swaymsg "move container workspace 11:e, workspace 11:e, move workspace to \"$a\""'';
     config.keybindings."Mod4+Shift+r" = ''exec a="$(swaymsg -rt get_workspaces | jq -r '.[] | select(.focused) | .output')" && swaymsg "move container workspace 12:r, workspace 12:r, move workspace to \"$a\""'';
     config.keybindings."Mod4+Shift+t" = ''exec a="$(swaymsg -rt get_workspaces | jq -r '.[] | select(.focused) | .output')" && swaymsg "move container workspace 13:t, workspace 13:t, move workspace to \"$a\""'';
-    config.keybindings."Mod4+Shift+q" = ''exec a="$(swaymsg -rt get_workspaces | jq -r '.[] | select(.focused) | .output')" && swaymsg "move container workspace 14:q, workspace 14:q, move workspace to \"$a\""'';
-    config.keybindings."Mod4+Shift+a" = ''exec a="$(swaymsg -rt get_workspaces | jq -r '.[] | select(.focused) | .output')" && swaymsg "move container workspace 15:a, workspace 15:a, move workspace to \"$a\""'';
-    config.keybindings."Mod4+Shift+z" = ''exec a="$(swaymsg -rt get_workspaces | jq -r '.[] | select(.focused) | .output')" && swaymsg "move container workspace 16:z, workspace 16:z, move workspace to \"$a\""'';
+    config.keybindings."Mod4+Shift+q" = ''exec a="$(swaymsg -rt get_workspaces | jq -r '.[] | select(.focused) | .output')" && swaymsg "move container workspace 0:q, workspace 0:q, move workspace to \"$a\""'';
+    config.keybindings."Mod4+Shift+a" = ''exec a="$(swaymsg -rt get_workspaces | jq -r '.[] | select(.focused) | .output')" && swaymsg "move container workspace 0:a, workspace 0:a, move workspace to \"$a\""'';
+    config.keybindings."Mod4+Shift+z" = ''exec a="$(swaymsg -rt get_workspaces | jq -r '.[] | select(.focused) | .output')" && swaymsg "move container workspace 0:z, workspace 0:z, move workspace to \"$a\""'';
     config.keybindings."Mod4+Control+1" = ''move container workspace 1'';
     config.keybindings."Mod4+Control+2" = ''move container workspace 2'';
     config.keybindings."Mod4+Control+3" = ''move container workspace 3'';
@@ -1969,9 +1969,9 @@ in {
     config.keybindings."Mod4+Control+e" = ''move container workspace 11:e'';
     config.keybindings."Mod4+Control+r" = ''move container workspace 12:r'';
     config.keybindings."Mod4+Control+t" = ''move container workspace 13:t'';
-    config.keybindings."Mod4+Control+q" = ''move container workspace 14:q'';
-    config.keybindings."Mod4+Control+a" = ''move container workspace 15:a'';
-    config.keybindings."Mod4+Control+z" = ''move container workspace 16:z'';
+    config.keybindings."Mod4+Control+q" = ''move container workspace 0:q'';
+    config.keybindings."Mod4+Control+a" = ''move container workspace 0:a'';
+    config.keybindings."Mod4+Control+z" = ''move container workspace 0:z'';
 
     config.keybindings."Mod4+Tab"               = ''exec n=$(swaytaskinput) && ow="$(swaymsg -rt get_workspaces | jq -r '.[] | select(.visible) | .output+" "+.name')" && swaytaskset "$n" && swaymsg "$(printf 'focus output %s, workspace %s, ' $(echo $ow))"'';
     config.keybindings."Mod4+Shift+Tab"         = ''exec n=$(swaytaskinput) && ow="$(swaymsg -rt get_workspaces | jq -r '.[] | select(.visible) | .output+" "+.name')" && w="$(swaymsg -rt get_workspaces | jq -r '.[] | select(.focused).name')" && swaytaskset "$n" && swaymsg "move container workspace $w, $(printf 'focus output %s, workspace %s, ' $(echo $ow))"'';
