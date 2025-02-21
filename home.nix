@@ -239,7 +239,7 @@ in {
         IFS=$'\n'
         choice="$([ -n "$1" ] && echo $1 || printf "%s\n" auto none work home | bemenu -p "Display" -l 5)"
         [ "$choice" = "auto" ] && case "$(swaymsg -rt get_outputs | jq -r '.[] | .make+" "+.model+" "+.serial' | sort | xargs)" in
-          "AOC 2270W GNKJ1HA001311 Samsung Display Corp. 0x419F Unknown Pixio USA Pixio PXC348C Unknown") choice="home";;
+          "AOC 2270W GNKJ1HA001311 Pixio USA Pixio PXC348C Unknown Samsung Display Corp. 0x419F Unknown") choice="home";;
           "Lenovo Group Limited P24q-30 V90CP3VM Samsung Display Corp. 0x419F Unknown")                   choice="work";;
           *)                                                                                              choice="none";;
         esac
@@ -253,8 +253,8 @@ in {
             output \"Samsung Display Corp. 0x419F Unknown\" enable pos 320 1440 transform 0 mode 2880x1800@120Hz scale 1 ;;
           "home") swaymsg \
             output \* disable, \
-            output \"Pixio USA Pixio PXC348C Unknown\" enable pos TODO TODO transform 0 mode 3440x1440@100Hz, \
-            output \"Samsung Display Corp. 0x419F Unknown\" enable pos TODO TODO transform 0 mode 2880x1800@120Hz scale 1, \
+            output \"Pixio USA Pixio PXC348C Unknown\" enable pos 1080 240 transform 0 mode 3440x1440@100Hz, \
+            output \"Samsung Display Corp. 0x419F Unknown\" enable pos 1360 1680 transform 0 mode 2880x1800@120Hz scale 1, \
             output \"AOC 2270W GNKJ1HA001311\" enable pos 0 0 transform 270 mode 1920x1080@60Hz ;;
           *) exit 1 ;;
         esac
