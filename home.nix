@@ -811,7 +811,7 @@ in {
         vim.opt.virtualedit = "onemore"                        -- Allow cursor to extend one character past the end of the line
         vim.opt.grepprg = "rg --vimgrep "                      -- Use ripgrep for grepping
         vim.opt.number = true                                  -- Enable line numbers...
-        vim.opt.relativenumber = true                         -- ...and relative line numbers
+        vim.opt.relativenumber = true                          -- ...and relative line numbers
         vim.opt.ruler = false                                  -- No need to show line/column number with lightline
         vim.opt.showmode = false                               -- No need to show current mode with lightline
         vim.opt.scrolloff = 3                                  -- Keep lines above/below the cursor when scrolling
@@ -853,6 +853,7 @@ in {
         -- LOCAL FUNCTIONS --
 
         local fzf = require("fzf-lua")
+        local notes = vim.fn.expand("~/Documents/notes")
 
         local function fullpath(path)
           return vim.fn.fnamemodify(path or vim.api.nvim_buf_get_name(0), ":p")
@@ -876,6 +877,18 @@ in {
           local x = table.concat(selected, "\n")
           vim.fn.setreg("+", x)
           print("Yanked "..#x.." bytes")
+        end
+
+        -- Search tags
+        local function fzf_tags(dir)
+          if vim.fn.expand("%:p:h"):sub(1, #notes) == notes then
+            fzf.fzf_exec("rg -Io '\\^[a-zA-Z0-9_\\-]+' | sort -u", {
+              prompt = "Tags>", cwd=dir, fzf_opts = { ["--no-multi"] = true },
+              actions = { ["default"] = function(sel) fzf.grep({ cwd=notes, search=sel[1] }) end }
+            })
+          else
+              fzf.grep({ cwd=dir, no_esc=true, search="\\b(TODO|FIX(ME)?|BUG|TBD|XXX)(\\([^\\)]*\\))?:?" })
+          end
         end
 
         -- Restore vim session
@@ -1035,6 +1048,9 @@ in {
         -- Autodetect indentation type
         vim.api.nvim_create_autocmd("BufReadPost", { command = "if search('^\\t\\+[^\\s]', 'nw') | setlocal noexpandtab | elseif search('^ \\+[^\\s]', 'nw') | setlocal expandtab | end" })
 
+        -- Highlight max git commit message line lengths
+        vim.api.nvim_create_autocmd("FileType", { pattern = "gitcommit", command = "setlocal colorcolumn=72" })
+
         -- PLUGIN INITIALISATION --
 
         fzf.register_ui_select()
@@ -1183,9 +1199,8 @@ in {
 
         local lspconfig = require("lspconfig")
         lspconfig.pyright.setup({})
-        lspconfig.clangd.setup({
-          on_attach = function(client, bufnr) client.server_capabilities.semanticTokensProvider = nil end,
-        })
+        lspconfig.clangd.setup({ on_attach = function(client, bufnr) client.server_capabilities.semanticTokensProvider = nil end })
+        lspconfig.rust_analyzer.setup({})
 
         -- TODO(lsp) moar
 
@@ -1240,12 +1255,11 @@ in {
         vim.keymap.set("n", "<leader>", "")
         -- Split lines at cursor, opposite of <s-j>
         vim.keymap.set("n", "<c-j>", "m`i<cr><esc>``")
-        -- Terminal shortcuts
+        -- Terminal shortcuts (<C-\><C-n> to enter normal mode)
         vim.keymap.set("n", "<leader><return>", "<cmd>belowright split | terminal<cr>")
         -- Open notes
-        -- TODO(notes): tags? links? but mobile/non-vim
-        vim.keymap.set("n", "<leader>n", "<cmd>lcd ~/Documents/notes | edit todo.txt<cr>")
-        vim.keymap.set("n", "<leader>N", "<cmd>lcd ~/Documents/notes | edit `=strftime('./journal/%Y/%m/%d.md', strptime('%a %W %y', strftime('Mon %W %y')))` | call mkdir(expand('%:h'), 'p')<cr>")
+        vim.keymap.set("n", "<leader>n", "<cmd>lcd "..notes.." | edit todo.txt<cr>")
+        vim.keymap.set("n", "<leader>N", "<cmd>lcd "..notes.." | edit `=strftime('./journal/%Y-%m-%d.md', strptime('%a %W %y', strftime('Mon %W %y')))` | call mkdir(expand('%:h'), 'p')<cr>")
         -- Diagnostics
         vim.keymap.set("n", "]e",        "<cmd>lua vim.diagnostic.goto_next()<cr>")
         vim.keymap.set("n", "[e",        "<cmd>lua vim.diagnostic.goto_prev()<cr>")
@@ -1302,8 +1316,8 @@ in {
         vim.keymap.set("n", "<leader>S", "<cmd>exe 'FzfLua live_grep_native'<cr>")
         vim.keymap.set("n", "<leader>b", "<cmd>exe 'FzfLua buffers cwd='.expand('%:p:h').' cwd_only=true'<cr>")
         vim.keymap.set("n", "<leader>B", "<cmd>exe 'FzfLua buffers'<cr>")
-        vim.keymap.set("n", "<leader>t", "<cmd>exe 'FzfLua grep cwd='.expand('%:p:h').' no_esc=true search=\\b(TODO|FIX(ME)?|BUG|TBD|XXX)(\\([^\\)]*\\))?:?'<cr>")
-        vim.keymap.set("n", "<leader>T", "<cmd>exe 'FzfLua grep no_esc=true search=\\b(TODO|FIX(ME)?|BUG|TBD|XXX)(\\([^\\)]*\\))?:?'<cr>")
+        vim.keymap.set("n", "<leader>t", function() fzf_tags(vim.fn.expand("%:p:h")) end)
+        vim.keymap.set("n", "<leader>T", function() fzf_tags() end)
         vim.keymap.set("n", "<leader>l", "<cmd>exe 'FzfLua blines'<cr>")
         vim.keymap.set("n", "<leader>L", "<cmd>exe 'FzfLua lines'<cr>")
         vim.keymap.set("n", "<leader>:", "<cmd>exe 'FzfLua command_history'<cr>")
