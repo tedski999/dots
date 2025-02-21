@@ -66,6 +66,7 @@ in {
       p7zip
       procps
       pyright
+      rustup
       unrar
       unzip
       xz
@@ -87,11 +88,13 @@ in {
       brightnessctl
       gimp
       grim
+      inkscape
       libnotify
       nerd-fonts.terminess-ttf
       playerctl
       pulsemixer
       slurp
+      trunk
       swayidle
       wl-clipboard
 
