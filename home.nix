@@ -33,6 +33,8 @@ in {
       MANWIDTH = 80;
       LESS = "--incsearch --ignore-case --tabs=4 --chop-long-lines --LONG-PROMPT --RAW-CONTROL-CHARS";
       PYTHONSTARTUP = "${config.xdg.configHome}/python/pythonrc";
+      RUSTUP_HOME = "${config.xdg.dataHome}/rustup";
+      CARGO_HOME = "${config.xdg.dataHome}/cargo";
       GTRASH_ONLY_HOME_TRASH = "true";
     }
     (lib.mkIf (msung || work) {
