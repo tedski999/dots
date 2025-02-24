@@ -328,7 +328,7 @@ in {
         # nix-collect-garbage -d
         for n in home-gksh7 $(a4c ps -N); do
           echo; echo "Syncing $n"
-          rsync -azh --stats /nix tedj-''${n//\./-}:/
+          rsync -azhe "ssh -o StrictHostKeyChecking=no" --stats /nix tedj-''${n//[._]/-}:/
         done
       '')
       (writeShellScriptBin "ag" ''
