@@ -652,14 +652,14 @@ in {
   programs.fd = {
     enable = true;
     hidden = true;
-    ignores = [ ".git/" ];
+    ignores = [ ".git/" "node_modules/" "target/" ];
   };
 
   programs.fzf = {
     enable = true;
     colors = { "fg" = "bold"; "pointer" = "red"; "hl" = "red"; "hl+" = "red"; "gutter" = "-1"; "marker" = "red"; };
-    changeDirWidgetCommand = "fd --hidden --exclude '.git' --exclude 'node_modules' --type d";
-    fileWidgetCommand = "fd --hidden --exclude '.git' --exclude 'node_modules'";
+    changeDirWidgetCommand = "fd --hidden --type d";
+    fileWidgetCommand = "fd --hidden";
     defaultCommand = "rg --files --no-messages";
     defaultOptions = [
       "--multi"
@@ -1106,7 +1106,7 @@ in {
           fzf_opts = { ["--separator='''"] = "", ["--preview-window"] = "border-none" },
           previewers = { man = { cmd = "man %s | col -bx" } },
           defaults = { preview_pager = "delta --width=$FZF_PREVIEW_COLUMNS", file_icons = false, git_icons = true, color_icons = true, cwd_header = false, copen = function() fzf.quickfix() end },
-          files = { cmd = "fd --hidden --color=never --follow --exclude .git --exclude flake.lock" },
+          files = { cmd = "fd --hidden --color=never --follow" },
           grep = { RIPGREP_CONFIG_PATH = vim.env.RIPGREP_CONFIG_PATH },
           oldfiles = { include_current_session = true },
           quickfix_stack = { actions = { ["default"] = function() fzf.quickfix() end } },
@@ -1412,7 +1412,7 @@ in {
       "--smart-case"
       "--max-columns=512"
       "--max-columns-preview"
-      "--glob=!{**/node_modules/*,**/.git/*,**/RPMS/*,**/SRPMS/*}"
+      "--glob=!{**/node_modules/*,**/.git/*,**/flake.lock,**/Cargo.lock,**/target/*,**/RPMS/*,**/SRPMS/*}"
       "--type-add=tac:*.tac"
       "--type-add=tac:*.tac"
       "--type-add=tin:*.tin"
