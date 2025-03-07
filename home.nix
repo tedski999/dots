@@ -326,9 +326,10 @@ in {
     (lib.mkIf wbus [
       delta
       (writeShellScriptBin "ahome" ''
+        [ "$(hostname | cut -d- -f-2)" = "tedj-home" ] || exit 1
         home-manager switch --flake github:tedski999/dots#tedj@wbus --refresh
         # nix-collect-garbage -d
-        for n in home-gksh7 $(a4c ps -N); do
+        for n in $(a4c ps -N); do
           echo; echo "Syncing $n"
           rsync -azhe "ssh -o StrictHostKeyChecking=no" --stats /nix tedj-''${n//[._]/-}:/
         done
