@@ -1685,6 +1685,7 @@ in {
     shellAliases.undel = "gtrash restore ";
     shellAliases.deldel = "gtrash find --rm ";
     shellGlobalAliases.cat = "bat --paging=never ";
+    shellGlobalAliases.pb = lib.mkIf (work || wbus) "curl -F c=@- pb";
     initExtraFirst = lib.mkMerge [
       (lib.mkIf work ''[[ -o interactive && -o login && -z "$WAYLAND_DISPLAY" && "$(tty)" = "/dev/tty1" ]] && exec sway >>${config.xdg.cacheHome}/swaylog-$(date -Iseconds) 2>&1'')
       (lib.mkIf wbus ''export PATH="$HOME/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$PATH"'')
