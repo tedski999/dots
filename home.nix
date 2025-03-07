@@ -1203,6 +1203,7 @@ in {
         })
 
         local lspconfig = require("lspconfig")
+        lspconfig.util.default_config.autostart = false
         lspconfig.pyright.setup({})
         lspconfig.clangd.setup({ on_attach = function(client, bufnr) client.server_capabilities.semanticTokensProvider = nil end })
         lspconfig.rust_analyzer.setup({})
@@ -1216,21 +1217,6 @@ in {
         require("mini.completion").setup({
           set_vim_settings = false,
           window = { info = { border = { " ", "", "", " " } }, signature = { border = { " ", "", "", " " } } },
-          lsp_completion = {
-            process_items = function(items, base)
-              items = require("mini.completion").default_process_items(items, base)
-              local normalise_string = function(str, max)
-                str = (str or ""):match("[!-~].*[!-~]") or ""
-                return #str > max and vim.fn.strcharpart(str, 0, max-1).."…" or str..(" "):rep(max-#str)
-              end
-              for _, item in ipairs(items) do
-                item.label = normalise_string(item.label, 40)
-                item.detail = normalise_string(item.detail, 10)
-                item.additionalTextEdits = {}
-              end
-              return items
-            end
-          }
         })
 
         require("mini.cursorword").setup({ delay = 0 })
@@ -1285,6 +1271,9 @@ in {
         vim.keymap.set("n", "]c", "<cmd>cnext<cr>")
         vim.keymap.set("n", "[C", "<cmd>cfirst<cr>")
         vim.keymap.set("n", "]C", "<cmd>clast<cr>")
+        -- LSP
+        vim.keymap.set("n", "<leader>v", "<cmd>LspStart<cr>")
+        vim.keymap.set("n", "<leader>V", "<cmd>LspStop<cr>")
         -- Toggles
         vim.keymap.set("n", "yo", "")
         vim.keymap.set("n", "yot", "<cmd>set expandtab! expandtab?<cr>")
