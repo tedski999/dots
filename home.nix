@@ -395,6 +395,10 @@ in {
           rs = "restore --staged"
           s = "status"
           un = "reset --soft HEAD~"
+        [branch]
+          sort = "-committerdate"
+        [column]
+          ui = "auto"
         [core]
           pager = "delta"
         [delta]
@@ -420,8 +424,15 @@ in {
           paging = "always"
           relative-paths = true
           width = "variable"
+        [diff]
+          algorithm = "histogram"
+          colorMoved = "plain"
+          mnemonicPrefix = true
+          renames = true
         [interactive]
           diffFilter = "delta --color-only"
+        [tag]
+          sort = "version:refname"
         [user]
           email = "tedj@arista.com"
           name = "tedj"
@@ -682,6 +693,19 @@ in {
     extraConfig.init.defaultBranch = "main";
     extraConfig.pull.ff = "only";
     extraConfig.push.default = "current";
+    extraConfig.push.followTags = true;
+    extraConfig.branch.sort = "-committerdate";
+    extraConfig.tag.sort = "version:refname";
+    extraConfig.column.ui = "auto";
+    extraConfig.diff.algorithm = "histogram";
+    extraConfig.diff.colorMoved = "plain";
+    extraConfig.diff.mnemonicPrefix = true;
+    extraConfig.diff.renames = true;
+    extraConfig.fetch.prune = true;
+    extraConfig.fetch.pruneTags = true;
+    extraConfig.fetch.all = true;
+    extraConfig.commit.verbose = true;
+    extraConfig.merge.conflictStyle = "zdiff3";
     aliases.l = "log";
     aliases.s = "status";
     aliases.a = "add";
