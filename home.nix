@@ -998,6 +998,9 @@ in {
 
         -- AUTOCMDS --
 
+        -- Abort writes to :* as they're usually typos. Neovim API doesn't support this
+        vim.cmd([[au BufWritePre :* call confirm(":w:* detected (C-c to cancel)")]])
+
         -- Highlight suspicious whitespace
         local function get_whitespace_pattern()
           local pattern = [[[\u00a0\u1680\u180e\u2000-\u200b\u202f\u205f\u3000\ufeff]\+\|\s\+$\|[\u0020]\+\ze[\u0009]\+]]
