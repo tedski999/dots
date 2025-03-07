@@ -1730,7 +1730,7 @@ in {
       ''
       (lib.mkIf work ''
         compdef 'compadd gp-ie.arista.com gp-ie.arista.com gp-eu.arista.com gp.arista.com' avpn
-        compdef 'compadd $([ $(($(date +%s) - $(date +%s -r ~/.cache/ashcache))) -lt 600 ] && cat ~/.cache/ashcache || ssh bus-home -- a4c ps -N | tee ~/.cache/ashcache)' ash
+        compdef 'compadd $([ $(($(date +%s) - $(date +%s -r ~/.cache/ashcache))) -lt 10 ] && cat ~/.cache/ashcache || ssh bus-home -- a4c ps -N | tee ~/.cache/ashcache)' ash
       '')
       (lib.mkIf wbus ''
         git config --global include.path myconfig
