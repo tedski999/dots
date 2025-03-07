@@ -1686,7 +1686,7 @@ in {
     shellAliases.deldel = "gtrash find --rm ";
     shellGlobalAliases.cat = "bat --paging=never ";
     initExtraFirst = lib.mkMerge [
-      (lib.mkIf work ''[[ -o interactive && -o login && -z "$WAYLAND_DISPLAY" && "$(tty)" = "/dev/tty1" ]] && exec sway'')
+      (lib.mkIf work ''[[ -o interactive && -o login && -z "$WAYLAND_DISPLAY" && "$(tty)" = "/dev/tty1" ]] && exec sway >>${config.xdg.cacheHome}/swaylog-$(date -Iseconds) 2>&1'')
       (lib.mkIf wbus ''export PATH="$HOME/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$PATH"'')
     ];
     initExtra = lib.mkMerge [
@@ -1896,7 +1896,7 @@ in {
 
     config.modifier = "Mod4";
     config.workspaceLayout = "default";
-    config.focus = { followMouse = true; mouseWarping = "output"; wrapping = "no"; };
+    config.focus = { followMouse = false; mouseWarping = "output"; wrapping = "no"; };
     config.floating = { modifier = "Mod4"; border = 1; titlebar = false; };
     config.window = { border = 1; hideEdgeBorders = "none"; titlebar = false; commands = [ { criteria.class = ".*"; command = "border pixel 1"; } { criteria.app_id = ".*"; command = "border pixel 1"; } { criteria.app_id = "floating.*"; command = "floating enable"; } ]; };
     config.gaps = { inner = 5; };
@@ -1921,7 +1921,7 @@ in {
     config.input."type:keyboard".xkb_options = "caps:escape";
     config.input."type:keyboard".repeat_delay = "250";
     config.input."type:keyboard".repeat_rate = "30";
-    config.input."type:touchpad".dwt = "disabled";
+    config.input."type:touchpad".dwt = "enabled";
     config.input."type:touchpad".tap = "enabled";
     config.input."type:touchpad".natural_scroll = "enabled";
     config.input."type:touchpad".click_method = "clickfinger";
