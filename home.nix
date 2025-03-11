@@ -51,7 +51,6 @@ in {
   home.packages = with pkgs; lib.mkMerge [
     [
       nix
-
       clang-tools
       coreutils
       curl
@@ -74,15 +73,11 @@ in {
       xz
       zip
       inputs.agenix.packages.${system}.default
-
       (writeShellScriptBin "0x0" "curl -F\"file=@$1\" https://0x0.st;")
-
-      (python3.withPackages (ppkgs: with ppkgs; [ numpy ]))
-      #(python3.withPackages (ppkgs: with ppkgs; lib.mkMerge [
-      #  [ numpy ]
-      #  (lib.mkIf (msung || work) [ pillow matplotlib scipy ])
-      #]))
     ]
+
+    (lib.mkIf (msung || work) [ (python3.withPackages (ppkgs: with ppkgs; [ numpy scipy pillow matplotlib ])) ])
+    (lib.mkIf (septs || wbus) [ (python3.withPackages (ppkgs: with ppkgs; [ numpy ])) ])
 
     (lib.mkIf (msung || work) [
       acpi
@@ -327,11 +322,11 @@ in {
       delta
       (writeShellScriptBin "ahome" ''
         [ "$(hostname | cut -d- -f-2)" = "tedj-home" ] || exit 1
-        home-manager switch --flake github:tedski999/dots#tedj@wbus --refresh
-        # nix-collect-garbage -d
+        git -C ~/dots pull
+        home-manager switch --flake ~/dots#tedj@wbus --refresh
         for n in $(a4c ps -N); do
           echo; echo "Syncing $n"
-          rsync -azhe "ssh -o StrictHostKeyChecking=no" --stats /nix tedj-''${n//[._]/-}:/
+          rsync -azhe "ssh -o StrictHostKeyChecking=no" /nix tedj-''${n//[._]/-}:/
         done
       '')
       (writeShellScriptBin "ag" ''
@@ -442,9 +437,9 @@ in {
         git add $@
       '') + "/bin/git-a";
       ".a4c/create".source = config.lib.file.mkOutOfStoreSymlink (pkgs.writeShellScriptBin "a4c-create" ''
-        a ws yum install -y ArTacLSP
-        mkdir /nix
-        chown tedj: /nix
+        # a ws yum install -y ArTacLSP
+        sudo mkdir /nix
+        sudo chown tedj: /nix
       '') + "/bin/a4c-create";
     })
 
