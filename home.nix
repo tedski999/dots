@@ -809,8 +809,8 @@ in {
       vim-rsi
     ];
     extraLuaConfig = lib.mkMerge [
-      (lib.mkIf (work || wbus) ''
-        local a = vim.loop.fs_stat("/usr/share/vim/vimfiles/arista.vim") and not vim.fn.getcwd():find("^/home")
+      (lib.mkIf wbus ''
+        local a = vim.loop.fs_stat("/usr/share/vim/vimfiles/arista.vim") and vim.fn.getcwd():find("^/src")
         if a then
           vim.api.nvim_echo({ { "Note: Arista-specifics enabled for this Neovim instance", "MoreMsg" } }, false, {})
           vim.cmd[[ let a4_auto_edit = 0 | source /usr/share/vim/vimfiles/arista.vim ]]
@@ -1095,6 +1095,7 @@ in {
         fzf.setup({
           hls = { border = "NormalBorder", preview_border = "NormalBorder" },
           winopts = {
+            -- TODO(nvim): height breaks if window too small
             height = 0.25, width = 1.0, row = 1.0, col = 0.5,
             border = { "─", "─", "─", " ", "", "", "", " " },
             preview = { scrollchars = { "│", "" }, winopts = { list = true } }
@@ -1241,8 +1242,6 @@ in {
         lspconfig.clangd.setup({ on_attach = function(client, bufnr) client.server_capabilities.semanticTokensProvider = nil end })
         lspconfig.rust_analyzer.setup({})
 
-        -- TODO(lsp) moar
-
         require("nvim-surround").setup({ move_cursor = false })
 
         require("mini.align").setup({})
@@ -1377,25 +1376,29 @@ in {
         vim.keymap.set("n", "<leader>P", fzf_projects_save)
         vim.keymap.set("n", "z=", "<cmd>exe 'FzfLua spell_suggest'<cr>")
       '')
-      (lib.mkIf (work || wbus) ''
+      (lib.mkIf wbus ''
+        vim.opt.tabstop = 8
+        -- Use OSC-52 to copy through terminal+mosh+tmux
+          vim.opt.tabstop = 8
+          vim.opt.tabstop = 8
+          vim.opt.tabstop = 8
+        -- TODO(nvim): clipboard length
+        vim.g.clipboard = {
+          name = "OSC-52",
+          copy = {
+            ["+"] = require("vim.ui.clipboard.osc52").copy("+"),
+            ["*"] = require("vim.ui.clipboard.osc52").copy("*"),
+          },
+          paste = {
+            ["+"] = require("vim.ui.clipboard.osc52").paste("+"),
+            ["*"] = require("vim.ui.clipboard.osc52").paste("*"),
+          },
+        }
+        end
         if a then
           vim.opt.expandtab = true
-          vim.opt.tabstop = 8
           vim.opt.shiftwidth = 3
           vim.opt.colorcolumn = "86"
-          -- Use OSC-52 to copy through terminal+mosh+tmux
-          -- TODO(nvim): clipboard length
-          vim.g.clipboard = {
-            name = "OSC-52",
-            copy = {
-              ["+"] = require("vim.ui.clipboard.osc52").copy("+"),
-              ["*"] = require("vim.ui.clipboard.osc52").copy("*"),
-            },
-            paste = {
-              ["+"] = require("vim.ui.clipboard.osc52").paste("+"),
-              ["*"] = require("vim.ui.clipboard.osc52").paste("*"),
-            },
-          }
           -- Tacc
           vim.cmd([[
             function! TaccIndentOverrides()
