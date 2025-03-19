@@ -322,8 +322,8 @@ in {
       delta
       (writeShellScriptBin "ahome" ''
         [ "$(hostname | cut -d- -f-2)" = "tedj-home" ] || exit 1
-        git -C ~/dots pull
-        home-manager switch --flake ~/dots#tedj@wbus --refresh
+        git -C ~/dots pull || exit 1
+        home-manager switch --flake ~/dots#tedj@wbus --refresh || exit 1
         for n in $(a4c ps -N); do
           echo; echo "Syncing $n"
           rsync -azhe "ssh -o StrictHostKeyChecking=no" /nix tedj-''${n//[._]/-}:/
@@ -1456,11 +1456,9 @@ in {
     matchBlocks."bus" = lib.mkIf work {
       host = "bus-* tedj-*";
       user = "tedj";
-      forwardAgent = true;
       extraOptions.LogLevel = "error";
       extraOptions.StrictHostKeyChecking = "false";
       extraOptions.UserKnownHostsFile = "/dev/null";
-      extraOptions.RemoteForward = "/bus/gnupg/S.gpg-agent \${XDG_RUNTIME_DIR}/gnupg/S.gpg-agent.extra";
     };
     matchBlocks."bus-home" = lib.mkIf work {
       host = "bus-home";
