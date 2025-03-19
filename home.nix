@@ -1379,9 +1379,6 @@ in {
       (lib.mkIf wbus ''
         vim.opt.tabstop = 8
         -- Use OSC-52 to copy through terminal+mosh+tmux
-          vim.opt.tabstop = 8
-          vim.opt.tabstop = 8
-          vim.opt.tabstop = 8
         -- TODO(nvim): clipboard length
         vim.g.clipboard = {
           name = "OSC-52",
