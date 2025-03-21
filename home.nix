@@ -1456,6 +1456,7 @@ in {
     matchBlocks."bus" = lib.mkIf work {
       host = "bus-* tedj-*";
       user = "tedj";
+      extraOptions.ForwardAgent = "/run/user/1000/arista-ssh/agent.sock";
       extraOptions.LogLevel = "error";
       extraOptions.StrictHostKeyChecking = "false";
       extraOptions.UserKnownHostsFile = "/dev/null";
