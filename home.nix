@@ -1391,7 +1391,6 @@ in {
             ["*"] = require("vim.ui.clipboard.osc52").paste("*"),
           },
         }
-        end
         if a then
           vim.opt.expandtab = true
           vim.opt.shiftwidth = 3
