@@ -674,7 +674,7 @@ in {
     hidden = true;
     ignores = lib.mkMerge [
       [ ".git/" "node_modules/" "target/" ]
-      (lib.mkIf wbus [ "/src/.repo/" ])
+      (lib.mkIf wbus [ ".repo/" ])
     ];
   };
 
@@ -1445,7 +1445,7 @@ in {
         "--glob=!{**/node_modules/*,**/.git/*,**/flake.lock,**/Cargo.lock,**/target/*}"
       ])
       (lib.mkIf wbus [
-        "--glob=!{**/node_modules/*,**/.git/*,**/flake.lock,**/Cargo.lock,**/target/*,**/RPMS/*,**/SRPMS/*,**/.repo/project*}"
+        "--glob=!{**/node_modules/*,**/.git/*,**/flake.lock,**/Cargo.lock,**/target/*,**/RPMS/*,**/SRPMS/*,**/.repo/*}"
       ])
       (lib.mkIf (wbus || work) [
         "--type-add=tac:*.tac"
