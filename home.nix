@@ -672,7 +672,10 @@ in {
   programs.fd = {
     enable = true;
     hidden = true;
-    ignores = [ ".git/" "node_modules/" "target/" ];
+    ignores = lib.mkMerge [
+      [ ".git/" "node_modules/" "target/" ]
+      (lib.mkIf wbus [ "/src/.repo/" ])
+    ];
   };
 
   programs.fzf = {
@@ -1430,17 +1433,26 @@ in {
 
   programs.ripgrep = {
     enable = true;
-    arguments = [
-      "--follow"
-      "--hidden"
-      "--smart-case"
-      "--max-columns=512"
-      "--max-columns-preview"
-      "--glob=!{**/node_modules/*,**/.git/*,**/flake.lock,**/Cargo.lock,**/target/*,**/RPMS/*,**/SRPMS/*}"
-      "--type-add=tac:*.tac"
-      "--type-add=tac:*.tac"
-      "--type-add=tin:*.tin"
-      "--type-add=itin:*.itin"
+    arguments = lib.mkMerge [
+      [
+        "--follow"
+        "--hidden"
+        "--smart-case"
+        "--max-columns=512"
+        "--max-columns-preview"
+      ]
+      (lib.mkIf (!wbus) [
+        "--glob=!{**/node_modules/*,**/.git/*,**/flake.lock,**/Cargo.lock,**/target/*}"
+      ])
+      (lib.mkIf wbus [
+        "--glob=!{**/node_modules/*,**/.git/*,**/flake.lock,**/Cargo.lock,**/target/*,**/RPMS/*,**/SRPMS/*,**/.repo/project*}"
+      ])
+      (lib.mkIf (wbus || work) [
+        "--type-add=tac:*.tac"
+        "--type-add=tac:*.tac"
+        "--type-add=tin:*.tin"
+        "--type-add=itin:*.itin"
+      ])
     ];
   };
 
