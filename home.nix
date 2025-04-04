@@ -315,7 +315,7 @@ in {
       zulu8
       openconnect
       (writeShellScriptBin "avpn" ''sudo openconnect --protocol=gp ''${1:-gp-ie.arista.com} -u tedj -c "$XDG_RUNTIME_DIR/agenix/tedj@arista.com.crt" -k "$XDG_RUNTIME_DIR/agenix/tedj@arista.com.pem"'')
-      (writeShellScriptBin "ash" ''host="''${1:+tedj-$1}"; host=''${host//[._]/-}; mosh --predict=always --predict-overwrite --experimental-remote-ip=remote "''${host:-bus-home}"'')
+      (writeShellScriptBin "ash" ''host="''${1:-home}"; mosh --predict=always --predict-overwrite --experimental-remote-ip=remote "tedj-''${host//[._]/-}"'')
       (writeShellScriptBin "asl" "arista-ssh check-auth || arista-ssh login")
     ])
 
@@ -1454,17 +1454,12 @@ in {
       match = ''host * exec "gpg-connect-agent updatestartuptty /bye"'';
     };
     matchBlocks."bus" = lib.mkIf work {
-      host = "bus-* tedj-*";
+      host = "tedj-*";
       user = "tedj";
       extraOptions.ForwardAgent = "/run/user/1000/arista-ssh/agent.sock";
       extraOptions.LogLevel = "error";
       extraOptions.StrictHostKeyChecking = "false";
       extraOptions.UserKnownHostsFile = "/dev/null";
-    };
-    matchBlocks."bus-home" = lib.mkIf work {
-      host = "bus-home";
-      hostname = "tedj-home";
-      port = 22;
     };
   };
 
