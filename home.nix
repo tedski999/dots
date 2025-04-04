@@ -121,7 +121,7 @@ in {
         choice="$([ -n "$1" ] && echo $1 || printf "%s\n" lock suspend $(pidof -q swayidle && echo caffeinate || echo decafeinate) reload logout reboot shutdown | bemenu -p "Power" -l 9)"
         case "$choice" in
           "lock") pkill borgmatic && pidwait systemd-inhibit; loginctl lock-session;;
-          "suspend") pkill borgmatic && pidwait systemd-inhibit; systemctl suspend;;
+          "suspend") pkill borgmatic && pidwait systemd-inhibit; systemctl suspend-then-hibernate;;
           "reload") swaymsg reload;;
           "logout") pkill borgmatic && pidwait systemd-inhibit; swaymsg exit;;
           "reboot") pkill borgmatic && pidwait systemd-inhibit; systemctl reboot;;
@@ -133,7 +133,7 @@ in {
             before-sleep 'loginctl lock-session' \
             timeout 590  'notify-send -i clock -t 10000 "Idle Warning" "Locking in 10 seconds..."' \
             timeout 600  'loginctl lock-session' \
-            timeout 3600 'systemctl suspend' &;;
+            timeout 3600 'systemctl suspend-then-hibernate' &;;
           *) exit 1;;
         esac || notify-send "Unable to $choice" "Is something running?"
       '')

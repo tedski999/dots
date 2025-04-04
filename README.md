@@ -14,6 +14,16 @@ sudo cryptsetup luksChangeKey /dev/nvme0n1p3 -S 0
 sudo cryptsetup --verbose open --test-passphrase /dev/nvme0n1p3
 ```
 
+Resize swap with a live USB
+
+Allow users to hibernate
+```sh
+echo '[User hibernation]
+Identity=unix-user:*
+Action=org.freedesktop.login1.hibernate;org.freedesktop.login1.handle-hibernate-key;org.freedesktop.login1;org.freedesktop.login1.hibernate-multiple-sessions;org.freedesktop.login1.hibernate-ignore-inhibit
+ResultActive=yes' | sudo tee /etc/polkit-1/localauthority/50-local.d/com.0.hibernate.pkla
+```
+
 Import agenix key:
 ```sh
 cp /mnt/tedj@work.agenix.key ~/.ssh/
