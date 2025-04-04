@@ -438,7 +438,7 @@ in {
         git add $@
       '') + "/bin/git-a";
       ".a4c/create".source = config.lib.file.mkOutOfStoreSymlink (pkgs.writeShellScriptBin "a4c-create" ''
-        # a ws yum install -y ArTacLSP
+        a ws yum install -y ArTacLSP
         sudo mkdir /nix
         sudo chown tedj: /nix
       '') + "/bin/a4c-create";
