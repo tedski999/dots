@@ -1643,7 +1643,11 @@ in {
     autocd = true;
     enableCompletion = true;
     completionInit = "autoload -U compinit && compinit -d '${config.xdg.cacheHome}/zcompdump'";
-    history = { path = "${config.xdg.dataHome}/zsh_history"; extended = true; ignoreAllDups = true; share = true; save = 1000000; size = 1000000; };
+    history.path = "${config.xdg.dataHome}/zsh_history";
+    history.save = 1000000;
+    history.size = 1000000;
+    history.append = true;
+    history.extended = true;
     localVariables.PROMPT = "\n%F{red}%n@%m%f %F{blue}%~%f %F{red}%(?..%?)%f\n>%f ";
     localVariables.TIMEFMT = "\nreal\t%E\nuser\t%U\nsys\t%S\ncpu\t%P";
     autosuggestion.enable = true;
