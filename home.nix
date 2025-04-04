@@ -41,9 +41,10 @@ in {
       TERMINAL = "alacritty";
       LAUNCHER = "bemenu-run";
       QT_QPA_PLATFORM = "wayland";
+      MOZ_ENABLE_WAYLAND = 1;
       _JAVA_AWT_WM_NONREPARENTING = 1;
     })
-    (lib.mkIf msung { BROWSER = "firefox"; MOZ_ENABLE_WAYLAND = 1; })
+    (lib.mkIf msung { BROWSER = "firefox"; })
     (lib.mkIf work { BROWSER = "chromium"; })
     (lib.mkIf wbus { AMAKE_EXPORT_COMPILE_COMMANDS = 1; })
   ];
@@ -306,7 +307,7 @@ in {
       mosh
     ])
 
-    (lib.mkIf msung [
+    (lib.mkIf (msung || work) [
       firefox
     ])
 
