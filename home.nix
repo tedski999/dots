@@ -323,11 +323,10 @@ in {
       delta
       (writeShellScriptBin "ahome" ''
         [ "$(hostname | cut -d- -f-2)" = "tedj-home" ] || exit 1
-        git -C ~/dots pull || exit 1
-        home-manager switch --flake ~/dots#tedj@wbus --refresh || exit 1
-        for n in $(a4c ps -N); do
+        [ -z "$@" ] && { git -C ~/dots pull && home-manager switch --flake ~/dots#tedj@wbus --refresh || exit 1; }
+        for n in ''${@:-$(a4c ps -N)}; do
           echo; echo "Syncing $n"
-          rsync -azhe "ssh -o StrictHostKeyChecking=no" /nix tedj-''${n//[._]/-}:/
+          rsync --info=progress2 -azhe "ssh -o StrictHostKeyChecking=no" /nix tedj-''${n//[._]/-}:/
         done
       '')
       (writeShellScriptBin "ag" ''
@@ -439,8 +438,8 @@ in {
       '') + "/bin/git-a";
       ".a4c/create".source = config.lib.file.mkOutOfStoreSymlink (pkgs.writeShellScriptBin "a4c-create" ''
         a ws yum install -y ArTacLSP
-        sudo mkdir /nix
-        sudo chown tedj: /nix
+        # mkdir /nix
+        # chown tedj: /nix
       '') + "/bin/a4c-create";
     })
 
@@ -1746,7 +1745,7 @@ in {
       ''
       (lib.mkIf work ''
         compdef 'compadd gp-ie.arista.com gp-ie.arista.com gp-eu.arista.com gp.arista.com' avpn
-        compdef 'compadd $([ $(($(date +%s) - $(date +%s -r ~/.cache/ashcache))) -lt 10 ] && cat ~/.cache/ashcache || ssh bus-home -- a4c ps -N | tee ~/.cache/ashcache)' ash
+        compdef 'compadd $([ $(($(date +%s) - $(date +%s -r ~/.cache/ashcache))) -lt 10 ] && cat ~/.cache/ashcache || ssh tedj-home -- a4c ps -N | tee ~/.cache/ashcache)' ash
       '')
       (lib.mkIf wbus ''
         git config --global include.path myconfig
