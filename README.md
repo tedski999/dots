@@ -1,7 +1,20 @@
 
 ## Installation notes
 
-Instructions for setting up environments on various non-NixOS devices.
+Instructions for setting up environments on various devices.
+
+### NixOS
+
+```
+cp /mnt/ski@msung.agenix.key ~/.ssh/
+```
+
+```
+gpg --import $XDG_RUNTIME_DIR/agenix/ski@h8c.de.gpg
+bw login
+rustup component add rust-analyzer
+rustup target add wasm32-unknown-unknown
+```
 
 ### Work Laptop - Ubuntu 22.04
 
