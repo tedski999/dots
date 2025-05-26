@@ -84,6 +84,7 @@ in {
       acpi
       bitwarden-cli
       brightnessctl
+      cloudflared
       gimp
       grim
       inkscape
@@ -1497,6 +1498,11 @@ in {
       extraOptions.LogLevel = "error";
       extraOptions.StrictHostKeyChecking = "false";
       extraOptions.UserKnownHostsFile = "/dev/null";
+    };
+    matchBlocks."ssh.h8c.de" = lib.mkIf (!wbus) {
+      host = "ssh.h8c.de";
+      user = "ski";
+      proxyCommand = "cloudflared access ssh --hostname %h";
     };
   };
 
