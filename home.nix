@@ -340,6 +340,32 @@ in {
         else a git $@
         fi
       '')
+      (writeShellScriptBin "kbld" ''
+       make -C /bld/EosKernel/Artools-rpmbuild/linux-[0-9]* O=bld-x86_64 ARCH=x86_64 -j 96 LOCALVERSION= bzImage || exit 1
+      '')
+      (writeShellScriptBin "kbld" ''
+       pushd /images || exit 1
+       sudo \rm -rf /tmp/EOS || exit 1
+       sudo swi extract ''${1:-EOS.swi} -d /tmp/EOS || exit 1
+       cd /bld/EosKernel/Artools-rpmbuild/linux-[0-9]* || exit 1
+       sudo cp bld-x86_64/arch/x86/boot/bzImage /tmp/EOS/Base.dir/boot/vmlinuz-EosKernel || exit 1
+       sudo cp bld-x86_64/arch/x86/boot/bzImage /tmp/EOS/linux-i386 || exit 1
+       cd /images || exit 1
+       sudo swi create -d /tmp/EOS/ ''${1:-EOS.swi} --fast || exit 1
+       popd || exit 1
+      '')
+      (writeShellScriptBin "ksan" ''
+       ART_DISPLAY_PROPERTIES=swiFlavor a dt info --show-properties "''${1%-[[:digit:]]}" | grep -q "swiFlavor *DPE" && swi=EOS-DPE.swi || swi=EOS.swi
+       for i in $@; do
+         echo "Copying $swi to $i"
+         rsync -azPh --rsh="sshpass -p arastra ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" /images/$swi root@$i:/mnt/flash/EOS.swi || exit 1
+         echo "Rebooting $i"
+         a dut ssh root@$i "sync; reboot" || exit 1
+       done
+       sleep 10
+       printf "Waiting for dut"
+       while ! { sleep 1 || exit; ping -c 1 -n -w 1 $1 &>/dev/null }; do printf "."; done
+      '')
     ])
   ];
 
