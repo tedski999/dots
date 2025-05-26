@@ -345,7 +345,7 @@ in {
       (writeShellScriptBin "kbld" ''
        make -C /bld/EosKernel/Artools-rpmbuild/linux-[0-9]* O=bld-x86_64 ARCH=x86_64 -j 96 LOCALVERSION= bzImage || exit 1
       '')
-      (writeShellScriptBin "kbld" ''
+      (writeShellScriptBin "kswi" ''
        pushd /images || exit 1
        sudo \rm -rf /tmp/EOS || exit 1
        sudo swi extract ''${1:-EOS.swi} -d /tmp/EOS || exit 1
