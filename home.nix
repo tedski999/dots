@@ -56,6 +56,7 @@ in {
       coreutils
       curl
       diffutils
+      dust
       file
       gawk
       gnused
