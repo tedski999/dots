@@ -368,6 +368,11 @@ in {
        printf "Waiting for dut"
        while ! { sleep 1 || exit; ping -c 1 -n -w 1 $1 &>/dev/null; }; do printf "."; done
       '')
+      (writeShellScriptBin "rfa" ''
+       cd /src/
+       repo forall -c $*
+       cd - > /dev/null
+      '')
     ])
   ];
 
