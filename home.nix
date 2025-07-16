@@ -490,8 +490,7 @@ in {
       '') + "/bin/git-a";
       ".a4c/create".source = config.lib.file.mkOutOfStoreSymlink (pkgs.writeShellScriptBin "a4c-create" ''
         a ws yum install -y ArTacLSP
-        # mkdir /nix
-        # chown tedj: /nix
+        install -d -o tedj -g tedj /nix
       '') + "/bin/a4c-create";
     })
 
