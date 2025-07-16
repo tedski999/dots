@@ -296,6 +296,8 @@ in {
       '')
 
       (writeShellScriptBin "bmbwd" ''
+        # bw get template item | jq ".name=\"XX\" | .login=$(bw get template item.login | jq '.username="XX" | .password="XX"') | .notes=\"\"" | bw encode | bw create item
+
         bmbw() {
           [ -z "$BW_SESSION" ] \
           && export BW_SESSION="$(: | bemenu -x indicator -l 0 -p 'Bitwarden Password:' | tr -d '\n' | base64 | bw unlock --raw)" \
@@ -305,6 +307,7 @@ in {
 
           [ -z "$items" ] \
           && notify-send -i lock "Bitwarden" -t 5000 "Updating items..." \
+          && bw sync \
           && items="$(bw list items)"
 
           echo "$items" | jq -r '.[] |
