@@ -53,6 +53,7 @@ in {
   home.packages = with pkgs; lib.mkMerge [
     [
       nix
+      brotli
       clang-tools
       coreutils
       curl
@@ -66,8 +67,10 @@ in {
       gzip
       iperf
       jq
+      just
       nmap
       p7zip
+      pkg-config
       procps
       pyright
       rustup
@@ -84,19 +87,25 @@ in {
 
     (lib.mkIf (msung || work) [
       acpi
+      binaryen
       bitwarden-cli
       brightnessctl
       cloudflared
+      emscripten
+      esbuild
       gimp
+      godot_4
       grim
       inkscape
+      krita
       libnotify
       nerd-fonts.terminess-ttf
       playerctl
       pulsemixer
+      scons
       slurp
-      trunk
       swayidle
+      wasm-bindgen-cli
       wl-clipboard
 
       (writeShellScriptBin "batteryd" ''
