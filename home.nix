@@ -25,6 +25,7 @@ in {
   home.homeDirectory = if msung || septs then "/home/ski" else "/home/tedj";
   home.preferXdgDirectories = true;
   home.language = { base = "en_IE.UTF-8"; };
+  home.shell = { enableZshIntegration = true; };
   home.keyboard = { layout = "ie"; options = [ "caps:escape" ]; };
   home.sessionVariables = lib.mkMerge [
     {
@@ -119,13 +120,14 @@ in {
         done
       '')
 
+      # TODO: hypridle?
       (writeShellScriptBin "powerctl" ''
         choice="$([ -n "$1" ] && echo $1 || printf "%s\n" lock suspend $(pidof -q swayidle && echo caffeinate || echo decafeinate) reload logout reboot shutdown | bemenu -p "Power" -l 9)"
         case "$choice" in
           "lock") pkill borgmatic && pidwait systemd-inhibit; loginctl lock-session;;
           "suspend") pkill borgmatic && pidwait systemd-inhibit; systemctl suspend-then-hibernate;;
-          "reload") swaymsg reload;;
-          "logout") pkill borgmatic && pidwait systemd-inhibit; swaymsg exit;;
+          "reload") hyprctl reload;;
+          "logout") pkill borgmatic && pidwait systemd-inhibit; hyprctl dispatch exit;;
           "reboot") pkill borgmatic && pidwait systemd-inhibit; systemctl reboot;;
           "shutdown") pkill borgmatic && pidwait systemd-inhibit; systemctl poweroff;;
           "caffeinate") pkill swayidle;;
@@ -237,46 +239,51 @@ in {
         esac
       '')
 
-      # TODO(laptop): different eDP-1 settings per device
       (writeShellScriptBin "displayctl" ''
         IFS=$'\n'
         choice="$([ -n "$1" ] && echo $1 || printf "%s\n" auto none work home | bemenu -p "Display" -l 5)"
-        [ "$choice" = "auto" ] && case "$(swaymsg -rt get_outputs | jq -r '.[] | .make+" "+.model+" "+.serial' | sort | xargs)" in
-          "AOC 2270W GNKJ1HA001311 Pixio USA Pixio PXC348C Unknown Samsung Display Corp. 0x419F Unknown") choice="home";;
-          "Lenovo Group Limited P24q-30 V90CP3VM Samsung Display Corp. 0x419F Unknown")                   choice="work";;
-          *)                                                                                              choice="none";;
+        [ "$choice" = "auto" ] && case "$(hyprctl -j monitors | jq -r '.[].description' | sort | xargs)" in
+          "AOC 2270W GNKJ1HA001311 Pixio USA Pixio PXC348C Samsung Display Corp. 0x419F") choice="home";;
+          "Lenovo Group Limited P24q-30 V90CP3VM Samsung Display Corp. 0x419F")           choice="work";;
+          *)                                                                              choice="none";;
         esac
         case "$choice" in
-          "none") swaymsg \
-            output \* disable, \
-            $(printf "output \"%s\" enable, " $(swaymsg -rt get_outputs | jq -r '.[] | .make+" "+.model+" "+.serial')) ;;
-          "work") swaymsg \
-            output \* disable, \
-            output \"Lenovo Group Limited P24q-30 V90CP3VM\" enable pos 0 0 transform 0 mode 2560x1440@59.951Hz, \
-            output \"Samsung Display Corp. 0x419F Unknown\" enable pos 320 1440 transform 0 mode 2880x1800@120Hz scale 1 ;;
-          "home") swaymsg \
-            output \* disable, \
-            output \"Pixio USA Pixio PXC348C Unknown\" enable pos 1080 240 transform 0 mode 3440x1440@100Hz, \
-            output \"Samsung Display Corp. 0x419F Unknown\" enable pos 1360 1680 transform 0 mode 2880x1800@120Hz scale 1, \
-            output \"AOC 2270W GNKJ1HA001311\" enable pos 0 0 transform 270 mode 1920x1080@60Hz ;;
+          "none")
+              hyprctl keyword monitor "desc:Samsung Display Corp. 0x419F, 2880x1800@120, 0x0, 2"
+              hyprctl keyword monitor "desc:AOC 2270W GNKJ1HA001311, 1920x1080@60, auto, 1"
+              hyprctl keyword monitor "desc:Pixio USA Pixio PXC348C, 3440x1440@100, auto, 1"
+              hyprctl keyword monitor "desc:Lenovo Group Limited P24q-30 V90CP3VM, 2560x1440@59.951, auto, 1"
+              ;;
+          "work")
+              hyprctl keyword monitor "desc:Samsung Display Corp. 0x419F, 2880x1800@120, 0x0, 2"
+              hyprctl keyword monitor "desc:AOC 2270W GNKJ1HA001311, 1920x1080@60, auto, 1"
+              hyprctl keyword monitor "desc:Pixio USA Pixio PXC348C, 3440x1440@100, auto, 1"
+              hyprctl keyword monitor "desc:Lenovo Group Limited P24q-30 V90CP3VM, 2560x1440@59.951, -320x-1440, 1" # TODO: probs wrong
+              ;;
+          "home")
+              hyprctl keyword monitor "desc:Samsung Display Corp. 0x419F, 2880x1800@120, 0x0, 2"
+              hyprctl keyword monitor "desc:AOC 2270W GNKJ1HA001311, 1920x1080@60, -1800x-1680, 1, transform, 1"
+              hyprctl keyword monitor "desc:Pixio USA Pixio PXC348C, 3440x1440@100, -720x-1440, 1"
+              hyprctl keyword monitor "desc:Lenovo Group Limited P24q-30 V90CP3VM, 2560x1440@59.951, auto, 1"
+              ;;
           *) exit 1 ;;
         esac
         notify-send -i monitor -t 5000 "Set display configuration" "Profile: $choice"
       '')
 
-      (writeShellScriptBin "swaytaskinput" ''
-        c=$(cat /tmp/swaytask)
-        t=$({ echo $c; swaymsg -rt get_workspaces | jq -r '.[].name' | grep "^0|" | cut -d'|' -f2 | sort -u; } | bemenu -l 10 -p "Task")
-        case "$t" in *\|*|*:*|*\ *|""|"$c") echo $c; exit 1;; *) echo $t;; esac
+      (writeShellScriptBin "hyprspaceinput" ''
+        p=$(cat /tmp/hyprspace)
+        n=$({ echo $p; hyprctl -j workspaces | jq -r '.[].name | select(test("[1-9]$"))[:-1]' | grep -v "^$" | sort -u; } | bemenu -l 10 -p "Task")
+        case "$n" in ""|"$p") echo $p; exit 1;; *) echo $n;; esac
       '')
 
-      (writeShellScriptBin "swaytaskset" ''
-        c=$(cat /tmp/swaytask)
-        swaymsg -q $(
-          for w in $(swaymsg -rt get_workspaces | jq -r '.[].name' | grep -v "^\(0|\|\(0:q\|0:a\|0:z\)$\)"); do echo "rename workspace $w to 0|$c|$(echo $w | tr ':' '|'):#, "; done
-          for w in $(swaymsg -rt get_workspaces | jq -r '.[].name' | grep -P "^\Q0|$1|\E"); do echo "rename workspace $w to $(echo $w | cut -d'|' -f3- | cut -d ':' -f1 | tr '|' ':'), "; done)
-        notify-send -i task-complete -t 2000 "Switched to $1" "Was on $c"
-        echo "$1" >/tmp/swaytask
+      (writeShellScriptBin "hyprspace" ''
+        p=$(cat /tmp/hyprspace)
+        n=$(hyprspaceinput) || exit 1
+        hyprctl --batch $(hyprctl -j workspaces | jq -r '.[] | select(.name | .=="1"or.=="2"or.=="3"or.=="4"or.=="5"or.=="6"or.=="7"or.=="8"or.=="9") | "dispatch renameworkspace " + (.id | tostring) + " '$p'" + .name + ";"')
+        hyprctl --batch $(hyprctl -j workspaces | jq -r '.[] | select(.name | .=="'$n'1"or.=="'$n'2"or.=="'$n'3"or.=="'$n'4"or.=="'$n'5"or.=="'$n'6"or.=="'$n'7"or.=="'$n'8"or.=="'$n'9") | "dispatch renameworkspace " + (.id | tostring) + " " + .name[''\'''${#n}':] + ";"')
+        notify-send -i task-complete -t 2000 "Switched to $n" "Was on $p"
+        echo "$n" >/tmp/hyprspace
       '')
 
       (writeShellScriptBin "bmbwd" ''
@@ -808,9 +815,9 @@ in {
     defaultCacheTtlSsh = 86400;
     maxCacheTtl = 2592000;
     maxCacheTtlSsh = 2592000;
-    pinentryPackage = pkgs.pinentry-curses;
     enableSshSupport = true;
     sshKeys = [ "613AB861624F38ECCEBBB3764CF4A761DBE24D1B" ];
+    pinentry.package = pkgs.pinentry-curses;
   };
 
   programs.home-manager = {
@@ -1635,7 +1642,6 @@ in {
 
   programs.yazi = {
     enable = true;
-    enableZshIntegration = true;
     shellWrapperName = "y";
     settings.manager.ratio =  [0  3  2];
     settings.manager.show_hidden = true;
@@ -1739,12 +1745,10 @@ in {
     shellAliases.deldel = "gtrash find --rm ";
     shellGlobalAliases.cat = "bat --paging=never ";
     shellGlobalAliases.pb = lib.mkIf (work || wbus) "curl -F c=@- pb";
-    initExtraFirst = lib.mkMerge [
-      (lib.mkIf work ''[[ -o interactive && -o login && -z "$WAYLAND_DISPLAY" && "$(tty)" = "/dev/tty1" ]] && exec sway >>${config.xdg.cacheHome}/swaylog-$(date -Iseconds) 2>&1'')
-      (lib.mkIf wbus ''export PATH="$HOME/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$PATH"'')
-    ];
-    initExtra = lib.mkMerge [
-      ''
+    initContent = lib.mkMerge [
+      (lib.mkIf work (lib.mkBefore ''[[ -o interactive && -o login && -z "$WAYLAND_DISPLAY" && "$(tty)" = "/dev/tty1" ]] && exec hyprland >>${config.xdg.cacheHome}/hyprlog-$(date -Iseconds) 2>&1''))
+      (lib.mkIf wbus (lib.mkBefore ''export PATH="$HOME/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$PATH"''))
+      (lib.mkAfter ''
         setopt autopushd pushdsilent promptsubst notify completeinword globcomplete globdots
         # word delimiters
         autoload -U select-word-style
@@ -1780,15 +1784,16 @@ in {
         zstyle ":completion:*:*:*:*:descriptions" format "%F{green}-- %d --%f"
         zstyle ":completion:*:messages" format " %F{purple} -- %d --%f"
         zstyle ":completion:*:warnings" format " %F{red}-- no matches --%f"
-      ''
-      (lib.mkIf work ''
+      '')
+      (lib.mkIf work (lib.mkAfter ''
         compdef 'compadd gp-ie.arista.com gp-ie.arista.com gp-eu.arista.com gp.arista.com' avpn
         compdef 'compadd $([ $(($(date +%s) - $(date +%s -r ~/.cache/ashcache))) -lt 10 ] && cat ~/.cache/ashcache || ssh tedj-home -- a4c ps -N | tee ~/.cache/ashcache)' ash
-      '')
-      (lib.mkIf wbus ''
+      ''))
+      (lib.mkIf wbus (lib.mkAfter ''
         git config --global include.path myconfig
         compdef _git-a ag
-      '')
+        # compdef 'a4c ps -N' ahome
+      ''))
     ];
     plugins = lib.mkIf wbus [
       {
@@ -1857,33 +1862,15 @@ in {
         position = "top";
         height = 25;
         spacing = 10;
-        modules-left = [ "sway/workspaces" "sway/window" ];
+        start_hidden = true;
+        exclusive = false;
+        modules-left = [ "hyprland/workspaces" "hyprland/window" ];
         modules-center = [];
-        modules-right = [ "custom/media" "custom/caffeinated" "bluetooth" "disk" "custom/swaytask" "cpu" "memory" "network" "pulseaudio" "battery" "clock" ];
-        "sway/workspaces" = { tooltip = false; /*all-outputs = true;*/ format = "{name}"; };
-        "sway/window" = { tooltip = false; max-length = 200; };
-        "custom/media" = {
-          exec = pkgs.writeShellScript "waybar-media" ''
-            out=""
-            max_len=25
-            status="$(playerctl status 2>/dev/null)"
-            [ "$status" = "Playing" ] || [ "$status" = "Paused" ] && {
-              out="$(playerctl metadata title)"
-              [ ''${#out} -gt "$max_len" ] && {
-                i="$(( ( $(date +%s) % ( ''${#out} + 3 ) ) + 1 ))"
-                out="$(echo "$out   $out" | tail -c +$i)"
-              }
-            }
-            out="$(echo "$out" | head -c "$(( $max_len - 1 ))")"
-            printf '{"text": %s, "class": %s}\n' \
-              "$(echo -n "$out" | jq --raw-input --slurp --ascii-output)" \
-              "$(echo -n "$status" | jq --raw-input --slurp --ascii-output)"
-          '';
-          return-type = "json";
-          interval = 1;
-        };
+        modules-right = [ "custom/caffeinated" "bluetooth" "disk" "custom/hyprspace" "cpu" "memory" "network" "pulseaudio" "battery" "clock" ];
+        "hyprland/workspaces" = { format = "{name:.1}"; all-outputs = true; move-to-monitor = true; show-special = true; sort-by = "name"; };
+        "hyprland/window" = { format = "{title:.300}"; separate-outputs = true; };
         "custom/caffeinated" = { interval = 1; exec = pkgs.writeShellScript "waybar-coffee" ''pidof -q swayidle && echo "" || echo "C"''; };
-        "custom/swaytask" = { interval = 1; exec = pkgs.writeShellScript "waybar-swaytask" ''echo "$(cat /tmp/swaytask)"''; };
+        "custom/hyprspace" = { interval = 1; exec = pkgs.writeShellScript "waybar-hyprspace" ''echo "$(cat /tmp/hyprspace)"''; };
         bluetooth = { tooltip = false; format = ""; format-connected = "{num_connections}"; };
         cpu = { tooltip = false; interval = 1; format = if msung then "TODO" else "{icon0}{icon1}{icon2}{icon3}{icon4}{icon5}{icon6}{icon7}{icon8}{icon9}{icon10}{icon11}{icon12}{icon13}"; format-icons = rampicons; };
         memory = { tooltip = false; interval = 5; format = "{icon}"; format-icons = rampicons; };
@@ -1905,17 +1892,14 @@ in {
       #workspaces button { border: none; border-radius: 0; min-width: 0; padding: 0 5px; animation: none; }
       #workspaces button.focused { background-color: #ffffff; color: #000000; }
       #workspaces button.urgent { background-color: #404040; animation: luminate 1s steps(30) infinite alternate; }
-
-      #workspaces button#sway-workspace-0\:q:not(.focused),
-      #workspaces button#sway-workspace-0\:a:not(.focused),
-      #workspaces button#sway-workspace-0\:z:not(.focused) { color: #ff8080; }
-      #workspaces button#sway-workspace-0\:q.focused,
-      #workspaces button#sway-workspace-0\:a.focused,
-      #workspaces button#sway-workspace-0\:z.focused { background-color: #ffcccc; }
+      #workspaces button.hosting-monitor.visible { background-color: #808080; color: #000000; }
+      #workspaces button.hosting-monitor.active { background-color: #ffffff; color: #000000; }
+      #workspaces button.special { color: #ff8080; }
+      #workspaces button.hosting-monitor.special.active { color: #000000; background-color: #ffcccc; }
 
       #custom-media.Paused { color: #606060; }
       #custom-caffeinated { color: #ff8000; }
-      #custom-swaytask { color: #808080; }
+      #custom-hyprspace { color: #808080; }
 
       #bluetooth { color: #00ffff; }
 
@@ -1937,197 +1921,176 @@ in {
     '';
   };
 
-  wayland.windowManager.sway = lib.mkIf (msung || work) {
+  wayland.windowManager.hyprland = lib.mkIf (msung || work) {
     enable = true;
-    package = lib.mkIf work (config.lib.nixGL.wrap pkgs.sway);
-    extraOptions = lib.mkIf work [ "--unsupported-gpu" ];
-    wrapperFeatures = { gtk = true; };
-    systemd = { enable = true; variables = [ "--all" ]; };
-    extraConfigEarly = ''
-      set $send_brightness_notif b=$(($(brightnessctl get)00/$(brightnessctl max))) && notify-send -i brightness-high --category osd --hint "int:value:$b" "Brightness: $b%"
-      set $send_volume_notif v=$(pulsemixer --get-volume | cut -d' ' -f1) && notify-send -i audio-volume-high --category osd --hint "int:value:$v" "Volume: $v% $([ $(pulsemixer --get-mute) = 1 ] && echo '[MUTED]')"
-    '';
-
-    config.modifier = "Mod4";
-    config.workspaceLayout = "default";
-    config.focus = { followMouse = false; mouseWarping = "output"; wrapping = "no"; };
-    config.floating = { modifier = "Mod4"; border = 1; titlebar = false; };
-    config.window = { border = 1; hideEdgeBorders = "none"; titlebar = false; commands = [ { criteria.class = ".*"; command = "border pixel 1"; } { criteria.app_id = ".*"; command = "border pixel 1"; } { criteria.app_id = "floating.*"; command = "floating enable"; } ]; };
-    config.gaps = { inner = 5; };
-    config.modes = {};
-    config.fonts = {};
-    config.output = { "*".bg = "#101010 solid_color"; };
-    config.bars = [ { command = "waybar"; mode = "hide"; } ];
-    config.startup = [
-      { command = "pidof -x batteryd || batteryd"; always = true; }
-      { command = "pidof -x bmbwd || bmbwd"; always = true; }
-      { command = "displayctl auto"; always = true; }
-      { command = "powerctl decafeinate"; }
-      { command = "echo sway >/tmp/swaytask"; }
+    package = lib.mkIf work (config.lib.nixGL.wrap pkgs.hyprland);
+    settings.monitor = [ ", preferred, auto, auto" ];
+    settings.general.gaps_in = 5;
+    settings.general.gaps_out = 5;
+    settings.general.border_size = 2;
+    settings.general."col.active_border" = "rgb(ffffff)";
+    settings.general."col.inactive_border" = "rgb(333333)";
+    settings.general.resize_on_border = false;
+    settings.general.allow_tearing = false;
+    settings.general.layout = "dwindle";
+    settings.decoration.rounding = 0;
+    settings.decoration.shadow.enabled = false;
+    settings.decoration.blur.enabled = false;
+    settings.animations.enabled = true;
+    settings.animations.first_launch_animation = false;
+    settings.animations.bezier = "linear,0,0,1,1";
+    settings.animations.animation = [
+      "global, 1, 1, linear"
+      "border, 0"
+      "workspaces, 1, 1, linear, fade"
+      "windowsIn, 1, 1, linear, gnomed"
+      "windowsOut, 0"
     ];
+    settings.dwindle.force_split = 2;
+    settings.dwindle.preserve_split = true;
+    settings.dwindle.split_width_multiplier = 0;
+    settings.master.new_status = "master";
+    settings.misc.disable_hyprland_logo = true;
+    settings.misc.disable_autoreload = true;
+    settings.input.kb_layout = "ie";
+    settings.input.kb_options = "caps:escape";
+    settings.input.repeat_rate = 30;
+    settings.input.repeat_delay = 250;
+    settings.input.follow_mouse = 0;
+    settings.input.float_switch_override_focus = 0;
+    settings.input.sensitivity = 0;
+    settings.input.touchpad.natural_scroll = true;
+    settings.exec-once = [
+      "echo hypr >/tmp/hyprspace"
+      "powerctl decafeinate"
+    ];
+    settings.exec = [
+      "pidof -x batteryd || batteryd"
+      "pidof -x bmbwd || bmbwd"
+      "pidof -x waybar || waybar"
+      "displayctl auto"
+    ];
+    settings.bind = [
+      ''SUPER, Return, exec, $TERMINAL''
+      ''SUPER, Space, exec, $LAUNCHER''
+      ''SUPER, S, exec, $BROWSER''
+      ''SUPER, F, exec, hyprctl dispatch focuswindow $(hyprctl activewindow -j | jq -e .floating >/dev/null && echo tiled || echo floating)''
+      ''SUPER SHIFT, F, exec, hyprctl dispatch $(hyprctl activewindow -j | jq -e .floating >/dev/null && echo settiled || echo setfloating)''
+      ''SUPER, M, fullscreen,''
+      ''SUPER, O, togglesplit,''
+      ''SUPER, C, pin,''
+      ''SUPER, X, killactive,''
 
-    config.colors.focused         = { border = "#202020"; background = "#ffffff"; text = "#000000"; indicator = "#ff0000"; childBorder = "#ffffff"; };
-    config.colors.focusedInactive = { border = "#202020"; background = "#202020"; text = "#ffffff"; indicator = "#202020"; childBorder = "#202020"; };
-    config.colors.unfocused       = { border = "#202020"; background = "#202020"; text = "#808080"; indicator = "#202020"; childBorder = "#202020"; };
-    config.colors.urgent          = { border = "#2f343a"; background = "#202020"; text = "#ffffff"; indicator = "#900000"; childBorder = "#900000"; };
+      ''SUPER, 1, focusworkspaceoncurrentmonitor, name:1''
+      ''SUPER, 2, focusworkspaceoncurrentmonitor, name:2''
+      ''SUPER, 3, focusworkspaceoncurrentmonitor, name:3''
+      ''SUPER, 4, focusworkspaceoncurrentmonitor, name:4''
+      ''SUPER, 5, focusworkspaceoncurrentmonitor, name:5''
+      ''SUPER, 6, focusworkspaceoncurrentmonitor, name:6''
+      ''SUPER, 7, focusworkspaceoncurrentmonitor, name:7''
+      ''SUPER, 8, focusworkspaceoncurrentmonitor, name:8''
+      ''SUPER, 9, focusworkspaceoncurrentmonitor, name:9''
+      ''SUPER SHIFT, 1, movetoworkspacesilent, name:1''
+      ''SUPER SHIFT, 2, movetoworkspacesilent, name:2''
+      ''SUPER SHIFT, 3, movetoworkspacesilent, name:3''
+      ''SUPER SHIFT, 4, movetoworkspacesilent, name:4''
+      ''SUPER SHIFT, 5, movetoworkspacesilent, name:5''
+      ''SUPER SHIFT, 6, movetoworkspacesilent, name:6''
+      ''SUPER SHIFT, 7, movetoworkspacesilent, name:7''
+      ''SUPER SHIFT, 8, movetoworkspacesilent, name:8''
+      ''SUPER SHIFT, 9, movetoworkspacesilent, name:9''
 
-    config.input."type:keyboard".xkb_layout = "ie";
-    config.input."type:keyboard".xkb_options = "caps:escape";
-    config.input."type:keyboard".repeat_delay = "250";
-    config.input."type:keyboard".repeat_rate = "30";
-    config.input."type:touchpad".dwt = "enabled";
-    config.input."type:touchpad".tap = "enabled";
-    config.input."type:touchpad".natural_scroll = "enabled";
-    config.input."type:touchpad".click_method = "clickfinger";
-    config.input."type:touchpad".scroll_method = "two_finger";
+      ''SUPER, 0, exec, hyprspace''
+      # TODO "SUPER SHIFT, 0, exec, hyprspaceinput hyprctl dispatch movetoworkspacesilent name:"
+      ''SUPER CONTROL, 0, exec, n=$(hyprspaceinput) && ! hyprctl -j workspaces | jq -e '.[].name | select(.=="'$n'1"or.=="'$n'2"or.=="'$n'3"or.=="'$n'4"or.=="'$n'5"or.=="'$n'6"or.=="'$n'7"or.=="'$n'8"or.=="'$n'9")' && echo $n >/tmp/hyprspace''
 
-    config.keybindings."Mod4+Return"     = "exec $TERMINAL";
-    config.keybindings."Mod4+space"      = "exec $LAUNCHER";
-    config.keybindings."Mod4+s"          = "exec $BROWSER";
+      ''SUPER, q, togglespecialworkspace, q''
+      ''SUPER SHIFT, q, movetoworkspacesilent, special:q''
+      ''SUPER, a, togglespecialworkspace, a''
+      ''SUPER SHIFT, a, movetoworkspacesilent, special:a''
+      ''SUPER, z, togglespecialworkspace, z'' # TODO: menu to select special
+      ''SUPER SHIFT, z, movetoworkspacesilent, special:z''
 
-    config.keybindings."Mod4+g"       = "focus parent";
-    config.keybindings."Mod4+Shift+g" = "focus child";
-    config.keybindings."Mod4+f"       = "focus mode_toggle";
-    config.keybindings."Mod4+Shift+f" = "border pixel 1, floating toggle";
-    config.keybindings."Mod4+p"       = "split vertical";
-    config.keybindings."Mod4+Shift+p" = "split none";
-    config.keybindings."Mod4+o"       = "layout toggle splitv splith";
-    config.keybindings."Mod4+Shift+o" = "layout toggle split tabbed";
-    config.keybindings."Mod4+c"       = "sticky toggle";
-    config.keybindings."Mod4+m"       = "fullscreen";
-    config.keybindings."Mod4+x"       = "kill";
+      '', Print, exec, slurp -b '#ffffff20' | grim -g - - | tee "$HOME/Pictures/Screenshot_$(date '+%Y%m%d_%H%M%S').png" | wl-copy --type image/png''
+      ''SHIFT, Print, exec, hyprctl -j activewindow | jq -r '"\(.at[0]),\(.at[1]) \(.size[0])x\(.size[1])"' | slurp -B '#ffffff20' | grim -g - - | tee "$HOME/Pictures/Screenshot_$(date '+%Y%m%d_%H%M%S').png" | wl-copy --type image/png''
+      ''CONTROL, Print, exec, slurp -oB '#ffffff20' | grim -g - - | tee "$HOME/Pictures/Screenshot_$(date '+%Y%m%d_%H%M%S').png" | wl-copy --type image/png''
 
-    config.keybindings."Mod4+h"         = "focus left";
-    config.keybindings."Mod4+Shift+h"   = "move left 50px";
-    config.keybindings."Mod4+Control+h" = "resize shrink width 50px";
-    config.keybindings."Mod4+j"         = "focus down";
-    config.keybindings."Mod4+Shift+j"   = "move down 50px";
-    config.keybindings."Mod4+Control+j" = "resize grow height 50px";
-    config.keybindings."Mod4+k"         = "focus up";
-    config.keybindings."Mod4+Shift+k"   = "move up 50px";
-    config.keybindings."Mod4+Control+k" = "resize shrink height 50px";
-    config.keybindings."Mod4+l"         = "focus right";
-    config.keybindings."Mod4+Shift+l"   = "move right 50px";
-    config.keybindings."Mod4+Control+l" = "resize grow width 50px";
+      ''SUPER, grave, exec, makoctl dismiss''
+      ''SUPER SHIFT, grave, exec, makoctl restore''
+      ''SUPER CONTROL, grave, exec, makoctl menu bemenu --prompt 'Action' ''
 
-    config.keybindings."Mod4+1" = ''exec a="$(swaymsg -rt get_workspaces | jq -r '.[] | select(.focused) | .output')" && swaymsg "workspace 1,    move workspace to \"$a\""'';
-    config.keybindings."Mod4+2" = ''exec a="$(swaymsg -rt get_workspaces | jq -r '.[] | select(.focused) | .output')" && swaymsg "workspace 2,    move workspace to \"$a\""'';
-    config.keybindings."Mod4+3" = ''exec a="$(swaymsg -rt get_workspaces | jq -r '.[] | select(.focused) | .output')" && swaymsg "workspace 3,    move workspace to \"$a\""'';
-    config.keybindings."Mod4+4" = ''exec a="$(swaymsg -rt get_workspaces | jq -r '.[] | select(.focused) | .output')" && swaymsg "workspace 4,    move workspace to \"$a\""'';
-    config.keybindings."Mod4+5" = ''exec a="$(swaymsg -rt get_workspaces | jq -r '.[] | select(.focused) | .output')" && swaymsg "workspace 5,    move workspace to \"$a\""'';
-    config.keybindings."Mod4+6" = ''exec a="$(swaymsg -rt get_workspaces | jq -r '.[] | select(.focused) | .output')" && swaymsg "workspace 6,    move workspace to \"$a\""'';
-    config.keybindings."Mod4+7" = ''exec a="$(swaymsg -rt get_workspaces | jq -r '.[] | select(.focused) | .output')" && swaymsg "workspace 7,    move workspace to \"$a\""'';
-    config.keybindings."Mod4+8" = ''exec a="$(swaymsg -rt get_workspaces | jq -r '.[] | select(.focused) | .output')" && swaymsg "workspace 8,    move workspace to \"$a\""'';
-    config.keybindings."Mod4+9" = ''exec a="$(swaymsg -rt get_workspaces | jq -r '.[] | select(.focused) | .output')" && swaymsg "workspace 9,    move workspace to \"$a\""'';
-    config.keybindings."Mod4+w" = ''exec a="$(swaymsg -rt get_workspaces | jq -r '.[] | select(.focused) | .output')" && swaymsg "workspace 10:w, move workspace to \"$a\""'';
-    config.keybindings."Mod4+e" = ''exec a="$(swaymsg -rt get_workspaces | jq -r '.[] | select(.focused) | .output')" && swaymsg "workspace 11:e, move workspace to \"$a\""'';
-    config.keybindings."Mod4+r" = ''exec a="$(swaymsg -rt get_workspaces | jq -r '.[] | select(.focused) | .output')" && swaymsg "workspace 12:r, move workspace to \"$a\""'';
-    config.keybindings."Mod4+t" = ''exec a="$(swaymsg -rt get_workspaces | jq -r '.[] | select(.focused) | .output')" && swaymsg "workspace 13:t, move workspace to \"$a\""'';
-    config.keybindings."Mod4+q" = ''exec a="$(swaymsg -rt get_workspaces | jq -r '.[] | select(.focused) | .output')" && swaymsg "workspace 0:q, move workspace to \"$a\""'';
-    config.keybindings."Mod4+a" = ''exec a="$(swaymsg -rt get_workspaces | jq -r '.[] | select(.focused) | .output')" && swaymsg "workspace 0:a, move workspace to \"$a\""'';
-    config.keybindings."Mod4+z" = ''exec a="$(swaymsg -rt get_workspaces | jq -r '.[] | select(.focused) | .output')" && swaymsg "workspace 0:z, move workspace to \"$a\""'';
-    config.keybindings."Mod4+Shift+1" = ''exec a="$(swaymsg -rt get_workspaces | jq -r '.[] | select(.focused) | .output')" && swaymsg "move container workspace 1,    workspace 1, move workspace to \"$a\""'';
-    config.keybindings."Mod4+Shift+2" = ''exec a="$(swaymsg -rt get_workspaces | jq -r '.[] | select(.focused) | .output')" && swaymsg "move container workspace 2,    workspace 2, move workspace to \"$a\""'';
-    config.keybindings."Mod4+Shift+3" = ''exec a="$(swaymsg -rt get_workspaces | jq -r '.[] | select(.focused) | .output')" && swaymsg "move container workspace 3,    workspace 3, move workspace to \"$a\""'';
-    config.keybindings."Mod4+Shift+4" = ''exec a="$(swaymsg -rt get_workspaces | jq -r '.[] | select(.focused) | .output')" && swaymsg "move container workspace 4,    workspace 4, move workspace to \"$a\""'';
-    config.keybindings."Mod4+Shift+5" = ''exec a="$(swaymsg -rt get_workspaces | jq -r '.[] | select(.focused) | .output')" && swaymsg "move container workspace 5,    workspace 5, move workspace to \"$a\""'';
-    config.keybindings."Mod4+Shift+6" = ''exec a="$(swaymsg -rt get_workspaces | jq -r '.[] | select(.focused) | .output')" && swaymsg "move container workspace 6,    workspace 6, move workspace to \"$a\""'';
-    config.keybindings."Mod4+Shift+7" = ''exec a="$(swaymsg -rt get_workspaces | jq -r '.[] | select(.focused) | .output')" && swaymsg "move container workspace 7,    workspace 7, move workspace to \"$a\""'';
-    config.keybindings."Mod4+Shift+8" = ''exec a="$(swaymsg -rt get_workspaces | jq -r '.[] | select(.focused) | .output')" && swaymsg "move container workspace 8,    workspace 8, move workspace to \"$a\""'';
-    config.keybindings."Mod4+Shift+9" = ''exec a="$(swaymsg -rt get_workspaces | jq -r '.[] | select(.focused) | .output')" && swaymsg "move container workspace 9,    workspace 9, move workspace to \"$a\""'';
-    config.keybindings."Mod4+Shift+w" = ''exec a="$(swaymsg -rt get_workspaces | jq -r '.[] | select(.focused) | .output')" && swaymsg "move container workspace 10:w, workspace 10:w, move workspace to \"$a\""'';
-    config.keybindings."Mod4+Shift+e" = ''exec a="$(swaymsg -rt get_workspaces | jq -r '.[] | select(.focused) | .output')" && swaymsg "move container workspace 11:e, workspace 11:e, move workspace to \"$a\""'';
-    config.keybindings."Mod4+Shift+r" = ''exec a="$(swaymsg -rt get_workspaces | jq -r '.[] | select(.focused) | .output')" && swaymsg "move container workspace 12:r, workspace 12:r, move workspace to \"$a\""'';
-    config.keybindings."Mod4+Shift+t" = ''exec a="$(swaymsg -rt get_workspaces | jq -r '.[] | select(.focused) | .output')" && swaymsg "move container workspace 13:t, workspace 13:t, move workspace to \"$a\""'';
-    config.keybindings."Mod4+Shift+q" = ''exec a="$(swaymsg -rt get_workspaces | jq -r '.[] | select(.focused) | .output')" && swaymsg "move container workspace 0:q, workspace 0:q, move workspace to \"$a\""'';
-    config.keybindings."Mod4+Shift+a" = ''exec a="$(swaymsg -rt get_workspaces | jq -r '.[] | select(.focused) | .output')" && swaymsg "move container workspace 0:a, workspace 0:a, move workspace to \"$a\""'';
-    config.keybindings."Mod4+Shift+z" = ''exec a="$(swaymsg -rt get_workspaces | jq -r '.[] | select(.focused) | .output')" && swaymsg "move container workspace 0:z, workspace 0:z, move workspace to \"$a\""'';
-    config.keybindings."Mod4+Control+1" = ''move container workspace 1'';
-    config.keybindings."Mod4+Control+2" = ''move container workspace 2'';
-    config.keybindings."Mod4+Control+3" = ''move container workspace 3'';
-    config.keybindings."Mod4+Control+4" = ''move container workspace 4'';
-    config.keybindings."Mod4+Control+5" = ''move container workspace 5'';
-    config.keybindings."Mod4+Control+6" = ''move container workspace 6'';
-    config.keybindings."Mod4+Control+7" = ''move container workspace 7'';
-    config.keybindings."Mod4+Control+8" = ''move container workspace 8'';
-    config.keybindings."Mod4+Control+9" = ''move container workspace 9'';
-    config.keybindings."Mod4+Control+w" = ''move container workspace 10:w'';
-    config.keybindings."Mod4+Control+e" = ''move container workspace 11:e'';
-    config.keybindings."Mod4+Control+r" = ''move container workspace 12:r'';
-    config.keybindings."Mod4+Control+t" = ''move container workspace 13:t'';
-    config.keybindings."Mod4+Control+q" = ''move container workspace 0:q'';
-    config.keybindings."Mod4+Control+a" = ''move container workspace 0:a'';
-    config.keybindings."Mod4+Control+z" = ''move container workspace 0:z'';
+      ''SUPER, v, exec, cliphist list | bemenu --prompt 'Clipboard' | cliphist decode | wl-copy''
 
-    config.keybindings."Mod4+Tab"               = ''exec n=$(swaytaskinput) && ow="$(swaymsg -rt get_workspaces | jq -r '.[] | select(.visible) | .output+" "+.name')" && swaytaskset "$n" && swaymsg "$(printf 'focus output %s, workspace %s, ' $(echo $ow))"'';
-    config.keybindings."Mod4+Shift+Tab"         = ''exec n=$(swaytaskinput) && ow="$(swaymsg -rt get_workspaces | jq -r '.[] | select(.visible) | .output+" "+.name')" && w="$(swaymsg -rt get_workspaces | jq -r '.[] | select(.focused).name')" && swaytaskset "$n" && swaymsg "move container workspace $w, $(printf 'focus output %s, workspace %s, ' $(echo $ow))"'';
-    config.keybindings."Mod4+Control+Tab"       = ''exec n=$(swaytaskinput) && w="$(swaymsg -rt get_workspaces | jq -r '.[] | select(.focused).name')" && swaymsg "move container workspace 0|$n|$(echo $w | tr ':' '|'):#"'';
-    config.keybindings."Mod4+Control+Shift+Tab" = ''exec n=$(swaytaskinput) && ! swaymsg -rt get_workspaces | jq -r '.[].name' | grep -qP "^\Q0|$n|\E" && echo $n >/tmp/swaytask'';
+      ''SUPER, Escape, exec, powerctl''
+      ''SUPER SHIFT, Escape, exec, powerctl lock''
+      ''SUPER CONTROL, Escape, exec, powerctl suspend''
+      ''SUPER SHIFT CONTROL, Escape, exec, powerctl reload''
 
-    config.keybindings."Mod4+equal"         = ''exec o=$(swaymsg -rt get_outputs | jq -r '.[] | select(.focused) | .name') && swaymsg output "$o" scale $(swaymsg -rt get_outputs | jq -r '.[] | select(.focused) | .scale * 1.1')'';
-    config.keybindings."Mod4+minus"         = ''exec o=$(swaymsg -rt get_outputs | jq -r '.[] | select(.focused) | .name') && swaymsg output "$o" scale $(swaymsg -rt get_outputs | jq -r '.[] | select(.focused) | .scale / 1.1')'';
-    config.keybindings."Mod4+Shift+equal"   = ''exec o=$(swaymsg -rt get_outputs | jq -r '.[] | select(.focused) | .name') && swaymsg output "$o" scale $(swaymsg -rt get_outputs | jq -r '.[] | select(.focused) | .scale * 1.5')'';
-    config.keybindings."Mod4+Shift+minus"   = ''exec o=$(swaymsg -rt get_outputs | jq -r '.[] | select(.focused) | .name') && swaymsg output "$o" scale $(swaymsg -rt get_outputs | jq -r '.[] | select(.focused) | .scale / 1.5')'';
-    config.keybindings."Mod4+Control+equal" = ''exec o=$(swaymsg -rt get_outputs | jq -r '.[] | select(.focused) | .name') && swaymsg output "$o" scale 2'';
-    config.keybindings."Mod4+Control+minus" = ''exec o=$(swaymsg -rt get_outputs | jq -r '.[] | select(.focused) | .name') && swaymsg output "$o" scale 1'';
+      ''SUPER, n, exec, networkctl''
+      ''SUPER SHIFT, n, exec, networkctl wifi''
+      ''SUPER CONTROL, n, exec, networkctl bluetooth''
 
-    config.keybindings."Print"         = ''exec slurp -b '#ffffff20' | grim -g - - | tee "$HOME/Pictures/Screenshot_$(date '+%Y%m%d_%H%M%S').png" | wl-copy --type image/png'';
-    config.keybindings."Shift+Print"   = ''exec swaymsg -t get_tree | jq -r '.. | select(.pid? and .visible?) | .rect | "\(.x),\(.y) \(.width)x\(.height)"' | slurp -B '#ffffff20' | grim -g - - | tee "$HOME/Pictures/Screenshot_$(date '+%Y%m%d_%H%M%S').png" | wl-copy --type image/png'';
-    config.keybindings."Control+Print" = ''exec slurp -oB '#ffffff20' | grim -g - - | tee "$HOME/Pictures/Screenshot_$(date '+%Y%m%d_%H%M%S').png" | wl-copy --type image/png'';
+      ''SUPER, Apostrophe, exec, displayctl''
+      ''SUPER SHIFT, Apostrophe, exec, displayctl auto''
+      ''SUPER CONTROL, Apostrophe, exec, displayctl none''
 
-    config.keybindings."--locked XF86MonBrightnessDown"         = "exec brightnessctl set 1%-  && $send_brightness_notif";
-    config.keybindings."--locked Shift+XF86MonBrightnessDown"   = "exec brightnessctl set 10%- && $send_brightness_notif";
-    config.keybindings."--locked Control+XF86MonBrightnessDown" = "exec brightnessctl set 1    && $send_brightness_notif";
-    config.keybindings."--locked XF86MonBrightnessUp"           = "exec brightnessctl set 1%+  && $send_brightness_notif";
-    config.keybindings."--locked Shift+XF86MonBrightnessUp"     = "exec brightnessctl set 10%+ && $send_brightness_notif";
-    config.keybindings."--locked Control+XF86MonBrightnessUp"   = "exec brightnessctl set 100% && $send_brightness_notif";
+      ''SUPER, b, exec, pkill -USR1 bmbwd''
+      ''SUPER SHIFT, b, exec, pkill -USR2 bmbwd''
+      ''SUPER CONTROL, b, exec, pkill -TERM bmbwd''
+    ];
+    settings.binde = [
+      ''SUPER, h, movefocus, l''
+      ''SUPER, l, movefocus, r''
+      ''SUPER, k, movefocus, u''
+      ''SUPER, j, movefocus, d''
+      ''SUPER SHIFT, h, movewindow, l''
+      ''SUPER SHIFT, l, movewindow, r''
+      ''SUPER SHIFT, k, movewindow, u''
+      ''SUPER SHIFT, j, movewindow, d''
+      ''SUPER CONTROL, h, resizeactive, -100    0''
+      ''SUPER CONTROL, l, resizeactive,  100    0''
+      ''SUPER CONTROL, k, resizeactive,   0  -100''
+      ''SUPER CONTROL, j, resizeactive,   0   100''
+      ''SUPER, equal, exec, hyprctl -q keyword cursor:zoom_factor $(hyprctl -j getoption cursor:zoom_factor | jq '[.float * 1.25, 999] | min')''
+      ''SUPER, minus, exec, hyprctl -q keyword cursor:zoom_factor $(hyprctl -j getoption cursor:zoom_factor | jq '[.float * 0.75, 1] | max')''
+    ];
+    settings.bindle = [
+      '', XF86MonBrightnessDown,        exec, brightnessctl set 1%-  && b=$(($(brightnessctl get)00/$(brightnessctl max))) && notify-send -i brightness-high --category osd --hint "int:value:$b" "Brightness: $b%"''
+      ''SHIFT, XF86MonBrightnessDown,   exec, brightnessctl set 10%- && b=$(($(brightnessctl get)00/$(brightnessctl max))) && notify-send -i brightness-high --category osd --hint "int:value:$b" "Brightness: $b%"''
+      ''CONTROL, XF86MonBrightnessDown, exec, brightnessctl set 1    && b=$(($(brightnessctl get)00/$(brightnessctl max))) && notify-send -i brightness-high --category osd --hint "int:value:$b" "Brightness: $b%"''
+      '', XF86MonBrightnessUp,          exec, brightnessctl set 1%+  && b=$(($(brightnessctl get)00/$(brightnessctl max))) && notify-send -i brightness-high --category osd --hint "int:value:$b" "Brightness: $b%"''
+      ''SHIFT, XF86MonBrightnessUp,     exec, brightnessctl set 10%+ && b=$(($(brightnessctl get)00/$(brightnessctl max))) && notify-send -i brightness-high --category osd --hint "int:value:$b" "Brightness: $b%"''
+      ''CONTROL, XF86MonBrightnessUp,   exec, brightnessctl set 100% && b=$(($(brightnessctl get)00/$(brightnessctl max))) && notify-send -i brightness-high --category osd --hint "int:value:$b" "Brightness: $b%"''
 
-    config.keybindings."--locked XF86AudioMute"                                = "exec pulsemixer --toggle-mute       && $send_volume_notif";
-    config.keybindings."--locked Shift+XF86AudioMute"                          = "exec                                   $send_volume_notif";
-    config.keybindings."--locked Control+XF86AudioMute"                        = "exec pulsemixer --toggle-mute       && $send_volume_notif";
-    config.keybindings."--locked XF86AudioLowerVolume"                         = "exec pulsemixer --change-volume  -1 && $send_volume_notif";
-    config.keybindings."--locked Shift+XF86AudioLowerVolume"                   = "exec pulsemixer --change-volume -10 && $send_volume_notif";
-    config.keybindings."--locked Control+XF86AudioLowerVolume"                 = "exec pulsemixer --set-volume      0 && $send_volume_notif";
-    config.keybindings."--locked XF86AudioRaiseVolume"                         = "exec pulsemixer --change-volume  +1 && $send_volume_notif";
-    config.keybindings."--locked Shift+XF86AudioRaiseVolume"                   = "exec pulsemixer --change-volume +10 && $send_volume_notif";
-    config.keybindings."--locked Control+XF86AudioRaiseVolume"                 = "exec pulsemixer --set-volume    100 && $send_volume_notif";
-    config.keybindings."--locked --no-repeat Pause"                            = "exec pulsemixer --id $(pulsemixer --list-sources | grep 'Default' | cut -d',' -f1 | cut -d' ' -f3) --unmute";
-    config.keybindings."--locked --no-repeat --release Pause"                  = "exec pulsemixer --id $(pulsemixer --list-sources | grep 'Default' | cut -d',' -f1 | cut -d' ' -f3) --mute";
-    config.keybindings."--locked --no-repeat --release --whole-window button8" = "exec pulsemixer --id $(pulsemixer --list-sources | grep 'Default' | cut -d',' -f1 | cut -d' ' -f3) --toggle-mute";
-    config.keybindings."--locked XF86AudioMicMute"                             = "exec pulsemixer --id $(pulsemixer --list-sources | grep 'Default' | cut -d',' -f1 | cut -d' ' -f3) --toggle-mute";
+      '', XF86AudioMute,               exec, pulsemixer --toggle-mute       && v=$(pulsemixer --get-volume | cut -d' ' -f1) && notify-send -i audio-volume-high --category osd --hint "int:value:$v" "Volume: $v% $([ $(pulsemixer --get-mute) = 1 ] && echo '[MUTED]')"''
+      ''SHIFT, XF86AudioMute,          exec,                                   v=$(pulsemixer --get-volume | cut -d' ' -f1) && notify-send -i audio-volume-high --category osd --hint "int:value:$v" "Volume: $v% $([ $(pulsemixer --get-mute) = 1 ] && echo '[MUTED]')"''
+      ''CONTROL, XF86AudioMute,        exec, pulsemixer --toggle-mute       && v=$(pulsemixer --get-volume | cut -d' ' -f1) && notify-send -i audio-volume-high --category osd --hint "int:value:$v" "Volume: $v% $([ $(pulsemixer --get-mute) = 1 ] && echo '[MUTED]')"''
+      '', XF86AudioLowerVolume,        exec, pulsemixer --change-volume  -1 && v=$(pulsemixer --get-volume | cut -d' ' -f1) && notify-send -i audio-volume-high --category osd --hint "int:value:$v" "Volume: $v% $([ $(pulsemixer --get-mute) = 1 ] && echo '[MUTED]')"''
+      ''SHIFT, XF86AudioLowerVolume,   exec, pulsemixer --change-volume -10 && v=$(pulsemixer --get-volume | cut -d' ' -f1) && notify-send -i audio-volume-high --category osd --hint "int:value:$v" "Volume: $v% $([ $(pulsemixer --get-mute) = 1 ] && echo '[MUTED]')"''
+      ''CONTROL, XF86AudioLowerVolume, exec, pulsemixer --set-volume      0 && v=$(pulsemixer --get-volume | cut -d' ' -f1) && notify-send -i audio-volume-high --category osd --hint "int:value:$v" "Volume: $v% $([ $(pulsemixer --get-mute) = 1 ] && echo '[MUTED]')"''
+      '', XF86AudioRaiseVolume,        exec, pulsemixer --change-volume  +1 && v=$(pulsemixer --get-volume | cut -d' ' -f1) && notify-send -i audio-volume-high --category osd --hint "int:value:$v" "Volume: $v% $([ $(pulsemixer --get-mute) = 1 ] && echo '[MUTED]')"''
+      ''SHIFT, XF86AudioRaiseVolume,   exec, pulsemixer --change-volume +10 && v=$(pulsemixer --get-volume | cut -d' ' -f1) && notify-send -i audio-volume-high --category osd --hint "int:value:$v" "Volume: $v% $([ $(pulsemixer --get-mute) = 1 ] && echo '[MUTED]')"''
+      ''CONTROL, XF86AudioRaiseVolume, exec, pulsemixer --set-volume    100 && v=$(pulsemixer --get-volume | cut -d' ' -f1) && notify-send -i audio-volume-high --category osd --hint "int:value:$v" "Volume: $v% $([ $(pulsemixer --get-mute) = 1 ] && echo '[MUTED]')"''
 
-    config.keybindings."Mod4+grave"         = "exec makoctl dismiss";
-    config.keybindings."Mod4+Shift+grave"   = "exec makoctl restore";
-    config.keybindings."Mod4+Control+grave" = "exec makoctl menu bemenu --prompt 'Action'";
-
-    config.keybindings."Mod4+v" = "exec cliphist list | bemenu --prompt 'Clipboard' | cliphist decode | wl-copy";
-
-    config.keybindings."--locked XF86AudioPlay"         = "exec playerctl play-pause";
-    config.keybindings."--locked Shift+XF86AudioPlay"   = "exec playerctl pause";
-    config.keybindings."--locked Control+XF86AudioPlay" = "exec playerctl stop";
-    config.keybindings."--locked XF86AudioPrev"         = "exec playerctl position 1-";
-    config.keybindings."--locked Shift+XF86AudioPrev"   = "exec playerctl position 10-";
-    config.keybindings."--locked Control+XF86AudioPrev" = "exec playerctl previous";
-    config.keybindings."--locked XF86AudioNext"         = "exec playerctl position 1+";
-    config.keybindings."--locked Shift+XF86AudioNext"   = "exec playerctl position 10+";
-    config.keybindings."--locked Control+XF86AudioNext" = "exec playerctl next";
-
-    config.keybindings."Mod4+Escape"                        = "exec powerctl";
-    config.keybindings."Mod4+Shift+Escape"                  = "exec powerctl lock";
-    config.keybindings."--locked Mod4+Control+Escape"       = "exec powerctl suspend";
-    config.keybindings."--locked Mod4+Control+Shift+Escape" = "exec powerctl reload";
-
-    config.keybindings."Mod4+n"         = "exec networkctl";
-    config.keybindings."Mod4+Shift+n"   = "exec networkctl wifi";
-    config.keybindings."Mod4+Control+n" = "exec networkctl bluetooth";
-
-    config.keybindings."Mod4+Apostrophe"               = "exec displayctl";
-    config.keybindings."Mod4+Shift+Apostrophe"         = "exec displayctl auto";
-    config.keybindings."Mod4+Control+Apostrophe"       = "exec displayctl none";
-
-    config.keybindings."Mod4+b"         = "exec pkill -USR1 bmbwd";
-    config.keybindings."Mod4+Shift+b"   = "exec pkill -USR2 bmbwd";
-    config.keybindings."Mod4+Control+b" = "exec pkill -TERM bmbwd";
+      '', XF86AudioMicMute, exec, pulsemixer --id $(pulsemixer --list-sources | grep 'Default' | cut -d',' -f1 | cut -d' ' -f3) --toggle-mute''
+      #", Pause"                            = "exec, pulsemixer --id $(pulsemixer --list-sources | grep 'Default' | cut -d',' -f1 | cut -d' ' -f3) --unmute";
+      #"--release Pause"                  = "exec, pulsemixer --id $(pulsemixer --list-sources | grep 'Default' | cut -d',' -f1 | cut -d' ' -f3) --mute";
+      #"--release --whole-window button8" = "exec, pulsemixer --id $(pulsemixer --list-sources | grep 'Default' | cut -d',' -f1 | cut -d' ' -f3) --toggle-mute";
+    ];
+    settings.bindit = [
+      ''SUPER, SUPER_L, exec, pkill -SIGUSR1 waybar''
+    ];
+    settings.binditr = [
+      ''SUPER, SUPER_L, exec, pkill -SIGUSR1 waybar''
+    ];
+    settings.bindm = [
+      ''SUPER, mouse:272, movewindow''
+      ''SUPER, mouse:273, resizewindow''
+    ];
+    settings.windowrule = [
+      ''suppressevent maximize, class:.*''
+      ''nofocus,class:^$,title:^$,xwayland:1,floating:1,fullscreen:0,pinned:0''
+    ];
   };
 
   services.mako = lib.mkIf (msung || work) {
