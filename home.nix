@@ -267,7 +267,7 @@ in {
               hyprctl keyword monitor "desc:Samsung Display Corp. 0x419F, 2880x1800@120, 0x0, 2"
               hyprctl keyword monitor "desc:AOC 2270W GNKJ1HA001311, 1920x1080@60, auto, 1"
               hyprctl keyword monitor "desc:Pixio USA Pixio PXC348C, 3440x1440@100, auto, 1"
-              hyprctl keyword monitor "desc:Lenovo Group Limited P24q-30 V90CP3VM, 2560x1440@59.951, -320x-1440, 1" # TODO: probs wrong
+              hyprctl keyword monitor "desc:Lenovo Group Limited P24q-30 V90CP3VM, 2560x1440@59.951, -560x-1440, 1"
               ;;
           "home")
               hyprctl keyword monitor "desc:Samsung Display Corp. 0x419F, 2880x1800@120, 0x0, 2"
@@ -1868,8 +1868,7 @@ in {
       rampicons = [ "<span color='#00ff00'>▁</span>" "<span color='#00ff00'>▂</span>" "<span color='#00ff00'>▃</span>" "<span color='#00ff00'>▄</span>" "<span color='#ff8000'>▅</span>" "<span color='#ff8000'>▆</span>" "<span color='#ff8000'>▇</span>" "<span color='#ff0000'>█</span>" ];
     in [
       {
-        ipc = true;
-        layer = "top";
+        layer = "overlay";
         position = "top";
         height = 25;
         spacing = 10;
@@ -1967,7 +1966,7 @@ in {
     settings.input.kb_options = "caps:escape";
     settings.input.repeat_rate = 30;
     settings.input.repeat_delay = 250;
-    settings.input.follow_mouse = 0;
+    settings.input.follow_mouse = 1;
     settings.input.float_switch_override_focus = 0;
     settings.input.sensitivity = 0;
     settings.input.touchpad.natural_scroll = true;
@@ -1989,6 +1988,8 @@ in {
       ''SUPER SHIFT, F, exec, hyprctl dispatch $(hyprctl activewindow -j | jq -e .floating >/dev/null && echo settiled || echo setfloating)''
       ''SUPER, M, fullscreen,''
       ''SUPER, O, togglesplit,''
+      ''SUPER, P, layoutmsg, preselect d''
+      ''SUPER SHIFT, P, layoutmsg, preselect r''
       ''SUPER, C, pin,''
       ''SUPER, X, killactive,''
 
@@ -2050,20 +2051,20 @@ in {
       ''SUPER CONTROL, b, exec, pkill -TERM bmbwd''
     ];
     settings.binde = [
-      ''SUPER, h, movefocus, l''
-      ''SUPER, l, movefocus, r''
-      ''SUPER, k, movefocus, u''
-      ''SUPER, j, movefocus, d''
-      ''SUPER SHIFT, h, movewindow, l''
-      ''SUPER SHIFT, l, movewindow, r''
-      ''SUPER SHIFT, k, movewindow, u''
-      ''SUPER SHIFT, j, movewindow, d''
-      ''SUPER CONTROL, h, resizeactive, -100    0''
-      ''SUPER CONTROL, l, resizeactive,  100    0''
-      ''SUPER CONTROL, k, resizeactive,   0  -100''
-      ''SUPER CONTROL, j, resizeactive,   0   100''
-      ''SUPER, equal, exec, hyprctl -q keyword cursor:zoom_factor $(hyprctl -j getoption cursor:zoom_factor | jq '[.float * 1.25, 999] | min')''
-      ''SUPER, minus, exec, hyprctl -q keyword cursor:zoom_factor $(hyprctl -j getoption cursor:zoom_factor | jq '[.float * 0.75, 1] | max')''
+      ''SUPER, H, movefocus, l''
+      ''SUPER, L, movefocus, r''
+      ''SUPER, K, movefocus, u''
+      ''SUPER, J, movefocus, d''
+      ''SUPER SHIFT, H, movewindow, l''
+      ''SUPER SHIFT, L, movewindow, r''
+      ''SUPER SHIFT, K, movewindow, u''
+      ''SUPER SHIFT, J, movewindow, d''
+      ''SUPER CONTROL, H, resizeactive, -100    0''
+      ''SUPER CONTROL, L, resizeactive,  100    0''
+      ''SUPER CONTROL, K, resizeactive,   0  -100''
+      ''SUPER CONTROL, J, resizeactive,   0   100''
+      ''SUPER, equal, exec, hyprctl -q keyword cursor:zoom_factor $(hyprctl -j getoption cursor:zoom_factor | jq '[.float * 1.5, 999] | min')''
+      ''SUPER, minus, exec, hyprctl -q keyword cursor:zoom_factor $(hyprctl -j getoption cursor:zoom_factor | jq '[.float * 0.5, 1] | max')''
     ];
     settings.bindle = [
       '', XF86MonBrightnessDown,        exec, brightnessctl set 1%-  && b=$(($(brightnessctl get)00/$(brightnessctl max))) && notify-send -i brightness-high --category osd --hint "int:value:$b" "Brightness: $b%"''
@@ -2095,8 +2096,10 @@ in {
       ''SUPER, SUPER_L, exec, pkill -SIGUSR1 waybar''
     ];
     settings.bindm = [
-      ''SUPER, mouse:272, movewindow''
-      ''SUPER, mouse:273, resizewindow''
+      ''SUPER SHIFT, mouse:272, movewindow''
+      ''SUPER CONTROL, mouse:272, resizewindow''
+      ''SUPER SHIFT, mouse:273, movewindow''
+      ''SUPER CONTROL, mouse:273, resizewindow''
     ];
     settings.windowrule = [
       ''suppressevent maximize, class:.*''
