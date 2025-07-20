@@ -135,8 +135,8 @@ in {
         case "$choice" in
           "lock") pkill borgmatic && pidwait systemd-inhibit; loginctl lock-session;;
           "suspend") pkill borgmatic && pidwait systemd-inhibit; systemctl suspend-then-hibernate;;
-          "reload") hyprctl reload;;
-          "logout") pkill borgmatic && pidwait systemd-inhibit; hyprctl dispatch exit;;
+          "reload") hyprctl -q reload;;
+          "logout") pkill borgmatic && pidwait systemd-inhibit; hyprctl -q dispatch exit;;
           "reboot") pkill borgmatic && pidwait systemd-inhibit; systemctl reboot;;
           "shutdown") pkill borgmatic && pidwait systemd-inhibit; systemctl poweroff;;
           "caffeinate") pkill swayidle;;
@@ -258,26 +258,28 @@ in {
         esac
         case "$choice" in
           "none")
-              hyprctl keyword monitor "desc:Samsung Display Corp. 0x419F, 2880x1800@120, 0x0, 2"
-              hyprctl keyword monitor "desc:AOC 2270W GNKJ1HA001311, 1920x1080@60, auto, 1"
-              hyprctl keyword monitor "desc:Pixio USA Pixio PXC348C, 3440x1440@100, auto, 1"
-              hyprctl keyword monitor "desc:Lenovo Group Limited P24q-30 V90CP3VM, 2560x1440@59.951, auto, 1"
+              hyprctl -q keyword monitor "desc:Samsung Display Corp. 0x419F, 2880x1800@120, 0x0, 2"
+              hyprctl -q keyword monitor "desc:AOC 2270W GNKJ1HA001311, 1920x1080@60, auto, 1"
+              hyprctl -q keyword monitor "desc:Pixio USA Pixio PXC348C, 3440x1440@100, auto, 1"
+              hyprctl -q keyword monitor "desc:Lenovo Group Limited P24q-30 V90CP3VM, 2560x1440@59.951, auto, 1"
               ;;
           "work")
-              hyprctl keyword monitor "desc:Samsung Display Corp. 0x419F, 2880x1800@120, 0x0, 2"
-              hyprctl keyword monitor "desc:AOC 2270W GNKJ1HA001311, 1920x1080@60, auto, 1"
-              hyprctl keyword monitor "desc:Pixio USA Pixio PXC348C, 3440x1440@100, auto, 1"
-              hyprctl keyword monitor "desc:Lenovo Group Limited P24q-30 V90CP3VM, 2560x1440@59.951, -560x-1440, 1"
+              hyprctl -q keyword monitor "desc:Samsung Display Corp. 0x419F, 2880x1800@120, 0x0, 2"
+              hyprctl -q keyword monitor "desc:AOC 2270W GNKJ1HA001311, 1920x1080@60, auto, 1"
+              hyprctl -q keyword monitor "desc:Pixio USA Pixio PXC348C, 3440x1440@100, auto, 1"
+              hyprctl -q keyword monitor "desc:Lenovo Group Limited P24q-30 V90CP3VM, 2560x1440@59.951, -560x-1440, 1"
               ;;
           "home")
-              hyprctl keyword monitor "desc:Samsung Display Corp. 0x419F, 2880x1800@120, 0x0, 2"
-              hyprctl keyword monitor "desc:AOC 2270W GNKJ1HA001311, 1920x1080@60, -1800x-1680, 1, transform, 1"
-              hyprctl keyword monitor "desc:Pixio USA Pixio PXC348C, 3440x1440@100, -720x-1440, 1"
-              hyprctl keyword monitor "desc:Lenovo Group Limited P24q-30 V90CP3VM, 2560x1440@59.951, auto, 1"
+              hyprctl -q keyword monitor "desc:Samsung Display Corp. 0x419F, 2880x1800@120, 0x0, 2"
+              hyprctl -q keyword monitor "desc:AOC 2270W GNKJ1HA001311, 1920x1080@60, -1800x-1680, 1, transform, 1"
+              hyprctl -q keyword monitor "desc:Pixio USA Pixio PXC348C, 3440x1440@100, -720x-1440, 1"
+              hyprctl -q keyword monitor "desc:Lenovo Group Limited P24q-30 V90CP3VM, 2560x1440@59.951, auto, 1"
               ;;
           *) exit 1 ;;
         esac
         notify-send -i monitor -t 5000 "Set display configuration" "Profile: $choice"
+        sleep 1
+        pkill waybar
       '')
 
       (writeShellScriptBin "hyprspaceinput" ''
@@ -289,8 +291,8 @@ in {
       (writeShellScriptBin "hyprspace" ''
         p=$(cat /tmp/hyprspace)
         n=$(hyprspaceinput) || exit 1
-        hyprctl --batch $(hyprctl -j workspaces | jq -r '.[] | select(.name | .=="1"or.=="2"or.=="3"or.=="4"or.=="5"or.=="6"or.=="7"or.=="8"or.=="9") | "dispatch renameworkspace " + (.id | tostring) + " '$p'" + .name + ";"')
-        hyprctl --batch $(hyprctl -j workspaces | jq -r '.[] | select(.name | .=="'$n'1"or.=="'$n'2"or.=="'$n'3"or.=="'$n'4"or.=="'$n'5"or.=="'$n'6"or.=="'$n'7"or.=="'$n'8"or.=="'$n'9") | "dispatch renameworkspace " + (.id | tostring) + " " + .name[''\'''${#n}':] + ";"')
+        hyprctl -q --batch $(hyprctl -j workspaces | jq -r '.[] | select(.name | .=="1"or.=="2"or.=="3"or.=="4"or.=="5"or.=="6"or.=="7"or.=="8"or.=="9") | "dispatch renameworkspace " + (.id | tostring) + " '$p'" + .name + ";"')
+        hyprctl -q --batch $(hyprctl -j workspaces | jq -r '.[] | select(.name | .=="'$n'1"or.=="'$n'2"or.=="'$n'3"or.=="'$n'4"or.=="'$n'5"or.=="'$n'6"or.=="'$n'7"or.=="'$n'8"or.=="'$n'9") | "dispatch renameworkspace " + (.id | tostring) + " " + .name[''\'''${#n}':] + ";"')
         notify-send -i task-complete -t 2000 "Switched to $n" "Was on $p"
         echo "$n" >/tmp/hyprspace
       '')
@@ -1934,6 +1936,7 @@ in {
   wayland.windowManager.hyprland = lib.mkIf (msung || work) {
     enable = true;
     package = lib.mkIf work (config.lib.nixGL.wrap pkgs.hyprland);
+    #plugins = with pkgs; [];
     settings.monitor = [ ", preferred, auto, auto" ];
     settings.general.gaps_in = 5;
     settings.general.gaps_out = 5;
@@ -1942,7 +1945,7 @@ in {
     settings.general."col.inactive_border" = "rgb(333333)";
     settings.general.resize_on_border = false;
     settings.general.allow_tearing = false;
-    settings.general.layout = "dwindle";
+    settings.general.layout = "dwindle"; # TODO: my own :)
     settings.decoration.rounding = 0;
     settings.decoration.shadow.enabled = false;
     settings.decoration.blur.enabled = false;
@@ -1959,7 +1962,6 @@ in {
     settings.dwindle.force_split = 2;
     settings.dwindle.preserve_split = true;
     settings.dwindle.split_width_multiplier = 0;
-    settings.master.new_status = "master";
     settings.misc.disable_hyprland_logo = true;
     settings.misc.disable_autoreload = true;
     settings.input.kb_layout = "ie";
@@ -1975,135 +1977,144 @@ in {
       "powerctl decafeinate"
     ];
     settings.exec = [
-      "pidof -x batteryd || batteryd"
-      "pidof -x bmbwd || bmbwd"
-      "pidof -x waybar || waybar"
+      "pidof -x bmbwd || while true; do bmbwd; done"
+      "pidof -x batteryd || while true; do batteryd; done"
+      "pidof -x waybar || while true; do waybar; done"
       "displayctl auto"
     ];
     settings.bind = [
-      ''SUPER, Return, exec, $TERMINAL''
-      ''SUPER, Space, exec, $LAUNCHER''
-      ''SUPER, S, exec, $BROWSER''
-      ''SUPER, F, exec, hyprctl dispatch focuswindow $(hyprctl activewindow -j | jq -e .floating >/dev/null && echo tiled || echo floating)''
-      ''SUPER SHIFT, F, exec, hyprctl dispatch $(hyprctl activewindow -j | jq -e .floating >/dev/null && echo settiled || echo setfloating)''
-      ''SUPER, M, fullscreen,''
-      ''SUPER, O, togglesplit,''
-      ''SUPER, P, layoutmsg, preselect d''
-      ''SUPER SHIFT, P, layoutmsg, preselect r''
-      ''SUPER, C, pin,''
-      ''SUPER, X, killactive,''
+      ''super, return, exec, $TERMINAL''
+      ''super, space, exec, $LAUNCHER''
+      ''super, s, exec, $BROWSER''
+      ''super, f, exec, hyprctl -q dispatch focuswindow $(hyprctl activewindow -j | jq -e .floating >/dev/null && echo tiled || echo floating)''
+      ''super shift, f, exec, hyprctl -q dispatch $(hyprctl activewindow -j | jq -e .floating >/dev/null && echo settiled || echo setfloating)''
+      ''super, m, fullscreen,''
+      ''super, o, togglesplit,''
+      ''super, p, layoutmsg, preselect d''
+      ''super shift, p, layoutmsg, preselect r''
+      ''super, c, pin,''
+      ''super, x, killactive,''
 
-      ''SUPER, 1, focusworkspaceoncurrentmonitor, name:1''
-      ''SUPER, 2, focusworkspaceoncurrentmonitor, name:2''
-      ''SUPER, 3, focusworkspaceoncurrentmonitor, name:3''
-      ''SUPER, 4, focusworkspaceoncurrentmonitor, name:4''
-      ''SUPER, 5, focusworkspaceoncurrentmonitor, name:5''
-      ''SUPER, 6, focusworkspaceoncurrentmonitor, name:6''
-      ''SUPER, 7, focusworkspaceoncurrentmonitor, name:7''
-      ''SUPER, 8, focusworkspaceoncurrentmonitor, name:8''
-      ''SUPER, 9, focusworkspaceoncurrentmonitor, name:9''
-      ''SUPER SHIFT, 1, movetoworkspacesilent, name:1''
-      ''SUPER SHIFT, 2, movetoworkspacesilent, name:2''
-      ''SUPER SHIFT, 3, movetoworkspacesilent, name:3''
-      ''SUPER SHIFT, 4, movetoworkspacesilent, name:4''
-      ''SUPER SHIFT, 5, movetoworkspacesilent, name:5''
-      ''SUPER SHIFT, 6, movetoworkspacesilent, name:6''
-      ''SUPER SHIFT, 7, movetoworkspacesilent, name:7''
-      ''SUPER SHIFT, 8, movetoworkspacesilent, name:8''
-      ''SUPER SHIFT, 9, movetoworkspacesilent, name:9''
+      ''super, 1, focusworkspaceoncurrentmonitor, name:1''
+      ''super, 2, focusworkspaceoncurrentmonitor, name:2''
+      ''super, 3, focusworkspaceoncurrentmonitor, name:3''
+      ''super, 4, focusworkspaceoncurrentmonitor, name:4''
+      ''super, 5, focusworkspaceoncurrentmonitor, name:5''
+      ''super, 6, focusworkspaceoncurrentmonitor, name:6''
+      ''super, 7, focusworkspaceoncurrentmonitor, name:7''
+      ''super, 8, focusworkspaceoncurrentmonitor, name:8''
+      ''super, 9, focusworkspaceoncurrentmonitor, name:9''
+      ''super shift, 1, movetoworkspacesilent, name:1''
+      ''super shift, 2, movetoworkspacesilent, name:2''
+      ''super shift, 3, movetoworkspacesilent, name:3''
+      ''super shift, 4, movetoworkspacesilent, name:4''
+      ''super shift, 5, movetoworkspacesilent, name:5''
+      ''super shift, 6, movetoworkspacesilent, name:6''
+      ''super shift, 7, movetoworkspacesilent, name:7''
+      ''super shift, 8, movetoworkspacesilent, name:8''
+      ''super shift, 9, movetoworkspacesilent, name:9''
 
-      ''SUPER, 0, exec, hyprspace''
-      # TODO "SUPER SHIFT, 0, exec, hyprspaceinput hyprctl dispatch movetoworkspacesilent name:"
-      ''SUPER CONTROL, 0, exec, n=$(hyprspaceinput) && ! hyprctl -j workspaces | jq -e '.[].name | select(.=="'$n'1"or.=="'$n'2"or.=="'$n'3"or.=="'$n'4"or.=="'$n'5"or.=="'$n'6"or.=="'$n'7"or.=="'$n'8"or.=="'$n'9")' && echo $n >/tmp/hyprspace''
+      ''super, 0, exec, hyprspace''
+      ''super shift, 0, exec, i=$(hyprctl -j activeworkspace | jq -er '.name | match("[[:digit:]]$").string') && n=$(hyprspaceinput) && hyprctl -q dispatch movetoworkspacesilent "name:$n$i"''
+      ''super control, 0, exec, n=$(hyprspaceinput) && ! hyprctl -j workspaces | jq -e '.[].name | select(.=="'$n'1"or.=="'$n'2"or.=="'$n'3"or.=="'$n'4"or.=="'$n'5"or.=="'$n'6"or.=="'$n'7"or.=="'$n'8"or.=="'$n'9")' && echo $n >/tmp/hyprspace''
 
-      ''SUPER, q, togglespecialworkspace, q''
-      ''SUPER SHIFT, q, movetoworkspacesilent, special:q''
-      ''SUPER, a, togglespecialworkspace, a''
-      ''SUPER SHIFT, a, movetoworkspacesilent, special:a''
-      ''SUPER, z, togglespecialworkspace, z'' # TODO: menu to select special
-      ''SUPER SHIFT, z, movetoworkspacesilent, special:z''
+      ''super, q, togglespecialworkspace, q''
+      ''super shift, q, movetoworkspacesilent, special:q''
+      ''super, a, togglespecialworkspace, a''
+      ''super shift, a, movetoworkspacesilent, special:a''
+      ''super, z, togglespecialworkspace, z''
+      ''super shift, z, movetoworkspacesilent, special:z''
 
-      '', Print, exec, slurp -b '#ffffff20' | grim -g - - | tee "$HOME/Pictures/Screenshot_$(date '+%Y%m%d_%H%M%S').png" | wl-copy --type image/png''
-      ''SHIFT, Print, exec, hyprctl -j activewindow | jq -r '"\(.at[0]),\(.at[1]) \(.size[0])x\(.size[1])"' | slurp -B '#ffffff20' | grim -g - - | tee "$HOME/Pictures/Screenshot_$(date '+%Y%m%d_%H%M%S').png" | wl-copy --type image/png''
-      ''CONTROL, Print, exec, slurp -oB '#ffffff20' | grim -g - - | tee "$HOME/Pictures/Screenshot_$(date '+%Y%m%d_%H%M%S').png" | wl-copy --type image/png''
+      '', print, exec, flameshot gui --clipboard --path "$HOME/Pictures/Screenshot_$(date '+%Y%m%d_%H%M%S').png"''
+      ''shift, print, exec, flameshot full --clipboard --path "$HOME/Pictures/Screenshot_$(date '+%Y%m%d_%H%M%S').png"''
 
-      ''SUPER, grave, exec, makoctl dismiss''
-      ''SUPER SHIFT, grave, exec, makoctl restore''
-      ''SUPER CONTROL, grave, exec, makoctl menu bemenu --prompt 'Action' ''
+      ''super, grave, exec, makoctl dismiss''
+      ''super shift, grave, exec, makoctl restore''
+      ''super control, grave, exec, makoctl menu bemenu --prompt 'Action' ''
 
-      ''SUPER, v, exec, cliphist list | bemenu --prompt 'Clipboard' | cliphist decode | wl-copy''
+      ''super, v, exec, cliphist list | bemenu --prompt 'Clipboard' | cliphist decode | wl-copy''
 
-      ''SUPER, Escape, exec, powerctl''
-      ''SUPER SHIFT, Escape, exec, powerctl lock''
-      ''SUPER CONTROL, Escape, exec, powerctl suspend''
-      ''SUPER SHIFT CONTROL, Escape, exec, powerctl reload''
+      ''super, escape, exec, powerctl''
+      ''super shift, escape, exec, powerctl lock''
+      ''super control, escape, exec, powerctl suspend''
+      ''super shift control, escape, exec, powerctl reload''
 
-      ''SUPER, n, exec, networkctl''
-      ''SUPER SHIFT, n, exec, networkctl wifi''
-      ''SUPER CONTROL, n, exec, networkctl bluetooth''
+      ''super, n, exec, networkctl''
+      ''super shift, n, exec, networkctl wifi''
+      ''super control, n, exec, networkctl bluetooth''
 
-      ''SUPER, Apostrophe, exec, displayctl''
-      ''SUPER SHIFT, Apostrophe, exec, displayctl auto''
-      ''SUPER CONTROL, Apostrophe, exec, displayctl none''
+      ''super, apostrophe, exec, displayctl''
+      ''super shift, apostrophe, exec, displayctl auto''
+      ''super control, apostrophe, exec, displayctl none''
 
-      ''SUPER, b, exec, pkill -USR1 bmbwd''
-      ''SUPER SHIFT, b, exec, pkill -USR2 bmbwd''
-      ''SUPER CONTROL, b, exec, pkill -TERM bmbwd''
+      ''super, b, exec, pkill -USR1 bmbwd''
+      ''super shift, b, exec, pkill -USR2 bmbwd''
+      ''super control, b, exec, pkill -TERM bmbwd''
     ];
     settings.binde = [
-      ''SUPER, H, movefocus, l''
-      ''SUPER, L, movefocus, r''
-      ''SUPER, K, movefocus, u''
-      ''SUPER, J, movefocus, d''
-      ''SUPER SHIFT, H, movewindow, l''
-      ''SUPER SHIFT, L, movewindow, r''
-      ''SUPER SHIFT, K, movewindow, u''
-      ''SUPER SHIFT, J, movewindow, d''
-      ''SUPER CONTROL, H, resizeactive, -100    0''
-      ''SUPER CONTROL, L, resizeactive,  100    0''
-      ''SUPER CONTROL, K, resizeactive,   0  -100''
-      ''SUPER CONTROL, J, resizeactive,   0   100''
-      ''SUPER, equal, exec, hyprctl -q keyword cursor:zoom_factor $(hyprctl -j getoption cursor:zoom_factor | jq '[.float * 1.5, 999] | min')''
-      ''SUPER, minus, exec, hyprctl -q keyword cursor:zoom_factor $(hyprctl -j getoption cursor:zoom_factor | jq '[.float * 0.5, 1] | max')''
+      ''super, h, movefocus, l''
+      ''super, l, movefocus, r''
+      ''super, k, movefocus, u''
+      ''super, j, movefocus, d''
+      ''super shift, h, exec, hyprctl -j activewindow | jq -e .floating && hyprctl -q dispatch moveactive -100 0 || hyprctl -q --batch "keyword dwindle:split_width_multiplier 1; dispatch movewindoworgroup l; keyword dwindle:split_width_multiplier 0;"''
+      ''super shift, l, exec, hyprctl -j activewindow | jq -e .floating && hyprctl -q dispatch moveactive  100 0 || hyprctl -q dispatch movewindoworgroup r''
+      ''super shift, k, exec, hyprctl -j activewindow | jq -e .floating && hyprctl -q dispatch moveactive 0 -100 || hyprctl -q dispatch movewindoworgroup u''
+      ''super shift, j, exec, hyprctl -j activewindow | jq -e .floating && hyprctl -q dispatch moveactive 0  100 || hyprctl -q dispatch movewindoworgroup d''
+      ''super control, h, resizeactive, -100    0''
+      ''super control, l, resizeactive,  100    0''
+      ''super control, k, resizeactive,    0 -100''
+      ''super control, j, resizeactive,    0  100''
+      ''super, g, togglegroup''
+      ''super shift, g, changegroupactive, f''
+      ''super control, g, changegroupactive, b''
+      ''super shift control, g, lockactivegroup, toggle''
+      ''super, equal, exec, hyprctl -q keyword cursor:zoom_factor $(hyprctl -j getoption cursor:zoom_factor | jq '[.float * 1.5, 999] | min')''
+      ''super, minus, exec, hyprctl -q keyword cursor:zoom_factor $(hyprctl -j getoption cursor:zoom_factor | jq '[.float * 0.5, 1] | max')''
     ];
     settings.bindle = [
       '', XF86MonBrightnessDown,        exec, brightnessctl set 1%-  && b=$(($(brightnessctl get)00/$(brightnessctl max))) && notify-send -i brightness-high --category osd --hint "int:value:$b" "Brightness: $b%"''
-      ''SHIFT, XF86MonBrightnessDown,   exec, brightnessctl set 10%- && b=$(($(brightnessctl get)00/$(brightnessctl max))) && notify-send -i brightness-high --category osd --hint "int:value:$b" "Brightness: $b%"''
-      ''CONTROL, XF86MonBrightnessDown, exec, brightnessctl set 1    && b=$(($(brightnessctl get)00/$(brightnessctl max))) && notify-send -i brightness-high --category osd --hint "int:value:$b" "Brightness: $b%"''
+      ''shift, XF86MonBrightnessDown,   exec, brightnessctl set 10%- && b=$(($(brightnessctl get)00/$(brightnessctl max))) && notify-send -i brightness-high --category osd --hint "int:value:$b" "Brightness: $b%"''
+      ''control, XF86MonBrightnessDown, exec, brightnessctl set 1    && b=$(($(brightnessctl get)00/$(brightnessctl max))) && notify-send -i brightness-high --category osd --hint "int:value:$b" "Brightness: $b%"''
       '', XF86MonBrightnessUp,          exec, brightnessctl set 1%+  && b=$(($(brightnessctl get)00/$(brightnessctl max))) && notify-send -i brightness-high --category osd --hint "int:value:$b" "Brightness: $b%"''
-      ''SHIFT, XF86MonBrightnessUp,     exec, brightnessctl set 10%+ && b=$(($(brightnessctl get)00/$(brightnessctl max))) && notify-send -i brightness-high --category osd --hint "int:value:$b" "Brightness: $b%"''
-      ''CONTROL, XF86MonBrightnessUp,   exec, brightnessctl set 100% && b=$(($(brightnessctl get)00/$(brightnessctl max))) && notify-send -i brightness-high --category osd --hint "int:value:$b" "Brightness: $b%"''
+      ''shift, XF86MonBrightnessUp,     exec, brightnessctl set 10%+ && b=$(($(brightnessctl get)00/$(brightnessctl max))) && notify-send -i brightness-high --category osd --hint "int:value:$b" "Brightness: $b%"''
+      ''control, XF86MonBrightnessUp,   exec, brightnessctl set 100% && b=$(($(brightnessctl get)00/$(brightnessctl max))) && notify-send -i brightness-high --category osd --hint "int:value:$b" "Brightness: $b%"''
 
       '', XF86AudioMute,               exec, pulsemixer --toggle-mute       && v=$(pulsemixer --get-volume | cut -d' ' -f1) && notify-send -i audio-volume-high --category osd --hint "int:value:$v" "Volume: $v% $([ $(pulsemixer --get-mute) = 1 ] && echo '[MUTED]')"''
-      ''SHIFT, XF86AudioMute,          exec,                                   v=$(pulsemixer --get-volume | cut -d' ' -f1) && notify-send -i audio-volume-high --category osd --hint "int:value:$v" "Volume: $v% $([ $(pulsemixer --get-mute) = 1 ] && echo '[MUTED]')"''
-      ''CONTROL, XF86AudioMute,        exec, pulsemixer --toggle-mute       && v=$(pulsemixer --get-volume | cut -d' ' -f1) && notify-send -i audio-volume-high --category osd --hint "int:value:$v" "Volume: $v% $([ $(pulsemixer --get-mute) = 1 ] && echo '[MUTED]')"''
+      ''shift, XF86AudioMute,          exec,                                   v=$(pulsemixer --get-volume | cut -d' ' -f1) && notify-send -i audio-volume-high --category osd --hint "int:value:$v" "Volume: $v% $([ $(pulsemixer --get-mute) = 1 ] && echo '[MUTED]')"''
+      ''control, XF86AudioMute,        exec, pulsemixer --toggle-mute       && v=$(pulsemixer --get-volume | cut -d' ' -f1) && notify-send -i audio-volume-high --category osd --hint "int:value:$v" "Volume: $v% $([ $(pulsemixer --get-mute) = 1 ] && echo '[MUTED]')"''
       '', XF86AudioLowerVolume,        exec, pulsemixer --change-volume  -1 && v=$(pulsemixer --get-volume | cut -d' ' -f1) && notify-send -i audio-volume-high --category osd --hint "int:value:$v" "Volume: $v% $([ $(pulsemixer --get-mute) = 1 ] && echo '[MUTED]')"''
-      ''SHIFT, XF86AudioLowerVolume,   exec, pulsemixer --change-volume -10 && v=$(pulsemixer --get-volume | cut -d' ' -f1) && notify-send -i audio-volume-high --category osd --hint "int:value:$v" "Volume: $v% $([ $(pulsemixer --get-mute) = 1 ] && echo '[MUTED]')"''
-      ''CONTROL, XF86AudioLowerVolume, exec, pulsemixer --set-volume      0 && v=$(pulsemixer --get-volume | cut -d' ' -f1) && notify-send -i audio-volume-high --category osd --hint "int:value:$v" "Volume: $v% $([ $(pulsemixer --get-mute) = 1 ] && echo '[MUTED]')"''
+      ''shift, XF86AudioLowerVolume,   exec, pulsemixer --change-volume -10 && v=$(pulsemixer --get-volume | cut -d' ' -f1) && notify-send -i audio-volume-high --category osd --hint "int:value:$v" "Volume: $v% $([ $(pulsemixer --get-mute) = 1 ] && echo '[MUTED]')"''
+      ''control, XF86AudioLowerVolume, exec, pulsemixer --set-volume      0 && v=$(pulsemixer --get-volume | cut -d' ' -f1) && notify-send -i audio-volume-high --category osd --hint "int:value:$v" "Volume: $v% $([ $(pulsemixer --get-mute) = 1 ] && echo '[MUTED]')"''
       '', XF86AudioRaiseVolume,        exec, pulsemixer --change-volume  +1 && v=$(pulsemixer --get-volume | cut -d' ' -f1) && notify-send -i audio-volume-high --category osd --hint "int:value:$v" "Volume: $v% $([ $(pulsemixer --get-mute) = 1 ] && echo '[MUTED]')"''
-      ''SHIFT, XF86AudioRaiseVolume,   exec, pulsemixer --change-volume +10 && v=$(pulsemixer --get-volume | cut -d' ' -f1) && notify-send -i audio-volume-high --category osd --hint "int:value:$v" "Volume: $v% $([ $(pulsemixer --get-mute) = 1 ] && echo '[MUTED]')"''
-      ''CONTROL, XF86AudioRaiseVolume, exec, pulsemixer --set-volume    100 && v=$(pulsemixer --get-volume | cut -d' ' -f1) && notify-send -i audio-volume-high --category osd --hint "int:value:$v" "Volume: $v% $([ $(pulsemixer --get-mute) = 1 ] && echo '[MUTED]')"''
+      ''shift, XF86AudioRaiseVolume,   exec, pulsemixer --change-volume +10 && v=$(pulsemixer --get-volume | cut -d' ' -f1) && notify-send -i audio-volume-high --category osd --hint "int:value:$v" "Volume: $v% $([ $(pulsemixer --get-mute) = 1 ] && echo '[MUTED]')"''
+      ''control, XF86AudioRaiseVolume, exec, pulsemixer --set-volume    100 && v=$(pulsemixer --get-volume | cut -d' ' -f1) && notify-send -i audio-volume-high --category osd --hint "int:value:$v" "Volume: $v% $([ $(pulsemixer --get-mute) = 1 ] && echo '[MUTED]')"''
 
       '', XF86AudioMicMute, exec, pulsemixer --id $(pulsemixer --list-sources | grep 'Default' | cut -d',' -f1 | cut -d' ' -f3) --toggle-mute''
-      #", Pause"                            = "exec, pulsemixer --id $(pulsemixer --list-sources | grep 'Default' | cut -d',' -f1 | cut -d' ' -f3) --unmute";
-      #"--release Pause"                  = "exec, pulsemixer --id $(pulsemixer --list-sources | grep 'Default' | cut -d',' -f1 | cut -d' ' -f3) --mute";
+      #", pause"                            = "exec, pulsemixer --id $(pulsemixer --list-sources | grep 'Default' | cut -d',' -f1 | cut -d' ' -f3) --unmute";
+      #"--release pause"                  = "exec, pulsemixer --id $(pulsemixer --list-sources | grep 'Default' | cut -d',' -f1 | cut -d' ' -f3) --mute";
       #"--release --whole-window button8" = "exec, pulsemixer --id $(pulsemixer --list-sources | grep 'Default' | cut -d',' -f1 | cut -d' ' -f3) --toggle-mute";
+
+      ''super shift, space, exec, pkill -SIGUSR1 waybar''
     ];
     settings.bindit = [
-      ''SUPER, SUPER_L, exec, pkill -SIGUSR1 waybar''
+      ''super, super_l, exec, pkill -SIGUSR1 waybar''
     ];
     settings.binditr = [
-      ''SUPER, SUPER_L, exec, pkill -SIGUSR1 waybar''
+      ''super, super_l, exec, pkill -SIGUSR1 waybar''
     ];
     settings.bindm = [
-      ''SUPER SHIFT, mouse:272, movewindow''
-      ''SUPER CONTROL, mouse:272, resizewindow''
-      ''SUPER SHIFT, mouse:273, movewindow''
-      ''SUPER CONTROL, mouse:273, resizewindow''
+      ''super shift, mouse:272, movewindow''
+      ''super control, mouse:272, resizewindow''
+      ''super shift, mouse:273, movewindow''
+      ''super control, mouse:273, resizewindow''
     ];
     settings.windowrule = [
       ''suppressevent maximize, class:.*''
       ''nofocus,class:^$,title:^$,xwayland:1,floating:1,fullscreen:0,pinned:0''
+      ''noanim,class:^flameshot$''
+    ];
+    settings.workspace = [
+      ''s[true],gapsout:100''
     ];
   };
 
@@ -2149,6 +2160,19 @@ in {
 
   services.cliphist = lib.mkIf (msung || work) {
     enable = true;
+  };
+
+  services.flameshot = lib.mkIf (msung || work) {
+    enable = true;
+    settings.General.buttons=''@Variant(\0\0\0\x7f\0\0\0\vQList<int>\0\0\0\0\b\0\0\0\0\0\0\0\x1\0\0\0\x2\0\0\0\x3\0\0\0\x4\0\0\0\x5\0\0\0\x12\0\0\0\b)'';
+    settings.General.uiColor = "#ffffff";
+    settings.General.contrastUiColor = "#808080";
+    settings.General.showHelp = false;
+    settings.General.showSidePanelButton = false;
+    settings.General.showDesktopNotification = false;
+    settings.General.disabledTrayIcon = true;
+    settings.General.contrastOpacity = 0;
+    settings.General.disabledGrimWarning = true; #settings.General.useGrimAdapter = false;
   };
 
   services.syncthing = lib.mkIf (msung || septs || work) {
