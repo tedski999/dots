@@ -104,7 +104,6 @@ in {
       pulsemixer
       scons
       slurp
-      swayidle
       wasm-bindgen-cli
       wl-clipboard
 
@@ -129,9 +128,8 @@ in {
         done
       '')
 
-      # TODO: hypridle?
       (writeShellScriptBin "powerctl" ''
-        choice="$([ -n "$1" ] && echo $1 || printf "%s\n" lock suspend $(pidof -q swayidle && echo caffeinate || echo decafeinate) reload logout reboot shutdown | bemenu -p "Power" -l 9)"
+        choice="$([ -n "$1" ] && echo $1 || printf "%s\n" lock suspend $(pidof -q hypridle && echo caffeinate || echo decafeinate) reload logout reboot shutdown | bemenu -p "Power" -l 9)"
         case "$choice" in
           "lock") pkill borgmatic && pidwait systemd-inhibit; loginctl lock-session;;
           "suspend") pkill borgmatic && pidwait systemd-inhibit; systemctl suspend-then-hibernate;;
@@ -139,14 +137,8 @@ in {
           "logout") pkill borgmatic && pidwait systemd-inhibit; hyprctl -q dispatch exit;;
           "reboot") pkill borgmatic && pidwait systemd-inhibit; systemctl reboot;;
           "shutdown") pkill borgmatic && pidwait systemd-inhibit; systemctl poweroff;;
-          "caffeinate") pkill swayidle;;
-          "decafeinate") pidof swayidle || swayidle -w idlehint 300 \
-            lock 'swaylock --daemonize' \
-            unlock 'pkill -USR1 swaylock' \
-            before-sleep 'loginctl lock-session' \
-            timeout 590  'notify-send -i clock -t 10000 "Idle Warning" "Locking in 10 seconds..."' \
-            timeout 600  'loginctl lock-session' \
-            timeout 3600 'systemctl suspend-then-hibernate' &;;
+          "caffeinate") systemctl --user stop hypridle;;
+          "decafeinate") systemctl --user start hypridle;;
           *) exit 1;;
         esac || notify-send "Unable to $choice" "Is something running?"
       '')
@@ -1881,7 +1873,7 @@ in {
         modules-right = [ "custom/caffeinated" "bluetooth" "disk" "custom/hyprspace" "cpu" "memory" "network" "pulseaudio" "battery" "clock" ];
         "hyprland/workspaces" = { format = "{name:.1}"; all-outputs = true; move-to-monitor = true; show-special = true; sort-by = "name"; };
         "hyprland/window" = { format = "{title:.300}"; separate-outputs = true; };
-        "custom/caffeinated" = { interval = 1; exec = pkgs.writeShellScript "waybar-coffee" ''pidof -q swayidle && echo "" || echo "C"''; };
+        "custom/caffeinated" = { interval = 1; exec = pkgs.writeShellScript "waybar-coffee" ''pidof -q hypridle && echo "" || echo "C"''; };
         "custom/hyprspace" = { interval = 1; exec = pkgs.writeShellScript "waybar-hyprspace" ''echo "$(cat /tmp/hyprspace)"''; };
         bluetooth = { tooltip = false; format = ""; format-connected = "{num_connections}"; };
         cpu = { tooltip = false; interval = 1; format = if msung then "TODO" else "{icon0}{icon1}{icon2}{icon3}{icon4}{icon5}{icon6}{icon7}{icon8}{icon9}{icon10}{icon11}{icon12}{icon13}"; format-icons = rampicons; };
@@ -2173,6 +2165,20 @@ in {
     settings.General.disabledTrayIcon = true;
     settings.General.contrastOpacity = 0;
     settings.General.disabledGrimWarning = true; #settings.General.useGrimAdapter = false;
+  };
+
+  services.hypridle = lib.mkIf (msung || work) {
+    enable = true;
+    settings.general.lock_cmd = "pkill waybar; swaylock --daemonize";
+    settings.general.unlock_cmd = "pkill -USR1 swaylock";
+    settings.general.before_sleep_cmd = "loginctl lock-session";
+    settings.general.after_sleep_cmd = "hyprctl dispatch dpms on";
+    settings.listener = [
+      { timeout = 590; on-timeout = "notify-send -i clock -t 10000 'Idle Warning' 'Locking in 10 seconds...'"; }
+      { timeout = 600; on-timeout = "loginctl lock-session"; }
+      { timeout = 610; on-timeout = "hyprctl dispatch dpms off"; on-resume = "hyprctl dispatch dpms on"; }
+      { timeout = 3600; on-timeout = "systemctl suspend-then-hibernate"; }
+    ];
   };
 
   services.syncthing = lib.mkIf (msung || septs || work) {
