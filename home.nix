@@ -2017,8 +2017,9 @@ in {
       ''super, z, togglespecialworkspace, Z''
       ''super shift, z, movetoworkspacesilent, special:Z''
 
-      '', print, exec, flameshot gui --clipboard --path "$HOME/Pictures/Screenshot_$(date '+%Y%m%d_%H%M%S').png"''
-      ''shift, print, exec, flameshot full --clipboard --path "$HOME/Pictures/Screenshot_$(date '+%Y%m%d_%H%M%S').png"''
+      '', print, exec, slurp -b '#ffffff20' | grim -g - - | tee "$HOME/Pictures/Screenshot_$(date '+%Y%m%d_%H%M%S').png" | wl-copy --type image/png''
+      ''shift, print, exec, hyprctl -j clients | jq -r '.[] | select(.workspace.id=='$(hyprctl -j activeworkspace | jq .id)') | "\(.at[0]),\(.at[1]) \(.size[0])x\(.size[1])"' | slurp -B '#ffffff20' | grim -g - - | tee "$HOME/Pictures/Screenshot_$(date '+%Y%m%d_%H%M%S').png" | wl-copy --type image/png''
+      ''control, print, exec, slurp -oB '#ffffff20' | grim -g - - | tee "$HOME/Pictures/Screenshot_$(date '+%Y%m%d_%H%M%S').png" | wl-copy --type image/png''
 
       ''super, grave, exec, makoctl dismiss''
       ''super shift, grave, exec, makoctl restore''
@@ -2101,7 +2102,6 @@ in {
     settings.windowrule = [
       ''suppressevent maximize, class:.*''
       ''nofocus,class:^$,title:^$,xwayland:1,floating:1,fullscreen:0,pinned:0''
-      ''noanim,class:^flameshot$''
     ];
     settings.workspace = [
       ''s[true],gapsout:50''
@@ -2150,19 +2150,6 @@ in {
 
   services.cliphist = lib.mkIf (msung || work) {
     enable = true;
-  };
-
-  services.flameshot = lib.mkIf (msung || work) {
-    enable = true;
-    settings.General.buttons=''@Variant(\0\0\0\x7f\0\0\0\vQList<int>\0\0\0\0\b\0\0\0\0\0\0\0\x1\0\0\0\x2\0\0\0\x3\0\0\0\x4\0\0\0\x5\0\0\0\x12\0\0\0\b)'';
-    settings.General.uiColor = "#ffffff";
-    settings.General.contrastUiColor = "#808080";
-    settings.General.showHelp = false;
-    settings.General.showSidePanelButton = false;
-    settings.General.showDesktopNotification = false;
-    settings.General.disabledTrayIcon = true;
-    settings.General.contrastOpacity = 0;
-    settings.General.disabledGrimWarning = true; #settings.General.useGrimAdapter = false;
   };
 
   services.hypridle = lib.mkIf (msung || work) {
