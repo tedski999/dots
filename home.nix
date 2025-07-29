@@ -381,11 +381,9 @@ in {
        printf "Waiting for dut"
        while ! { sleep 1 || exit; ping -c 1 -n -w 1 $1 &>/dev/null; }; do printf "."; done
       '')
-      (writeShellScriptBin "rfa" ''
-       cd /src/
-       repo forall -c $*
-       cd - > /dev/null
-      '')
+      (writeShellScriptBin "rfa" ''cd /src/; repo forall -c $*; cd - > /dev/null'')
+      (writeShellScriptBin "swii" ''sudo swiffer /images/''${1:-EOS.swi} init -y --download-fresh --override-existing --initial-ignores'')
+      (writeShellScriptBin "swiu" ''sudo swiffer /images/''${1:-EOS.swi} update --new-rpms ""'')
     ])
   ];
 
