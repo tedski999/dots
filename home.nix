@@ -1894,12 +1894,11 @@ in {
       @keyframes luminate { to { background-color: #b0b0b0; } }
 
       #workspaces button { border: none; border-radius: 0; min-width: 0; padding: 0 5px; animation: none; }
-      #workspaces button.focused { background-color: #ffffff; color: #000000; }
       #workspaces button.urgent { background-color: #404040; animation: luminate 1s steps(30) infinite alternate; }
       #workspaces button.hosting-monitor.visible { background-color: #808080; color: #000000; }
       #workspaces button.hosting-monitor.active { background-color: #ffffff; color: #000000; }
       #workspaces button.special { color: #ff8080; }
-      #workspaces button.hosting-monitor.special.active { color: #000000; background-color: #ffcccc; }
+      #workspaces button.hosting-monitor.special.active { background-color: #ff0000; color: #000000; }
 
       #custom-media.Paused { color: #606060; }
       #custom-caffeinated { color: #ff8000; }
@@ -1939,6 +1938,7 @@ in {
     settings.general.allow_tearing = false;
     settings.general.layout = "dwindle"; # TODO: my own :)
     settings.decoration.rounding = 0;
+    settings.decoration.dim_special = 0.75;
     settings.decoration.shadow.enabled = false;
     settings.decoration.blur.enabled = false;
     settings.animations.enabled = true;
@@ -1960,7 +1960,7 @@ in {
     settings.input.kb_options = "caps:escape";
     settings.input.repeat_rate = 30;
     settings.input.repeat_delay = 250;
-    settings.input.follow_mouse = 1;
+    settings.input.follow_mouse = 2;
     settings.input.float_switch_override_focus = 0;
     settings.input.sensitivity = 0;
     settings.input.touchpad.natural_scroll = true;
@@ -2010,12 +2010,12 @@ in {
       ''super shift, 0, exec, i=$(hyprctl -j activeworkspace | jq -er '.name | match("[[:digit:]]$").string') && n=$(hyprspaceinput) && hyprctl -q dispatch movetoworkspacesilent "name:$n$i"''
       ''super control, 0, exec, n=$(hyprspaceinput) && ! hyprctl -j workspaces | jq -e '.[].name | select(.=="'$n'1"or.=="'$n'2"or.=="'$n'3"or.=="'$n'4"or.=="'$n'5"or.=="'$n'6"or.=="'$n'7"or.=="'$n'8"or.=="'$n'9")' && echo $n >/tmp/hyprspace''
 
-      ''super, q, togglespecialworkspace, q''
-      ''super shift, q, movetoworkspacesilent, special:q''
-      ''super, a, togglespecialworkspace, a''
-      ''super shift, a, movetoworkspacesilent, special:a''
-      ''super, z, togglespecialworkspace, z''
-      ''super shift, z, movetoworkspacesilent, special:z''
+      ''super, q, togglespecialworkspace, Q''
+      ''super shift, q, movetoworkspacesilent, special:Q''
+      ''super, a, togglespecialworkspace, A''
+      ''super shift, a, movetoworkspacesilent, special:A''
+      ''super, z, togglespecialworkspace, Z''
+      ''super shift, z, movetoworkspacesilent, special:Z''
 
       '', print, exec, flameshot gui --clipboard --path "$HOME/Pictures/Screenshot_$(date '+%Y%m%d_%H%M%S').png"''
       ''shift, print, exec, flameshot full --clipboard --path "$HOME/Pictures/Screenshot_$(date '+%Y%m%d_%H%M%S').png"''
@@ -2097,8 +2097,6 @@ in {
     settings.bindm = [
       ''super shift, mouse:272, movewindow''
       ''super control, mouse:272, resizewindow''
-      ''super shift, mouse:273, movewindow''
-      ''super control, mouse:273, resizewindow''
     ];
     settings.windowrule = [
       ''suppressevent maximize, class:.*''
@@ -2106,7 +2104,7 @@ in {
       ''noanim,class:^flameshot$''
     ];
     settings.workspace = [
-      ''s[true],gapsout:100''
+      ''s[true],gapsout:50''
     ];
   };
 
