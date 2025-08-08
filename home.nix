@@ -315,7 +315,7 @@ in {
         trap "bmbw" USR1
         trap "unset items && bmbw" USR2
         trap "unset items BW_SESSION && bmbw" TERM
-        while true; do sleep infinity & wait; done
+        while true; do sleep infinity & sleep 1 && wait; done
       '')
     ])
 
