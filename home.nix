@@ -74,6 +74,7 @@ in {
       procps
       pyright
       rustup
+      socat
       unrar
       unzip
       xz
@@ -1956,12 +1957,12 @@ in {
     settings.exec-once = [
       "echo hypr >/tmp/hyprspace"
       "powerctl decafeinate"
+      "displayctl auto; socat -U - UNIX-CONNECT:$XDG_RUNTIME_DIR/hypr/$HYPRLAND_INSTANCE_SIGNATURE/.socket2.sock | while read -r l; do case $l in monitoraddedv2*|monitorremovedv2*) displayctl auto;; esac; done"
     ];
     settings.exec = [
       "pidof -x bmbwd || while true; do bmbwd; done"
       "pidof -x batteryd || while true; do batteryd; done"
       "pidof -x waybar || while true; do waybar; done"
-      "displayctl auto"
     ];
     settings.bind = [
       ''super, return, exec, $TERMINAL''
