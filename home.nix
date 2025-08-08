@@ -271,8 +271,6 @@ in {
           *) exit 1 ;;
         esac
         notify-send -i monitor -t 5000 "Set display configuration" "Profile: $choice"
-        sleep 1
-        pkill waybar
       '')
 
       (writeShellScriptBin "hyprspaceinput" ''
