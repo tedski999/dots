@@ -2015,9 +2015,9 @@ in {
       ''super, z, togglespecialworkspace, Z''
       ''super shift, z, movetoworkspacesilent, special:Z''
 
-      '', print, exec, slurp -b '#ffffff20' | grim -g - - | tee "$HOME/Pictures/Screenshot_$(date '+%Y%m%d_%H%M%S').png" | wl-copy --type image/png''
-      ''shift, print, exec, hyprctl -j clients | jq -r '.[] | select(.workspace.id=='$(hyprctl -j activeworkspace | jq .id)') | "\(.at[0]),\(.at[1]) \(.size[0])x\(.size[1])"' | slurp -B '#ffffff20' | grim -g - - | tee "$HOME/Pictures/Screenshot_$(date '+%Y%m%d_%H%M%S').png" | wl-copy --type image/png''
-      ''control, print, exec, slurp -oB '#ffffff20' | grim -g - - | tee "$HOME/Pictures/Screenshot_$(date '+%Y%m%d_%H%M%S').png" | wl-copy --type image/png''
+      '', print, exec, slurp -b 'ffffff20' | grim -g - - | tee "$HOME/Pictures/Screenshot_$(date -Is).png" | wl-copy --type image/png''
+      ''shift, print, exec, hyprctl -j clients | jq -r '.[] | select(.workspace.id=='$(hyprctl -j activeworkspace | jq .id)') | "\(.at[0]),\(.at[1]) \(.size[0])x\(.size[1])"' | slurp -B 'ffffff20' | grim -g - - | tee "$HOME/Pictures/Screenshot_$(date -Is).png" | wl-copy --type image/png''
+      ''control, print, exec, slurp -oB 'ffffff20' | grim -g - - | tee "$HOME/Pictures/Screenshot_$(date -Is).png" | wl-copy --type image/png''
 
       ''super, grave, exec, makoctl dismiss''
       ''super shift, grave, exec, makoctl restore''
