@@ -1822,35 +1822,27 @@ in {
     settings = {}; # TODO(later): imv config
   };
 
-  programs.swaylock = lib.mkIf (msung || work) {
+  programs.hyprlock = lib.mkIf (msung || work) {
     enable = true;
-    settings.ignore-empty-password = true;
-    settings.color = "000000";
-    settings.indicator-radius = 25;
-    settings.indicator-thickness = 8;
-    settings.key-hl-color = "ffffff";
-    settings.bs-hl-color = "000000";
-    settings.separator-color = "000000";
-    settings.inside-color = "00000000";
-    settings.inside-clear-color = "00000000";
-    settings.inside-caps-lock-color = "00000000";
-    settings.inside-wrong-color = "00000000";
-    settings.inside-ver-color = "00000000";
-    settings.line-color = "000000";
-    settings.line-clear-color = "000000";
-    settings.line-caps-lock-color = "000000";
-    settings.line-wrong-color = "000000";
-    settings.line-ver-color = "000000";
-    settings.ring-color = "000000";
-    settings.ring-clear-color = "ffffff";
-    settings.ring-caps-lock-color = "000000";
-    settings.ring-ver-color = "ffffff";
-    settings.ring-wrong-color = "000000";
-    settings.text-color = "00000000";
-    settings.text-clear-color = "00000000";
-    settings.text-caps-lock-color = "00000000";
-    settings.text-ver-color = "00000000";
-    settings.text-wrong-color = "00000000";
+    package = lib.mkIf work (config.lib.nixGL.wrap pkgs.hyprlock);
+    settings.general.hide_cursor = true;
+    settings.general.ignore_empty_input = true;
+    settings.general.immediate_render = true;
+    settings.animations.enabled = false;
+    settings.background = [ { color = "rgb(0, 0, 0)"; } ];
+    settings.input-field = [ {
+      monitor = "";
+      size = "50, 50";
+      outline_thickness = 10;
+      hide_input = true;
+      hide_input_base_color = "rgb(255, 255, 255)";
+      inner_color = "rgb(0, 0, 0)";
+      outer_color = "rgb(25, 25, 25)";
+      font_color = "rgb(255, 255, 255)";
+      fail_color = "rgb(255, 255, 255)";
+      fail_text = "$ATTEMPTS";
+      placeholder_text = "$ATTEMPTS";
+    } ];
   };
 
   programs.waybar = lib.mkIf (msung || work) {
@@ -2152,8 +2144,8 @@ in {
 
   services.hypridle = lib.mkIf (msung || work) {
     enable = true;
-    settings.general.lock_cmd = "pkill waybar; swaylock --daemonize";
-    settings.general.unlock_cmd = "pkill -USR1 swaylock";
+    settings.general.lock_cmd = "pkill waybar; hyprlock --grace 3";
+    settings.general.unlock_cmd = "pkill -USR1 hyprlock";
     settings.general.before_sleep_cmd = "loginctl lock-session";
     settings.general.after_sleep_cmd = "hyprctl dispatch dpms on";
     settings.listener = [
