@@ -2052,6 +2052,8 @@ in {
       ''super shift control, g, lockactivegroup, toggle''
       ''super, equal, exec, hyprctl -q keyword cursor:zoom_factor $(hyprctl -j getoption cursor:zoom_factor | jq '[.float * 1.5, 999] | min')''
       ''super, minus, exec, hyprctl -q keyword cursor:zoom_factor $(hyprctl -j getoption cursor:zoom_factor | jq '[.float * 0.5, 1] | max')''
+      ''super shift, equal, exec, hyprctl -q keyword monitor $(hyprctl -j monitors | jq -r '.[] | select(.focused) | "desc:" + .description + ", " + (.width | tostring) + "x" + (.height | tostring) + "@" + (.refreshRate | tostring) + ", " + (.x | tostring) + "x" + (.y | tostring) + ", 2"')''
+      ''super shift, minus, exec, hyprctl -q keyword monitor $(hyprctl -j monitors | jq -r '.[] | select(.focused) | "desc:" + .description + ", " + (.width | tostring) + "x" + (.height | tostring) + "@" + (.refreshRate | tostring) + ", " + (.x | tostring) + "x" + (.y | tostring) + ", 1"')''
     ];
     settings.bindle = [
       '', XF86MonBrightnessDown,        exec, brightnessctl set 1%-  && b=$(($(brightnessctl get)00/$(brightnessctl max))) && notify-send -i brightness-high --category osd --hint "int:value:$b" "Brightness: $b%"''
