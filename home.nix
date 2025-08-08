@@ -87,6 +87,7 @@ in {
 
     (lib.mkIf (msung || work) [
       acpi
+      aseprite
       binaryen
       bitwarden-cli
       brightnessctl
