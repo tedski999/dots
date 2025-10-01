@@ -351,7 +351,7 @@ in {
     (lib.mkIf work [
       zulu8
       openconnect
-      (writeShellScriptBin "avpn" ''sudo openconnect --protocol=gp ''${1:-gp-ie.arista.com} -u tedj -c "$XDG_RUNTIME_DIR/agenix/tedj@arista.com.crt" -k "$XDG_RUNTIME_DIR/agenix/tedj@arista.com.pem"'')
+      (writeShellScriptBin "avpn" ''sudo openconnect --protocol=gp ''${1:-gp-ie.arista.com} -u tedj -c "${config.age.secrets."tedj@arista.com.crt".path}" -k "${config.age.secrets."tedj@arista.com.pem".path}"'')
       (writeShellScriptBin "ash" ''host="''${1:-home}"; mosh --predict=always --predict-overwrite --experimental-remote-ip=remote "tedj-''${host//[._]/-}"'')
       (writeShellScriptBin "asl" "arista-ssh check-auth || arista-ssh login")
     ])
