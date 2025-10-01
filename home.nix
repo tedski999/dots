@@ -625,70 +625,17 @@ in {
     settings.fn = "Terminess Nerd Font";
   };
 
-  # TODO(borg) one-way syncthing
+  # TODO(borg) notifications on failures
   # mkdir -p .local/backups && borgmatic init -e repokey
   programs.borgmatic = lib.mkIf (work || msung || septs) {
     enable = true;
     backups = lib.mkMerge [
-      (lib.mkIf septs {
-        # TODO(borg) server notifications on failure
-        septs = {
-          retention = { keepWithin = "1d"; keepDaily = 7; };
-          location.excludeHomeManagerSymlinks = true;
-          location.repositories = [ ".local/backups/septs" ];
-          location.patterns = [ "P fm" "R /home/ski" "- home/ski/.cache" "- home/ski/.local/backups" "- home/ski/.local/state" ];
-          storage.encryptionPasscommand = "cat /home/ski/.ssh/ski@septs.agenix.key";
-          storage.extraConfig.exclude_caches = true;
-          consistency.checks = [ { name = "repository"; frequency = "2 weeks"; } { name = "archives"; frequency = "4 weeks"; } { name = "data"; frequency = "6 weeks"; } { name = "extract"; frequency = "6 weeks"; } ];
-        };
-        septs-local = {
-          retention = { keepWithin = "1d"; keepDaily = 7; keepWeekly = 4; };
-          location.excludeHomeManagerSymlinks = true;
-          location.repositories = [ ".local/backups/septs-local" ];
-          location.patterns = [ "P fm" "R /home/ski" "- home/ski/.cache" "- home/ski/.local/backups" "- home/ski/.local/state" ];
-          storage.encryptionPasscommand = "cat /home/ski/.ssh/ski@septs.agenix.key";
-          storage.extraConfig.exclude_caches = true;
-          consistency.checks = [ { name = "repository"; frequency = "2 weeks"; } { name = "archives"; frequency = "4 weeks"; } { name = "data"; frequency = "6 weeks"; } { name = "extract"; frequency = "6 weeks"; } ];
-        };
-      })
-      (lib.mkIf msung {
-        msung = {
-          retention = { keepWithin = "1d"; keepDaily = 7; };
-          location.excludeHomeManagerSymlinks = true;
-          location.repositories = [ ".local/backups/msung" ];
-          location.patterns = [ "P fm" "R /home/ski" "- home/ski/.cache" "- home/ski/.local/backups" "- home/ski/.local/state" "- home/ski/Documents" "home/ski/Music" "home/ski/Pictures" "home/ski/Videos" "- home/ski/Work" ];
-          storage.encryptionPasscommand = "cat /home/ski/.ssh/ski@msung.agenix.key";
-          storage.extraConfig.exclude_caches = true;
-          consistency.checks = [ { name = "repository"; frequency = "2 weeks"; } { name = "archives"; frequency = "4 weeks"; } { name = "data"; frequency = "6 weeks"; } { name = "extract"; frequency = "6 weeks"; } ];
-          hooks.extraConfig.on_error = [ "notify-send -i backup -u critical {repository}' backup failed' ''{error}''" ];
-        };
-        msung-local = {
-          retention = { keepWithin = "1d"; keepDaily = 7; keepWeekly = 4; };
-          location.excludeHomeManagerSymlinks = true;
-          location.repositories = [ ".local/backups/msung-local" ];
-          location.patterns = [ "P fm" "R /home/ski" "- home/ski/.cache" "- home/ski/.local/backups" "- home/ski/.local/state" "- home/ski/Documents" "home/ski/Music" "home/ski/Pictures" "home/ski/Videos" "- home/ski/Work" ];
-          storage.encryptionPasscommand = "cat /home/ski/.ssh/ski@msung.agenix.key";
-          storage.extraConfig.exclude_caches = true;
-          consistency.checks = [ { name = "repository"; frequency = "2 weeks"; } { name = "archives"; frequency = "4 weeks"; } { name = "data"; frequency = "6 weeks"; } { name = "extract"; frequency = "6 weeks"; } ];
-          hooks.extraConfig.on_error = [ "notify-send -i backup -u critical {repository}' backup failed' ''{error}''" ];
-        };
-      })
       (lib.mkIf work {
         work = {
-          retention = { keepWithin = "1d"; keepDaily = 7; };
-          location.excludeHomeManagerSymlinks = true;
-          location.repositories = [ ".local/backups/work" ];
-          location.patterns = [ "P fm" "R /etc" "R /home/tedj" "- home/tedj/.cache" "- home/tedj/.local/backups" "- home/tedj/.local/state" "- home/tedj/Documents" "- home/tedj/Work" ];
-          storage.encryptionPasscommand = "cat /home/tedj/.ssh/tedj@work.agenix.key";
-          storage.extraConfig.exclude_caches = true;
-          consistency.checks = [ { name = "repository"; frequency = "2 weeks"; } { name = "archives"; frequency = "4 weeks"; } { name = "data"; frequency = "6 weeks"; } { name = "extract"; frequency = "6 weeks"; } ];
-          hooks.extraConfig.on_error = [ "notify-send -i backup -u critical {repository}' backup failed' ''{error}''" ];
-        };
-        work-local = {
           retention = { keepWithin = "1d"; keepDaily = 7; keepWeekly = 4; };
           location.excludeHomeManagerSymlinks = true;
-          location.repositories = [ ".local/backups/work-local" ];
-          location.patterns = [ "P fm" "R /etc" "R /home/tedj" "- home/tedj/.cache" "- home/tedj/.local/backups" "- home/tedj/.local/state" "- home/tedj/Documents" "- home/tedj/Work" ];
+          location.repositories = [ ".local/backups/work" ];
+          location.patterns = [ "P fm" "R /etc" "R /home/tedj" "- home/tedj/.cache" "- home/tedj/.local/backups" "- home/tedj/.local/state" ];
           storage.encryptionPasscommand = "cat /home/tedj/.ssh/tedj@work.agenix.key";
           storage.extraConfig.exclude_caches = true;
           consistency.checks = [ { name = "repository"; frequency = "2 weeks"; } { name = "archives"; frequency = "4 weeks"; } { name = "data"; frequency = "6 weeks"; } { name = "extract"; frequency = "6 weeks"; } ];
