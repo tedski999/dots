@@ -236,9 +236,9 @@ Copy-Item "$((gi $env:temp).fullname)\dots\age\age-keygen.exe" -Destination "$($
 
 Install configure syncthing (will autostart on next login):
 ```ps
-Invoke-WebRequest -Uri "https://github.com/syncthing/syncthing/releases/download/v1.27.12/syncthing-windows-amd64-v1.27.12.zip" -OutFile "$((gi $env:temp).fullname)\dots\syncthing.zip"
+Invoke-WebRequest -Uri "https://github.com/syncthing/syncthing/releases/download/v2.0.1/syncthing-windows-amd64-v2.0.1.zip" -OutFile "$((gi $env:temp).fullname)\dots\syncthing.zip"
 Expand-Archive -Path "$((gi $env:temp).fullname)\dots\syncthing.zip" -DestinationPath "$((gi $env:temp).fullname)\dots"
-Copy-Item "$((gi $env:temp).fullname)\dots\syncthing-windows-amd64-v1.27.12\syncthing.exe" -Destination "$($env:LOCALAPPDATA)\Programs"
+Copy-Item "$((gi $env:temp).fullname)\dots\syncthing-windows-amd64-v2.0.1\syncthing.exe" -Destination "$($env:LOCALAPPDATA)\Programs"
 New-Item -ItemType Directory -Force -Path "$($env:LOCALAPPDATA)\Syncthing"
 & "$($env:LOCALAPPDATA)\Programs\age.exe" --decrypt --identity "$($env:LOCALAPPDATA)\ski@skic.agenix.key" --output "$($env:LOCALAPPDATA)\Syncthing\cert.pem" "$((gi $env:temp).fullname)\dots\dots-main\secrets\syncthing\ski_skic\cert.pem.age"
 & "$($env:LOCALAPPDATA)\Programs\age.exe" --decrypt --identity "$($env:LOCALAPPDATA)\ski@skic.agenix.key" --output "$($env:LOCALAPPDATA)\Syncthing\config.xml" "$((gi $env:temp).fullname)\dots\dots-main\secrets\syncthing\ski_skic\config.xml.age"
@@ -247,7 +247,7 @@ New-Item -ItemType Directory -Force -Path "$($env:LOCALAPPDATA)\Syncthing"
 & "$($env:LOCALAPPDATA)\Programs\age.exe" --decrypt --identity "$($env:LOCALAPPDATA)\ski@skic.agenix.key" --output "$($env:LOCALAPPDATA)\Syncthing\key.pem" "$((gi $env:temp).fullname)\dots\dots-main\secrets\syncthing\ski_skic\key.pem.age"
 $SyncthingLnk = (New-Object -comObject WScript.Shell).CreateShortcut("$($env:APPDATA)\Microsoft\Windows\Start Menu\Programs\Startup\syncthing.lnk")
 $SyncthingLnk.TargetPath = "$($env:LOCALAPPDATA)\Programs\syncthing.exe"
-$SyncthingLnk.Arguments = "serve --no-console --no-browser --no-default-folder"
+$SyncthingLnk.Arguments = "serve --no-console --no-browser"
 $SyncthingLnk.Save()
 ```
 
