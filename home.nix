@@ -156,12 +156,12 @@ in {
             power="enable"; rescan=""; choices=""
             nmcli radio wifi | grep --fixed-strings "enabled" && {
               power="disable"; rescan="rescan"
-              info="$(nmcli --get-values SSID,SECURITY,SIGNAL,IN-USE device wifi list --rescan no)"
-              choices="$(for id in $(nmcli --get-values SSID device wifi list --rescan no | sed 's/\\:/;/g' | sort --unique); do
+              info="$(nmcli --get-values SSID,SECURITY,SIGNAL,IN-USE --escape no device wifi list --rescan no)"
+              choices="$(for id in $(nmcli --get-values SSID --escape no device wifi list --rescan no | sort --unique); do
                 sav="$(nmcli --get-values "" connection show "$id" && echo " | Saved")"
-                sec="$(echo "$info" | grep --fixed-strings "$id" | cut -d: -f2 | head -1)"
-                sig="$(echo "$info" | grep --fixed-strings "$id" | cut -d: -f3 | sort --reverse --numeric-sort | head -1)"
-                use="$(echo "$info" | grep --fixed-strings "$id" | cut -d: -f4 | sort --reverse | head -1)"
+                sec="$(echo "$info" | grep --fixed-strings "$id" | rev | cut -d: -f3 | rev | head -1)"
+                sig="$(echo "$info" | grep --fixed-strings "$id" | rev | cut -d: -f2 | rev | sort --reverse --numeric-sort | head -1)"
+                use="$(echo "$info" | grep --fixed-strings "$id" | rev | cut -d: -f1 | rev | sort --reverse | head -1)"
                 echo "$id [''${sec:-None}$sav] $sig% $use"
               done)"
             }
