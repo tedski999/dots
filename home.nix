@@ -770,7 +770,7 @@ in {
 
   programs.go = lib.mkIf work {
     enable = true;
-    goPath = ".local/share/go";
+    env.GOPATH = ".local/share/go";
   };
 
   programs.gpg = lib.mkIf (!wbus) {
@@ -799,7 +799,7 @@ in {
 
   programs.less = {
     enable = true;
-    keys = "h left-scroll\nl right-scroll";
+    config = "h left-scroll\nl right-scroll";
   };
 
   programs.man = {
@@ -1396,10 +1396,17 @@ in {
 
   programs.ssh = {
     enable = true;
-    controlMaster = "auto";
-    controlPersist = "12h";
-    serverAliveCountMax = 3;
-    serverAliveInterval = 5;
+    enableDefaultConfig = false;
+    matchBlocks."*" = {
+      forwardAgent = false;
+      hashKnownHosts = false;
+      userKnownHostsFile = "~/.ssh/known_hosts";
+      addKeysToAgent = "no";
+      controlMaster = "auto";
+      controlPersist = "12h";
+      serverAliveCountMax = 3;
+      serverAliveInterval = 5;
+    };
     matchBlocks."gpg-agent" = lib.mkIf (!wbus) {
       match = ''host * exec "gpg-connect-agent updatestartuptty /bye"'';
     };
@@ -1411,10 +1418,9 @@ in {
       extraOptions.StrictHostKeyChecking = "false";
       extraOptions.UserKnownHostsFile = "/dev/null";
     };
-    matchBlocks."ssh.h8c.de" = lib.mkIf (!wbus) {
-      host = "ssh.h8c.de";
-      user = "ski";
-      proxyCommand = "cloudflared access ssh --hostname %h";
+    matchBlocks."h8c.de" = lib.mkIf (!wbus) {
+      host = "h8c.de";
+      proxyCommand = "cloudflared access ssh --hostname ssh.h8c.de";
     };
   };
 
@@ -1592,7 +1598,7 @@ in {
 
   programs.zsh = {
     enable = true;
-    dotDir = ".config/zsh";
+    dotDir = "${config.xdg.configHome}/zsh";
     defaultKeymap = "emacs";
     autocd = true;
     enableCompletion = true;
@@ -1828,7 +1834,6 @@ in {
     settings.decoration.shadow.enabled = false;
     settings.decoration.blur.enabled = false;
     settings.animations.enabled = true;
-    settings.animations.first_launch_animation = false;
     settings.animations.bezier = "linear,0,0,1,1";
     settings.animations.animation = [
       "global, 1, 1, linear"
@@ -2062,7 +2067,6 @@ in {
     extraOptions = [
       "--data=${config.xdg.dataHome}/syncthing"
       "--config=${config.xdg.configHome}/syncthing"
-      "--no-default-folder"
     ];
   };
 
@@ -2088,6 +2092,7 @@ in {
 
   xdg = lib.mkIf (!wbus) {
     enable = true;
+    #terminal-exec = "TODO";
     userDirs.enable = true;
     userDirs.createDirectories = true;
     userDirs.publicShare = null;
