@@ -11,6 +11,8 @@ in {
   "ski_h8c.de/subkey.age".publicKeys = [ ski_msung tedj_work ];
   "ski_h8c.de/revoke.age".publicKeys = [ ski_msung tedj_work ];
 
+  "cal.h8c.de/ski.age".publicKeys = [ ski_msung tedj_work ];
+
   "arista/wbus_pub.age".publicKeys = [ tedj_wbus ];
   "arista/wbus_sec.age".publicKeys = [ tedj_wbus ];
   "arista/work_cer.age".publicKeys = [ tedj_work ];
@@ -48,7 +50,5 @@ in {
   "syncthing/tedj_work/key.pem.age".publicKeys = [ tedj_work ];
   "syncthing/tedj_work/https-cert.pem.age".publicKeys = [ tedj_work ];
   "syncthing/tedj_work/https-key.pem.age".publicKeys = [ tedj_work ];
-
-  "skic-recovery.age".publicKeys = [ ski_skic ];
 
 }

@@ -316,6 +316,28 @@ in {
         trap "unset items BW_SESSION && bmbw" TERM
         while true; do sleep infinity & sleep 1 && wait; done
       '')
+
+      (writeShellScriptBin "task" ''
+        desc="$(: | bemenu -p 'new task' -l 0)"
+        [ -z "$desc" ] && exit 1
+        due="$(printf "now\ntomorrow morning\nmonday 18:00\nnext month" | bemenu -p 'due' -l 10)"
+        [ -z "$due" ] && exit 1
+        # TODO input categories (show available)
+        #cats="$(: | bemenu -p 'tags' -l 10)"
+        #todo new -d "$due" -c $cats "$desc" \
+        out="$(todo new -d "$due" "$desc")" \
+          && notify-send -i smiley -t 5000 "$desc" "''${out#*  }" \
+          || notify-send -i smiley -u critical "$desc" "Failed..."
+        sleep 1 && vdirsyncer sync
+      '')
+
+      (writeShellScriptBin "tasks" ''
+        c=$(todo list | awk -v FS='  ' '{print $2 "   #" substr($1, 4)}' | sed 's/⟳/* /' | tac | bemenu -p tasks)
+        [ -n "$c" ] \
+          && todo done ''${c#*# } \
+          && notify-send -i smiley -t 5000 "''${c%   #*}" "Done!" \
+          && sleep 1 && vdirsyncer sync
+      '')
     ])
 
     (lib.mkIf (work || wbus) [
@@ -507,6 +529,7 @@ in {
   age.secrets = lib.mkMerge [
     (lib.mkIf (msung || work) {
       "ski@h8c.de.gpg"           = { file = ./secrets/ski_h8c.de/subkey.age; };
+      "cal.h8c.de/ski"           = { file = ./secrets/cal.h8c.de/ski.age; };
     })
     (lib.mkIf work {
       "tedj@arista.com.cer"      = { file = ./secrets/arista/work_cer.age; };
@@ -2033,6 +2056,9 @@ in {
       ''super, b, exec, pkill -USR1 bmbwd''
       ''super shift, b, exec, pkill -USR2 bmbwd''
       ''super control, b, exec, pkill -TERM bmbwd''
+
+      ''super, t, exec, tasks''
+      ''super shift, t, exec, task''
     ];
     settings.binde = [
       ''super, h, movefocus, l''
@@ -2167,6 +2193,15 @@ in {
     ];
   };
 
+  programs.todoman = lib.mkIf (msung || work) {
+    enable = true;
+    extraConfig = ''
+      default_list = "tasks"
+      date_format = "%Y-%m-%d"
+      time_format = "%H:%M"
+    '';
+  };
+
   nixGL = lib.mkIf work {
     packages = inputs.nixgl.packages;
   };
@@ -2185,16 +2220,26 @@ in {
     userDirs.publicShare = null;
     userDirs.templates = null;
   };
-}
 
-# TODO(later): khal
-# accounts.calendar.basePath = "${config.xdg.dataHome}/calendar";
-# accounts.calendar.accounts."test".primary = true;
-# accounts.calendar.accounts."test".khal.enable = true;
-# programs.khal = {
-#   enable = true;
-#   settings = {
-#     default = { default_calendar = "Calendar"; timedelta = "5d"; };
-#     view = { agenda_event_format = "{calendar-color}{cancelled}{start-end-time-style} {title}{repeat-symbol}{reset}"; };
-#   };
-# };
+  programs.vdirsyncer = lib.mkIf (msung || work) {
+    enable = true;
+  };
+
+  services.vdirsyncer = lib.mkIf (msung || work) {
+    enable = true;
+  };
+
+  accounts.calendar.basePath = "${config.xdg.dataHome}/calendar";
+  accounts.calendar.accounts."tasks" = lib.mkIf (msung || work) {
+    primary = true;
+    remote.passwordCommand = [ "sh" "-c" "cat ${config.age.secrets."cal.h8c.de/ski".path}" ];
+    remote.type = "caldav";
+    remote.url = "https://cal.h8c.de/ski/93873500390652800";
+    remote.userName = "ski";
+    vdirsyncer.enable = true;
+    vdirsyncer.conflictResolution = "remote wins";
+  };
+
+  # TODO services.home-manager.autoExpire
+
+}
