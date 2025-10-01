@@ -738,7 +738,7 @@ in {
     enable = true;
     hidden = true;
     ignores = lib.mkMerge [
-      [ ".git/" "node_modules/" "target/" ]
+      [ ".git/" "node_modules/" "target/" ".obsidian/" ".trash/" ]
       (lib.mkIf wbus [ ".repo/" ])
     ];
   };
@@ -863,8 +863,6 @@ in {
   programs.neovim = {
     enable = true;
     defaultEditor = true;
-    viAlias = true;
-    vimAlias = true;
     vimdiffAlias = true;
     plugins = with pkgs.vimPlugins; [
       fzf-lua
@@ -918,11 +916,11 @@ in {
         vim.opt.relativenumber = true                          -- ...and relative line numbers
         vim.opt.ruler = false                                  -- No need to show line/column number with lightline
         vim.opt.showmode = false                               -- No need to show current mode with lightline
-        vim.opt.scrolloff = 3                                  -- Keep lines above/below the cursor when scrolling
+        vim.opt.scrolloff = 2                                  -- Keep lines above/below the cursor when scrolling
         vim.opt.sidescrolloff = 5                              -- Keep columns to the left/right of the cursor when scrolling
         vim.opt.signcolumn = "no"                              -- Keep the sign column closed
         vim.opt.shortmess:append("sSIcC")                      -- Be quieter
-        vim.opt.expandtab =false                               -- Tab key inserts tabs
+        vim.opt.expandtab = true                               -- Tab key inserts spaces
         vim.opt.tabstop = 2                                    -- 2-spaced tabs
         vim.opt.shiftwidth = 0                                 -- Tab-spaced indentation
         vim.opt.cinoptions = "N-s"                             -- Don't indent C++ namespaces
@@ -938,8 +936,8 @@ in {
         vim.opt.guicursor = "n-v-c-sm:block,i-ci-ve:ver25,r-cr-o:hor20,a:blinkwait400-blinkoff400-blinkon400"
         vim.opt.ignorecase = true                              -- Ignore case when searching...
         vim.opt.smartcase = true                               -- ...except for searching with uppercase characters
-        vim.opt.complete = ".,w,kspell"                        -- Complete menu contents
-        vim.opt.completeopt = "menu,menuone,noinsert,noselect" -- Complete menu functionality
+        vim.opt.complete = ".,w,b,u,kspell"                    -- Complete menu contents
+        vim.opt.completeopt = "menu,menuone,noselect,fuzzy"    -- Complete menu functionality
         vim.opt.pumheight = 8                                  -- Limit complete menu height
         vim.opt.spell = true                                   -- Enable spelling by default
         vim.opt.spelloptions = "camel"                         -- Enable CamelCase word spelling
@@ -957,7 +955,6 @@ in {
         -- LOCAL FUNCTIONS --
 
         local fzf = require("fzf-lua")
-        local notes = vim.fn.expand("~/Documents/notes")
 
         local function fullpath(path)
           return vim.fn.fnamemodify(path or vim.api.nvim_buf_get_name(0), ":p")
@@ -983,43 +980,6 @@ in {
           print("Yanked "..#x.." bytes")
         end
 
-        -- Search tags
-        local function fzf_tags(dir)
-          if vim.fn.expand("%:p:h"):sub(1, #notes) == notes then
-            fzf.fzf_exec("rg -Io '\\^[a-zA-Z0-9_\\-]+' | sort -u", {
-              prompt = "Tags>", cwd=dir, fzf_opts = { ["--no-multi"] = true },
-              actions = { ["default"] = function(sel) fzf.grep({ cwd=notes, search=sel[1] }) end }
-            })
-          else
-              fzf.grep({ cwd=dir, no_esc=true, search="\\b(TODO|FIX(ME)?|BUG|TBD|XXX)(\\([^\\)]*\\))?:?" })
-          end
-        end
-
-        -- Restore vim session
-        local function fzf_projects()
-          local projects = {}
-          for path in vim.fn.glob(vim.fn.stdpath("data").."/projects/*"):gmatch("[^\n]+") do
-            projects[#projects + 1] = path:match("[^/]*$")
-          end
-          fzf.fzf_exec(projects, {
-            prompt = "Project>",
-            fzf_opts = { ["--no-multi"] = true, ["--header"] = "<ctrl-x> to delete|<ctrl-e> to edit" },
-            actions = {
-              ["default"] = function(sel) vim.cmd("source "..vim.fn.fnameescape(vim.fn.stdpath("data").."/projects/"..sel[1])) end,
-              ["ctrl-e"] = function(sel) vim.cmd("edit "..vim.fn.fnameescape(vim.fn.stdpath("data").."/projects/"..sel[1]).." | setf vim") end,
-              ["ctrl-x"] = function(sel) vim.fn.delete(vim.fn.fnameescape(vim.fn.stdpath("data").."/projects/"..sel[1])) end,
-            }
-          })
-        end
-
-        -- Save vim session
-        local function fzf_projects_save()
-          local project = vim.fn.input("Save project: ", vim.v.this_session:match("[^/]*$") or "")
-          if project == "" then return end
-          vim.fn.mkdir(vim.fn.stdpath("data").."/projects/", "p")
-          vim.cmd("mksession! "..vim.fn.fnameescape(vim.fn.stdpath("data").."/projects/"..project))
-        end
-
         -- Visualise and select from the branched undotree
         local function fzf_undotree()
           local undotree = vim.fn.undotree()
@@ -1027,13 +987,12 @@ in {
             local entries = {}
             for i = #tree, 1, -1  do
               local colors = { "magenta", "blue", "yellow", "green", "red" }
-              local color = fzf.utils.ansi_codes[colors[math.fmod(depth, #colors) + 1]]
-              local entry = tree[i].seq..""
-              if tree[i].save then entry = entry.."*" end
               local t = os.time() - tree[i].time
               if t > 86400 then t = math.floor(t/86400).."d" elseif t > 3600 then t = math.floor(t/3600).."h" elseif t > 60 then t = math.floor(t/60).."m" else t = t.."s" end
-              if tree[i].seq == undotree.seq_cur then t = fzf.utils.ansi_codes.white(t.." <") else t = fzf.utils.ansi_codes.grey(t) end
-              entries[#entries+1] = color(entry).." "..t
+              local e = fzf.utils.ansi_codes[colors[math.fmod(depth, #colors) + 1]](tree[i].seq.." ")..fzf.utils.ansi_codes.grey(t)
+              if tree[i].save == undotree.save_last then e = e..fzf.utils.ansi_codes.red(" S") elseif tree[i].save then e = e..fzf.utils.ansi_codes.yellow(" s") end
+              if tree[i].seq == undotree.seq_cur then e = e.." <" end
+              entries[#entries+1] = e
               if tree[i].alt then
                 local subentries = build_entries(tree[i].alt, depth + 1)
                 for j = 1, #subentries do entries[#entries+1] = " "..subentries[j] end
@@ -1042,57 +1001,28 @@ in {
             return entries
           end
           local buf = vim.api.nvim_get_current_buf()
-          local file = fullpath()
+          local curtmp = vim.fn.tempname()
+          vim.fn.writefile(vim.api.nvim_buf_get_lines(0, 0, -1, false), curtmp)
           fzf.fzf_exec(build_entries(undotree.entries, 0), {
             prompt = "Undotree>",
             fzf_opts = { ["--no-multi"] = "" },
             actions = { ["default"] = function(s) vim.cmd("undo "..s[1]:match("%d+")) end },
             previewer = false,
-            preview = fzf.shell.raw_preview_action_cmd(function(s)
-              if #s == 0 then return end
-              local newbuf = vim.api.nvim_get_current_buf()
-              local tmp = vim.fn.tempname()
-              vim.api.nvim_set_current_buf(buf)
-              vim.cmd("undo "..s[1]:match("%d+"))
-              local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
-              vim.cmd("undo "..undotree.seq_cur)
-              vim.fn.writefile(lines, tmp)
-              vim.api.nvim_set_current_buf(newbuf)
-              return "delta --file-modified-label ''' --hunk-header-style ''' --file-transformation 's/tmp.*//' "..file.." "..tmp
-            end)
+            preview = {
+              type = "cmd",
+              fn = function(s)
+                if #s == 0 then return end
+                local oldtmp = vim.fn.tempname()
+                local newbuf = vim.api.nvim_get_current_buf()
+                vim.api.nvim_set_current_buf(buf)
+                vim.cmd("undo "..s[1]:match("%d+"))
+                local lines = vim.fn.writefile(vim.api.nvim_buf_get_lines(0, 0, -1, false), oldtmp)
+                vim.cmd("undo "..undotree.seq_cur)
+                vim.api.nvim_set_current_buf(newbuf)
+                return "delta --file-transformation 's/tmp.*//' "..curtmp.." "..oldtmp
+              end,
+            },
           })
-        end
-
-        -- Get all alternative files based on extension
-        local function get_altfiles()
-          local ext_altexts = {
-            [".c"] = { ".h", ".hpp", ".tin" },
-            [".h"] = { ".c", ".cpp", ".tac" },
-            [".cpp"] = { ".hpp", ".h", ".tin" },
-            [".hpp"] = { ".cpp", ".c", ".tac" },
-            [".vert.glsl"] = { ".frag.glsl" },
-            [".frag.glsl"] = { ".vert.glsl" },
-            [".tac"] = { ".tin", ".cpp", ".c" },
-            [".tin"] = { ".tac", ".hpp", ".h" }
-          }
-          local file = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(0), ":.")
-          local hits, more = {}, {}
-          for ext, altexts in pairs(ext_altexts) do
-            if file:sub(-#ext) == ext then
-              for i=1,#altexts do
-                local alt = file:sub(0,#file-#ext)..altexts[i]
-                if vim.loop.fs_stat(alt) then hits[#hits+1] = alt else more[#more+1] = alt end
-              end
-            end
-          end
-          return hits, more
-        end
-
-        -- Switch to an alternative file
-        local function fzf_altfiles(hits, more)
-          for i=1,#hits do hits[i] = fzf.utils.ansi_codes.green(hits[i]) end
-          for i=1,#more do hits[#hits+1] = fzf.utils.ansi_codes.red(more[i]) end
-          fzf.fzf_exec(hits, { prompt = "Altfiles>", actions = fzf.config.globals.actions.files, previewer = "builtin" })
         end
 
         -- AUTOCMDS --
@@ -1143,7 +1073,6 @@ in {
         vim.api.nvim_create_autocmd("BufWinEnter", { callback = function() vim.o.foldmethod = "manual" end })
 
         -- Per filetype config
-        vim.api.nvim_create_autocmd("FileType", { pattern = "nix", command = "setlocal tabstop=2 shiftwidth=2 expandtab" })
         vim.api.nvim_create_autocmd("FileType", { pattern = { "c", "cpp" }, command = "setlocal commentstring=//\\ %s" })
 
         -- Disable satellite on long files (search highlighting causes stuttering)
@@ -1350,8 +1279,9 @@ in {
         -- Terminal shortcuts (<C-\><C-n> to enter normal mode)
         vim.keymap.set("n", "<leader><return>", "<cmd>belowright split | terminal<cr>")
         -- Open notes
-        vim.keymap.set("n", "<leader>n", "<cmd>lcd "..notes.." | edit todo.txt<cr>")
-        vim.keymap.set("n", "<leader>N", "<cmd>lcd "..notes.." | edit `=strftime('./journal/%Y-%m-%d.md', strptime('%a %W %y', strftime('Mon %W %y')))` | call mkdir(expand('%:h'), 'p')<cr>")
+        vim.keymap.set("n", "<leader>n",     "<cmd>lcd ~/Documents/notes | edit `=strftime('./%Y-%m-%d.md')` | call mkdir(expand('%:h'), 'p')<cr>")
+        vim.keymap.set("n", "<leader>N",     "<cmd>lcd ~/Documents/notes | edit `=strftime('./%Y-%m-%d-week.md', strptime('%a %W %y', strftime('Mon %W %y')))` | call mkdir(expand('%:h'), 'p')<cr>")
+        vim.keymap.set("n", "<leader><c-n>", "<cmd>lcd ~/Documents/notes | edit `=strftime('./%Y-%m-00.md')` | call mkdir(expand('%:h'), 'p')<cr>")
         -- Diagnostics
         vim.keymap.set("n", "]e",        "<cmd>lua vim.diagnostic.goto_next()<cr>")
         vim.keymap.set("n", "[e",        "<cmd>lua vim.diagnostic.goto_prev()<cr>")
@@ -1362,7 +1292,8 @@ in {
         vim.keymap.set("n", "[B", "<cmd>bfirst<cr>")
         vim.keymap.set("n", "]B", "<cmd>blast<cr>")
         -- Files
-        vim.keymap.set("n", "<leader>-", function() vim.cmd("edit "..fullpath():gsub("/$", ""):gsub("/[^/]*$", "").."/") end)
+        vim.keymap.set("n", "gF", "<cmd>exe 'e '.expand('%:p:h').'/<cfile>.md'<cr>")
+        vim.keymap.set("n", "<leader><leader>", function() vim.cmd("edit "..fullpath():gsub("/$", ""):gsub("/[^/]*$", "").."/") end)
         vim.keymap.set("n", "[f", function() vim.cmd("edit "..select(1, prev_next_file())) end)
         vim.keymap.set("n", "]f", function() vim.cmd("edit "..select(2, prev_next_file())) end)
         vim.keymap.set("n", "[F", function() local cur, old = fullpath(); while cur ~= old do old = cur; cur, _ = prev_next_file(cur) end vim.cmd("edit "..cur) end)
@@ -1403,16 +1334,16 @@ in {
         vim.keymap.set("n",       "<leader>gD", "<cmd>Gitsigns toggle_deleted<cr>")
         -- Fzf
         vim.keymap.set("n", "<leader><bs>", "<cmd>FzfLua resume<cr>")
-        vim.keymap.set("n", "<leader>f", "<cmd>exe 'FzfLua files hidden=true cwd='.expand('%:p:h')<cr>")
-        vim.keymap.set("n", "<leader>F", "<cmd>exe 'FzfLua files hidden=true'<cr>")
+        vim.keymap.set("n", "<leader>f", "<cmd>exe 'FzfLua files cwd='.expand('%:p:h')<cr>")
+        vim.keymap.set("n", "<leader>F", "<cmd>exe 'FzfLua files'<cr>")
         vim.keymap.set("n", "<leader>o", "<cmd>exe 'FzfLua oldfiles cwd='.expand('%:p:h').' cwd_only=true'<cr>")
         vim.keymap.set("n", "<leader>O", "<cmd>exe 'FzfLua oldfiles'<cr>")
         vim.keymap.set("n", "<leader>s", "<cmd>exe 'FzfLua live_grep_native cwd='.expand('%:p:h')<cr>")
         vim.keymap.set("n", "<leader>S", "<cmd>exe 'FzfLua live_grep_native'<cr>")
         vim.keymap.set("n", "<leader>b", "<cmd>exe 'FzfLua buffers cwd='.expand('%:p:h').' cwd_only=true'<cr>")
         vim.keymap.set("n", "<leader>B", "<cmd>exe 'FzfLua buffers'<cr>")
-        vim.keymap.set("n", "<leader>t", function() fzf_tags(vim.fn.expand("%:p:h")) end)
-        vim.keymap.set("n", "<leader>T", function() fzf_tags() end)
+        vim.keymap.set("n", "<leader>t", "<cmd>exe 'FzfLua live_grep_native no_esc=true search=(\\b(TODO|FIX(ME)?|BUG|TBD|XXX)(\\([^\\)]*\\))?:?|[-\\*]\\ \\[\\ \\]) cwd='.expand('%:p:h')<cr>")
+        vim.keymap.set("n", "<leader>T", "<cmd>exe 'FzfLua live_grep_native no_esc=true search=(\\b(TODO|FIX(ME)?|BUG|TBD|XXX)(\\([^\\)]*\\))?:?|[-\\*]\\ \\[\\ \\])'<cr>")
         vim.keymap.set("n", "<leader>l", "<cmd>exe 'FzfLua blines'<cr>")
         vim.keymap.set("n", "<leader>L", "<cmd>exe 'FzfLua lines'<cr>")
         vim.keymap.set("n", "<leader>:", "<cmd>exe 'FzfLua command_history'<cr>")
@@ -1437,12 +1368,7 @@ in {
         vim.keymap.set("n", "<leader><leader>", "<cmd>exe 'FzfLua lsp_document_symbols'<cr>")
         vim.keymap.set("n", "<leader>c", "<cmd>exe 'FzfLua quickfix'<cr>")
         vim.keymap.set("n", "<leader>C", "<cmd>exe 'FzfLua quickfix_stack'<cr>")
-        vim.keymap.set("n", "<leader>a", function() local hits, more = get_altfiles() if #hits==1 then vim.cmd("edit "..hits[1]) else fzf_altfiles(hits, more) end end)
-        vim.keymap.set("n", "<leader>A", function() local hits, more = get_altfiles() fzf_altfiles(hits, more) end)
         vim.keymap.set("n", "<leader>u", fzf_undotree)
-        vim.keymap.set("n", "<leader>U", "<cmd>exe 'FzfLua changes'<cr>")
-        vim.keymap.set("n", "<leader>p", fzf_projects)
-        vim.keymap.set("n", "<leader>P", fzf_projects_save)
         vim.keymap.set("n", "z=", "<cmd>exe 'FzfLua spell_suggest'<cr>")
       '')
       (lib.mkIf wbus ''
@@ -1507,10 +1433,10 @@ in {
         "--max-columns-preview"
       ]
       (lib.mkIf (!wbus) [
-        "--glob=!{**/node_modules/*,**/.git/*,**/flake.lock,**/Cargo.lock,**/target/*}"
+        "--glob=!{**/node_modules/*,**/.git/*,**/flake.lock,**/Cargo.lock,**/target/*,**/.obsidian/*}"
       ])
       (lib.mkIf wbus [
-        "--glob=!{**/node_modules/*,**/.git/*,**/flake.lock,**/Cargo.lock,**/target/*,**/RPMS/*,**/SRPMS/*,**/.repo/*}"
+        "--glob=!{**/node_modules/*,**/.git/*,**/flake.lock,**/Cargo.lock,**/target/*,**/.obsidian/*,**/RPMS/*,**/SRPMS/*,**/.repo/*}"
       ])
       (lib.mkIf (wbus || work) [
         "--type-add=tac:*.tac"
