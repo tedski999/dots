@@ -1181,11 +1181,12 @@ in {
           }
         })
 
-        local lspconfig = require("lspconfig")
-        lspconfig.util.default_config.autostart = false
-        lspconfig.pyright.setup({})
-        lspconfig.clangd.setup({ on_attach = function(client, bufnr) client.server_capabilities.semanticTokensProvider = nil end })
-        lspconfig.rust_analyzer.setup({})
+        vim.lsp.enable("rust_analyzer")
+        vim.lsp.enable("pyright")
+        vim.lsp.enable("clang")
+        vim.lsp.config("rust_analyzer", { settings = { ["rust-analyzer"] = { cargo = { targetDir = true } } } })
+        vim.lsp.config["pyright"] = {}
+        vim.lsp.config["clang"] = { on_attach = function(client, bufnr) client.server_capabilities.semanticTokensProvider = nil end }
 
         require("nvim-surround").setup({ move_cursor = false })
 
@@ -1312,7 +1313,6 @@ in {
         vim.keymap.set("n", "<leader>D", "<cmd>exe 'FzfLua lsp_typedefs'<cr>")
         vim.keymap.set("n", "<leader>r", "<cmd>exe 'FzfLua lsp_references'<cr>")
         vim.keymap.set("n", "<leader>R", "<cmd>exe 'FzfLua lsp_finder'<cr>")
-        vim.keymap.set("n", "<leader><leader>", "<cmd>exe 'FzfLua lsp_document_symbols'<cr>")
         vim.keymap.set("n", "<leader>c", "<cmd>exe 'FzfLua quickfix'<cr>")
         vim.keymap.set("n", "<leader>C", "<cmd>exe 'FzfLua quickfix_stack'<cr>")
         vim.keymap.set("n", "<leader>u", fzf_undotree)
