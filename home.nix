@@ -851,13 +851,11 @@ in {
 
         vim.opt.title = true                                   -- Update window title
         vim.opt.mouse = "a"                                    -- Enable mouse support
-        vim.opt.updatetime = 100                               -- Faster refreshing
+        vim.opt.updatetime = 500                               -- Faster swap+CursorHold
         vim.opt.timeoutlen = 5000                              -- 5 seconds to complete mapping
         vim.opt.clipboard = "unnamedplus"                      -- Use system clipboard
         vim.opt.undofile = true                                -- Write undo history to disk
-        vim.opt.swapfile = false                               -- No need for swap files
         vim.opt.virtualedit = "block"                          -- Visual block cursor can select anywhere
-        vim.opt.grepprg = "rg --vimgrep "                      -- Use ripgrep for grepping
         vim.opt.number = true                                  -- Enable line numbers...
         vim.opt.relativenumber = true                          -- ...and relative line numbers
         vim.opt.ruler = false                                  -- No need to show line/column number with lualine
@@ -916,13 +914,6 @@ in {
             else prev = next end
           end
           return prev, file
-        end
-
-        -- Yank selected entries
-        local function fzf_yank_selection(selected)
-          local x = table.concat(selected, "\n")
-          vim.fn.setreg("+", x)
-          print("Yanked "..#x.." bytes")
         end
 
         -- Visualise and select from the branched undotree
@@ -1033,7 +1024,6 @@ in {
         fzf.setup({
           hls = { border = "NormalBorder", preview_border = "NormalBorder" },
           winopts = {
-            -- TODO(nvim): height breaks if window too small
             height = 0.25, width = 1.0, row = 1.0, col = 0.5,
             border = { "─", "─", "─", " ", "", "", "", " " },
             preview = { scrollchars = { "│", "" }, winopts = { list = true } }
@@ -1067,14 +1057,14 @@ in {
               ["ctrl-s"] = fzf.actions.file_split,
               ["ctrl-v"] = fzf.actions.file_vsplit,
               ["ctrl-t"] = fzf.actions.file_tabedit,
-              ["ctrl-y"] = { fzf_yank_selection, fzf.actions.resume },
+              ["ctrl-y"] = function(s) vim.fn.setreg("+", table.concat(s, "\n")) end,
             },
             buffers = {
               ["default"] = fzf.actions.buf_edit_or_qf,
               ["ctrl-s"] = fzf.actions.buf_split,
               ["ctrl-v"] = fzf.actions.buf_vsplit,
               ["ctrl-t"] = fzf.actions.buf_tabedit,
-              ["ctrl-y"] = { fzf_yank_selection, fzf.actions.resume },
+              ["ctrl-y"] = function(s) vim.fn.setreg("+", table.concat(s, "\n")) end,
             }
           },
           fzf_opts = { ["--separator='''"] = "", ["--preview-window"] = "border-none" },
@@ -1139,17 +1129,18 @@ in {
             icons_enabled = false,
             section_separators = "",
             component_separators = "",
+            refresh = { refresh_time = 50, statusline = 2500, tabline = 2500, winbar = 2500 },
             theme = {
               normal =   { b = { bg = "#333333", fg = "#999999" }, c = { bg = "#222222", fg = "#666666" } },
               inactive = { b = { bg = "#0c0c0c", fg = "#999999" }, c = { bg = "#0c0c0c", fg = "#666666" } },
-            }
+            },
           },
           sections = {
             lualine_a = {},
             lualine_b = {{"filename", newfile_status=true, path=1, symbols={newfile="?", modified="*", readonly="-"}}},
             lualine_c = {"diff"},
             lualine_x = {{"diagnostics", sections={"error", "warn"}}},
-            lualine_y = {{"searchcount", maxcount=9999}, "progress", "location"},
+            lualine_y = {{"searchcount", maxcount=9999, timeout=250}, "progress", "location"},
             lualine_z = {},
           },
           inactive_sections = {
@@ -1157,7 +1148,7 @@ in {
             lualine_b = {{"filename", newfile_status=true, path=1, symbols={newfile="?", modified="*", readonly="-"}}},
             lualine_c = {"diff"},
             lualine_x = {{"diagnostics", sections={"error", "warn"}}},
-            lualine_y = {{"searchcount", maxcount=9999}, "progress", "location"},
+            lualine_y = {{"searchcount", maxcount=9999, timeout=250}, "progress", "location"},
             lualine_z = {}
           }
         })
@@ -1212,7 +1203,7 @@ in {
         vim.keymap.set("n", "[e",        "<cmd>lua vim.diagnostic.goto_prev()<cr>")
         vim.keymap.set("n", "<leader>e", "<cmd>lua vim.diagnostic.open_float()<cr>")
         -- Files
-        vim.keymap.set("n", "gF", "<cmd>exe 'e '.expand('%:p:h').'/<cfile>.md'<cr>")
+        vim.keymap.set("n", "gF", "<cmd>exe 'edit '.fnamemodify(expand('<cfile>'), ':p').'.md'<cr>")
         vim.keymap.set("n", "<leader><leader>", function() vim.cmd("edit "..fullpath():gsub("/$", ""):gsub("/[^/]*$", "").."/") end)
         vim.keymap.set("n", "[f", function() vim.cmd("edit "..select(1, prev_next_file())) end)
         vim.keymap.set("n", "]f", function() vim.cmd("edit "..select(2, prev_next_file())) end)
