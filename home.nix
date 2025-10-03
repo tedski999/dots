@@ -856,17 +856,15 @@ in {
         vim.opt.clipboard = "unnamedplus"                      -- Use system clipboard
         vim.opt.undofile = true                                -- Write undo history to disk
         vim.opt.swapfile = false                               -- No need for swap files
-        vim.opt.modeline = false                               -- Don't read mode line
-        vim.opt.virtualedit = "onemore"                        -- Allow cursor to extend one character past the end of the line
+        vim.opt.virtualedit = "block"                          -- Visual block cursor can select anywhere
         vim.opt.grepprg = "rg --vimgrep "                      -- Use ripgrep for grepping
         vim.opt.number = true                                  -- Enable line numbers...
         vim.opt.relativenumber = true                          -- ...and relative line numbers
-        vim.opt.ruler = false                                  -- No need to show line/column number with lightline
-        vim.opt.showmode = false                               -- No need to show current mode with lightline
+        vim.opt.ruler = false                                  -- No need to show line/column number with lualine
         vim.opt.scrolloff = 2                                  -- Keep lines above/below the cursor when scrolling
         vim.opt.sidescrolloff = 5                              -- Keep columns to the left/right of the cursor when scrolling
-        vim.opt.signcolumn = "no"                              -- Keep the sign column closed
-        vim.opt.shortmess:append("sSIcC")                      -- Be quieter
+        vim.opt.signcolumn = "number"                          -- Sign column = number column
+        vim.opt.shortmess:append("sScC")                       -- Be quieter
         vim.opt.expandtab = true                               -- Tab key inserts spaces
         vim.opt.tabstop = 2                                    -- 2-spaced tabs
         vim.opt.shiftwidth = 0                                 -- Tab-spaced indentation
@@ -974,9 +972,6 @@ in {
 
         -- AUTOCMDS --
 
-        -- Abort writes to :* as they're usually typos. Neovim API doesn't support this
-        vim.cmd([[au BufWritePre :* call confirm(":w:* detected (C-c to cancel)")]])
-
         -- Highlight suspicious whitespace
         local function get_whitespace_pattern()
           local pattern = [[[\u00a0\u1680\u180e\u2000-\u200b\u202f\u205f\u3000\ufeff]\+\|\s\+$\|[\u0020]\+\ze[\u0009]\+]]
@@ -996,9 +991,7 @@ in {
         end })
 
         -- If I can read it I can edit it (even if I can't write it)
-        vim.api.nvim_create_autocmd("BufEnter", { callback = function()
-          vim.o.readonly = false
-        end })
+        vim.api.nvim_create_autocmd("BufEnter", { callback = function() vim.o.readonly = false end })
 
         -- Remember last cursor position
         vim.api.nvim_create_autocmd("BufWinEnter", { callback = function()
@@ -1095,11 +1088,7 @@ in {
         })
 
         require("nightfox").setup({
-          options = {
-            dim_inactive = true,
-            module_default = false,
-            modules = { ["mini"] = true, ["gitsigns"] = true, ["native_lsp"] = true }
-          },
+          options = { dim_inactive = true },
           palettes = {
             all = {
               fg0 = "#ff00ff", fg1 = "#ffffff", fg2 = "#999999", fg3 = "#666666",
@@ -1143,10 +1132,7 @@ in {
             }
           }
         })
-
         vim.cmd("colorscheme carbonfox")
-
-        local p = require("nightfox.palette").load("carbonfox")
 
         require("lualine").setup({
           options = {
@@ -1154,29 +1140,24 @@ in {
             section_separators = "",
             component_separators = "",
             theme = {
-              normal =   { a = { bg = p.black.bright, fg = p.fg1, gui = "bold" }, b = { bg = p.bg4, fg = p.fg2 }, c = { bg = p.bg3, fg = p.fg3 } },
-              insert =   { a = { bg = p.green.base,   fg = p.fg1, gui = "bold" }, b = { bg = p.bg4, fg = p.fg2 }, c = { bg = p.bg3, fg = p.fg3 } },
-              visual =   { a = { bg = p.magenta.dim,  fg = p.fg1, gui = "bold" }, b = { bg = p.bg4, fg = p.fg2 }, c = { bg = p.bg3, fg = p.fg3 } },
-              replace =  { a = { bg = p.red.base,     fg = p.fg1, gui = "bold" }, b = { bg = p.bg4, fg = p.fg2 }, c = { bg = p.bg3, fg = p.fg3 } },
-              command =  { a = { bg = p.black.bright, fg = p.fg1, gui = "bold" }, b = { bg = p.bg4, fg = p.fg2 }, c = { bg = p.bg3, fg = p.fg3 } },
-              terminal = { a = { bg = p.bg0,          fg = p.fg1, gui = "bold" }, b = { bg = p.bg4, fg = p.fg2 }, c = { bg = p.bg3, fg = p.fg3 } },
-              inactive = { a = { bg = p.bg0,          fg = p.fg1, gui = "bold" }, b = { bg = p.bg0, fg = p.fg2 }, c = { bg = p.bg0, fg = p.fg3 } },
+              normal =   { b = { bg = "#333333", fg = "#999999" }, c = { bg = "#222222", fg = "#666666" } },
+              inactive = { b = { bg = "#0c0c0c", fg = "#999999" }, c = { bg = "#0c0c0c", fg = "#666666" } },
             }
           },
           sections = {
-            lualine_a = {{"mode", fmt = function(m) return m:sub(1,1) end}},
+            lualine_a = {},
             lualine_b = {{"filename", newfile_status=true, path=1, symbols={newfile="?", modified="*", readonly="-"}}},
             lualine_c = {"diff"},
             lualine_x = {{"diagnostics", sections={"error", "warn"}}},
-            lualine_y = {"filetype"},
-            lualine_z = {{"searchcount", maxcount=9999}, "progress", "location"},
+            lualine_y = {{"searchcount", maxcount=9999}, "progress", "location"},
+            lualine_z = {},
           },
           inactive_sections = {
-            lualine_a = {{"mode", fmt=function() return " " end}},
-            lualine_b = {},
-            lualine_c = {{"filename", newfile_status=true, path=1, symbols={newfile="?", modified="*", readonly="-"}}},
+            lualine_a = {},
+            lualine_b = {{"filename", newfile_status=true, path=1, symbols={newfile="?", modified="*", readonly="-"}}},
+            lualine_c = {"diff"},
             lualine_x = {{"diagnostics", sections={"error", "warn"}}},
-            lualine_y = {},
+            lualine_y = {{"searchcount", maxcount=9999}, "progress", "location"},
             lualine_z = {}
           }
         })
@@ -1199,16 +1180,14 @@ in {
 
         require("mini.cursorword").setup({ delay = 0 })
 
-        require("mini.splitjoin").setup({ mappings = { toggle = "", join = "<leader>j", split = "<leader>J" } })
-
         require("satellite").setup({
-          winblend = 50,
           handlers = {
-            cursor = { enable = false, symbols = { '⎺', '⎻', '—', '⎼', '⎽' } },
+            cursor = { enable = false },
             search = { enable = true },
             diagnostic = { enable = true, min_severity = vim.diagnostic.severity.WARN },
-            gitsigns = { enable = false },
-            marks = { enable = false }
+            gitsigns = { enable = true, signs = { add = "│", change = "│", delete = "┊" } },
+            marks = { enable = false },
+            quickfix = { enable = false },
           }
         })
 
@@ -1224,8 +1203,6 @@ in {
         vim.keymap.set("n", "<leader>", "")
         -- Split lines at cursor, opposite of <s-j>
         vim.keymap.set("n", "<c-j>", "m`i<cr><esc>``")
-        -- Terminal shortcuts (<C-\><C-n> to enter normal mode)
-        vim.keymap.set("n", "<leader><return>", "<cmd>belowright split | terminal<cr>")
         -- Open notes
         vim.keymap.set("n", "<leader>n",     "<cmd>lcd ~/Documents/notes | edit `=strftime('./%Y-%m-%d.md')` | call mkdir(expand('%:h'), 'p')<cr>")
         vim.keymap.set("n", "<leader>N",     "<cmd>lcd ~/Documents/notes | edit `=strftime('./%Y-%m-%d-week.md', strptime('%a %W %y', strftime('Mon %W %y')))` | call mkdir(expand('%:h'), 'p')<cr>")
@@ -1234,11 +1211,6 @@ in {
         vim.keymap.set("n", "]e",        "<cmd>lua vim.diagnostic.goto_next()<cr>")
         vim.keymap.set("n", "[e",        "<cmd>lua vim.diagnostic.goto_prev()<cr>")
         vim.keymap.set("n", "<leader>e", "<cmd>lua vim.diagnostic.open_float()<cr>")
-        -- Buffers
-        vim.keymap.set("n", "[b", "<cmd>bprevious<cr>")
-        vim.keymap.set("n", "]b", "<cmd>bnext<cr>")
-        vim.keymap.set("n", "[B", "<cmd>bfirst<cr>")
-        vim.keymap.set("n", "]B", "<cmd>blast<cr>")
         -- Files
         vim.keymap.set("n", "gF", "<cmd>exe 'e '.expand('%:p:h').'/<cfile>.md'<cr>")
         vim.keymap.set("n", "<leader><leader>", function() vim.cmd("edit "..fullpath():gsub("/$", ""):gsub("/[^/]*$", "").."/") end)
@@ -1251,20 +1223,11 @@ in {
         vim.keymap.set("n", "]c", "<cmd>cnext<cr>")
         vim.keymap.set("n", "[C", "<cmd>cfirst<cr>")
         vim.keymap.set("n", "]C", "<cmd>clast<cr>")
-        -- LSP
-        vim.keymap.set("n", "<leader>v", "<cmd>LspStart<cr>")
-        vim.keymap.set("n", "<leader>V", "<cmd>LspStop<cr>")
         -- Toggles
         vim.keymap.set("n", "yo", "")
         vim.keymap.set("n", "yot", "<cmd>set expandtab! expandtab?<cr>")
         vim.keymap.set("n", "yow", "<cmd>set wrap! wrap?<cr>")
-        vim.keymap.set("n", "yon", "<cmd>set number! number?<cr>")
-        vim.keymap.set("n", "yor", "<cmd>set relativenumber! relativenumber?<cr>")
-        vim.keymap.set("n", "yoi", "<cmd>set ignorecase! ignorecase?<cr>")
-        vim.keymap.set("n", "yol", "<cmd>set list! list?<cr>")
-        vim.keymap.set("n", "yoz", "<cmd>set spell! spell?<cr>")
         vim.keymap.set("n", "yod", "<cmd>if &diff | diffoff | else | diffthis | endif<cr>")
-        vim.keymap.set("n", "yos", function() if next(vim.api.nvim_get_autocmds({ group = "satellite" })) then vim.cmd("SatelliteDisable") else vim.cmd("SatelliteEnable") end end)
         -- Git
         vim.keymap.set("n", "[d", "<cmd>Gitsigns nav_hunk prev target=all wrap=false<cr>")
         vim.keymap.set("n", "]d", "<cmd>Gitsigns nav_hunk next target=all wrap=false<cr>")
