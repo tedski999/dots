@@ -83,7 +83,7 @@ in {
       (writeShellScriptBin "0x0" "curl -F\"file=@$1\" https://0x0.st;")
     ]
 
-    (lib.mkIf (msung || work) [ (python3.withPackages (ppkgs: with ppkgs; [ numpy scipy pillow matplotlib ])) ])
+    (lib.mkIf (msung || work) [ (python3.withPackages (ppkgs: with ppkgs; [ numpy scipy pillow matplotlib networkx ])) ])
     (lib.mkIf (septs || wbus) [ (python3.withPackages (ppkgs: with ppkgs; [ numpy ])) ])
 
     (lib.mkIf (msung || work) [
@@ -2055,7 +2055,8 @@ in {
 
   xdg = lib.mkIf (!wbus) {
     enable = true;
-    #terminal-exec = "TODO";
+    terminal-exec.enable = true;
+    terminal-exec.settings.default = [ "alacritty.desktop" ];
     userDirs.enable = true;
     userDirs.createDirectories = true;
     userDirs.publicShare = null;
