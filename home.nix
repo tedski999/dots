@@ -1958,6 +1958,14 @@ in {
     ];
   };
 
+  services.hyprsunset = lib.mkIf (msung || work) {
+    enable = true;
+    settings.profile = [
+      { time = "6:00"; identity = true; }
+      { time = "21:00"; temperature = 4000; }
+    ];
+  };
+
   services.mako = lib.mkIf (msung || work) {
     enable = true;
     settings.width = 450;
