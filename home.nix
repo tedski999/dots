@@ -1875,7 +1875,6 @@ in {
       ''super, escape, exec, powerctl''
       ''super shift, escape, exec, powerctl lock''
       ''super control, escape, exec, powerctl suspend''
-      ''super shift control, escape, exec, powerctl reload''
 
       ''super, n, exec, networkctl''
       ''super shift, n, exec, networkctl wifi''
@@ -1907,8 +1906,7 @@ in {
       ''super control, j, resizeactive,    0  100''
       ''super, g, togglegroup''
       ''super shift, g, changegroupactive, f''
-      ''super control, g, changegroupactive, b''
-      ''super shift control, g, lockactivegroup, toggle''
+      ''super control, g, lockactivegroup, toggle''
       ''super, equal, exec, hyprctl -q keyword cursor:zoom_factor $(hyprctl -j getoption cursor:zoom_factor | jq '[.float * 1.5, 999] | min')''
       ''super, minus, exec, hyprctl -q keyword cursor:zoom_factor $(hyprctl -j getoption cursor:zoom_factor | jq '[.float * 0.5, 1] | max')''
       ''super shift, equal, exec, hyprctl -q keyword monitor $(hyprctl -j monitors | jq -r '.[] | select(.focused) | "desc:" + .description + ", " + (.width | tostring) + "x" + (.height | tostring) + "@" + (.refreshRate | tostring) + ", " + (.x | tostring) + "x" + (.y | tostring) + ", 2"')''
