@@ -246,26 +246,23 @@ in {
         IFS=$'\n'
         choice="$([ -n "$1" ] && echo $1 || printf "%s\n" auto none work home | bemenu -p "Display" -l 5)"
         [ "$choice" = "auto" ] && case "$(hyprctl -j monitors | jq -r '.[].description' | sort | xargs)" in
-          "AOC 2270W GNKJ1HA001311 Pixio USA Pixio PXC348C Samsung Display Corp. 0x419F") choice="home";;
+          "Pixio USA Pixio PXC348C Samsung Display Corp. 0x419F")                         choice="home";;
           "Lenovo Group Limited P24q-30 V90CP3VM Samsung Display Corp. 0x419F")           choice="work";;
           *)                                                                              choice="none";;
         esac
         case "$choice" in
           "none")
               hyprctl -q keyword monitor "desc:Samsung Display Corp. 0x419F, 2880x1800@120, 0x0, 2"
-              hyprctl -q keyword monitor "desc:AOC 2270W GNKJ1HA001311, 1920x1080@60, auto, 1"
               hyprctl -q keyword monitor "desc:Pixio USA Pixio PXC348C, 3440x1440@100, auto, 1"
               hyprctl -q keyword monitor "desc:Lenovo Group Limited P24q-30 V90CP3VM, 2560x1440@59.951, auto, 1"
               ;;
           "work")
               hyprctl -q keyword monitor "desc:Samsung Display Corp. 0x419F, 2880x1800@120, 0x0, 2"
-              hyprctl -q keyword monitor "desc:AOC 2270W GNKJ1HA001311, 1920x1080@60, auto, 1"
               hyprctl -q keyword monitor "desc:Pixio USA Pixio PXC348C, 3440x1440@100, auto, 1"
               hyprctl -q keyword monitor "desc:Lenovo Group Limited P24q-30 V90CP3VM, 2560x1440@59.951, -560x-1440, 1"
               ;;
           "home")
               hyprctl -q keyword monitor "desc:Samsung Display Corp. 0x419F, 2880x1800@120, 0x0, 2"
-              hyprctl -q keyword monitor "desc:AOC 2270W GNKJ1HA001311, 1920x1080@60, -1800x-1680, 1, transform, 1"
               hyprctl -q keyword monitor "desc:Pixio USA Pixio PXC348C, 3440x1440@100, -720x-1440, 1"
               hyprctl -q keyword monitor "desc:Lenovo Group Limited P24q-30 V90CP3VM, 2560x1440@59.951, auto, 1"
               ;;
@@ -1773,7 +1770,7 @@ in {
   wayland.windowManager.hyprland = lib.mkIf (msung || work) {
     enable = true;
     package = lib.mkIf work (config.lib.nixGL.wrap pkgs.hyprland);
-    #plugins = with pkgs; [];
+    plugins = with pkgs; [ hyprlandPlugins.hy3 ];
     settings.monitor = [ ", preferred, auto, auto" ];
     settings.general.gaps_in = 5;
     settings.general.gaps_out = 5;
@@ -1782,7 +1779,7 @@ in {
     settings.general."col.inactive_border" = "rgb(333333)";
     settings.general.resize_on_border = false;
     settings.general.allow_tearing = false;
-    settings.general.layout = "dwindle"; # TODO: my own :)
+    settings.general.layout = "hy3";
     settings.decoration.rounding = 0;
     settings.decoration.dim_special = 0.75;
     settings.decoration.shadow.enabled = false;
@@ -1791,14 +1788,21 @@ in {
     settings.animations.bezier = "linear,0,0,1,1";
     settings.animations.animation = [
       "global, 1, 1, linear"
-      "border, 0"
-      "workspaces, 1, 1, linear, fade"
       "windowsIn, 1, 1, linear, gnomed"
       "windowsOut, 0"
+      "workspaces, 1, 1, linear, slide"
+      "border, 0"
+      "borderangle, 0"
+      "monitorAdded, 0"
     ];
-    settings.dwindle.force_split = 2;
-    settings.dwindle.preserve_split = true;
-    settings.dwindle.split_width_multiplier = 0;
+    settings.plugin.hy3.group_inset = 25;
+    settings.plugin.hy3.tabs.radius = 0;
+    settings.plugin.hy3.tabs.border_width = 4;
+    settings.plugin.hy3.tabs.padding = 0;
+    settings.plugin.hy3.tabs.text_center = false;
+    settings.plugin.hy3.tabs.text_height = 10;
+    settings.plugin.hy3.tabs.text_font = "Terminess Nerd Font";
+    settings.plugin.hy3.tabs.text_padding = 10;
     settings.misc.disable_hyprland_logo = true;
     settings.misc.disable_autoreload = true;
     settings.input.kb_layout = "ie";
@@ -1823,12 +1827,18 @@ in {
       ''super, return, exec, $TERMINAL''
       ''super, space, exec, $LAUNCHER''
       ''super, s, exec, $BROWSER''
-      ''super, f, exec, hyprctl -q dispatch focuswindow $(hyprctl activewindow -j | jq -e .floating >/dev/null && echo tiled || echo floating)''
+
+      ''super, f, hy3:togglefocuslayer''
       ''super shift, f, exec, hyprctl -q dispatch $(hyprctl activewindow -j | jq -e .floating >/dev/null && echo settiled || echo setfloating)''
+      ''super, p, hy3:makegroup, h, toggle''
+      ''super shift, p, hy3:makegroup, v, toggle''
+      ''super control, p, hy3:makegroup, tab, toggle''
+      ''super, o, hy3:changegroup, h''
+      ''super shift, o, hy3:changegroup, v''
+      ''super control, o, hy3:changegroup, toggletab''
+      ''super, u, hy3:changefocus, raise''
+      ''super shift, u, hy3:changefocus, lower''
       ''super, m, fullscreen,''
-      ''super, o, togglesplit,''
-      ''super, p, layoutmsg, preselect d''
-      ''super shift, p, layoutmsg, preselect r''
       ''super, c, pin,''
       ''super, x, killactive,''
 
@@ -1841,26 +1851,26 @@ in {
       ''super, 7, exec, s="$(hyprctl monitors -j | jq -r '.[] | select(.focused).specialWorkspace.name[8:]')"; [ -n "$s" ] && hyprctl dispatch togglespecialworkspace "$s"; hyprctl -q dispatch focusworkspaceoncurrentmonitor "name:7"''
       ''super, 8, exec, s="$(hyprctl monitors -j | jq -r '.[] | select(.focused).specialWorkspace.name[8:]')"; [ -n "$s" ] && hyprctl dispatch togglespecialworkspace "$s"; hyprctl -q dispatch focusworkspaceoncurrentmonitor "name:8"''
       ''super, 9, exec, s="$(hyprctl monitors -j | jq -r '.[] | select(.focused).specialWorkspace.name[8:]')"; [ -n "$s" ] && hyprctl dispatch togglespecialworkspace "$s"; hyprctl -q dispatch focusworkspaceoncurrentmonitor "name:9"''
-      ''super shift, 1, movetoworkspacesilent, name:1''
-      ''super shift, 2, movetoworkspacesilent, name:2''
-      ''super shift, 3, movetoworkspacesilent, name:3''
-      ''super shift, 4, movetoworkspacesilent, name:4''
-      ''super shift, 5, movetoworkspacesilent, name:5''
-      ''super shift, 6, movetoworkspacesilent, name:6''
-      ''super shift, 7, movetoworkspacesilent, name:7''
-      ''super shift, 8, movetoworkspacesilent, name:8''
-      ''super shift, 9, movetoworkspacesilent, name:9''
+      ''super shift, 1, hy3:movetoworkspace, name:1''
+      ''super shift, 2, hy3:movetoworkspace, name:2''
+      ''super shift, 3, hy3:movetoworkspace, name:3''
+      ''super shift, 4, hy3:movetoworkspace, name:4''
+      ''super shift, 5, hy3:movetoworkspace, name:5''
+      ''super shift, 6, hy3:movetoworkspace, name:6''
+      ''super shift, 7, hy3:movetoworkspace, name:7''
+      ''super shift, 8, hy3:movetoworkspace, name:8''
+      ''super shift, 9, hy3:movetoworkspace, name:9''
 
       ''super, 0, exec, hyprspace''
-      ''super shift, 0, exec, i=$(hyprctl -j activeworkspace | jq -er '.name | match("[[:digit:]]$").string') && n=$(hyprspaceinput) && hyprctl -q dispatch movetoworkspacesilent "name:$n$i"''
+      ''super shift, 0, exec, i=$(hyprctl -j activeworkspace | jq -er '.name | match("[[:digit:]]$").string') && n=$(hyprspaceinput) && hyprctl -q dispatch hy3:movetoworkspace "name:$n$i"''
       ''super control, 0, exec, n=$(hyprspaceinput) && ! hyprctl -j workspaces | jq -e '.[].name | select(.=="'$n'1"or.=="'$n'2"or.=="'$n'3"or.=="'$n'4"or.=="'$n'5"or.=="'$n'6"or.=="'$n'7"or.=="'$n'8"or.=="'$n'9")' && echo $n >/tmp/hyprspace''
 
       ''super, q, togglespecialworkspace, Q''
-      ''super shift, q, movetoworkspacesilent, special:Q''
+      ''super shift, q, hy3:movetoworkspace, special:Q''
       ''super, a, togglespecialworkspace, A''
-      ''super shift, a, movetoworkspacesilent, special:A''
+      ''super shift, a, hy3:movetoworkspace, special:A''
       ''super, z, togglespecialworkspace, Z''
-      ''super shift, z, movetoworkspacesilent, special:Z''
+      ''super shift, z, hy3:movetoworkspace, special:Z''
 
       '', print, exec, slurp -b 'ffffff20' | grim -g - - | tee "$HOME/Pictures/Screenshot_$(date -Is).png" | wl-copy --type image/png''
       ''shift, print, exec, hyprctl -j clients | jq -r '.[] | select(.workspace.id=='$(hyprctl -j activeworkspace | jq .id)') | "\(.at[0]),\(.at[1]) \(.size[0])x\(.size[1])"' | slurp -B 'ffffff20' | grim -g - - | tee "$HOME/Pictures/Screenshot_$(date -Is).png" | wl-copy --type image/png''
@@ -1892,21 +1902,22 @@ in {
       ''super shift, t, exec, task''
     ];
     settings.binde = [
-      ''super, h, movefocus, l''
-      ''super, l, movefocus, r''
-      ''super, k, movefocus, u''
-      ''super, j, movefocus, d''
-      ''super shift, h, exec, hyprctl -j activewindow | jq -e .floating && hyprctl -q dispatch moveactive -100 0 || hyprctl -q --batch "keyword dwindle:split_width_multiplier 1; dispatch movewindoworgroup l; keyword dwindle:split_width_multiplier 0;"''
-      ''super shift, l, exec, hyprctl -j activewindow | jq -e .floating && hyprctl -q dispatch moveactive  100 0 || hyprctl -q dispatch movewindoworgroup r''
-      ''super shift, k, exec, hyprctl -j activewindow | jq -e .floating && hyprctl -q dispatch moveactive 0 -100 || hyprctl -q dispatch movewindoworgroup u''
-      ''super shift, j, exec, hyprctl -j activewindow | jq -e .floating && hyprctl -q dispatch moveactive 0  100 || hyprctl -q dispatch movewindoworgroup d''
+      ''super, h, hy3:movefocus, l''
+      ''super, l, hy3:movefocus, r''
+      ''super, k, hy3:movefocus, u''
+      ''super, j, hy3:movefocus, d''
+      ''super shift, h, exec, hyprctl -j activewindow | jq -e .floating && hyprctl -q dispatch moveactive -100 0 || hyprctl -q dispatch hy3:movewindow l, once''
+      ''super shift, l, exec, hyprctl -j activewindow | jq -e .floating && hyprctl -q dispatch moveactive  100 0 || hyprctl -q dispatch hy3:movewindow r, once''
+      ''super shift, k, exec, hyprctl -j activewindow | jq -e .floating && hyprctl -q dispatch moveactive 0 -100 || hyprctl -q dispatch hy3:movewindow u, once''
+      ''super shift, j, exec, hyprctl -j activewindow | jq -e .floating && hyprctl -q dispatch moveactive 0  100 || hyprctl -q dispatch hy3:movewindow d, once''
       ''super control, h, resizeactive, -100    0''
       ''super control, l, resizeactive,  100    0''
       ''super control, k, resizeactive,    0 -100''
       ''super control, j, resizeactive,    0  100''
-      ''super, g, togglegroup''
-      ''super shift, g, changegroupactive, f''
-      ''super control, g, lockactivegroup, toggle''
+      ''super control shift, h, movewindow, mon:l'' # TODO :( ?
+      ''super control shift, l, movewindow, mon:r''
+      ''super control shift, k, movewindow, mon:u''
+      ''super control shift, j, movewindow, mon:d''
       ''super, equal, exec, hyprctl -q keyword cursor:zoom_factor $(hyprctl -j getoption cursor:zoom_factor | jq '[.float * 1.5, 999] | min')''
       ''super, minus, exec, hyprctl -q keyword cursor:zoom_factor $(hyprctl -j getoption cursor:zoom_factor | jq '[.float * 0.5, 1] | max')''
       ''super shift, equal, exec, hyprctl -q keyword monitor $(hyprctl -j monitors | jq -r '.[] | select(.focused) | "desc:" + .description + ", " + (.width | tostring) + "x" + (.height | tostring) + "@" + (.refreshRate | tostring) + ", " + (.x | tostring) + "x" + (.y | tostring) + ", 2"')''
