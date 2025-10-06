@@ -1889,7 +1889,7 @@ in {
     config.keybindings."Mod4+Shift+z" = ''move container workspace 0:z'';
 
     config.keybindings."Mod4+0"         = ''exec swaytask'';
-    config.keybindings."Mod4+Shift+0"   = ''exec n=$(swaytaskinput) && i=$(swaymsg -rt get_workspaces | jq -er '.[] | select(.focused).name | match("[[:digit:]]$").string') && swaymsg "move workspace $n:$i"'';
+    config.keybindings."Mod4+Shift+0"   = ''exec n=$(swaytaskinput) && i=$(swaymsg -rt get_workspaces | jq -r '.[] | select(.focused).name | match("[[:digit:]]$").string') && swaymsg "move workspace $n:''${i:-1}"'';
     config.keybindings."Mod4+Control+0" = ''exec n=$(swaytaskinput) && ! swaymsg -rt get_workspaces | jq -e '.[].name | select(.=="'$n':1"or.=="'$n':2"or.=="'$n':3"or.=="'$n':4"or.=="'$n':5"or.=="'$n':6"or.=="'$n':7"or.=="'$n':8"or.=="'$n':9")' && echo $n >/tmp/swaytask'';
 
     config.keybindings."Mod4+equal"         = ''exec swaymsg output - scale $(swaymsg -rt get_outputs | jq -r '.[] | select(.focused) | .scale * 1.1')'';
