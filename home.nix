@@ -256,12 +256,12 @@ in {
             $(printf "output \"%s\" enable, " $(swaymsg -rt get_outputs | jq -r '.[] | .make+" "+.model+" "+.serial')) ;;
           "work") swaymsg \
             output \* disable, \
-            output \"Lenovo Group Limited P24q-30 V90CP3VM\" enable pos 0 0 transform 0 mode 2560x1440@59.951Hz, \
-            output \"Samsung Display Corp. 0x419F Unknown\" enable pos 320 1440 transform 0 mode 2880x1800@120Hz scale 2 ;;
+            output \"Lenovo Group Limited P24q-30 V90CP3VM\" enable pos 0 0 mode 2560x1440@59.951Hz, \
+            output \"Samsung Display Corp. 0x419F Unknown\" enable pos 320 1440 mode 2880x1800@120Hz scale 2 ;;
           "home") swaymsg \
             output \* disable, \
-            output \"Pixio USA Pixio PXC348C Unknown\" enable pos 1080 240 transform 0 mode 3440x1440@100Hz, \
-            output \"Samsung Display Corp. 0x419F Unknown\" enable pos 1360 1680 transform 0 mode 2880x1800@120Hz scale 2 ;;
+            output \"Pixio USA Pixio PXC348C Unknown\" enable pos 0 0 mode 3440x1440@100Hz, \
+            output \"Samsung Display Corp. 0x419F Unknown\" enable pos 1000 1440 mode 2880x1800@120Hz scale 2 ;;
           *) exit 1 ;;
         esac
         notify-send -i monitor -t 5000 "Set display configuration" "Profile: $choice"
