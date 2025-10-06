@@ -860,6 +860,7 @@ in {
         vim.opt.expandtab = true                               -- Tab key inserts spaces
         vim.opt.tabstop = 2                                    -- 2-spaced tabs
         vim.opt.shiftwidth = 0                                 -- Tab-spaced indentation
+        vim.opt.smartindent = true                             -- Autoindent based on c-like syntax
         vim.opt.cinoptions = "N-s"                             -- Don't indent C++ namespaces
         vim.opt.list = true                                    -- Enable whitespace characters below
         vim.opt.listchars="space:·,tab:› ,trail:•,precedes:<,extends:>,nbsp:␣"
@@ -994,9 +995,6 @@ in {
         -- Keep universal formatoptions
         vim.api.nvim_create_autocmd("Filetype", { callback = function() vim.o.formatoptions = "rqlj" end })
 
-        -- Swap to manual folding after loading
-        vim.api.nvim_create_autocmd("BufWinEnter", { callback = function() vim.o.foldmethod = "manual" end })
-
         -- Per filetype config
         vim.api.nvim_create_autocmd("FileType", { pattern = { "c", "cpp" }, command = "setlocal commentstring=//\\ %s" })
 
@@ -1098,6 +1096,7 @@ in {
               FloatBorder = { bg = "palette.bg2" },
               MiniCursorword = { bg = "none", fg = "none", style = "underline,bold" },
               MiniCursorwordCurrent = { bg = "none", fg = "none", style = "underline,bold" },
+              MiniIndentscopeSymbol = { fg = "palette.fg3" },
               CursorLineNr = { fg = "palette.fg1" },
               Whitespace = { fg = "palette.sel1" },
               ExtraWhitespace = { bg = "red", fg = "red" },
@@ -1158,6 +1157,14 @@ in {
 
         require("mini.align").setup({})
 
+        require("mini.indentscope").setup({
+          draw = { delay = 1, animation = require("mini.indentscope").gen_animation.none() },
+          options = { try_as_border = true },
+          symbol = "▏",
+        })
+
+        require("mini.splitjoin").setup({ mappings = { toggle = "", join = "<leader>j", split = "<leader>J" } })
+
         require("mini.completion").setup({
           set_vim_settings = false,
           window = { info = { border = { " ", "", "", " " } }, signature = { border = { " ", "", "", " " } } },
@@ -1170,7 +1177,7 @@ in {
             cursor = { enable = false },
             search = { enable = true },
             diagnostic = { enable = true, min_severity = vim.diagnostic.severity.WARN },
-            gitsigns = { enable = true, signs = { add = "│", change = "│", delete = "┊" } },
+            gitsigns = { enable = true, signs = { add = "▕", change = "▕", delete = "▕" } },
             marks = { enable = false },
             quickfix = { enable = false },
           }
