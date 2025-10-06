@@ -76,10 +76,10 @@ Install system packages:
 sudo apt install xdg-desktop-portal-wlr libspa-0.2-bluetooth
 ```
 
-Add PAM integration for hyprlock:
+Add PAM integration for swaylock:
 ```sh
-# TODO(hyprlock) pam password authentication
-echo "auth required pam_permit.so" | sudo tee /etc/pam.d/hyprlock
+# TODO pam password authentication
+echo "auth required pam_permit.so" | sudo tee /etc/pam.d/swaylock
 ```
 
 Import GPG subkeys:
