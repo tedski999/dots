@@ -1312,16 +1312,11 @@ in {
             augroup vimrc | autocmd BufNewFile,BufRead *.tac setlocal indentexpr=TaccIndentOverrides() | augroup NONE
           ]])
           vim.api.nvim_create_autocmd("FileType", { pattern = "tac", command = "setlocal commentstring=//\\ %s" })
-          -- LSP
-          vim.api.nvim_create_autocmd({ "BufEnter", "BufWinEnter" }, {
-            pattern = { "*.tac" },
-            callback = function() vim.lsp.start({ name = "tacc", cmd = { "/usr/bin/artaclsp" }, cmd_args = { "-I", "/bld/" }, root_dir = "/src" }) end
-          })
-          lspconfig.clangd.setup({
-             on_attach = function(client, bufnr) client.server_capabilities.semanticTokensProvider = nil end,
-             init_options = { compilationDatabasePath = "/src" },
-             root_dir = "/src",
-          })
+          vim.api.nvim_create_autocmd({ "BufEnter", "BufWinEnter" }, { pattern = { "*.tac" }, callback = function() vim.lsp.start({ name = "tacc", cmd = { "/usr/bin/artaclsp" }, cmd_args = { "-I", "/bld/" }, root_dir = "/src" }) end })
+          vim.lsp.config["clang"] = { on_attach = function(client, bufnr) client.server_capabilities.semanticTokensProvider = nil end, init_options = { compilationDatabasePath = "/src" }, root_dir = "/src" }
+          -- Qube
+          vim.filetype.add({ filename = { ["BUILD.qb"] = "qube" } })
+          vim.api.nvim_create_autocmd("FileType", { pattern = "qube", command = "setlocal syntax=python" })
           -- Gitarband
           function fzf_gitarband()
             fzf.fzf_exec(vim.fn.readfile("/src/.repo/project.list"), {
