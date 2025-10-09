@@ -1733,7 +1733,7 @@ in {
         modules-left = [ "sway/workspaces" "sway/window" ];
         modules-center = [];
         modules-right = [ "custom/caffeinated" "bluetooth" "disk" "custom/swaytask" "cpu" "memory" "network" "pulseaudio" "battery" "clock" ];
-        "sway/workspaces" = { tooltip = false; all-outputs = true; format = "{name}"; max-length=1; };
+        "sway/workspaces" = { tooltip = false; all-outputs = true; format = "{name}"; };
         "sway/window" = { tooltip = false; max-length = 200; };
         "custom/caffeinated" = { interval = 1; exec = pkgs.writeShellScript "waybar-coffee" ''pidof -q swayidle && echo "" || echo "C"''; };
         "custom/swaytask" = { interval = 1; exec = pkgs.writeShellScript "waybar-swaytask" ''echo "$(cat /tmp/swaytask)"''; };
@@ -1813,6 +1813,7 @@ in {
     config.colors.unfocused       = { border = "#202020"; background = "#202020"; text = "#808080"; indicator = "#ff0000"; childBorder = "#202020"; };
     config.colors.urgent          = { border = "#2f343a"; background = "#202020"; text = "#ffffff"; indicator = "#ff0000"; childBorder = "#900000"; };
     config.defaultWorkspace = "workspace number 1";
+    config.workspaceAutoBackAndForth = true;
     config.floating = { modifier = "Mod4"; border = 1; titlebar = false; criteria = []; };
     config.focus = { followMouse = "no"; mouseWarping = "output"; wrapping = "no"; };
     config.gaps = { inner = 5; };
@@ -1823,8 +1824,9 @@ in {
     config.window = { border = 1; hideEdgeBorders = "none"; titlebar = false; commands = [ { criteria.class = ".*"; command = "border pixel 1"; } { criteria.app_id = ".*"; command = "border pixel 1"; } ]; };
 
     config.startup = [
-      { command = "pidof -x batteryd || while true; do batteryd; done"; always = true; }
-      { command = "pidof -x bmbwd || while true; do bmbwd; done"; always = true; }
+      { command = "'pidof -x batteryd || while true; do batteryd; done'"; always = true; }
+      { command = "'pidof -x bmbwd || while true; do bmbwd; done'"; always = true; }
+      { command = "displayctl auto"; always = true; }
       { command = "powerctl decafeinate"; }
       { command = "echo sway >/tmp/swaytask"; }
     ];
