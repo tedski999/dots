@@ -810,6 +810,7 @@ in {
       gitsigns-nvim
       lualine-nvim
       mini-nvim
+      flash-nvim
       nightfox-nvim
       nvim-lspconfig
       nvim-surround
@@ -1172,6 +1173,8 @@ in {
 
         require("mini.cursorword").setup({ delay = 0 })
 
+        require("flash").setup({})
+
         require("satellite").setup({
           handlers = {
             cursor = { enable = false },
@@ -1272,6 +1275,8 @@ in {
         vim.keymap.set("n", "<leader>C", "<cmd>exe 'FzfLua quickfix_stack'<cr>")
         vim.keymap.set("n", "<leader>u", fzf_undotree)
         vim.keymap.set("n", "z=", "<cmd>exe 'FzfLua spell_suggest'<cr>")
+        -- Flash
+        vim.keymap.set("n", "S", require("flash").jump)
       '')
       (lib.mkIf wbus ''
         vim.opt.tabstop = 8
