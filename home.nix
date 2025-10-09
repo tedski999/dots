@@ -41,12 +41,11 @@ in {
     (lib.mkIf (msung || work) {
       TERMINAL = "alacritty";
       LAUNCHER = "bemenu-run";
+      BROWSER = "firefox";
       QT_QPA_PLATFORM = "wayland";
       MOZ_ENABLE_WAYLAND = 1;
       _JAVA_AWT_WM_NONREPARENTING = 1;
     })
-    (lib.mkIf msung { BROWSER = "firefox"; })
-    (lib.mkIf work { BROWSER = "chromium"; })
     (lib.mkIf wbus { AMAKE_EXPORT_COMPILE_COMMANDS = 1; })
   ];
 
@@ -343,10 +342,6 @@ in {
 
     (lib.mkIf (work || wbus) [
       mosh
-    ])
-
-    (lib.mkIf (msung || work) [
-      firefox
     ])
 
     (lib.mkIf work [
@@ -688,6 +683,280 @@ in {
     ignores = lib.mkMerge [
       [ ".git/" "node_modules/" "target/" ".obsidian/" ".trash/" ]
       (lib.mkIf wbus [ ".repo/" ])
+    ];
+  };
+
+  programs.firefox = lib.mkIf (msung || work) {
+    enable = true;
+    policies."AutofillAddressEnabled" = false;
+    policies."AutofillCreditCardEnabled" = false;
+    policies."CaptivePortal" = false;
+    policies."DisableAppUpdate" = true;
+    policies."DisableFirefoxStudies" = true;
+    policies."DisableTelemetry" = true;
+    policies."DontCheckDefaultBrowser" = true;
+    policies."OfferToSaveLogins" = false;
+    policies."SkipTermsOfUse" = true;
+    policies."ExtensionSettings"."uBlock0@raymondhill.net".private_browsing = true;
+    profiles = let
+      settings = {
+        "accessibility.typeaheadfind.flashBar" = 0;
+        "app.normandy.api_url" = "";
+        "app.normandy.enabled" = false;
+        "app.shield.optoutstudies.enabled" = false;
+        "app.update.auto" = false;
+        "breakpad.reportURL" = "";
+        "browser.aboutConfig.showWarning" = false;
+        "browser.bookmarks.addedImportButton" = true;
+        "browser.bookmarks.restore_default_bookmarks" = false;
+        "browser.contentblocking.category" = "strict";
+        "browser.disableResetPrompt" = true;
+        "browser.discovery.enabled" = false;
+        "browser.download.always_ask_before_handling_new_types" = true;
+        "browser.download.manager.addToRecentDocs" = false;
+        "browser.download.panel.shown" = true;
+        "browser.download.useDownloadDir" = false;
+        "browser.feeds.showFirstRunUI" = false;
+        "browser.fixup.alternate.enabled" = false;
+        "browser.formfill.enable" = true;
+        "browser.messaging-system.whatsNewPanel.enabled" = false;
+        "browser.newtabpage.activity-stream.default.sites" = "";
+        "browser.newtabpage.activity-stream.feeds.discoverystreamfeed" = false;
+        "browser.newtabpage.activity-stream.feeds.section.topstories" = false;
+        "browser.newtabpage.activity-stream.feeds.snippets" = false;
+        "browser.newtabpage.activity-stream.feeds.telemetry" = false;
+        "browser.newtabpage.activity-stream.feeds.topsites" = false;
+        "browser.newtabpage.activity-stream.improvesearch.topSiteSearchShortcuts" = false;
+        "browser.newtabpage.activity-stream.showSponsored" = false;
+        "browser.newtabpage.activity-stream.showSponsoredCheckboxes" = false;
+        "browser.newtabpage.activity-stream.showSponsoredTopSites" = false;
+        "browser.newtabpage.activity-stream.telemetry" = false;
+        "browser.newtabpage.enabled" = true;
+        "browser.ping-centre.telemetry" = false;
+        "browser.places.speculativeConnect.enabled" = false;
+        "browser.rights.3.shown" = true;
+        "browser.safebrowsing.allowOverride" = false;
+        "browser.safebrowsing.appRepURL" = "";
+        "browser.safebrowsing.blockedURIs.enabled" = false;
+        "browser.safebrowsing.downloads.enabled" = false;
+        "browser.safebrowsing.downloads.remote.block_potentially_unwanted" = false;
+        "browser.safebrowsing.downloads.remote.block_uncommon" = false;
+        "browser.safebrowsing.downloads.remote.enabled" = false;
+        "browser.safebrowsing.downloads.remote.url" = "";
+        "browser.safebrowsing.malware.enabled" = false;
+        "browser.safebrowsing.phishing.enabled" = false;
+        "browser.safebrowsing.provider.google.gethashURL" = "";
+        "browser.safebrowsing.provider.google.updateURL" = "";
+        "browser.safebrowsing.provider.google4.dataSharingURL" = "";
+        "browser.safebrowsing.provider.google4.gethashURL" = "";
+        "browser.safebrowsing.provider.google4.updateURL" = "";
+        "browser.search.suggest.enabled" = true;
+        "browser.selfsupport.url" = "";
+        "browser.send_pings" = false;
+        "browser.shell.checkDefaultBrowser" = false;
+        "browser.shell.defaultBrowserCheckCount" = 1;
+        "browser.startup.homepage" = "about:home";
+        "browser.startup.homepage_override.mstone" = "ignore";
+        "browser.startup.page" =  1;
+        "browser.tabs.crashReporting.sendReport" = false;
+        "browser.tabs.groups.smart.userEnabled" = false;
+        "browser.tabs.inTitlebar" = 0;
+        "browser.tabs.warnOnClose" = true;
+        "browser.toolbars.bookmarks.visibility" = "never";
+        "browser.uiCustomization.state" = builtins.toJSON {
+          currentVersion = 23;
+          placements.PersonalToolbar = [ "personal-bookmarks" ];
+          placements.TabsToolbar =  [ "alltabs-button" "tabbrowser-tabs" "new-tab-button" ];
+          placements.nav-bar = [ "back-button" "forward-button" "stop-reload-button" "urlbar-container" "downloads-button" "addon_darkreader_org-browser-action" "unified-extensions-button" ];
+          placements.toolbar-menubar = [ "menubar-items" ];
+          placements.unified-extensions-area = [ "_d7742d87-e61d-4b78-b8a1-b469842139fa_-browser-action" "ublock0_raymondhill_net-browser-action" "sponsorblocker_ajay_app-browser-action" ];
+          placements.widget-overflow-fixed-list = [];
+        };
+        "browser.uitour.enabled" = false;
+        "browser.urlbar.addons.featureGate" = false;
+        "browser.urlbar.mdn.featureGate" = false;
+        "browser.urlbar.quicksuggest.scenario" = "history";
+        "browser.urlbar.showSearchSuggestionsFirst" = false;
+        "browser.urlbar.speculativeConnect.enabled" = false;
+        "browser.urlbar.suggest.addons" = false;
+        "browser.urlbar.suggest.amp" = false;
+        "browser.urlbar.suggest.bookmark" = true;
+        "browser.urlbar.suggest.calculator" = true;
+        "browser.urlbar.suggest.clipboard" = true;
+        "browser.urlbar.suggest.engines" = false;
+        "browser.urlbar.suggest.history" = true;
+        "browser.urlbar.suggest.importantDates" = true;
+        "browser.urlbar.suggest.mdn" = false;
+        "browser.urlbar.suggest.openpage" = false;
+        "browser.urlbar.suggest.quickactions" = false;
+        "browser.urlbar.suggest.quicksuggest.nonsponsored" = true;
+        "browser.urlbar.suggest.quicksuggest.sponsored" = false;
+        "browser.urlbar.suggest.realtimeOptIn" = true;
+        "browser.urlbar.suggest.recentsearches" = true;
+        "browser.urlbar.suggest.remotetab" = true;
+        "browser.urlbar.suggest.searches" = true;
+        "browser.urlbar.suggest.topsites" = false;
+        "browser.urlbar.suggest.trending" = false;
+        "browser.urlbar.suggest.weather" = false;
+        "browser.urlbar.suggest.wikipedia" = false;
+        "browser.urlbar.suggest.yelp" = false;
+        "browser.urlbar.trending.featureGate" = false;
+        "browser.urlbar.trimURLs" = false;
+        "browser.urlbar.yelp.featureGate" = false;
+        "browser.xul.error_pages.expert_bad_cert" = true;
+        "captivedetect.canonicalURL" = "";
+        "datareporting.healthreport.service.enabled" = false;
+        "datareporting.healthreport.uploadEnabled" = false;
+        "datareporting.policy.dataSubmissionEnabled" = false;
+        "device.sensors.ambientLight.enabled" = false;
+        "device.sensors.enabled" = false;
+        "device.sensors.motion.enabled" = false;
+        "device.sensors.orientation.enabled" = false;
+        "device.sensors.proximity.enabled" = false;
+        "devtools.cache.disabled" = true;
+        "devtools.everOpened" = true;
+        "devtools.inspector.show_pseudo_elements" = true;
+        "devtools.onboarding.telemetry.logged" = false;
+        "dom.battery.enabled" = false;
+        "dom.popup_allowed_events" = "click dblclick mousedown pointerdown";
+        "dom.private-attribution.submission.enabled" = false;
+        "experiments.activeExperiment" = false;
+        "experiments.enabled" = false;
+        "experiments.manifest.uri" = "";
+        "experiments.supported" = false;
+        "extensions.autoDisableScopes" = 0;
+        "extensions.enabledScopes" = 5; # TODO
+        "extensions.formautofill.addresses.enabled" = false;
+        "extensions.formautofill.creditCards.enabled" = false;
+        "extensions.getAddons.showPane" = false;
+        "extensions.htmlaboutaddons.recommendations.enabled" = false;
+        "extensions.pictureinpicture.enable_picture_in_picture_overrides" = true;
+        "extensions.pocket.enabled" = false;
+        "extensions.postDownloadThirdPartyPrompt" = false;
+        "extensions.shield-recipe-client.api_url" = "";
+        "extensions.shield-recipe-client.enabled" = false;
+        "extensions.ui.dictionary.hidden" = false;
+        "extensions.ui.locale.hidden" = false;
+        "extensions.ui.sitepermission.hidden" = false;
+        "extensions.webcompat.enable_shims" = true;
+        "extensions.webcompat.perform_injections" = true;
+        "extensions.webcompat.perform_ua_overrides" = true;
+        "extensions.webservice.discoverURL" = "";
+        "findbar.highlightAll" = true;
+        "general.autoScroll" = true;
+        "geo.provider.use_geoclue" = false;
+        "media.autoplay.blocking_policy" = 2;
+        "media.autoplay.default" = 1;
+        "media.eme.enabled" = false;
+        "media.video_stats.enabled" = false;
+        "network.IDN_show_punycode" = true;
+        "network.allow-experiments" = false;
+        "network.auth.subresource-http-auth-allow" = 1;
+        "network.captive-portal-service.enabled" = false;
+        "network.connectivity-service.enabled" = false;
+        "network.cookie.cookieBehavior" = 1;
+        "network.http.referer.XOriginPolicy" = 2;
+        "network.http.referer.XOriginTrimmingPolicy" = 2;
+        "network.http.speculative-parallel-limit" = 0;
+        "network.predictor.enabled" = false;
+        "permissions.manager.defaultsUrl" = "";
+        "privacy.annotate_channels.strict_list.enabled" = true;
+        "privacy.bounceTrackingProtection.hasMigratedUserActivationData" = true;
+        "privacy.bounceTrackingProtection.mode" = 1;
+        "privacy.donottrackheader.value" = 1;
+        "privacy.fingerprintingProtection" = true;
+        "privacy.globalprivacycontrol.enabled" = true;
+        "privacy.globalprivacycontrol.functionality.enabled" = true;
+        "privacy.query_stripping" = true;
+        "privacy.query_stripping.enabled.pbmode" = true;
+        "privacy.trackingprotection.cryptomining.enabled" = true;
+        "privacy.trackingprotection.emailtracking.enabled" = true;
+        "privacy.trackingprotection.enabled" = true;
+        "privacy.trackingprotection.fingerprinting.enabled" = true;
+        "privacy.trackingprotection.pbmode.enabled" = true;
+        "privacy.trackingprotection.socialtracking.enabled" = true;
+        "privacy.userContext.enabled" = false;
+        "security.OCSP.require" = true;
+        "security.cert_pinning.enforcement_level" = 2;
+        "security.pki.crlite_mode" = 2;
+        "security.remote_settings.crlite_filters.enabled" = true;
+        "services.sync.prefs.sync.browser.newtabpage.activity-stream.showSponsoredTopSite" = false;
+        "signon.autofillForms" = false;
+        "signon.formlessCapture.enabled" = false;
+        "signon.rememberSignons" = false;
+        "startup.homepage_override_url" = "";
+        "toolkit.coverage.endpoint.base" = "";
+        "toolkit.coverage.opt-out" = true;
+        "toolkit.legacyUserProfileCustomizations.stylesheets" = true;
+        "toolkit.telemetry.archive.enabled" = false;
+        "toolkit.telemetry.bhrPing.enabled" = false;
+        "toolkit.telemetry.cachedClientID" = "";
+        "toolkit.telemetry.coverage.opt-out" = true;
+        "toolkit.telemetry.enabled" = false;
+        "toolkit.telemetry.firstShutdownPing.enabled" = false;
+        "toolkit.telemetry.hybridContent.enabled" = false;
+        "toolkit.telemetry.newProfilePing.enabled" = false;
+        "toolkit.telemetry.prompted" = 2;
+        "toolkit.telemetry.rejected" = true;
+        "toolkit.telemetry.reportingpolicy.firstRun" = false;
+        "toolkit.telemetry.server" = "data:,";
+        "toolkit.telemetry.shutdownPingSender.enabled" = false;
+        "toolkit.telemetry.unified" = false;
+        "toolkit.telemetry.unifiedIsOptIn" = false;
+        "toolkit.telemetry.updatePing.enabled" = false;
+        "trailhead.firstrun.didSeeAboutWelcome" = true;
+      };
+    in lib.mkMerge [
+      # TODO remove default search engines
+      {
+        home.name = "ski";
+        home.id = if msung then 0 else 1;
+        home.settings = settings;
+        home.search.default = "ddg";
+        home.search.privateDefault = "ddg";
+        home.search.force = true;
+        home.extensions.packages = with nur.repos.rycee.firefox-addons; [ ublock-origin vimium darkreader sponsorblock ];
+        home.extensions.force = true;
+        # TODO
+        #extensions.settings."sponsorBlocker@ajay.app".force = true;
+        #extensions.settings."sponsorBlocker@ajay.app".settings."categorySelections" = builtins.toJSON [ { name = "sponsor"; option = 2; } { name = "poi_highlight"; option = 0; } { name = "exclusive_access"; option = 0; } { name = "chapter"; option = 0; } { name = "selfpromo"; option = 1; } { name = "outro"; option = 0; } { name = "intro"; option = 0; } ];
+        #extensions.settings."sponsorBlocker@ajay.app".settings."hideInfoButtonPlayerControls" = true;
+        #extensions.settings."sponsorBlocker@ajay.app".settings."hideSkipButtonPlayerControls" = true;
+        #extensions.settings."sponsorBlocker@ajay.app".settings."hideVideoPlayerControls" = true;
+        #extensions.settings."sponsorBlocker@ajay.app".settings."showZoomToFillError2" = false;
+        #extensions.settings."sponsorBlocker@ajay.app".settings."actuallySubmitKeybind" = null;
+        #extensions.settings."sponsorBlocker@ajay.app".settings."downvoteKeybind" = null;
+        #extensions.settings."sponsorBlocker@ajay.app".settings."nextChapterKeybind" = null;
+        #extensions.settings."sponsorBlocker@ajay.app".settings."previewKeybind" = null;
+        #extensions.settings."sponsorBlocker@ajay.app".settings."previousChapterKeybind" = null;
+        #extensions.settings."sponsorBlocker@ajay.app".settings."skipToHighlightKeybind" = null;
+        #extensions.settings."sponsorBlocker@ajay.app".settings."startSponsorKeybind" = null;
+        #extensions.settings."sponsorBlocker@ajay.app".settings."submitKeybind" = null;
+        #extensions.settings."sponsorBlocker@ajay.app".settings."upvoteKeybind" = null;
+      }
+      (lib.mkIf work {
+        work.name = "work";
+        work.id = 0;
+        work.userContent = ''
+          @-moz-document url-prefix("https://bb.infra.corp.arista.io/") {
+            .app-content { justify-content: center; }
+            .bug-page-wrapper { max-width: 1200px; }
+          }'';
+        work.settings = settings;
+        work.search.default = "ddg";
+        work.search.privateDefault = "ddg";
+        work.search.force = true;
+        work.search.engines."aid".urls = [{template = "https://aid.infra.corp.arista.io/{searchTerms}";}];
+        work.search.engines."aid".definedAliases = ["aid"];
+        work.search.engines."go".urls = [{template = "https://go.infra.corp.arista.io/{searchTerms}";}];
+        work.search.engines."go".definedAliases = ["go"];
+        work.search.engines."bb".urls = [{template = "https://bb.infra.corp.arista.io/bug/{searchTerms}";}];
+        work.search.engines."bb".definedAliases = ["bb"];
+        work.search.engines."cl".urls = [{template = "https://change.infra.corp.arista.io/{searchTerms}";}];
+        work.search.engines."cl".definedAliases = ["cl"];
+        work.extensions.packages = with nur.repos.rycee.firefox-addons; [ ublock-origin vimium darkreader ];
+        work.extensions.force = true;
+      })
     ];
   };
 
