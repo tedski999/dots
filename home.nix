@@ -106,6 +106,7 @@ in {
       pulsemixer
       scons
       slurp
+      swayidle
       wasm-bindgen-cli
       wl-clipboard
 
@@ -133,14 +134,20 @@ in {
       (writeShellScriptBin "powerctl" ''
         choice="$([ -n "$1" ] && echo $1 || printf "%s\n" lock suspend $(pidof -q swayidle && echo caffeinate || echo decafeinate) reload logout reboot shutdown | bemenu -p "Power" -l 9)"
         case "$choice" in
-          "lock") pkill borgmatic && pidwait systemd-inhibit; swaylock -fF;;
+          "lock") pkill borgmatic && pidwait systemd-inhibit; loginctl lock-session;;
           "suspend") pkill borgmatic && pidwait systemd-inhibit; systemctl suspend-then-hibernate;;
           "reload") swaymsg reload;;
           "logout") pkill borgmatic && pidwait systemd-inhibit; swaymsg exit;;
           "reboot") pkill borgmatic && pidwait systemd-inhibit; systemctl reboot;;
           "shutdown") pkill borgmatic && pidwait systemd-inhibit; systemctl poweroff;;
-          "caffeinate") systemctl --user stop swayidle;;
-          "decafeinate") systemctl --user start swayidle;;
+          "caffeinate") pkill swayidle;;
+          "decafeinate") pidof swayidle || swayidle -w idlehint 300 \
+            lock 'swaylock --daemonize' \
+            unlock 'pkill -USR1 swaylock' \
+            before-sleep 'loginctl lock-session' \
+            timeout 590  'notify-send -i clock -t 10000 "Idle Warning" "Locking in 10 seconds..."' \
+            timeout 600  'loginctl lock-session' \
+            timeout 3600 'systemctl suspend-then-hibernate' &;;
           *) exit 1;;
         esac || notify-send "Unable to $choice" "Is something running?"
       '')
@@ -2015,17 +2022,6 @@ in {
 
   services.cliphist = lib.mkIf (msung || work) {
     enable = true;
-  };
-
-  services.swayidle = lib.mkIf (msung || work) {
-    enable = true;
-    extraArgs = [ "-w" ];
-    events = [ { event = "before-sleep"; command = "swaylock -fF"; } ];
-    timeouts = [
-      { timeout = 590; command = "notify-send -i clock -t 10000 'Idle Warning' 'Locking in 10 seconds...'"; }
-      { timeout = 600; command = "swaylock -fF"; }
-      { timeout = 3600; command = "systemctl suspend-then-hibernate"; }
-    ];
   };
 
   services.syncthing = lib.mkIf (msung || septs || work) {
