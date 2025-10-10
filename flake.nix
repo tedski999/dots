@@ -9,8 +9,7 @@
     nur = { url = "github:nix-community/NUR"; inputs.nixpkgs.follows = "nixpkgs"; };
   };
 
-  outputs = inputs:
-  let
+  outputs = inputs: let
     pkgs = inputs.nixpkgs.legacyPackages;
     lib = inputs.nixpkgs.lib // inputs.home-manager.lib;
     nur = inputs.nur.legacyPackages;

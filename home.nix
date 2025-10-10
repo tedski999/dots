@@ -1,5 +1,4 @@
-{ pkgs, config, lib, home, inputs, ... }:
-let
+{ pkgs, config, lib, home, nur, inputs, ... }: let
   msung = home == 0;
   septs = home == 1;
   work = home == 2;
@@ -1988,8 +1987,7 @@ in {
 
   programs.waybar = lib.mkIf (msung || work) {
     enable = true;
-    settings =
-    let
+    settings = let
       rampicons = [ "<span color='#00ff00'>▁</span>" "<span color='#00ff00'>▂</span>" "<span color='#00ff00'>▃</span>" "<span color='#00ff00'>▄</span>" "<span color='#ff8000'>▅</span>" "<span color='#ff8000'>▆</span>" "<span color='#ff8000'>▇</span>" "<span color='#ff0000'>█</span>" ];
     in [
       {
