@@ -1136,7 +1136,6 @@ in {
         vim.opt.expandtab = true                               -- Tab key inserts spaces
         vim.opt.tabstop = 2                                    -- 2-spaced tabs
         vim.opt.shiftwidth = 0                                 -- Tab-spaced indentation
-        vim.opt.smartindent = true                             -- Autoindent based on c-like syntax
         vim.opt.cinoptions = "N-s"                             -- Don't indent C++ namespaces
         vim.opt.list = true                                    -- Enable whitespace characters below
         vim.opt.listchars="space:·,tab:› ,trail:•,precedes:<,extends:>,nbsp:␣"
