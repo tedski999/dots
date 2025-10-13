@@ -337,6 +337,21 @@ in {
           && notify-send -i smiley -t 5000 "''${c%   #*}" "Done!" \
           && sleep 1 && vdirsyncer sync
       '')
+
+      (writeShellScriptBin "eotd" ''
+        args=(--user-agent "eotd/1.0")
+        for month in $(seq -w 1 12); do
+          case $month in 02) len=29;; 04|06|09|11) len=30;; *) len=31;; esac
+          for day in $(seq -w 1 $len); do args+=(https://en.wikipedia.org/api/rest_v1/feed/onthisday/events/$month/$day --output ${config.xdg.dataHome}/eotd/$month-$day.json); done
+        done
+
+        mkdir -p ${config.xdg.dataHome}/eotd
+        curl --parallel --parallel-max 8 --retry 5 --retry-delay 3 --retry-connrefused --max-time 30 "''${args[@]}"
+
+        for f in *.json; do
+          jq -r '.events[] | "\u001b[33m\(.text | sub("\\.$"; "")) \u001b[90m\(.year | if . < 0 then "\(-.) BC" else . end)\u001b[0m"' $f > ''${f%.json}.txt
+        done
+      '')
     ])
 
     (lib.mkIf (work || wbus) [
@@ -1927,6 +1942,9 @@ in {
         git config --global include.path myconfig
         compdef _git-a ag
         # compdef 'a4c ps -N' ahome
+      ''))
+      (lib.mkIf (msung || work) (lib.mkAfter ''
+        [[ -o interactive ]] && shuf -n1 ${config.xdg.dataHome}/eotd/$(date +%m-%d).txt
       ''))
     ];
     plugins = lib.mkIf wbus [
