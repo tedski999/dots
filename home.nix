@@ -1304,15 +1304,14 @@ in {
 
         fzf.register_ui_select()
         fzf.setup({
-          hls = { border = "NormalBorder", preview_border = "NormalBorder" },
+          { "borderless" },
+          fzf_colors = true,
           winopts = {
             height = 0.25, width = 1.0, row = 1.0, col = 0.5,
-            border = { "─", "─", "─", " ", "", "", "", " " },
-            preview = { scrollchars = { "│", "" }, winopts = { list = true } }
+            preview = { winopts = { list = true } }
           },
           keymap = {
             builtin = {
-              ["<esc>"] = "hide",
               ["<c-j>"] = "accept",
               ["<m-o>"] = "toggle-preview",
               ["<c-o>"] = "toggle-fullscreen",
