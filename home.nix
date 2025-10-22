@@ -363,7 +363,7 @@ in {
       openconnect
       (writeShellScriptBin "avpn" ''sudo openconnect --protocol=gp ''${1:-gp-ie.arista.com} -u tedj -c "${config.age.secrets."tedj@arista.com.crt".path}" -k "${config.age.secrets."tedj@arista.com.pem".path}"'')
       (writeShellScriptBin "ash" ''host="''${1:-home}"; mosh --predict=always --predict-overwrite --experimental-remote-ip=remote "tedj-''${host//[._]/-}"'')
-      (writeShellScriptBin "asl" "arista-ssh check-auth || arista-ssh login")
+      (writeShellScriptBin "asl" "chromium & arista-ssh login")
     ])
 
     (lib.mkIf wbus [
@@ -512,10 +512,6 @@ in {
       ".local/bin/git-a".source = config.lib.file.mkOutOfStoreSymlink (pkgs.writeShellScriptBin "git-a" ''
         git add $@
       '') + "/bin/git-a";
-      ".a4c/create".source = config.lib.file.mkOutOfStoreSymlink (pkgs.writeShellScriptBin "a4c-create" ''
-        a ws yum install -y ArTacLSP
-        install -d -o tedj -g tedj /nix
-      '') + "/bin/a4c-create";
     })
 
     (lib.mkIf work {
@@ -2127,6 +2123,7 @@ in {
     config.keybindings."Mod4+Return"     = "exec $TERMINAL";
     config.keybindings."Mod4+space"      = "exec $LAUNCHER";
     config.keybindings."Mod4+s"          = "exec $BROWSER";
+    config.keybindings."Mod4+Shift+s"    = lib.mkIf work "exec $BROWSER -P ski";
 
     config.keybindings."Mod4+u"         = "focus parent";
     config.keybindings."Mod4+Shift+u"   = "focus child";
