@@ -534,6 +534,8 @@ in {
   age.secrets = lib.mkMerge [
     (lib.mkIf (msung || work) {
       "ski@h8c.de.gpg"           = { file = ./secrets/ski_h8c.de/subkey.age; };
+      "ssh/ski@h8c.de"           = { file = ./secrets/ssh/ski_h8c.de.age; };
+      "ssh/tedski999@github.com" = { file = ./secrets/ssh/tedski999_github.com.age; };
       "cal.h8c.de/ski"           = { file = ./secrets/cal.h8c.de/ski.age; };
     })
     (lib.mkIf work {
@@ -1636,6 +1638,12 @@ in {
       controlPersist = "12h";
       serverAliveCountMax = 3;
       serverAliveInterval = 5;
+    };
+    matchBlocks."github.com" = {
+      identityFile = config.age.secrets."ssh/tedski999@github.com".path;
+    };
+    matchBlocks."h8c.de" = {
+      identityFile = config.age.secrets."ssh/ski@h8c.de".path;
     };
     matchBlocks."bus" = lib.mkIf work {
       host = "tedj-*";
