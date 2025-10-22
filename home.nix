@@ -90,7 +90,6 @@ in {
       binaryen
       bitwarden-cli
       brightnessctl
-      cloudflared
       emscripten
       esbuild
       gimp
@@ -1055,21 +1054,13 @@ in {
 
   programs.gpg = lib.mkIf (!wbus) {
     enable = true;
-    settings.keyid-format = "LONG";
-    settings.with-fingerprint = true;
-    settings.with-subkey-fingerprint = true;
-    settings.with-keygrip = true;
     settings.trusted-key = "DDA5B1D740B877AA";
   };
 
   services.gpg-agent = lib.mkIf (!wbus) {
     enable = true;
     defaultCacheTtl = 86400;
-    defaultCacheTtlSsh = 86400;
     maxCacheTtl = 2592000;
-    maxCacheTtlSsh = 2592000;
-    enableSshSupport = true;
-    sshKeys = [ "613AB861624F38ECCEBBB3764CF4A761DBE24D1B" ];
     pinentry.package = pkgs.pinentry-curses;
   };
 
@@ -1646,9 +1637,6 @@ in {
       serverAliveCountMax = 3;
       serverAliveInterval = 5;
     };
-    matchBlocks."gpg-agent" = lib.mkIf (!wbus) {
-      match = ''host * exec "gpg-connect-agent updatestartuptty /bye"'';
-    };
     matchBlocks."bus" = lib.mkIf work {
       host = "tedj-*";
       user = "tedj";
@@ -1656,10 +1644,6 @@ in {
       extraOptions.LogLevel = "error";
       extraOptions.StrictHostKeyChecking = "false";
       extraOptions.UserKnownHostsFile = "/dev/null";
-    };
-    matchBlocks."h8c.de" = lib.mkIf (!wbus) {
-      host = "h8c.de";
-      proxyCommand = "cloudflared access ssh --hostname ssh.h8c.de";
     };
   };
 
