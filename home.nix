@@ -1236,6 +1236,38 @@ in {
           })
         end
 
+        -- Get all alternative files based on extension
+        local function get_altfiles()
+          local ext_altexts = {
+            [".c"] = { ".h", ".hpp", ".tin" },
+            [".h"] = { ".c", ".cpp", ".tac" },
+            [".cpp"] = { ".hpp", ".h", ".tin" },
+            [".hpp"] = { ".cpp", ".c", ".tac" },
+            [".vert.glsl"] = { ".frag.glsl" },
+            [".frag.glsl"] = { ".vert.glsl" },
+            [".tac"] = { ".tin", ".cpp", ".c" },
+            [".tin"] = { ".tac", ".hpp", ".h" }
+          }
+          local file = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(0), ":.")
+          local hits, more = {}, {}
+          for ext, altexts in pairs(ext_altexts) do
+            if file:sub(-#ext) == ext then
+              for i=1,#altexts do
+                local alt = file:sub(0,#file-#ext)..altexts[i]
+                if vim.loop.fs_stat(alt) then hits[#hits+1] = alt else more[#more+1] = alt end
+              end
+            end
+          end
+          return hits, more
+        end
+
+        -- Switch to an alternative file
+        local function fzf_altfiles(hits, more)
+          for i=1,#hits do hits[i] = fzf.utils.ansi_codes.green(hits[i]) end
+          for i=1,#more do hits[#hits+1] = fzf.utils.ansi_codes.red(more[i]) end
+          fzf.fzf_exec(hits, { prompt = "Altfiles>", actions = fzf.config.globals.actions.files, previewer = "builtin" })
+        end
+
         -- AUTOCMDS --
 
         -- Highlight suspicious whitespace
@@ -1551,6 +1583,8 @@ in {
         vim.keymap.set("n", "<leader>R", "<cmd>exe 'FzfLua lsp_finder'<cr>")
         vim.keymap.set("n", "<leader>c", "<cmd>exe 'FzfLua quickfix'<cr>")
         vim.keymap.set("n", "<leader>C", "<cmd>exe 'FzfLua quickfix_stack'<cr>")
+        vim.keymap.set("n", "<leader>a", function() local hits, more = get_altfiles() if #hits==1 then vim.cmd("edit "..hits[1]) else fzf_altfiles(hits, more) end end)
+        vim.keymap.set("n", "<leader>A", function() local hits, more = get_altfiles() fzf_altfiles(hits, more) end)
         vim.keymap.set("n", "<leader>u", fzf_undotree)
         vim.keymap.set("n", "z=", "<cmd>exe 'FzfLua spell_suggest'<cr>")
         -- Flash
