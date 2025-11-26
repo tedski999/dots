@@ -82,7 +82,7 @@ in {
     ]
 
     (lib.mkIf (msung || work) [ (python3.withPackages (ppkgs: with ppkgs; [ numpy scipy pillow matplotlib networkx ])) ])
-    (lib.mkIf (septs || wbus) [ (python3.withPackages (ppkgs: with ppkgs; [ numpy ])) ])
+    (lib.mkIf septs [ (python3.withPackages (ppkgs: with ppkgs; [ numpy ])) ])
 
     (lib.mkIf (msung || work) [
       acpi
@@ -442,16 +442,10 @@ in {
     }
 
     (lib.mkIf wbus {
-      ".local/bin/man".source = config.lib.file.mkOutOfStoreSymlink "${pkgs.man}/bin/man";
-      ".local/bin/man-recode".source = config.lib.file.mkOutOfStoreSymlink "${pkgs.man}/bin/man-recode";
-      ".local/bin/mandb".source = config.lib.file.mkOutOfStoreSymlink "${pkgs.man}/bin/mandb";
-      ".local/bin/manpath".source = config.lib.file.mkOutOfStoreSymlink "${pkgs.man}/bin/manpath";
       ".local/bin/mosh".source = config.lib.file.mkOutOfStoreSymlink "${pkgs.mosh}/bin/mosh";
       ".local/bin/mosh-client".source = config.lib.file.mkOutOfStoreSymlink "${pkgs.mosh}/bin/mosh-client";
       ".local/bin/mosh-server".source = config.lib.file.mkOutOfStoreSymlink "${pkgs.mosh}/bin/mosh-server";
       ".local/bin/tmux".source = config.lib.file.mkOutOfStoreSymlink "${pkgs.tmux}/bin/tmux";
-      ".local/bin/vi".source = config.lib.file.mkOutOfStoreSymlink "${pkgs.neovim}/bin/nvim";
-      ".local/bin/vim".source = config.lib.file.mkOutOfStoreSymlink "${pkgs.neovim}/bin/nvim";
       ".local/bin/zsh".source = config.lib.file.mkOutOfStoreSymlink "${pkgs.zsh}/bin/zsh";
       ".config/git/myconfig".text = ''
         [alias]
