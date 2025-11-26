@@ -360,8 +360,8 @@ in {
     (lib.mkIf work [
       zulu8
       openconnect
-      (writeShellScriptBin "avpn" ''sudo openconnect --protocol=gp ''${1:-gp-ie.arista.com} -u tedj -c "${config.age.secrets."tedj@arista.com.crt".path}" -k "${config.age.secrets."tedj@arista.com.pem".path}"'')
-      (writeShellScriptBin "ash" ''host="''${1:-home}"; mosh --predict=always --predict-overwrite --experimental-remote-ip=remote "tedj-''${host//[._]/-}"'')
+      (writeShellScriptBin "avpn" ''sudo openconnect --protocol=gp ''${1:-gp-eu.arista.com} -u tedj -c "${config.age.secrets."tedj@arista.com.crt".path}" -k "${config.age.secrets."tedj@arista.com.pem".path}"'')
+      (writeShellScriptBin "ash" ''host="''${1:-home}"; mosh --predict=always --predict-overwrite "tedj-''${host//[._]/-}"'')
       (writeShellScriptBin "asl" "chromium & arista-ssh login")
     ])
 
@@ -375,15 +375,16 @@ in {
           rsync --info=progress2 -azhe "ssh -o StrictHostKeyChecking=no" /nix tedj-''${n//[._]/-}:/
         done
       '')
+      # TODO fetch fgit from git@gitlab.aristanetworks.com:the_third_man/fgit.git
       (writeShellScriptBin "ag" ''
-        if   [ "$1" = "c"  ]; then shift; a git commit $@
-        elif [ "$1" = "ca" ]; then shift; a git commit --amend $@
-        elif [ "$1" = "d"  ]; then shift; a git diff $@
-        elif [ "$1" = "ds" ]; then shift; a git diff --staged $@
-        elif [ "$1" = "l"  ]; then shift; a git log $@
-        elif [ "$1" = "s"  ]; then shift; a git status $@
-        elif [ "$1" = "ch" ]; then shift; a git checkout $@
-        else a git $@
+        if   [ "$1" = "c"  ]; then shift; fgit commit $@
+        elif [ "$1" = "ca" ]; then shift; fgit commit --amend $@
+        elif [ "$1" = "d"  ]; then shift; fgit diff $@
+        elif [ "$1" = "ds" ]; then shift; fgit diff --staged $@
+        elif [ "$1" = "l"  ]; then shift; fgit log $@
+        elif [ "$1" = "s"  ]; then shift; fgit status $@
+        elif [ "$1" = "ch" ]; then shift; fgit checkout $@
+        else fgit $@
         fi
       '')
       (writeShellScriptBin "kbld" ''
@@ -1639,10 +1640,10 @@ in {
       serverAliveCountMax = 3;
       serverAliveInterval = 5;
     };
-    matchBlocks."github.com" = {
+    matchBlocks."github.com" = lib.mkIf (msung || work) {
       identityFile = config.age.secrets."ssh/tedski999@github.com".path;
     };
-    matchBlocks."h8c.de" = {
+    matchBlocks."h8c.de" = lib.mkIf (msung || work) {
       identityFile = config.age.secrets."ssh/ski@h8c.de".path;
     };
     matchBlocks."bus" = lib.mkIf work {
