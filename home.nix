@@ -359,8 +359,7 @@ in {
 
     (lib.mkIf work [
       zulu8
-      openconnect
-      (writeShellScriptBin "avpn" ''sudo openconnect --protocol=gp ''${1:-gp-eu.arista.com} -u tedj -c "${config.age.secrets."tedj@arista.com.crt".path}" -k "${config.age.secrets."tedj@arista.com.pem".path}"'')
+      (writeShellScriptBin "avpn" ''globalprotect connect --portal ''${1:-gp-ie.arista.com}; trap 'break' INT; while sleep 5; do globalprotect show --status; done; globalprotect disconnect'')
       (writeShellScriptBin "ash" ''host="''${1:-home}"; mosh --predict=always --predict-overwrite "tedj-''${host//[._]/-}"'')
       (writeShellScriptBin "asl" "chromium & arista-ssh login")
     ])
