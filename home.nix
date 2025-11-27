@@ -959,6 +959,8 @@ in {
         work.search.engines."bb".definedAliases = ["bb"];
         work.search.engines."cl".urls = [{template = "https://change.infra.corp.arista.io/{searchTerms}";}];
         work.search.engines."cl".definedAliases = ["cl"];
+        work.search.engines."r".urls = [{template = "https://reviewboard.infra.corp.arista.io/r/{searchTerms}";}];
+        work.search.engines."r".definedAliases = ["r"];
         work.extensions.packages = with nur.repos.rycee.firefox-addons; [ ublock-origin vimium darkreader ];
         work.extensions.force = true;
       })
