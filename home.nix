@@ -2034,7 +2034,7 @@ in {
         modules-left = [ "sway/workspaces" "sway/window" ];
         modules-center = [];
         modules-right = [ "custom/caffeinated" "bluetooth" "disk" "custom/swaytask" "cpu" "memory" "network" "pulseaudio" "battery" "clock" ];
-        "sway/workspaces" = { tooltip = false; all-outputs = true; format = "{name}"; };
+        "sway/workspaces" = { tooltip = false; all-outputs = true; format = "{name}"; }; # TODO click should swap monitors...
         "sway/window" = { tooltip = false; max-length = 200; };
         "custom/caffeinated" = { interval = 1; exec = pkgs.writeShellScript "waybar-coffee" ''pidof -q swayidle && echo "" || echo "C"''; };
         "custom/swaytask" = { interval = 1; exec = pkgs.writeShellScript "waybar-swaytask" ''echo "$(cat /tmp/swaytask)"''; };
@@ -2058,15 +2058,9 @@ in {
 
       #workspaces button { border: none; border-radius: 0; min-width: 0; padding: 0 5px; animation: none; }
       #workspaces button.urgent { background-color: #404040; animation: luminate 1s steps(30) infinite alternate; }
-      #workspaces button.visible.current_output { background-color: #808080; color: #000000; }
-      #workspaces button.focused.current_output { background-color: #ffffff; color: #000000; }
-      #workspaces button#sway-workspace-0\:q:not(.focused),
-      #workspaces button#sway-workspace-0\:a:not(.focused),
-      #workspaces button#sway-workspace-0\:z:not(.focused) { color: #ff8080; }
-      #workspaces button#sway-workspace-0\:q.focused,
-      #workspaces button#sway-workspace-0\:a.focused,
-      #workspaces button#sway-workspace-0\:z.focused { background-color: #ff8080; }
-      #workspaces button:not(#sway-workspace-1):not(#sway-workspace-2):not(#sway-workspace-3):not(#sway-workspace-4):not(#sway-workspace-5):not(#sway-workspace-6):not(#sway-workspace-7):not(#sway-workspace-8):not(#sway-workspace-9):not(#sway-workspace-0\:q):not(#sway-workspace-0\:a):not(#sway-workspace-0\:z) { color: #404040; }
+      #workspaces button.visible.current_output { background-color: #ffffff; color: #000000; }
+      #workspaces button.visible:not(.current_output) { background-color: #808080; color: #000000; }
+      #workspaces button:not(#sway-workspace-1):not(#sway-workspace-2):not(#sway-workspace-3):not(#sway-workspace-4):not(#sway-workspace-5):not(#sway-workspace-6):not(#sway-workspace-7):not(#sway-workspace-8):not(#sway-workspace-9):not(#sway-workspace-0\:q):not(#sway-workspace-0\:a):not(#sway-workspace-0\:z) { color: #303030; }
 
       #custom-media.Paused { color: #606060; }
       #custom-caffeinated { color: #ff8000; }
@@ -2186,18 +2180,18 @@ in {
     config.keybindings."Mod4+q" = ''exec a="$(swaymsg -rt get_workspaces | jq -r '.[] | select(.focused) | .output')" && swaymsg "workspace 0:q, move workspace to \"$a\""'';
     config.keybindings."Mod4+a" = ''exec a="$(swaymsg -rt get_workspaces | jq -r '.[] | select(.focused) | .output')" && swaymsg "workspace 0:a, move workspace to \"$a\""'';
     config.keybindings."Mod4+z" = ''exec a="$(swaymsg -rt get_workspaces | jq -r '.[] | select(.focused) | .output')" && swaymsg "workspace 0:z, move workspace to \"$a\""'';
-    config.keybindings."Mod4+Shift+1" = ''move container workspace 1'';
-    config.keybindings."Mod4+Shift+2" = ''move container workspace 2'';
-    config.keybindings."Mod4+Shift+3" = ''move container workspace 3'';
-    config.keybindings."Mod4+Shift+4" = ''move container workspace 4'';
-    config.keybindings."Mod4+Shift+5" = ''move container workspace 5'';
-    config.keybindings."Mod4+Shift+6" = ''move container workspace 6'';
-    config.keybindings."Mod4+Shift+7" = ''move container workspace 7'';
-    config.keybindings."Mod4+Shift+8" = ''move container workspace 8'';
-    config.keybindings."Mod4+Shift+9" = ''move container workspace 9'';
-    config.keybindings."Mod4+Shift+q" = ''move container workspace 0:q'';
-    config.keybindings."Mod4+Shift+a" = ''move container workspace 0:a'';
-    config.keybindings."Mod4+Shift+z" = ''move container workspace 0:z'';
+    config.keybindings."Mod4+Shift+1" = ''move --no-auto-back-and-forth container workspace 1'';
+    config.keybindings."Mod4+Shift+2" = ''move --no-auto-back-and-forth container workspace 2'';
+    config.keybindings."Mod4+Shift+3" = ''move --no-auto-back-and-forth container workspace 3'';
+    config.keybindings."Mod4+Shift+4" = ''move --no-auto-back-and-forth container workspace 4'';
+    config.keybindings."Mod4+Shift+5" = ''move --no-auto-back-and-forth container workspace 5'';
+    config.keybindings."Mod4+Shift+6" = ''move --no-auto-back-and-forth container workspace 6'';
+    config.keybindings."Mod4+Shift+7" = ''move --no-auto-back-and-forth container workspace 7'';
+    config.keybindings."Mod4+Shift+8" = ''move --no-auto-back-and-forth container workspace 8'';
+    config.keybindings."Mod4+Shift+9" = ''move --no-auto-back-and-forth container workspace 9'';
+    config.keybindings."Mod4+Shift+q" = ''move --no-auto-back-and-forth container workspace 0:q'';
+    config.keybindings."Mod4+Shift+a" = ''move --no-auto-back-and-forth container workspace 0:a'';
+    config.keybindings."Mod4+Shift+z" = ''move --no-auto-back-and-forth container workspace 0:z'';
 
     config.keybindings."Mod4+0"         = ''exec swaytask'';
     config.keybindings."Mod4+Shift+0"   = ''exec n=$(swaytaskinput) && i=$(swaymsg -rt get_workspaces | jq -r '.[] | select(.focused).name | match("[[:digit:]]$").string') && swaymsg "move workspace $n:''${i:-1}"'';
