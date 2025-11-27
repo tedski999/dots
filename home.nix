@@ -1478,7 +1478,7 @@ in {
 
         require("mini.cursorword").setup({ delay = 0 })
 
-        require("flash").setup({})
+        require("flash").setup({ modes = { char = { enabled = false } } })
 
         require("satellite").setup({
           handlers = {
