@@ -1302,7 +1302,7 @@ in {
         -- Keep universal formatoptions
         vim.api.nvim_create_autocmd("Filetype", { callback = function() vim.o.formatoptions = "rqlj" end })
 
-        -- Per filetype config
+        -- Use // comments in C and C++
         vim.api.nvim_create_autocmd("FileType", { pattern = { "c", "cpp" }, command = "setlocal commentstring=//\\ %s" })
 
         -- Disable satellite on long files (search highlighting causes stuttering)
