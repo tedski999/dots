@@ -713,7 +713,9 @@ in {
         "browser.aboutConfig.showWarning" = false;
         "browser.bookmarks.addedImportButton" = true;
         "browser.bookmarks.restore_default_bookmarks" = false;
+        "browser.bookmarks.showMobileBookmarks" = true;
         "browser.contentblocking.category" = "strict";
+        "browser.ctrlTab.sortByRecentlyUsed" = false;
         "browser.disableResetPrompt" = true;
         "browser.discovery.enabled" = false;
         "browser.download.always_ask_before_handling_new_types" = true;
@@ -736,6 +738,7 @@ in {
         "browser.newtabpage.activity-stream.showSponsoredTopSites" = false;
         "browser.newtabpage.activity-stream.telemetry" = false;
         "browser.newtabpage.enabled" = true;
+        "browser.newtabpage.pinned" = [];
         "browser.ping-centre.telemetry" = false;
         "browser.places.speculativeConnect.enabled" = false;
         "browser.rights.3.shown" = true;
@@ -766,15 +769,11 @@ in {
         "browser.tabs.groups.smart.userEnabled" = false;
         "browser.tabs.inTitlebar" = 0;
         "browser.tabs.warnOnClose" = true;
-        "browser.toolbars.bookmarks.visibility" = "never";
+        "browser.toolbars.bookmarks.visibility" = "always";
         "browser.uiCustomization.state" = builtins.toJSON {
           currentVersion = 23;
-          placements.PersonalToolbar = [ "personal-bookmarks" ];
-          placements.TabsToolbar =  [ "alltabs-button" "tabbrowser-tabs" "new-tab-button" ];
           placements.nav-bar = [ "back-button" "forward-button" "stop-reload-button" "urlbar-container" "downloads-button" "addon_darkreader_org-browser-action" "unified-extensions-button" ];
-          placements.toolbar-menubar = [ "menubar-items" ];
           placements.unified-extensions-area = [ "_d7742d87-e61d-4b78-b8a1-b469842139fa_-browser-action" "ublock0_raymondhill_net-browser-action" "sponsorblocker_ajay_app-browser-action" ];
-          placements.widget-overflow-fixed-list = [];
         };
         "browser.uitour.enabled" = false;
         "browser.urlbar.addons.featureGate" = false;
@@ -828,6 +827,7 @@ in {
         "experiments.enabled" = false;
         "experiments.manifest.uri" = "";
         "experiments.supported" = false;
+        "extensions.activeThemeID" = "firefox-compact-dark@mozilla.org";
         "extensions.autoDisableScopes" = 0;
         "extensions.enabledScopes" = 5; # TODO
         "extensions.formautofill.addresses.enabled" = false;
