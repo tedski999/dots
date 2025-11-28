@@ -1454,10 +1454,10 @@ in {
 
         vim.lsp.enable("rust_analyzer")
         vim.lsp.enable("pyright")
-        vim.lsp.enable("clang")
+        vim.lsp.enable("clangd")
         vim.lsp.config("rust_analyzer", { settings = { ["rust-analyzer"] = { cargo = { targetDir = true } } } })
         vim.lsp.config["pyright"] = {}
-        vim.lsp.config["clang"] = { on_attach = function(client, bufnr) client.server_capabilities.semanticTokensProvider = nil end }
+        vim.lsp.config["clangd"] = { on_attach = function(client, bufnr) client.server_capabilities.semanticTokensProvider = nil end }
 
         require("nvim-surround").setup({ move_cursor = false })
 
@@ -1613,7 +1613,7 @@ in {
           ]])
           vim.api.nvim_create_autocmd("FileType", { pattern = "tac", command = "setlocal commentstring=//\\ %s" })
           vim.api.nvim_create_autocmd({ "BufEnter", "BufWinEnter" }, { pattern = { "*.tac" }, callback = function() vim.lsp.start({ name = "tacc", cmd = { "/usr/bin/artaclsp" }, cmd_args = { "-I", "/bld/" }, root_dir = "/src" }) end })
-          vim.lsp.config["clang"] = { on_attach = function(client, bufnr) client.server_capabilities.semanticTokensProvider = nil end, init_options = { compilationDatabasePath = "/src" }, root_dir = "/src" }
+          vim.lsp.config["clangd"] = { on_attach = function(client, bufnr) client.server_capabilities.semanticTokensProvider = nil end, init_options = { compilationDatabasePath = "/src" }, root_dir = "/src" }
           -- Qube
           vim.filetype.add({ filename = { ["BUILD.qb"] = "qube" } })
           vim.api.nvim_create_autocmd("FileType", { pattern = "qube", command = "setlocal syntax=python" })
