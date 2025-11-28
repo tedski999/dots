@@ -1701,7 +1701,10 @@ in {
       set -g set-titles-string "#S:#W"
       set -g mouse on
       # i'll take it from here
-      unbind -a
+      unbind -aT prefix
+      unbind -aT root
+      unbind -aT copy-mode
+      unbind -aT copy-mode-vi
       # client
       bind d   detach
       bind r   refresh-client
