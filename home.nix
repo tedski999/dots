@@ -374,16 +374,15 @@ in {
           rsync --info=progress2 -azhe "ssh -o StrictHostKeyChecking=no" /nix tedj-''${n//[._]/-}:/
         done
       '')
-      # TODO fetch fgit from git@gitlab.aristanetworks.com:the_third_man/fgit.git
       (writeShellScriptBin "ag" ''
-        if   [ "$1" = "c"  ]; then shift; fgit commit $@
-        elif [ "$1" = "ca" ]; then shift; fgit commit --amend $@
-        elif [ "$1" = "d"  ]; then shift; fgit diff $@
-        elif [ "$1" = "ds" ]; then shift; fgit diff --staged $@
-        elif [ "$1" = "l"  ]; then shift; fgit log $@
-        elif [ "$1" = "s"  ]; then shift; fgit status $@
-        elif [ "$1" = "ch" ]; then shift; fgit checkout $@
-        else fgit $@
+        if   [ "$1" = "c"  ]; then shift; a git commit $@
+        elif [ "$1" = "ca" ]; then shift; a git commit --amend $@
+        elif [ "$1" = "d"  ]; then shift; a git diff $@
+        elif [ "$1" = "ds" ]; then shift; a git diff --staged $@
+        elif [ "$1" = "l"  ]; then shift; a git log $@
+        elif [ "$1" = "s"  ]; then shift; a git status $@
+        elif [ "$1" = "ch" ]; then shift; a git checkout $@
+        else a git $@
         fi
       '')
       (writeShellScriptBin "kbld" ''
