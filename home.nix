@@ -2050,6 +2050,8 @@ in {
       #workspaces button.visible.current_output { background-color: #ffffff; color: #000000; }
       #workspaces button.visible:not(.current_output) { background-color: #808080; color: #000000; }
       #workspaces button:not(#sway-workspace-1):not(#sway-workspace-2):not(#sway-workspace-3):not(#sway-workspace-4):not(#sway-workspace-5):not(#sway-workspace-6):not(#sway-workspace-7):not(#sway-workspace-8):not(#sway-workspace-9):not(#sway-workspace-0\:q):not(#sway-workspace-0\:a):not(#sway-workspace-0\:z) { color: #303030; }
+      #workspaces button.visible.current_output:not(#sway-workspace-1):not(#sway-workspace-2):not(#sway-workspace-3):not(#sway-workspace-4):not(#sway-workspace-5):not(#sway-workspace-6):not(#sway-workspace-7):not(#sway-workspace-8):not(#sway-workspace-9):not(#sway-workspace-0\:q):not(#sway-workspace-0\:a):not(#sway-workspace-0\:z) { background-color: #ff0000; color: #000000; }
+      #workspaces button.visible:not(.current_output):not(#sway-workspace-1):not(#sway-workspace-2):not(#sway-workspace-3):not(#sway-workspace-4):not(#sway-workspace-5):not(#sway-workspace-6):not(#sway-workspace-7):not(#sway-workspace-8):not(#sway-workspace-9):not(#sway-workspace-0\:q):not(#sway-workspace-0\:a):not(#sway-workspace-0\:z) { background-color: #800000; color: #000000; }
 
       #custom-media.Paused { color: #606060; }
       #custom-caffeinated { color: #ff8000; }
